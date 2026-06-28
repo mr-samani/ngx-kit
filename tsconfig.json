@@ -12,16 +12,20 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve",
+    "module": "es2022",
+    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "bundler",
     "paths": {
       "ngx-input/*": ["./projects/libs/*"],
-      "ngx-input": ["projects/libs"]
-    }
+      "ngx-input": ["./projects/libs"]
+    },
+    "declaration": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   },
   "files": [],
   "references": [
@@ -30,6 +34,15 @@
     },
     {
       "path": "./projects/demo/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/libs/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/libs/tsconfig.lib.prod.json"
+    },
+    {
+      "path": "./projects/libs/tsconfig.spec.json"
     }
   ]
 }

@@ -74,9 +74,9 @@
     },
     "ngx-input": {
       "projectType": "library",
-      "root": "projects/library",
-      "sourceRoot": "projects/library",
-      "prefix": "lib",
+      "root": "projects/libs",
+      "sourceRoot": "projects/libs",
+      "prefix": "ngx",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",

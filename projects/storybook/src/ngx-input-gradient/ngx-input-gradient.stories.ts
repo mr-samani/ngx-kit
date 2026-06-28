@@ -1,7 +1,7 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxInputGradientComponent } from 'ngx-input/gradient-picker';
+import { NgxInputGradientComponent, NgxInputGradient } from 'ngx-input/gradient-picker';
 
 const meta: Meta<NgxInputGradientComponent> = {
   title: 'Demo/NgxInputGradient',
@@ -11,7 +11,7 @@ const meta: Meta<NgxInputGradientComponent> = {
   args: {},
   decorators: [
     moduleMetadata({
-      imports: [CommonModule, FormsModule],
+      imports: [CommonModule, FormsModule, NgxInputGradientComponent, NgxInputGradient],
     }),
   ],
 };
@@ -19,7 +19,7 @@ const meta: Meta<NgxInputGradientComponent> = {
 export default meta;
 type Story = StoryObj<NgxInputGradientComponent>;
 export const Default: Story = {
-  render: (args) => ({
+  render: (args:any) => ({
     props: {
       ...args,
       model: 'linear-gradient(90deg, #f00 0%, #00f 100%)',
@@ -37,7 +37,7 @@ export const Default: Story = {
   }),
 };
 export const InputGradient: Story = {
-  render: (args) => ({
+  render: (args:any) => ({
     props: {
       ...args,
       model: 'linear-gradient(90deg, #f00 0%, #00f 100%)',

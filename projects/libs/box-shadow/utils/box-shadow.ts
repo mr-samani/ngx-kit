@@ -1,6 +1,6 @@
 import { BoxShadowValue } from '../contracts/BoxShadowValue';
 export function parseBoxShadowToPx(shadow: string, contextPx = 16): BoxShadowValue | null {
-  if (!shadow?.trim()) return null;
+  if (!shadow || !shadow?.trim()) return null;
   let inset = false;
   shadow = shadow.trim();
 
@@ -53,7 +53,14 @@ export function parseBoxShadowToPx(shadow: string, contextPx = 16): BoxShadowVal
 export function stringifyBoxShadow(obj: BoxShadowValue): string {
   const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = obj;
 
-  const parts = [inset ? 'inset' : '', `${offsetX}px`, `${offsetY}px`, `${blurRadius}px`, `${spreadRadius}px`, color];
+  const parts = [
+    inset ? 'inset' : '',
+    `${offsetX}px`,
+    `${offsetY}px`,
+    `${blurRadius}px`,
+    `${spreadRadius}px`,
+    color,
+  ];
 
   return parts.filter(Boolean).join(' ').trim();
 }

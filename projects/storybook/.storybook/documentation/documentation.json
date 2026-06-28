@@ -1972,7 +1972,7 @@
     "directives": [
         {
             "name": "NgxInputAngle",
-            "id": "directive-NgxInputAngle-d4e30789ad6f0dc7e51d2c3073aaf47319f4484cfabe7d19af49707b6e03969fc869b8c389401229120cdc490053cd79cb402e3bf1bde151952d1ea035a4f084",
+            "id": "directive-NgxInputAngle-e77ee17647c25d6bff0b9c55709fb03307dd0073c48c208efd7b42a3af648298b8879efc19f0781ab59c1baed3e8e383178e4d07f72d43c753b72e8c8c41ce9a",
             "file": "projects/libs/angle-selector/directives/ngx-input-angle.directive.ts",
             "type": "directive",
             "description": "",
@@ -2655,7 +2655,7 @@
         },
         {
             "name": "NgxInputBoxShadow",
-            "id": "directive-NgxInputBoxShadow-734d6c183ac6c2fae21768e61f310143aee42d4242216798c63b96c2caa22a5f6f8085f44d27ee3c5fb4ae236327a57532957187e88ce875a7adb3f6491ba633",
+            "id": "directive-NgxInputBoxShadow-d9aeed341fc22e91715947267402d7fef6fb65d985609adbbd8928ad9a2bef6246e450a6769f730cd3e7562d2c63b980dbc71f3d47d7874ee2ee6ca0bcf5a848",
             "file": "projects/libs/box-shadow/directives/ngx-input-box-shadow.directive.ts",
             "type": "directive",
             "description": "",
@@ -3130,7 +3130,7 @@
         },
         {
             "name": "NgxInputColor",
-            "id": "directive-NgxInputColor-2489d51c151c2c450f8661e7a514844a6194f1218ededbf006428be01f5dbd5098d2ad3388e2e93b4bb66137d9681803de8dd4b379e7c6d8e9bb611d041a63f6",
+            "id": "directive-NgxInputColor-a97f0b0348e2814b4d252df4a1fab4e347133bee98ce2891816d64d9d5fbe0e6c5ebfaec541c52a0b764e7b81cd7bfc3a19644acc981be92b1ae77b18012e8b8",
             "file": "projects/libs/color-picker/directives/ngx-input-color.directive.ts",
             "type": "directive",
             "description": "",
@@ -3857,7 +3857,7 @@
         },
         {
             "name": "NgxInputGradient",
-            "id": "directive-NgxInputGradient-85d52f637038fbb6cf52f5c2a60c6710e9eeba35a5a716ed7eb3496b43280ef17d01799e90ef4d87646c83d4233867cc2e062894cb7f74c6a4fff96b163323c4",
+            "id": "directive-NgxInputGradient-a5581062ebc4a0cd3a834fa6da30ee6c51e2bc4beaae697fb5cbe1c095e8798e7954ac66a8f8061aaaa2c1801abae43b4f3d6cf0a84ee88f9feca8e71703a4d4",
             "file": "projects/libs/gradient-picker/directives/ngx-input-gradient.directive.ts",
             "type": "directive",
             "description": "",
@@ -4484,7 +4484,7 @@
     "components": [
         {
             "name": "AngleSelectorComponent",
-            "id": "component-AngleSelectorComponent-f699cf8a85d3e3f2db0a82350464b26f364b6a03bbfdbfa7e6f597e96e8dad4bfb0e7b3c468d44191f2c1636a6e5b9118ebae4fad37548b183db51c702af0d0b",
+            "id": "component-AngleSelectorComponent-ffec1e45f9a460bb0a2c7158229faf8d93d17e30ce66277417c4abf2ef065289b354db401103a38beae2e6539fecb03407d96185d9eb6bcf7a7475a0cb03892a",
             "file": "projects/demo/src/app/angle-selector/angle-selector.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -4622,7 +4622,7 @@
         },
         {
             "name": "BoxShadowComponent",
-            "id": "component-BoxShadowComponent-c2140cb5f4f850e1d74493547408b7c6bc857de2ddbb4213bd82a44e0c9720cd0be86c1e82116225b7f74921c0d34ad26e1c4dd999cad2b642643729a975fdad",
+            "id": "component-BoxShadowComponent-2d8543f319b41fe62ac8f0624793f95c2ca5ae733d793c47174b0cbb5efcdccf79603475703558e54f49311b4834ecc83082e0a7fc24201f81292b20676099d1",
             "file": "projects/demo/src/app/box-shadow/box-shadow.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -4712,7 +4712,7 @@
         },
         {
             "name": "CmykComponent",
-            "id": "component-CmykComponent-6eb6259737be5b1f145e7a402a1b74568b163282bd69f706a5bd1ee1d26108736083b824decfa5d5b76abf27e2b53dc8c4feb2dd5ba8caf20e064bb9eac79a20",
+            "id": "component-CmykComponent-70164fc3abd27cfa0dd42a48375aaf1d16c4167fc77f43473f6212605f1f533f25cb30bbf71bf975b7d254327d2527950594d7572d730a170bc2ac640809cd7c",
             "file": "projects/libs/color-picker/inspectors/cmyk/cmyk.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -5135,7 +5135,7 @@
         },
         {
             "name": "ColorPickerComponent",
-            "id": "component-ColorPickerComponent-fdfe602405724c93071072bff164d22f018b8678f6e79a1151895f66eba1d6ae6cb703f2c8fa34a4395df242127f150f4ea764b7c78a9e463ad1dd65a90fa0fa",
+            "id": "component-ColorPickerComponent-1e9992b28f71f414c9f048be465908378bf850d84c77a75299f1ca36850723e031506835b5af2745603cc99e3e2683972ab35e4be87ba034543865530a30c797",
             "file": "projects/demo/src/app/color-picker/color-picker.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -5287,7 +5287,7 @@
         },
         {
             "name": "GradientPickerComponent",
-            "id": "component-GradientPickerComponent-e0f1e7abf42184498bc32a8ebecd678f89c5a9090fdc8d44a41aac4b023f49821a77e7d9ff1c4a884a839060e700580fca6033c0846300a334a2bd303bf1eb77",
+            "id": "component-GradientPickerComponent-941c92716148fdf162c7ffd241578f76af6811ca1b53380951ccd10a2917183a3f17dcf1e32ec1429126d2d97327be517d167a163c15af6fbfafef7f1a2798b9",
             "file": "projects/demo/src/app/gradient-picker/gradient-picker.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -5377,7 +5377,7 @@
         },
         {
             "name": "HslComponent",
-            "id": "component-HslComponent-46cfe6b36798b3aa737861ba9f7c9d205e611d7a5f8e1dab846b05bb582a55b4dcbf440a9470d319dafd296df147683f17ccfadcc51f794dc033355ed9852158",
+            "id": "component-HslComponent-23a03f2c643df55e95fdc688ceb339f521ff466fd285b831c103f0401b80eab040aa66126b23e3cf9dd0ddf15a6669e156ed6cb5ae8dd15888f1d9c332cf9f13",
             "file": "projects/libs/color-picker/inspectors/hsl/hsl.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -5594,7 +5594,7 @@
         },
         {
             "name": "NgxAngleSelectorComponent",
-            "id": "component-NgxAngleSelectorComponent-d63da68b37c69d242398b9f5d0b429e15bef169e8ecdb9230d81bf631ed79f3ef6787ac420083565aa52bdf614f8f41490f91237c503f03cc955bf0b44a0b505",
+            "id": "component-NgxAngleSelectorComponent-9bf4db62ce489ff1a451b8390a33017deec9e05a136faf4e8ce4dc6aea1b93aa32a5d95996792243f1f35cb546a6f5abdd15474ddf48d56862b5ef73848c03b7",
             "file": "projects/libs/angle-selector/components/input-angle.component.ts",
             "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
@@ -6290,7 +6290,7 @@
         },
         {
             "name": "NgxBoxShadowComponent",
-            "id": "component-NgxBoxShadowComponent-fe7da1d8b19d175b99784443bc662de88ec214ad390cfc7e8dc544ee560944490d7d3d040982c611b4d427421b1617be616289adb3e8e80c766a1358eddd981b",
+            "id": "component-NgxBoxShadowComponent-702ea1de9c07adf31bf40f7b82737d43306a0b78d2a5470bcf01e66fa5f79626b27c57a9caabe609377bc0bd21c14c37e23a41f06546ae65974258f1cb8aa41d",
             "file": "projects/libs/box-shadow/components/box-shadow.component.ts",
             "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
@@ -6325,16 +6325,16 @@
                     "deprecationMessage": "",
                     "jsdoctags": [
                         {
-                            "pos": 1669,
-                            "end": 1685,
+                            "pos": 1651,
+                            "end": 1667,
                             "kind": 328,
                             "id": 0,
                             "flags": 16842752,
                             "modifierFlagsCache": 0,
                             "transformFlags": 0,
                             "tagName": {
-                                "pos": 1670,
-                                "end": 1677,
+                                "pos": 1652,
+                                "end": 1659,
                                 "kind": 80,
                                 "id": 0,
                                 "flags": 16842752,
@@ -7373,7 +7373,7 @@
         },
         {
             "name": "NgxInputColorComponent",
-            "id": "component-NgxInputColorComponent-46c81193b6b13b81c02ac19e03fabfd129c2b0243fbbd84755a9cce701adcc0d04dbe0ec73cc18ca6eb2c60fe7e01c71bfae192188c5f0256ed8f7efb03ed86b",
+            "id": "component-NgxInputColorComponent-8a5060248844d3c9b7e7650f24fa58864c6b2d2285d8e9ba6f8f0bd546377b15655316b3f0d40430d2293498115f1b834448f1e0030d917e036f2fb1ac074b29",
             "file": "projects/libs/color-picker/components/input-color.component.ts",
             "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
@@ -7408,16 +7408,16 @@
                     "deprecationMessage": "",
                     "jsdoctags": [
                         {
-                            "pos": 2391,
-                            "end": 2419,
+                            "pos": 2385,
+                            "end": 2413,
                             "kind": 328,
                             "id": 0,
                             "flags": 16842752,
                             "modifierFlagsCache": 0,
                             "transformFlags": 0,
                             "tagName": {
-                                "pos": 2392,
-                                "end": 2397,
+                                "pos": 2386,
+                                "end": 2391,
                                 "kind": 80,
                                 "id": 0,
                                 "flags": 16842752,
@@ -7705,7 +7705,7 @@
         },
         {
             "name": "NgxInputGradientComponent",
-            "id": "component-NgxInputGradientComponent-2e78403755f9691f494ebaee0349ae6f76bcf4040f04191b165ac430cfefe30dddc4b2ec54b9abdffa0f3d57abbfd24b172ffe2a653643cf744636a9af4d5c59",
+            "id": "component-NgxInputGradientComponent-9bcd2bf58b3b65cdaf85180c37e821350dc42000a267a509a4ab4bfa7d2498a43b5cedd5d926ba5ab7e0e8308da634b742268aa4ebef8d03d321306a6b20427a",
             "file": "projects/libs/gradient-picker/components/input-gradient.component.ts",
             "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
@@ -8414,7 +8414,7 @@
         },
         {
             "name": "PickerComponent",
-            "id": "component-PickerComponent-bebb5effb5042ac5a3a84b5f5300f7ca24d702667879641b8af70b60cb185e428e26c720a98dd52c89561766a5e2dc06a8f6049b3a826d27b7fd6c8139a3eaf2",
+            "id": "component-PickerComponent-c3cc65582e4cee55af3665d19a4d6e317be1e33f4e804951c8449a8bc57a9fc7f55e06a934808183bb22019e98f594064ad021907e10994666beba2170880ffe",
             "file": "projects/libs/color-picker/inspectors/picker/picker.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -9598,7 +9598,7 @@
         },
         {
             "name": "RgbComponent",
-            "id": "component-RgbComponent-4e8d1caeb3770ea9f6751cd9db5c09499a9a4fb81062edcb2e238322e90cbac7b859ea3cc4807724df15c6b95567cc6f6cd7becb63412ab5a1bd75c17d6287da",
+            "id": "component-RgbComponent-b3a9f287acd72f6ee026cc27a0bee56733d9d717331ad9999e2088cdd372290f2af1a40d4d6e1e3afaf7f53d138310fe06ecf91a233158bf9ec4954579a49123",
             "file": "projects/libs/color-picker/inspectors/rgb/rgb.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -11545,7 +11545,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "ApplicationConfig",
-                "defaultValue": "{\r\n  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes)]\r\n}"
+                "defaultValue": "{\r\n  providers: [provideRouter(routes)]\r\n}"
             },
             {
                 "name": "colorNames",
@@ -11577,14 +11577,14 @@
                 "type": "any"
             },
             {
-                "name": "NGX_INPUT_COLOR",
+                "name": "NGX_INPUT",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
                 "file": "projects/libs/public-api.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "string",
-                "defaultValue": "'@ngxInputColor'"
+                "defaultValue": "'@ngxInput'"
             },
             {
                 "name": "routes",
@@ -13287,7 +13287,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "ApplicationConfig",
-                    "defaultValue": "{\r\n  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes)]\r\n}"
+                    "defaultValue": "{\r\n  providers: [provideRouter(routes)]\r\n}"
                 }
             ],
             "projects/libs/color-picker/utils/css-color-names.ts": [
@@ -13327,14 +13327,14 @@
             ],
             "projects/libs/public-api.ts": [
                 {
-                    "name": "NGX_INPUT_COLOR",
+                    "name": "NGX_INPUT",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
                     "file": "projects/libs/public-api.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "string",
-                    "defaultValue": "'@ngxInputColor'"
+                    "defaultValue": "'@ngxInput'"
                 }
             ],
             "projects/demo/src/app/app.routes.ts": [
@@ -15782,7 +15782,7 @@
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
-                "name": "NGX_INPUT_COLOR",
+                "name": "NGX_INPUT",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
