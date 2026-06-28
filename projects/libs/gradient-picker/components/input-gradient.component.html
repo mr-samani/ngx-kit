@@ -1,0 +1,94 @@
+<div class="ngx-input-gradient-picker" (click)="stopPropagation($event)">
+  <div class="ngx-color-preview" [ngStyle]="{ '--ngx-selected-gradient': resultGradient }"></div>
+  <div class="ngx-c-inner">
+    <range-slider
+      [(ngModel)]="rangeValues"
+      name="rangeCalues"
+      [min]="0"
+      [max]="100"
+      [step]="1"
+      [addNewRangeOnClick]="true"
+      [background]="baseBg"
+      [(selectedIndex)]="selectedIndex"
+      (change)="generateGradient()"
+      #rangeSlider></range-slider>
+
+    <div class="text-end">
+      <button class="remove-btn" type="button" (click)="remove()">remove</button>
+    </div>
+    @if (rangeValues[selectedIndex]) {
+      <div class="ngx-row">
+        <div class="ngx-col-6">
+          <div class="label">Color</div>
+          <div class="input-color">
+            <input
+              type="text"
+              [(ngModel)]="rangeValues[selectedIndex].color"
+              name="color"
+              #inputColor
+              (ngModelChange)="generateGradient(); updateRangeSlider()" />
+            <span
+              #ngxGradColor
+              class="color"
+              [style.backgroundColor]="rangeValues[selectedIndex].color"
+              [ngxInputColor]="inputColor"
+              [theme]="theme"
+              [ngModel]="rangeValues[selectedIndex].color"
+              [simpleMode]="true"
+              (change)="generateGradient($event)"></span>
+          </div>
+        </div>
+        <div class="ngx-col-6">
+          <div class="label">Position</div>
+          <input
+            type="number"
+            [(ngModel)]="rangeValues[selectedIndex].value"
+            min="0"
+            max="100"
+            name="posiition"
+            (change)="generateGradient(); updateRangeSlider()" />
+        </div>
+        <div class="ngx-col-6">
+          <div class="label">Rotation</div>
+          <div class="ngx-input-group">
+            <input
+              type="text"
+              [(ngModel)]="rotation"
+              ngxInputAngle
+              [theme]="theme"
+              (change)="generateGradient()"
+              name="rotation"
+              [disabled]="type == 'radial'" />
+            <span class="ngx-input-prefix">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                <path
+                  d="M360.5 217.5l-152 143.1C203.9 365.8 197.9 368 192 368s-11.88-2.188-16.5-6.562L23.5 217.5C13.87 208.3 13.47 193.1 22.56 183.5C31.69 173.8 46.94 173.5 56.5 182.6L192 310.9l135.5-128.4c9.562-9.094 24.75-8.75 33.94 .9375C370.5 193.1 370.1 208.3 360.5 217.5z" />
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div class="ngx-col-6">
+          <div class="label">Type</div>
+          <div class="ngx-input-group">
+            <select [(ngModel)]="type" (change)="generateGradient()" name="type">
+              <option value="linear">linear</option>
+              <option value="radial">radial</option>
+            </select>
+            <span class="ngx-input-prefix">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                <path
+                  d="M360.5 217.5l-152 143.1C203.9 365.8 197.9 368 192 368s-11.88-2.188-16.5-6.562L23.5 217.5C13.87 208.3 13.47 193.1 22.56 183.5C31.69 173.8 46.94 173.5 56.5 182.6L192 310.9l135.5-128.4c9.562-9.094 24.75-8.75 33.94 .9375C370.5 193.1 370.1 208.3 360.5 217.5z" />
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="default-list">
+      @for (item of defaultGradients; track $index; let i = $index) {
+        <span [style.background]="item" (click)="onSelectDefault(item, i)"></span>
+      }
+    </div>
+  </div>
+</div>

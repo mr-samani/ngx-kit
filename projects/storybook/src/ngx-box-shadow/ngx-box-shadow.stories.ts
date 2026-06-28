@@ -1,0 +1,35 @@
+import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NgxBoxShadowComponent } from 'ngx-input/box-shadow';
+
+const meta: Meta<NgxBoxShadowComponent> = {
+  title: 'Demo/NgxBoxShadow',
+  component: NgxBoxShadowComponent,
+  tags: ['autodocs'],
+  argTypes: {},
+  args: {},
+  decorators: [
+    moduleMetadata({
+      imports: [CommonModule, FormsModule, NgxBoxShadowComponent],
+    }),
+  ],
+};
+
+export default meta;
+type Story = StoryObj<NgxBoxShadowComponent>;
+export const Default: Story = {
+  render: (args) => ({
+    props: {
+      ...args,
+      model: '0 24px 46px 0 rgba(0,0,0,.04)',
+    },
+    template: `
+      <ngx-box-shadow
+        [(ngModel)]="model"
+        name="boxShadow">
+      </ngx-box-shadow>
+      <p>{{model}}</p>
+    `,
+  }),
+};

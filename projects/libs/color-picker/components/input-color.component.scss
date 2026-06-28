@@ -1,0 +1,151 @@
+:host {
+  --ngx-color-bg: #fff;
+  --ngx-color-text: #000;
+}
+
+:host-context(.dark) {
+  --ngx-color-bg: #222;
+  --ngx-color-text: #fff;
+}
+
+.ngx-input-color-picker {
+  width: 270px;
+  max-width: 100%;
+  border: 1px #bfbfbf solid;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0px 0px 20px 0px rgb(0 0 0 / 31%);
+  direction: ltr;
+  font-family: arial, tahoma;
+  .ngx-c-inner {
+    padding: 12px;
+    background: var(--ngx-color-bg);
+    color: var(--ngx-color-text);
+    border-radius: 15px;
+    margin-top: -15px;
+    position: relative;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  &.simple-mode {
+    width: 220px;
+    --ngx-thumb-size: 24px;
+    .ngx-c-inner {
+      padding: 12px;
+      margin: 0;
+    }
+  }
+}
+
+.ngx-color-preview {
+  min-height: 100px;
+  padding: 10px 36px;
+  line-height: 1.6;
+  font-size: 14px;
+  font-family: arial, tahoma;
+  font-weight: 700;
+  position: relative;
+  color: #353535;
+  background-color: #fff;
+  &.is-dark-color {
+    color: #ffff;
+  }
+  &:after,
+  &:before {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  &::before {
+    background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  }
+  &:after {
+    background: var(--ngx-selected-color);
+  }
+
+  .rgbacode,
+  .colorname,
+  .color {
+    text-shadow: 0 0 1px #000000;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/*------ button groups ---------*/
+.button-groups {
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px #d3d3d3 solid;
+
+  button {
+    cursor: pointer;
+    background: #f9f9f9;
+    outline: none;
+    border: none;
+    transition: all 300ms;
+    border-left: 1px #d3d3d3 solid;
+    padding: 10px 12px;
+    flex: auto;
+    &:hover {
+      background: #8db6e4;
+    }
+    &:first-child {
+      border-left-width: 0;
+    }
+  }
+}
+
+/*------ button groups ---------*/
+.ngx-btn-eyedroper {
+  padding: 2px;
+  min-width: 0;
+  width: 45px;
+  cursor: pointer;
+  background-color: transparent;
+  outline: none;
+  transition: all 300ms;
+  border: none;
+  border-radius: 6px;
+  svg {
+    width: 18px;
+    fill: var(--ngx-color-text);
+  }
+}
+.top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 12px;
+  select {
+    outline: none;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    background: none;
+    color: var(--ngx-color-text);
+    &:focus {
+      cursor: pointer;
+      background: hsl(216, 100%, 95%);
+      color: hsl(216, 100%, 50%);
+    }
+    option {
+      padding: 10px 20px;
+      background: var(--ngx-color-bg);
+      color: var(--ngx-color-text);
+      transition: all 300ms;
+      &:hover {
+        background: #f0f0f048;
+      }
+    }
+  }
+}

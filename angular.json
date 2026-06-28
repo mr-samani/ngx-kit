@@ -29,9 +29,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": [
-              "projects/demo/src/styles.scss"
-            ]
+            "styles": ["projects/demo/src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -71,6 +69,66 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "ngx-input": {
+      "projectType": "library",
+      "root": "projects/library",
+      "sourceRoot": "projects/library",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/libs/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/libs/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/libs/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        },
+        "storybook": {
+          "builder": "@storybook/angular:start-storybook",
+          "options": {
+            "configDir": "projects/storybook/.storybook",
+            "browserTarget": "ngx-input:build",
+            "compodoc": true,
+            "compodocArgs": [
+              "-p",
+              "tsconfig.compodoc.json",
+              "-e",
+              "json",
+              "-d",
+              "projects/storybook/.storybook/documentation"
+            ],
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular:build-storybook",
+          "options": {
+            "configDir": "projects/storybook/.storybook",
+            "browserTarget": "ngx-input:build",
+            "compodoc": true,
+            "compodocArgs": [
+              "-p",
+              "tsconfig.compodoc.json",
+              "-e",
+              "json",
+              "-d",
+              "projects/storybook/.storybook/documentation"
+            ],
+            "outputDir": "docs"
+          }
         }
       }
     }

@@ -1,0 +1,42 @@
+.saturation-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  //   background-color: green;
+  .thumb {
+    border: 3px #000000 solid;
+    box-shadow: inset 0 0 0px 2px #fff;
+    width: 12px;
+    height: 12px;
+    display: block;
+    border-radius: 10px;
+    position: absolute;
+    pointer-events: none;
+    cursor: pointer;
+  }
+}
+.saturation {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+
+  border-radius: 4px;
+  overflow: hidden;
+  .s-white,
+  .s-black,
+  .s-bg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  .s-white {
+    background: linear-gradient(to right, white, rgba(255, 255, 255, 0));
+  }
+  .s-black {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), black);
+  }
+}

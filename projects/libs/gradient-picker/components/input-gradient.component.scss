@@ -1,0 +1,170 @@
+:host {
+  --ngx-color-bg: #fff;
+  --ngx-color-text: #000;
+}
+
+:host-context(.dark) {
+  --ngx-color-bg: #222;
+  --ngx-color-text: #fff;
+}
+
+.ngx-input-gradient-picker {
+  width: 270px;
+  max-width: 100%;
+  border: 1px #bfbfbf solid;
+  border-radius: 15px;
+  background: var(--ngx-color-bg);
+  color: var(--ngx-color-text);
+  overflow: hidden;
+  box-shadow: 0px 0px 20px 0px rgb(0 0 0 / 31%);
+  direction: ltr;
+  font-family: arial, tahoma;
+  .ngx-c-inner {
+    padding: 0 12px 12px;
+  }
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.ngx-color-preview {
+  min-height: 100px;
+  padding: 10px 36px;
+  line-height: 1.6;
+  font-size: 14px;
+  font-family: arial, tahoma;
+  font-weight: 700;
+  position: relative;
+  color: #353535;
+  background-color: #fff;
+  &.is-dark-color {
+    color: #ffff;
+  }
+  &:after,
+  &:before {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  &::before {
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 16px 16px;
+    background-position:
+      0 0,
+      0 8px,
+      8px -8px,
+      -8px 0px;
+  }
+  &:after {
+    background: var(--ngx-selected-gradient);
+  }
+}
+
+/*------ button groups ---------*/
+
+.ngx-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  .ngx-col-6 {
+    width: 47%;
+  }
+  .ngx-input-group {
+    display: flex;
+    .ngx-input-prefix {
+      width: 14px;
+      margin-left: -28px;
+      margin-top: 6px;
+      pointer-events: none;
+      svg {
+        max-width: 100%;
+        max-height: 100%;
+        fill: var(--ngx-color-text);
+      }
+    }
+  }
+  .input-color {
+    position: relative;
+    input {
+      padding-right: 26px;
+    }
+    .color {
+      position: absolute;
+      top: 4px;
+      right: 5px;
+      cursor: pointer;
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      transition: all 300ms;
+      &:hover {
+        border-color: #8db6e4;
+      }
+    }
+  }
+
+  select,
+  input {
+    outline: none;
+    border: 1px solid #ececec;
+    border-radius: 4px;
+    padding: 8px 10px;
+    background: none;
+    width: 100%;
+    color: var(--ngx-color-text);
+    appearance: none;
+    // &:focus {
+    //   cursor: pointer;
+    //   background: hsl(216, 100%, 95%);
+    //   color: hsl(216, 100%, 50%);
+    // }
+    option {
+      padding: 10px 20px;
+      background-color: #fff;
+      transition: all 300ms;
+      background: var(--ngx-color-bg);
+      color: var(--ngx-color-text);
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+  }
+}
+
+.text-end {
+  text-align: end;
+}
+.remove-btn {
+  background: none;
+  border: none;
+  outline: none;
+  color: #0077ff;
+  transition: color 300ms;
+  &:hover {
+    color: #0462cc;
+  }
+}
+
+.default-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+  span {
+    width: 36px;
+    height: 26px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 300ms;
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+}

@@ -1,0 +1,12 @@
+<div class="slider-container">
+  <ng-content></ng-content>
+  <div
+    #slider
+    class="slider"
+    (mousedown)="dragStart($event)"
+    (touchstart)="dragStart($event)"
+    [ngStyle]="{ '--ngx-slider-bg': background }"
+    [class.bg-transparent]="isBgTransparent">
+    <div class="thumb" #thumb [style.left.px]="x" [title]="myControl.value"></div>
+  </div>
+</div>

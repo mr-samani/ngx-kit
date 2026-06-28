@@ -8,5 +8,8 @@
         "parser": "angular"
       }
     }
-  ]
+  ],
+  "htmlWhitespaceSensitivity": "ignore",
+  "bracketSameLine": true,
+  "semi": true
 }
