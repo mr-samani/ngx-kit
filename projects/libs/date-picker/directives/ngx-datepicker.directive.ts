@@ -25,9 +25,8 @@ import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helpe
 import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { Locale } from '../adapters/locale';
-import { JalaliDateAdapter } from '../adapters/jalali-adapter';
-import { DateAdapter } from '../adapters/date.adapter';
 import { NgxDatePickerConfig } from '../components/config';
+import { CalendarAdapterFactory } from '../adapters/factory';
 
 @Directive({
   selector: '[ngxInputDatePicker]',
@@ -59,13 +58,8 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   adapter!: IDateAdapter;
   private _locale: Locale = 'en';
   @Input() set locale(val: Locale) {
-    if (val === 'fa') {
-      this._locale = 'fa';
-      this.adapter = new JalaliDateAdapter();
-    } else {
-      this._locale = 'en';
-      this.adapter = new DateAdapter();
-    }
+    this._locale = val;
+    this.adapter = CalendarAdapterFactory.create(this._locale);
   }
 
   _onChange = (value: Date | null | undefined) => {};

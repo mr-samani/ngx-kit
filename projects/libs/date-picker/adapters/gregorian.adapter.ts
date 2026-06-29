@@ -1,9 +1,9 @@
 import { genFormatDate } from "../helpers/date-format.helper";
 import {  MsView } from "../models/view";
 import { IDateAdapter } from "./IAdapter";
-import { IOutputDate } from "./IOutputDate";
+import { CalendarDate } from "./calendar-date";
 
-export class DateAdapter implements IDateAdapter {
+export class GregorianAdapter implements IDateAdapter {
     startOfWeek = 0;
     get longMonths() {
         return ["January", "February", "March", "April", "May", "June", "July",
@@ -21,7 +21,7 @@ export class DateAdapter implements IDateAdapter {
             "Wednesday", "Thursday", "Friday", "Saturday"
         ];
     }
-    get today() {
+    today() {
         return {
             locale: 'en',
             day: new Date().getDate(),
@@ -61,7 +61,7 @@ export class DateAdapter implements IDateAdapter {
      * @param date 
      * @returns 
      */
-    getDate(date: IOutputDate): Date {
+    getDate(date: CalendarDate): Date {
         let str = date.year + '-' + (date.month ? (date.month + 1) : 1) + '-' + (date.day ?? 1);
         str = str.split('-').map(i => {
             return i.length < 2 ? '0' + i : i;
@@ -71,7 +71,7 @@ export class DateAdapter implements IDateAdapter {
         }
         return new Date(str);
     }
-    getOutputDate(date: Date): IOutputDate {
+    getOutputDate(date: Date): CalendarDate {
         return {
             locale: 'en',
             year: date.getFullYear(),
@@ -85,7 +85,7 @@ export class DateAdapter implements IDateAdapter {
         };
     }
 
-    formatDate(date: IOutputDate, format: string) {
+    formatDate(date: CalendarDate, format: string) {
         if (!date) {
             return '';
         }

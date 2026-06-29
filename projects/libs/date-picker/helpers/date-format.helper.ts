@@ -1,6 +1,6 @@
 // Date and Time Patterns
 
-import { IOutputDate } from "../adapters/IOutputDate";
+import { CalendarDate } from "../adapters/calendar-date";
 
 // yy = 2-digit year; yyyy = full year
 
@@ -19,7 +19,7 @@ import { IOutputDate } from "../adapters/IOutputDate";
 // S = miliseconds
 
 
-export function genFormatDate(date: IOutputDate, patternStr: string, monthNames: string[], dayOfWeekNames: string[]) {
+export function genFormatDate(date: CalendarDate, patternStr: string, monthNames: string[], dayOfWeekNames: string[]) {
     if (!date) {
         return '';
     }

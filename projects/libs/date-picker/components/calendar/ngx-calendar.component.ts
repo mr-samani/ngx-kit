@@ -10,9 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { NgxDatePickerConfig } from '../config';
-import { JalaliDateAdapter } from '../../adapters/jalali-adapter';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
-import { DateAdapter } from '../../adapters/date.adapter';
 import { MsViewYear } from '../../models/view-year';
 import { MsViewMonth } from '../../models/view-month';
 import { MsViewDay } from '../../models/view-day';
@@ -22,6 +20,7 @@ import { ISelectedEvent } from '../../models/selected-event';
 import { CommonModule } from '@angular/common';
 import { Locale } from '../../adapters/locale';
 import { deserialize, sameDate } from '../../helpers/date.helper';
+import { CalendarAdapterFactory } from '../../adapters/factory';
 @Component({
   selector: 'ngx-calendar',
   templateUrl: './ngx-calendar.component.html',
@@ -34,13 +33,8 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     this._config = { ...new NgxDatePickerConfig(), ...val };
   }
   @Input() set locale(val: Locale) {
-    if (val === 'fa') {
-      this._locale = 'fa';
-      this.adapter = new JalaliDateAdapter();
-    } else {
-      this._locale = 'en';
-      this.adapter = new DateAdapter();
-    }
+    this._locale = val;
+    this.adapter = CalendarAdapterFactory.create(this._locale);
     this.ngOnInit();
   }
   /** The minimum valid date. */
@@ -125,9 +119,10 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
   }
 
   gotoToday() {
-    this.selected = this.adapter.getDate(this.adapter.today);
-    this.currYear = this.adapter.today.year;
-    this.currMonth = this.adapter.today.month;
+    let today = this.adapter.today();
+    this.selected = this.adapter.getDate(today);
+    this.currYear = today.year;
+    this.currMonth = today.month;
     this.changeView('day');
   }
 

@@ -1,4 +1,4 @@
-export interface IOutputDate {
+export interface CalendarDate {
     locale: string;
     year: number;
     month?: number;

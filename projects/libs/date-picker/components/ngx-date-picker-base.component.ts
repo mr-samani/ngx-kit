@@ -1,16 +1,16 @@
-import { deserialize, clampDate, clampMonth, clampYear, compareDate } from '../helpers/date.helper';
+import { clampDate, clampMonth, clampYear, compareDate } from '../helpers/date.helper';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { MsViewYear } from '../models/view-year';
 import { MsViewMonth } from '../models/view-month';
 import { MsViewDay } from '../models/view-day';
-import { IOutputDate } from '../adapters/IOutputDate';
+import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents } from '../models/events';
-import { DateAdapter } from '../adapters/date.adapter';
 import { Locale } from '../adapters/locale';
+import { CalendarAdapterFactory } from '../adapters/factory';
 
 export abstract class NgxDatePickerBase {
   protected _locale: Locale = 'en';
-  adapter: IDateAdapter = new DateAdapter();
+  adapter: IDateAdapter = CalendarAdapterFactory.create(this._locale);
   currYear!: number;
   currMonth!: number;
 
@@ -26,7 +26,7 @@ export abstract class NgxDatePickerBase {
 
   renderCalendar(
     view: 'day' | 'month' | 'year',
-    selected?: IOutputDate,
+    selected?: CalendarDate,
     events?: MsEvents[],
     callback?: Function,
   ) {
@@ -72,7 +72,7 @@ export abstract class NgxDatePickerBase {
     }
   }
 
-  renderDay(selected?: IOutputDate, _events?: MsEvents[]) {
+  renderDay(selected?: CalendarDate, _events?: MsEvents[]) {
     this.viewDays = [];
     let firstDayofMonth = this.adapter.firstDayofMonth(this.currYear, this.currMonth);
     let lastDateofMonth = this.adapter.lastDateofMonth(this.currYear, this.currMonth);
@@ -96,10 +96,9 @@ export abstract class NgxDatePickerBase {
     }
     // console.log('selected', this.selected);
     for (let i = 1; i <= lastDateofMonth; i++) {
+      let today = this.adapter.today();
       let isToday =
-        i === this.adapter.today.day &&
-        this.currMonth === this.adapter.today.month &&
-        this.currYear === this.adapter.today.year;
+        i === today.day && this.currMonth === today.month && this.currYear === today.year;
       const date = this.adapter.getDate({
         locale: this._locale,
         year: this.currYear,

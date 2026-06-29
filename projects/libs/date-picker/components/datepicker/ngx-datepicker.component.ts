@@ -7,11 +7,7 @@ import {
   Input,
   OnInit,
   Output,
-  signal,
-  ViewChild,
 } from '@angular/core';
-import { DateAdapter } from '../../adapters/date.adapter';
-import { JalaliDateAdapter } from '../../adapters/jalali-adapter';
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
@@ -19,7 +15,7 @@ import { MsViewDay } from '../../models/view-day';
 import { MsViewMonth } from '../../models/view-month';
 import { MsViewYear } from '../../models/view-year';
 import { MsView } from '../../models/view';
-import { IOutputDate } from '../../adapters/IOutputDate';
+import { CalendarDate } from '../../adapters/calendar-date';
 import { CommonModule } from '@angular/common';
 import { BrowserService } from 'ngx-kit/shared';
 import {
@@ -31,6 +27,7 @@ import {
   Validator,
 } from '@angular/forms';
 import { Locale } from '../../adapters/locale';
+import { CalendarAdapterFactory } from '../../adapters/factory';
 
 @Component({
   selector: 'ngx-datepicker',
@@ -69,13 +66,8 @@ export class NgxInputDatePickerComponent
     this._config = { ...new NgxDatePickerConfig(), ...val };
   }
   @Input() set locale(val: Locale) {
-    if (val === 'fa') {
-      this._locale = 'fa';
-      this.adapter = new JalaliDateAdapter();
-    } else {
-      this._locale = 'en';
-      this.adapter = new DateAdapter();
-    }
+    this._locale = val;
+    this.adapter = CalendarAdapterFactory.create(this._locale);
     this.ngOnInit();
   }
   /** The minimum valid date. */
@@ -102,7 +94,7 @@ export class NgxInputDatePickerComponent
 
   wrapperWidth = 40 * 7 + 20;
 
-  selected?: IOutputDate;
+  selected?: CalendarDate;
 
   calendarHeader = '';
   isDisabled = false;
@@ -193,10 +185,11 @@ export class NgxInputDatePickerComponent
   }
 
   gotoToday() {
-    this.selected = this.adapter.today;
-    this.currYear = this.adapter.today.year;
-    this.currMonth = this.adapter.today.month;
-    this.calendarHeader = this.adapter.formatDate(this.adapter.today, 'EEEE, d MMMM, yyyy') ?? '';
+    let today = this.adapter.today();
+    this.selected = today;
+    this.currYear = today.year;
+    this.currMonth = today.month;
+    this.calendarHeader = this.adapter.formatDate(today, 'EEEE, d MMMM, yyyy') ?? '';
     this.changeView('day');
   }
 
