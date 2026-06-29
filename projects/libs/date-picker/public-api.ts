@@ -6,3 +6,4 @@ export * from './components/datepicker/ngx-datepicker.component';
 
 export * from './adapters/IOutputDate';
 export * from './adapters/IAdapter';
+export * from './adapters/locale';

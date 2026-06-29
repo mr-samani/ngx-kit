@@ -1,4 +1,17 @@
-import { Directive, ElementRef, forwardRef, HostListener, Input, OnInit } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  EventEmitter,
+  forwardRef,
+  HostListener,
+  inject,
+  input,
+  Input,
+  OnInit,
+  Output,
+  Renderer2,
+  ViewContainerRef,
+} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -9,6 +22,12 @@ import {
 } from '@angular/forms';
 import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepicker.component';
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
+import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
+import { IDateAdapter } from '../adapters/IAdapter';
+import { Locale } from '../adapters/locale';
+import { JalaliDateAdapter } from '../adapters/jalali-adapter';
+import { DateAdapter } from '../adapters/date.adapter';
+import { NgxDatePickerConfig } from '../components/config';
 
 @Directive({
   selector: '[ngxInputDatePicker]',
@@ -30,120 +49,96 @@ import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helpe
     },
   ],
 })
-export class NgxInputDatePicker implements ControlValueAccessor, Validator, OnInit {
-  _onChange = (value: any) => {};
+export class NgxInputDatePicker implements ControlValueAccessor, Validator {
+  @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
+  openOnCLick = input<boolean>(true);
+
+  @Output() change = new EventEmitter<Date>();
+  private value?: Date | null;
+  private pickerRef?: DialogOverlayRef<NgxInputDatePickerComponent>;
+  adapter!: IDateAdapter;
+  private _locale: Locale = 'en';
+  @Input() set locale(val: Locale) {
+    if (val === 'fa') {
+      this._locale = 'fa';
+      this.adapter = new JalaliDateAdapter();
+    } else {
+      this._locale = 'en';
+      this.adapter = new DateAdapter();
+    }
+  }
+
+  _onChange = (value: Date | null | undefined) => {};
   _onTouched = () => {};
   _validatorOnChange = () => {};
 
-  _datepicker!: NgxInputDatePickerComponent;
-
-  /** The datepicker that this input is associated with. */
-  @Input('ngxInputDatePicker') set setDatePicker(datepicker: NgxInputDatePickerComponent) {
-    this._datepicker = datepicker;
-  }
   /**
    * display format in input
    */
   @Input() displayFormat: string = 'yyyy/MM/dd';
 
-  private _min: Date | null = null;
+  private min: Date | null = null;
   /** The minimum valid date. */
-  @Input() set min(value: Date | null | undefined) {
+  @Input('min') set setMin(value: Date | null | undefined) {
     const validValue = deserialize(value);
-    if (!sameDate(validValue, this._min)) {
-      this._min = validValue;
-      this._datepicker.minDate = validValue;
+    if (!sameDate(validValue, this.min)) {
+      this.min = validValue;
       this._validatorOnChange();
     }
   }
 
-  private _max: Date | null = null;
+  private max: Date | null = null;
   /** The maximum valid date. */
-  @Input() set max(value: Date | null | undefined) {
+  @Input('max') set setMax(value: Date | null | undefined) {
     const validValue = deserialize(value);
-    if (!sameDate(validValue, this._max)) {
-      this._max = validValue;
-      this._datepicker.maxDate = validValue;
+    if (!sameDate(validValue, this.max)) {
+      this.max = validValue;
       this._validatorOnChange();
     }
   }
+  private config = new NgxDatePickerConfig();
+  @Input('config') set seConfig(val: NgxDatePickerConfig) {
+    this.config = { ...new NgxDatePickerConfig(), ...val };
+  }
 
-  constructor(private _elementRef: ElementRef<HTMLInputElement>) {}
+  private isDisabled = false;
 
-  validate(control: AbstractControl): ValidationErrors | null {
-    if (this._datepicker._date) {
-      if (!isValid(this._datepicker._date)) {
-        return {
-          invalid: true,
-        };
-      }
-      let c = clampDate(this._datepicker._date, this._min, this._max);
-      if (c < 0) {
-        return {
-          invalid: true,
-          min: this._min,
-        };
-      } else if (c > 0) {
-        return {
-          invalid: true,
-          max: this._max,
-        };
-      }
-    }
-    return null;
+  private readonly dialogService = inject(DialogService);
+  private readonly viewContainerRef = inject(ViewContainerRef);
+  private readonly renderer = inject(Renderer2);
+  constructor(private el: ElementRef<HTMLInputElement>) {}
+
+  ngOnDestroy(): void {
+    this.destroyAnglePicker();
   }
-  registerOnValidatorChange?(fn: () => void): void {
-    this._validatorOnChange = fn;
+
+  @HostListener('click', ['$event'])
+  onClick(ev: Event) {
+    if (this.openOnCLick() && !this.isDisabled) {
+      ev.stopPropagation();
+      ev.preventDefault();
+      this.toggle();
+    }
   }
-  ngOnInit(): void {
-    if (!this._datepicker) {
-      throw new Error('<ngx-datepicker> not binded to input element!');
-    }
-    this._datepicker?.dateChange.subscribe((val) => {
-      if (val) this._datepicker._date = new Date(val);
-      else this._datepicker._date = null;
-      let d = deserialize(val);
-      this._formatValue(d, true);
-    });
-    this.setDatePickerPanelPosition();
+
+  @HostListener('input', ['$event'])
+  onInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const validValue = deserialize(input.value);
+    this.value = validValue;
+    this._formatValue(this.value);
+    this._onChange(this.value);
   }
-  /** Formats a value and sets it on the input element. */
-  protected _formatValue(value: Date | null, setChange = false) {
-    let val = '';
-    if (value) {
-      let o = this._datepicker?.adapter.getOutputDate(value);
-      val = (value && this._datepicker?.adapter.formatDate(o, this.displayFormat)) ?? '';
-    }
-    this._elementRef.nativeElement.value = val;
-    if (setChange) {
-      this._onChange(this._datepicker?.value);
-    }
+
+  @HostListener('blur')
+  onBlur() {
+    this._onTouched();
   }
 
   writeValue(value: any): void {
-    this.checkWritedValue(value);
-  }
-
-  /**
-   * update value for change display format in input
-   * @param val
-   */
-  updateValue(val: Date) {
-    setTimeout(() => {
-      this.writeValue(val);
-    }, 10);
-  }
-
-  private checkWritedValue(value: any) {
-    //  this._date = value;
     const validValue = deserialize(value);
-    if (validValue) {
-      //  setTimeout(() => {
-      this._datepicker._date = validValue;
-      this._formatValue(this._datepicker._date);
-      this._onChange(this._datepicker._date);
-      //  }, 100);
-    }
+    this.value = validValue;
+    this._formatValue(this.value);
   }
 
   registerOnChange(fn: any): void {
@@ -152,60 +147,98 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator, OnIn
   registerOnTouched(fn: any): void {
     this._onTouched = fn;
   }
-  setDisabledState?(disabled: boolean): void {
-    if (this._datepicker) {
-      this._datepicker.isDisabled = disabled;
+  registerOnValidatorChange?(fn: () => void): void {
+    this._validatorOnChange = fn;
+  }
+  setDisabledState(disabled: boolean): void {
+    this.isDisabled = disabled;
+    if (disabled) {
+      this.renderer.setProperty(this.el.nativeElement, 'disabled', disabled);
+    } else {
+      this.renderer.removeAttribute(this.el.nativeElement, 'disabled');
     }
   }
 
-  setDatePickerPanelPosition() {
-    let boundingElement = this._elementRef.nativeElement.getBoundingClientRect();
-    const inputW = boundingElement.width;
-    const inputH = boundingElement.height;
-    const inputL = boundingElement.left;
-    const inputT = boundingElement.top;
-    const datepickerW = this._datepicker.wrapperWidth;
+  public toggle() {
+    if (this.pickerRef || this.isDisabled) {
+      this.destroyAnglePicker();
+      return;
+    }
 
-    this._datepicker.panelLeft = inputL + inputW / 2 - datepickerW / 2;
-    this._datepicker.panelTop = inputT + inputH;
+    this.pickerRef = this.dialogService.open({
+      anchor: this.el.nativeElement,
+      component: NgxInputDatePickerComponent,
+      viewContainerRef: this.viewContainerRef,
+      alignment: 'center',
+      placement: 'bottom',
+      margin: 2,
+      configure: (instance, ref) => {
+        instance.locale = this._locale;
+        instance.minDate = this.min;
+        instance.maxDate = this.max;
+        instance.setTheme = this.theme;
+        instance.config = this.config;
+
+        instance.writeValue(this.value);
+
+        instance.change.subscribe((c: Date) => {
+          this.value = c;
+          this.emitChange(c);
+        });
+
+        // instance.closed.subscribe(() => ref.close());
+      },
+      onClosed: () => {
+        this.pickerRef = undefined;
+      },
+    });
   }
 
-  // @HostListener('focus', ['$event'])
-  // @HostListener('active', ['$event'])
-  // onInputFocus(event: Event): void {
-  //   this._datepicker.showPanel = true;
-  //   this._datepicker.setDate(this._date);
-  // }
-  // @HostListener('blur', ['$event'])
-  // onInputBlur(event: Event): void {
-  //   this._datepicker.showPanel = false;
-  // }
-
-  // @HostListener('window:click', ['$event'])
-  // onOutsideClick(event: any) {
-  //   if (!this._elementRef.nativeElement.contains(event.target) &&
-  //     !this._datepicker._elementRef.nativeElement.contains(event.target)) {
-  //     this._datepicker.showPanel = false;
-  //   }
-  // }
-
-  // @HostListener('input', ['$event']) onInputChange(event: Event): void {
-  //   let val = this._elementRef.nativeElement.value;
-  //   this.checkWritedValue(val);
-  // }
-  // @HostListener('paste', ['$event']) blockPaste(event: KeyboardEvent): void {
-  //   let val = this._elementRef.nativeElement.value;
-  //   this.checkWritedValue(val);
-  // }
-
-  @HostListener('click', ['$event']) onInputChange(event: Event): void {
-    this.setDatePickerPanelPosition();
-    this._datepicker.togglePanel();
+  private destroyAnglePicker() {
+    this.pickerRef?.close();
+    this.pickerRef = undefined;
   }
-  @HostListener('window:scroll', ['$event']) onScroll(event: Event): void {
-    this.setDatePickerPanelPosition();
+  private async emitChange(c: Date) {
+    this._formatValue(c);
+    this._onChange(c);
+    this.change.emit(c);
+    this._onTouched();
   }
-  @HostListener('window:resize', ['$event']) onResize(event: Event): void {
-    this.setDatePickerPanelPosition();
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    if (this.value) {
+      if (!isValid(this.value)) {
+        return {
+          invalid: true,
+        };
+      }
+      let c = clampDate(this.value, this.min, this.max);
+      if (c < 0) {
+        return {
+          invalid: true,
+          min: this.min,
+        };
+      } else if (c > 0) {
+        return {
+          invalid: true,
+          max: this.max,
+        };
+      }
+    }
+    return null;
+  }
+
+  /** Formats a value and sets it on the input element. */
+  protected _formatValue(value: Date | null, setChange = false) {
+    let val = '';
+    if (value && this.adapter) {
+      let o = this.adapter.getOutputDate(value);
+      val = (value && this.adapter.formatDate(o, this.displayFormat)) ?? '';
+    }
+    this.renderer.setProperty(this.el.nativeElement, 'value', val);
+
+    if (setChange) {
+      this._onChange(this.value);
+    }
   }
 }

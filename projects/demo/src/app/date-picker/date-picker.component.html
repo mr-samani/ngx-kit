@@ -4,13 +4,15 @@
       <input
         class="form-control"
         formControlName="date"
-        [ngxInputDatePicker]="datepicker"
+        ngxInputDatePicker
         [displayFormat]="'EEEE - d MMMM, yyyy'"
         [min]="minDate"
         [max]="maxDate"
+        [locale]="locale"
+        [openOnCLick]="false"
+        [config]="config"
         #dpInput="ngxInputDatePicker" />
-      <ngx-datepicker #datepicker [locale]="locale" [config]="config"></ngx-datepicker>
-      <button (click)="datepicker.togglePanel()" class="input-group-text pointer">
+      <button (click)="dpInput.toggle()" class="input-group-text pointer">
         <i class="fa fa-calendar"></i>
       </button>
     </div>
@@ -28,7 +30,7 @@
 
   <!-- ------------------------ configurations ----------------------------------- -->
   <div class="row">
-    <select name="locale" [(ngModel)]="locale" (change)="updateDatepicker(dpInput)">
+    <select name="locale" [(ngModel)]="locale">
       <option value="fa">Jalali ('fa')</option>
       <option value="en">Gregorian ('en')</option>
     </select>
@@ -40,72 +42,52 @@
       <input
         type="text"
         class="form-control"
-        [ngxInputDatePicker]="dp_min"
+        ngxInputDatePicker
+        [locale]="locale"
         displayFormat="yyyy-MM-dd"
         [(ngModel)]="minDate"
-        (click)="dp_min.openPanel()"
         [max]="maxDate" />
-      <ngx-datepicker [locale]="locale" #dp_min></ngx-datepicker>
     </div>
     <div class="mx-2">
       <label>Max</label>
       <input
         type="text"
         class="form-control"
-        [ngxInputDatePicker]="dp_max"
+        ngxInputDatePicker
+        [locale]="locale"
         displayFormat="yyyy-MM-dd"
         [(ngModel)]="maxDate"
-        (click)="dp_max.openPanel()"
         [min]="minDate" />
-      <ngx-datepicker [locale]="locale" #dp_max></ngx-datepicker>
     </div>
   </div>
 
   <div class="">
     <p>
       <label>
-        <input
-          type="checkbox"
-          name="today"
-          [(ngModel)]="config.todayButton"
-          (change)="datepicker.updateConfig(config)" />
-
+        <input type="checkbox" name="today" [(ngModel)]="config.todayButton" />
         Show today button
       </label>
     </p>
     @if (config.todayButton) {
       <p>
         <label>Today button text:</label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="config.todayButtonText"
-          (change)="datepicker.updateConfig(config)" />
+        <input type="text" class="form-control" [(ngModel)]="config.todayButtonText" />
       </p>
     }
     <p>
       <label>
-        <input
-          type="checkbox"
-          name="clearbtn"
-          [(ngModel)]="config.clearButton"
-          (change)="datepicker.updateConfig(config)" />
+        <input type="checkbox" name="clearbtn" [(ngModel)]="config.clearButton" />
         Show clear button
       </label>
     </p>
     @if (config.clearButton) {
       <p>
         <label>Clear button text:</label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="config.clearButtonText"
-          (change)="datepicker.updateConfig(config)" />
+        <input type="text" class="form-control" [(ngModel)]="config.clearButtonText" />
       </p>
     }
   </div>
 </div>
+<ngx-datepicker [config]="config"></ngx-datepicker>
 
 <pre>{{ config | json }}</pre>
-
-<ngx-calendar [locale]="'fa'"></ngx-calendar>

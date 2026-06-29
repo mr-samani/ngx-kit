@@ -20,6 +20,8 @@ import { MsEvents } from '../../models/events';
 import { MsView } from '../../models/view';
 import { ISelectedEvent } from '../../models/selected-event';
 import { CommonModule } from '@angular/common';
+import { Locale } from '../../adapters/locale';
+import { deserialize, sameDate } from '../../helpers/date.helper';
 @Component({
   selector: 'ngx-calendar',
   templateUrl: './ngx-calendar.component.html',
@@ -31,15 +33,32 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
   @Input() set config(val: NgxDatePickerConfig) {
     this._config = { ...new NgxDatePickerConfig(), ...val };
   }
-  protected supportedLocale = ['en', 'fa'];
-  @Input() set locale(val: 'fa' | 'en') {
-    let i = this.supportedLocale.indexOf(val);
-    if (i < 0) i = 0;
-    if (this._locale !== this.supportedLocale[i]) {
-      this._locale = this.supportedLocale[i];
-      this.ngOnInit();
+  @Input() set locale(val: Locale) {
+    if (val === 'fa') {
+      this._locale = 'fa';
+      this.adapter = new JalaliDateAdapter();
+    } else {
+      this._locale = 'en';
+      this.adapter = new DateAdapter();
+    }
+    this.ngOnInit();
+  }
+  /** The minimum valid date. */
+  @Input('min') set setMin(value: Date | null | undefined) {
+    const validValue = deserialize(value);
+    if (!sameDate(validValue, this.minDate)) {
+      this.minDate = validValue;
     }
   }
+
+  /** The maximum valid date. */
+  @Input('max') set setMax(value: Date | null | undefined) {
+    const validValue = deserialize(value);
+    if (!sameDate(validValue, this.maxDate)) {
+      this.maxDate = validValue;
+    }
+  }
+
   @Input() view: MsView = 'day';
   _events: MsEvents[] = [];
   @Input() set events(val: MsEvents[]) {
@@ -65,24 +84,19 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
   }
 
   ngOnInit(): void {
-    if (this._locale === 'fa') {
-      this.adapter = new JalaliDateAdapter();
-    } else {
-      this.adapter = new DateAdapter();
-    }
     this.months = this.adapter.longMonths;
     this.weeks = this.adapter.longDays;
     if (this.selected) {
       let converted = this.adapter.getOutputDate(this.selected);
       this.currYear = converted.year;
       this.currMonth = converted.month!;
+      this.renderCalendar(this.view);
     } else {
       this.gotoToday();
     }
   }
 
   ngAfterViewInit(): void {
-    this.renderCalendar(this.view);
     this.calcCellSize();
   }
 

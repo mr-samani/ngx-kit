@@ -46,6 +46,8 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
   private value?: number | null;
   private pickerRef?: DialogOverlayRef<NgxAngleSelectorComponent>;
   inValid: boolean = false;
+
+  private isDisabled = false;
   _onChange = (value?: number | null) => {};
   _onTouched = () => {};
   _onValidateChange = () => {};
@@ -63,7 +65,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
 
   @HostListener('click', ['$event'])
   onClick(ev: Event) {
-    if (this.openOnCLick()) {
+    if (this.openOnCLick() && !this.isDisabled) {
       ev.stopPropagation();
       ev.preventDefault();
       this.toggle();
@@ -111,6 +113,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
   }
 
   setDisabledState(disabled: boolean): void {
+    this.isDisabled = disabled;
     if (disabled) {
       this.renderer.setProperty(this.el.nativeElement, 'disabled', disabled);
     } else {
@@ -132,7 +135,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
   }
 
   public toggle() {
-    if (this.pickerRef) {
+    if (this.pickerRef || this.isDisabled) {
       this.destroyAnglePicker();
       return;
     }
@@ -151,7 +154,6 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
 
         instance.change.subscribe((c: number) => {
           this.value = c;
-          console.log('v', c);
           this.emitChange(c);
         });
 

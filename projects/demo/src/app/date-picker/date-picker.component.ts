@@ -8,7 +8,6 @@ import {
   Validators,
 } from '@angular/forms';
 import {
-  NgxCalendarComponent,
   NgxDatePickerConfig,
   NgxInputDatePicker,
   NgxInputDatePickerComponent,
@@ -24,7 +23,6 @@ import {
     ReactiveFormsModule,
     NgxInputDatePicker,
     NgxInputDatePickerComponent,
-    NgxCalendarComponent,
   ],
 })
 export class DatePickerComponent implements OnInit {
@@ -47,8 +45,4 @@ export class DatePickerComponent implements OnInit {
   }
 
   ngOnInit(): void {}
-
-  updateDatepicker(dpInput: NgxInputDatePicker) {
-    dpInput.updateValue(this.form.get('date')?.value);
-  }
 }

@@ -27,4 +27,8 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./date-picker/date-picker.component').then((c) => c.DatePickerComponent),
   },
+  {
+    path: 'calendar',
+    loadComponent: () => import('./calendar/calendar.component').then((c) => c.CalendarComponent),
+  },
 ];
