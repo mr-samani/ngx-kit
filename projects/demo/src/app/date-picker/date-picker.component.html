@@ -1,0 +1,111 @@
+<div class="container">
+  <form [formGroup]="form">
+    <div class="input-group">
+      <input
+        class="form-control"
+        formControlName="date"
+        [ngxInputDatePicker]="datepicker"
+        [displayFormat]="'EEEE - d MMMM, yyyy'"
+        [min]="minDate"
+        [max]="maxDate"
+        #dpInput="ngxInputDatePicker" />
+      <ngx-datepicker #datepicker [locale]="locale" [config]="config"></ngx-datepicker>
+      <button (click)="datepicker.togglePanel()" class="input-group-text pointer">
+        <i class="fa fa-calendar"></i>
+      </button>
+    </div>
+    @if (form.get('date')?.hasError('invalid')) {
+      <div class="text-danger">invalid date!</div>
+    }
+    @if (form.get('date')?.hasError('required')) {
+      <div class="text-danger">required date!</div>
+    }
+
+    <p>{{ form.get('date')?.value | json }}</p>
+
+    <pre>invalid={{ form.get('date')?.invalid }}=>{{ form.get('date')?.errors | json }}</pre>
+  </form>
+
+  <!-- ------------------------ configurations ----------------------------------- -->
+  <div class="row">
+    <select name="locale" [(ngModel)]="locale" (change)="updateDatepicker(dpInput)">
+      <option value="fa">Jalali ('fa')</option>
+      <option value="en">Gregorian ('en')</option>
+    </select>
+  </div>
+  <div class="d-flex flex-wrap align-items-center">
+    <div class="mt-2">Minimum and maximum date:</div>
+    <div class="mx-2">
+      <label>Min</label>
+      <input
+        type="text"
+        class="form-control"
+        [ngxInputDatePicker]="dp_min"
+        displayFormat="yyyy-MM-dd"
+        [(ngModel)]="minDate"
+        (click)="dp_min.openPanel()"
+        [max]="maxDate" />
+      <ngx-datepicker [locale]="locale" #dp_min></ngx-datepicker>
+    </div>
+    <div class="mx-2">
+      <label>Max</label>
+      <input
+        type="text"
+        class="form-control"
+        [ngxInputDatePicker]="dp_max"
+        displayFormat="yyyy-MM-dd"
+        [(ngModel)]="maxDate"
+        (click)="dp_max.openPanel()"
+        [min]="minDate" />
+      <ngx-datepicker [locale]="locale" #dp_max></ngx-datepicker>
+    </div>
+  </div>
+
+  <div class="">
+    <p>
+      <label>
+        <input
+          type="checkbox"
+          name="today"
+          [(ngModel)]="config.todayButton"
+          (change)="datepicker.updateConfig(config)" />
+
+        Show today button
+      </label>
+    </p>
+    @if (config.todayButton) {
+      <p>
+        <label>Today button text:</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="config.todayButtonText"
+          (change)="datepicker.updateConfig(config)" />
+      </p>
+    }
+    <p>
+      <label>
+        <input
+          type="checkbox"
+          name="clearbtn"
+          [(ngModel)]="config.clearButton"
+          (change)="datepicker.updateConfig(config)" />
+        Show clear button
+      </label>
+    </p>
+    @if (config.clearButton) {
+      <p>
+        <label>Clear button text:</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="config.clearButtonText"
+          (change)="datepicker.updateConfig(config)" />
+      </p>
+    }
+  </div>
+</div>
+
+<pre>{{ config | json }}</pre>
+
+<ngx-calendar [locale]="'fa'"></ngx-calendar>

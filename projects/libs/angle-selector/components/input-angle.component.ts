@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import {
   Component,
   Output,
@@ -28,7 +27,7 @@ import { Subject, fromEvent, merge, tap, map, filter, switchMap, takeUntil, repe
   templateUrl: './input-angle.component.html',
   styleUrls: ['./input-angle.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

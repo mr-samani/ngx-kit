@@ -4,18 +4,27 @@ export const routes: Routes = [
   { path: '', redirectTo: 'color-picker', pathMatch: 'full' },
   {
     path: 'color-picker',
-    loadComponent: () => import('./color-picker/color-picker.component').then((c) => c.ColorPickerComponent),
+    loadComponent: () =>
+      import('./color-picker/color-picker.component').then((c) => c.ColorPickerComponent),
   },
   {
     path: 'gradient-picker',
-    loadComponent: () => import('./gradient-picker/gradient-picker.component').then((c) => c.GradientPickerComponent),
+    loadComponent: () =>
+      import('./gradient-picker/gradient-picker.component').then((c) => c.GradientPickerComponent),
   },
   {
     path: 'box-shadow',
-    loadComponent: () => import('./box-shadow/box-shadow.component').then((c) => c.BoxShadowComponent),
+    loadComponent: () =>
+      import('./box-shadow/box-shadow.component').then((c) => c.BoxShadowComponent),
   },
   {
     path: 'angle-selector',
-    loadComponent: () => import('./angle-selector/angle-selector.component').then((c) => c.AngleSelectorComponent),
+    loadComponent: () =>
+      import('./angle-selector/angle-selector.component').then((c) => c.AngleSelectorComponent),
+  },
+  {
+    path: 'date-picker',
+    loadComponent: () =>
+      import('./date-picker/date-picker.component').then((c) => c.DatePickerComponent),
   },
 ];

@@ -17,7 +17,8 @@
     "test": "ng test --ui",
     "test:demo": "ng test demo --ui",
     "test:coverage": "ng test --coverage",
-    "test:ci": "ng test --coverage --reporter=junit --outputFile=./coverage/junit.xml"
+    "test:ci": "ng test --coverage --reporter=junit --outputFile=./coverage/junit.xml",
+    "*ngTo@": "ng g @angular/core:control-flow"
   },
   "private": true,
   "packageManager": "npm@11.9.0",

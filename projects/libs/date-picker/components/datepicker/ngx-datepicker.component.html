@@ -1,0 +1,138 @@
+@if (showPanel()) {
+  <div class="out-side-wrapper" (click)="closePanel()"></div>
+}
+
+@if (showPanel()) {
+  <div
+    class="wrapper"
+    #datepickerWrapper
+    [style.left.px]="panelLeft"
+    [style.top.px]="panelTop"
+    [style.width.px]="wrapperWidth"
+    (click)="stopPagination($event)">
+    <div class="header">
+      {{ calendarHeader }}
+    </div>
+    <div class="sub-header">
+      <div class="icons">
+        <span id="prev" class="material-symbols-rounded" (click)="previous()">
+          <ng-template
+            [ngTemplateOutlet]="
+              _config.previousButtonTemplate || defaultPreviousBTNTemplate
+            "></ng-template>
+        </span>
+      </div>
+      <span class="current-date">
+        <span (click)="changeView('year')">
+          {{ currYear }}
+          <ng-template
+            [ngTemplateOutlet]="
+              _config.caretDownIconTemplate || defaultCaretDownIcon
+            "></ng-template>
+        </span>
+        <span (click)="changeView('month')">
+          {{ displayMonth }}
+          <ng-template
+            [ngTemplateOutlet]="
+              _config.caretDownIconTemplate || defaultCaretDownIcon
+            "></ng-template>
+        </span>
+      </span>
+      <div class="icons">
+        <span id="next" class="material-symbols-rounded" (click)="next()">
+          <ng-template
+            [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
+        </span>
+      </div>
+    </div>
+    <div class="calendar">
+      @if (view === 'day') {
+        <ul class="weeks">
+          @for (w of minWeeks; track w) {
+            <li>
+              {{ w }}
+            </li>
+          }
+        </ul>
+        <ul class="days">
+          @for (item of viewDays; track item) {
+            <li
+              [class.de-active]="!item.active"
+              [class.today]="item.isToday"
+              [class.selected]="item.selected"
+              (click)="selectDay($event, item)">
+              {{ item.day }}
+            </li>
+          }
+        </ul>
+      }
+      @if (view === 'month') {
+        <ul class="months">
+          @for (item of viewMonths; track item; let i = $index) {
+            <li
+              [class.de-active]="!item.active"
+              [class.today]="item.isToday"
+              [class.selected]="item.selected"
+              (click)="selectMonth($event, item)">
+              {{ i + 1 }}.{{ item.displayMonth }}
+            </li>
+          }
+        </ul>
+      }
+      @if (view === 'year') {
+        <ul class="years">
+          @for (item of viewYears; track item) {
+            <li
+              [class.de-active]="!item.active"
+              [class.today]="item.isToday"
+              [class.selected]="item.selected"
+              (click)="selectYear($event, item)">
+              {{ item.year }}
+            </li>
+          }
+        </ul>
+      }
+      <!-- <pre>
+      currYear={{currYear}}
+      currMonth={{currMonth}}
+      {{selected|json}}
+    </pre> -->
+      <div class="calendar-footer">
+        @if (_config.clearButton) {
+          <button class="today dtp-btn" (click)="clear()">
+            {{ _config.clearButtonText }}
+          </button>
+        }
+        @if (_config.todayButton) {
+          <button class="today dtp-btn" (click)="gotoToday()">
+            {{ _config.todayButtonText }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<ng-template #defaultPreviousBTNTemplate>
+  <svg width="15px" height="40px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+    <path
+      class="fa-secondary"
+      d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z" />
+  </svg>
+</ng-template>
+
+<ng-template #defaultNextBTNTemplate>
+  <svg width="15px" height="40px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+    <path
+      class="fa-secondary"
+      d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z" />
+  </svg>
+</ng-template>
+
+<ng-template #defaultCaretDownIcon>
+  <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+    <path
+      class="fa-secondary"
+      d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
+  </svg>
+</ng-template>
