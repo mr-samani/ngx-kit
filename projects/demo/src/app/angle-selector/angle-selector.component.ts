@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Injector, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgxInputAngle, NgxAngleSelectorComponent } from 'ngx-input/angle-selector';
+import { NgxInputAngle, NgxAngleSelectorComponent } from 'ngx-kit/angle-selector';
 
 @Component({
   selector: 'app-angle-selector',

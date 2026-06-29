@@ -72,7 +72,7 @@
         }
       }
     },
-    "ngx-input": {
+    "ngx-kit": {
       "projectType": "library",
       "root": "projects/libs",
       "sourceRoot": "projects/libs",
@@ -100,7 +100,7 @@
           "builder": "@storybook/angular:start-storybook",
           "options": {
             "configDir": "projects/storybook/.storybook",
-            "browserTarget": "ngx-input:build",
+            "browserTarget": "ngx-kit:build",
             "compodoc": true,
             "compodocArgs": [
               "-p",
@@ -117,7 +117,7 @@
           "builder": "@storybook/angular:build-storybook",
           "options": {
             "configDir": "projects/storybook/.storybook",
-            "browserTarget": "ngx-input:build",
+            "browserTarget": "ngx-kit:build",
             "compodoc": true,
             "compodocArgs": [
               "-p",

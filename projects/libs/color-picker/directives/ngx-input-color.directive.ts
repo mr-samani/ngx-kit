@@ -23,7 +23,7 @@ import { ColorInspector } from '../contracts/ColorInspector.enum';
 import { NgxInputColorComponent } from '../components/input-color.component';
 import { NgxColor } from '../utils/color-helper';
 import { OutputType } from '../contracts/OutputType';
-import { DialogOverlayRef, DialogService } from 'ngx-input/shared';
+import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputColor]',

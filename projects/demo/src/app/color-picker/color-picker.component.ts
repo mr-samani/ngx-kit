@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ColorInspector, NgxInputColor, OutputType } from 'ngx-input/color-picker';
+import { ColorInspector, NgxInputColor, OutputType } from 'ngx-kit/color-picker';
 
 @Component({
   selector: 'app-color-picker',

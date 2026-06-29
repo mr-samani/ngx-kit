@@ -20,7 +20,7 @@ import {
 } from '@angular/forms';
 import { DOCUMENT } from '@angular/common';
 import { NgxBoxShadowComponent } from '../components/box-shadow.component';
-import { DialogOverlayRef, DialogService } from 'ngx-input/shared';
+import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputBoxShadow]',

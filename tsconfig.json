@@ -16,8 +16,8 @@
     "lib": ["ES2022", "DOM"],
     "moduleResolution": "bundler",
     "paths": {
-      "ngx-input/*": ["./projects/libs/*"],
-      "ngx-input": ["./projects/libs"]
+      "ngx-kit/*": ["./projects/libs/*"],
+      "ngx-kit": ["./projects/libs"]
     },
     "declaration": false
   },
@@ -43,6 +43,12 @@
     },
     {
       "path": "./projects/libs/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ngx-inout2/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ngx-inout2/tsconfig.spec.json"
     }
   ]
 }

@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
 import { ColorPickerComponent } from './color-picker.component';
-import { NgxInputColor } from 'ngx-input/color-picker';
+import { NgxInputColor } from 'ngx-kit/color-picker';
 import { FormsModule } from '@angular/forms';
 
 describe('ColorPickerComponent', () => {

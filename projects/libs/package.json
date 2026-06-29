@@ -1,16 +1,16 @@
 {
-  "name": "ngx-input",
+  "name": "ngx-kit",
   "version": "1.0.0",
   "description": "Angular input components",
   "author": "Mohammadreza Samani <mr.samani1368@gmail.com>",
   "license": "MIT",
-  "homepage": "https://mr-samani.github.io/ngx-input/",
+  "homepage": "https://mr-samani.github.io/ngx-kit/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mr-samani/ngx-input.git"
+    "url": "git+https://github.com/mr-samani/ngx-kit.git"
   },
   "bugs": {
-    "url": "https://github.com/mr-samani/ngx-input/issues"
+    "url": "https://github.com/mr-samani/ngx-kit/issues"
   },
   "keywords": [
     "angular"

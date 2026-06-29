@@ -1,7 +1,7 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { NgxInputColorComponent, EnumToArrayPipe, ColorInspector, NgxInputColor } from 'ngx-input/color-picker';
+import { NgxInputColorComponent, EnumToArrayPipe, ColorInspector, NgxInputColor } from 'ngx-kit/color-picker';
 
 const meta: Meta<NgxInputColorComponent> = {
   title: 'Demo/NgxInputColor',

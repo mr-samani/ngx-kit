@@ -1,7 +1,7 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxAngleSelectorComponent, NgxInputAngle } from 'ngx-input/angle-selector';
+import { NgxAngleSelectorComponent, NgxInputAngle } from 'ngx-kit/angle-selector';
 
 const meta: Meta<NgxAngleSelectorComponent> = {
   title: 'Demo/NgxAngleSelector',

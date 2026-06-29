@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgxColor } from '../../utils/color-helper';
 import { RGBA } from '../../contracts/color-interface';
 import { FormsModule } from '@angular/forms';
-import { SliderComponent } from 'ngx-input/shared';
+import { SliderComponent } from 'ngx-kit/shared';
 
 @Component({
   selector: 'app-rgb',

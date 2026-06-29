@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
 import { BoxShadowComponent } from './box-shadow.component';
-import { NgxBoxShadowComponent, NgxInputBoxShadow } from 'ngx-input/box-shadow';
+import { NgxBoxShadowComponent, NgxInputBoxShadow } from 'ngx-kit/box-shadow';
 import { FormsModule } from '@angular/forms';
 
 describe('BoxShadowComponent', () => {

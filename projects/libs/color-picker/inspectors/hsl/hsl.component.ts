@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgxColor } from '../../utils/color-helper';
 import { HSLA } from '../../contracts/color-interface';
-import { SliderComponent } from 'ngx-input/shared';
+import { SliderComponent } from 'ngx-kit/shared';
 import { FormsModule } from '@angular/forms';
 
 @Component({

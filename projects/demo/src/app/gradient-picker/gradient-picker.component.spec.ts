@@ -1,7 +1,7 @@
 /* tslint:disable:no-unused-variable */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { NgxInputGradientComponent, NgxInputGradient } from 'ngx-input/gradient-picker';
+import { NgxInputGradientComponent, NgxInputGradient } from 'ngx-kit/gradient-picker';
 import { GradientPickerComponent } from './gradient-picker.component';
 
 describe('GradientPickerComponent', () => {

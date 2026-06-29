@@ -3,7 +3,7 @@ import { NgxColor } from '../../utils/color-helper';
 import { CMYK } from '../../contracts/color-interface';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SliderComponent } from 'ngx-input/shared';
+import { SliderComponent } from 'ngx-kit/shared';
 
 @Component({
   selector: 'app-cmyk',

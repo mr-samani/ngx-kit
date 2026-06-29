@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgxBoxShadowComponent, NgxInputBoxShadow } from 'ngx-input/box-shadow';
+import { NgxBoxShadowComponent, NgxInputBoxShadow } from 'ngx-kit/box-shadow';
 
 @Component({
   selector: 'app-box-shadow',

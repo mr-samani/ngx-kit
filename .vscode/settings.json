@@ -7,6 +7,8 @@
     "**/Thumbs.db": true,
     "node_modules": true,
     "**/dist": true,
+    ".angular":true,
+    "**/docs":true
 
   },
   "js/ts.tsdk.path": "node_modules\\typescript\\lib"

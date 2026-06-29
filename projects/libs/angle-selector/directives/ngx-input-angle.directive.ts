@@ -19,7 +19,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { DialogOverlayRef, DialogService } from 'ngx-input/shared';
+import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 import { NgxAngleSelectorComponent } from '../components/input-angle.component';
 
 @Directive({

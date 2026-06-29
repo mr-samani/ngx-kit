@@ -21,7 +21,7 @@ import {
 } from '@angular/forms';
 import { NgxInputGradientComponent } from '../components/input-gradient.component';
 import { isValidGradient, parseGradient } from '../utils/build-gradient';
-import { DialogOverlayRef, DialogService } from 'ngx-input/shared';
+import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputGradient]',

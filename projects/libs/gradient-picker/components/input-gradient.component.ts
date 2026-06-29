@@ -23,9 +23,9 @@ import {
 import { GradientStop, GradientType } from '../contracts/GradientStop';
 import { buildGradientFromStops, generateRandomColor, isValidGradient, parseGradient } from '../utils/build-gradient';
 import { DefaultGradients } from '../contracts/default-gradients';
-import { BrowserService, RangeSliderComponent } from 'ngx-input/shared';
-import { NgxInputColor } from 'ngx-input/color-picker';
-import { NgxInputAngle } from 'ngx-input/angle-selector';
+import { BrowserService, RangeSliderComponent } from 'ngx-kit/shared';
+import { NgxInputColor } from 'ngx-kit/color-picker';
+import { NgxInputAngle } from 'ngx-kit/angle-selector';
 import { CommonModule } from '@angular/common';
 
 @Component({

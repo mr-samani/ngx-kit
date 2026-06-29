@@ -24,9 +24,9 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { parseBoxShadowToPx, stringifyBoxShadow } from '../utils/box-shadow';
-import { IPosition, getOffsetPosition } from 'ngx-input/shared';
-import { NgxInputColor } from 'ngx-input/color-picker';
-import { BrowserService } from 'ngx-input/shared';
+import { IPosition, getOffsetPosition } from 'ngx-kit/shared';
+import { NgxInputColor } from 'ngx-kit/color-picker';
+import { BrowserService } from 'ngx-kit/shared';
 
 @Component({
   selector: 'ngx-box-shadow',

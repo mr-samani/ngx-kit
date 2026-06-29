@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgxInputGradient, NgxInputGradientComponent } from 'ngx-input/gradient-picker';
+import { NgxInputGradient, NgxInputGradientComponent } from 'ngx-kit/gradient-picker';
 
 @Component({
   selector: 'app-gradient-picker',
@@ -15,3 +15,4 @@ export class GradientPickerComponent implements OnInit {
 
   ngOnInit() {}
 }
+
