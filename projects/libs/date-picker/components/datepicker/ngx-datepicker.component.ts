@@ -4,9 +4,11 @@ import {
   EventEmitter,
   forwardRef,
   inject,
+  input,
   Input,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
@@ -51,7 +53,7 @@ export class NgxInputDatePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
-  browserService = inject(BrowserService);
+  protected readonly browserService = inject(BrowserService);
 
   theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
   @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
@@ -62,14 +64,15 @@ export class NgxInputDatePickerComponent
     }
   }
 
-  _config = new NgxDatePickerConfig();
-  @Input() set config(val: NgxDatePickerConfig) {
-    this._config = { ...new NgxDatePickerConfig(), ...val };
+  config = new NgxDatePickerConfig();
+  @Input('config') set setConfig(val: NgxDatePickerConfig) {
+    this.config = { ...new NgxDatePickerConfig(), ...val };
   }
+
   @Input() set locale(val: string) {
     this._locale = val;
     this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    this.ngOnInit();
+    this.init();
   }
   /** The minimum valid date. */
   @Input('min') set setMin(value: Date | null | undefined) {
@@ -77,6 +80,7 @@ export class NgxInputDatePickerComponent
     if (!sameDate(validValue, this.minDate)) {
       this.minDate = validValue;
       this._validatorOnChange();
+      this.init();
     }
   }
 
@@ -86,6 +90,7 @@ export class NgxInputDatePickerComponent
     if (!sameDate(validValue, this.maxDate)) {
       this.maxDate = validValue;
       this._validatorOnChange();
+      this.init();
     }
   }
 
@@ -100,42 +105,51 @@ export class NgxInputDatePickerComponent
   calendarHeader = '';
   isDisabled = false;
 
-  // storing full name of all months in array
-  minWeeks: string[] = [];
-  _onChange = (value: Date) => {};
-  _onTouched = () => {};
-  _validatorOnChange = () => {};
-  constructor(public _elementRef: ElementRef<HTMLDivElement>) {
+  weekDays: { min: string; name: string }[] = [];
+  protected _onChange = (value: Date) => {};
+  protected _onTouched = () => {};
+  protected _validatorOnChange = () => {};
+  constructor() {
     super();
   }
 
   ngOnInit(): void {
+    this.init();
+  }
+  updateConfig(val: NgxDatePickerConfig) {
+    this.config = { ...new NgxDatePickerConfig(), ...val };
+  }
+  init() {
     this.months = this.adapter.longMonths;
-    this.minWeeks = this.adapter.shortDays;
+    let sDays = this.adapter.shortDays;
+    let lDays = this.adapter.longDays;
+    this.weekDays = sDays.map((m, i) => ({ min: m, name: lDays[i] }));
+
     if (!this.selected?.date) {
       this.gotoToday();
     } else {
       let l = this.adapter.toLocale(this.selected.date);
       this.currYear = l.year;
       this.currMonth = l.month ?? 1;
-      this._date = l.date!;
       this.renderCalendar(this.view);
     }
   }
   writeValue(value: any): void {
     const validValue = deserialize(value);
     if (validValue) {
-      this._date = validValue;
+      this.selected = this.adapter.toLocale(validValue);
+    } else {
+      this.selected = undefined;
     }
   }
   validate(control: AbstractControl): ValidationErrors | null {
-    if (this.value) {
-      if (!isValid(this.value)) {
+    if (this.selected?.date) {
+      if (!isValid(this.selected.date)) {
         return {
           invalid: true,
         };
       }
-      let c = clampDate(this._date, this.minDate, this.maxDate);
+      let c = clampDate(this.selected?.date, this.minDate, this.maxDate);
       if (c < 0) {
         return {
           invalid: true,
@@ -165,28 +179,10 @@ export class NgxInputDatePickerComponent
 
   override renderCalendar(view: 'year' | 'month' | 'day') {
     super.renderCalendar(view, this.selected, [], () => {
-      let d = deserialize(this.value);
+      let d = this.selected?.date;
       this.calendarHeader =
-        (d && this.adapter.formatDate(this.adapter.getOutputDate(d), 'EEEE, d MMMM, yyyy')) ?? '';
+        (d && this.adapter.formatDate(this.adapter.getOutputDate(d), 'EEEE - d MMMM, yyyy')) ?? '';
     });
-  }
-  get value(): string {
-    return this.selected ? this.adapter.getDate(this.selected).toISOString() : '';
-  }
-
-  get _date(): Date | null | undefined {
-    return this.date;
-  }
-
-  set _date(val: Date | null) {
-    if (val) {
-      this.date = val;
-      this.setDate();
-    }
-  }
-
-  updateConfig(val: NgxDatePickerConfig) {
-    this.config = val;
   }
 
   gotoToday() {
@@ -212,11 +208,9 @@ export class NgxInputDatePickerComponent
       this.currMonth++;
     }
     if (this.currMonth < 0 || this.currMonth > 11) {
-      this.date = new Date(this.currYear, this.currMonth);
-      this.currYear = this.date.getFullYear();
-      this.currMonth = this.date.getMonth();
-    } else {
-      this.date = new Date();
+      let date = new Date(this.currYear, this.currMonth);
+      this.currYear = date.getFullYear();
+      this.currMonth = date.getMonth();
     }
 
     this.renderCalendar(this.view);
@@ -231,11 +225,9 @@ export class NgxInputDatePickerComponent
       this.currMonth--;
     }
     if (this.currMonth < 0 || this.currMonth > 11) {
-      this.date = new Date(this.currYear, this.currMonth);
-      this.currYear = this.date.getFullYear();
-      this.currMonth = this.date.getMonth();
-    } else {
-      this.date = new Date();
+      let date = new Date(this.currYear, this.currMonth);
+      this.currYear = date.getFullYear();
+      this.currMonth = date.getMonth();
     }
 
     this.renderCalendar(this.view);
@@ -251,7 +243,7 @@ export class NgxInputDatePickerComponent
         day: item.day,
         date: item.date,
       };
-      this.change.emit(this._date);
+      this.change.emit(this.selected.date);
     }
   }
   selectMonth(ev: Event, item: DatePickerViewMonth) {
@@ -266,18 +258,6 @@ export class NgxInputDatePickerComponent
     if (item.active) {
       this.currYear = item.year;
       this.changeView('month');
-    }
-  }
-  private setDate() {
-    let date = deserialize(this.date);
-    if (date) {
-      const d = this.adapter.getOutputDate(date);
-      this.currYear = d.year;
-      this.currMonth = d.month ?? 0;
-      this.selected = d;
-      this.renderCalendar(this.view);
-    } else {
-      this.gotoToday();
     }
   }
 

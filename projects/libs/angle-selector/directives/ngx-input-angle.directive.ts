@@ -48,8 +48,8 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
   inValid: boolean = false;
 
   private isDisabled = false;
-  _onChange = (value?: number | null) => {};
-  _onTouched = () => {};
+  protected _onChange = (value?: number | null) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
 
   constructor(

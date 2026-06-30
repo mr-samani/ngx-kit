@@ -74,8 +74,8 @@ export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, 
 
   padRect?: DOMRect;
   thumbRect?: DOMRect;
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
+  protected _onChange = (value: string) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
 
   @ViewChild('pad', { static: true }) pad!: ElementRef<HTMLDivElement>;

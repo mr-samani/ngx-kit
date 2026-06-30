@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, Injector, OnInit, signal, viewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -35,19 +35,21 @@ import { JapanesAdapter } from './custom-adapters/japanes-adapter';
   ],
 })
 export class DatePickerComponent implements OnInit {
-  locale: string = 'zh';
+  locale: string = 'fa';
   availableLocals = getLocals();
   minDate?: Date; // = new Date('2023-03-02');
   maxDate?: Date; // = new Date('2023-03-17');
 
-  config: NgxDatePickerConfig = {
+  config = signal<NgxDatePickerConfig>({
     todayButton: true,
     clearButton: true,
     clearButtonText: 'Clear',
     todayButtonText: 'Today',
-  };
+  });
 
   form: FormGroup;
+  inlineDate = viewChild<NgxInputDatePicker>('inlineDate');
+  inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
   constructor(fb: FormBuilder) {
     this.form = fb.group({
       date: ['', [Validators.required]],
@@ -56,4 +58,10 @@ export class DatePickerComponent implements OnInit {
   }
 
   ngOnInit(): void {}
+  updateConfig() {
+    const inline = this.inlineDate();
+    const input = this.inputDate();
+    inline?.updateConfig(this.config());
+    input?.updateConfig(this.config());
+  }
 }

@@ -96,9 +96,9 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
 
   values: ValueModel[] = [];
   isDisabled = false;
-  _onChange = (value: IValue[]) => {};
-  _onTouched = () => {};
-  _validatorOnChange = () => {};
+  protected _onChange = (value: IValue[]) => {};
+  protected _onTouched =  () => {};
+  protected _validatorOnChange =  () => {};
   private sliderRect?: DOMRect;
   private thumbRect?: DOMRect;
 

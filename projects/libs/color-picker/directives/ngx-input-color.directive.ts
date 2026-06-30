@@ -85,8 +85,8 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   private pickerRef?: DialogOverlayRef<NgxInputColorComponent>;
   private isHostInput = false;
   inValid: boolean = false;
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
+  protected _onChange = (value: string) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
 
   constructor(

@@ -123,7 +123,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     let today = this.adapter.today();
     this.selected = this.adapter.getDate(today);
     this.currYear = today.year;
-    this.currMonth = today.month??1;
+    this.currMonth = today.month ?? 1;
     this.changeView('day');
   }
 
@@ -157,11 +157,9 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
       this.currMonth++;
     }
     if (this.currMonth < 0 || this.currMonth > 11) {
-      this.date = new Date(this.currYear, this.currMonth);
-      this.currYear = this.date.getFullYear();
-      this.currMonth = this.date.getMonth();
-    } else {
-      this.date = new Date();
+      let date = new Date(this.currYear, this.currMonth);
+      this.currYear = date.getFullYear();
+      this.currMonth = date.getMonth();
     }
 
     this.renderCalendar(this.view);
@@ -176,11 +174,9 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
       this.currMonth--;
     }
     if (this.currMonth < 0 || this.currMonth > 11) {
-      this.date = new Date(this.currYear, this.currMonth);
-      this.currYear = this.date.getFullYear();
-      this.currMonth = this.date.getMonth();
-    } else {
-      this.date = new Date();
+      let date = new Date(this.currYear, this.currMonth);
+      this.currYear = date.getFullYear();
+      this.currMonth = date.getMonth();
     }
 
     this.renderCalendar(this.view);

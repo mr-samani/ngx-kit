@@ -66,8 +66,8 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
 
   value = '';
 
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
+  protected _onChange = (value: string) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
   constructor(
     private el: ElementRef<HTMLInputElement>,

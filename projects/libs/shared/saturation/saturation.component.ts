@@ -40,9 +40,9 @@ export class SaturationComponent implements ControlValueAccessor {
   y = 0;
   myControl = new FormControl<IPosition | null>(null);
   isDisabled = false;
-  _onChange = (value: any) => {};
-  _onTouched = () => {};
-  _validatorOnChange = () => {};
+  protected _onChange = (value: any) => {};
+  protected _onTouched =  () => {};
+  protected _validatorOnChange =  () => {};
 
   private saturationRect?: DOMRect;
   private thumbRect?: DOMRect;

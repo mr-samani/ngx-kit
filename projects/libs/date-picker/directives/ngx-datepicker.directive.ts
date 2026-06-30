@@ -1,5 +1,6 @@
 import {
   Directive,
+  effect,
   ElementRef,
   EventEmitter,
   forwardRef,
@@ -7,9 +8,9 @@ import {
   inject,
   input,
   Input,
-  OnInit,
   Output,
   Renderer2,
+  signal,
   ViewContainerRef,
 } from '@angular/core';
 import {
@@ -49,7 +50,7 @@ import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
   ],
 })
 export class NgxInputDatePicker implements ControlValueAccessor, Validator {
-  dateAdapterRegistry = inject(DateAdapterRegistry);
+  protected readonly dateAdapterRegistry = inject(DateAdapterRegistry);
 
   @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
   openOnCLick = input<boolean>(true);
@@ -64,9 +65,9 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
     this.adapter = this.dateAdapterRegistry.resolve(this._locale);
   }
 
-  _onChange = (value: Date | null | undefined) => {};
-  _onTouched = () => {};
-  _validatorOnChange = () => {};
+  protected _onChange = (value: Date | null | undefined) => {};
+  protected _onTouched = () => {};
+  protected _validatorOnChange = () => {};
 
   /**
    * display format in input
@@ -92,8 +93,9 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
       this._validatorOnChange();
     }
   }
-  private config = new NgxDatePickerConfig();
-  @Input('config') set seConfig(val: NgxDatePickerConfig) {
+
+  config = new NgxDatePickerConfig();
+  @Input('config') set setConfig(val: NgxDatePickerConfig) {
     this.config = { ...new NgxDatePickerConfig(), ...val };
   }
 
@@ -104,8 +106,14 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   private readonly renderer = inject(Renderer2);
   constructor(private el: ElementRef<HTMLInputElement>) {}
 
+  updateConfig(val: NgxDatePickerConfig) {
+    this.config = { ...new NgxDatePickerConfig(), ...val };
+    if (this.pickerRef) {
+      this.pickerRef.componentRef.instance.updateConfig(this.config);
+    }
+  }
   ngOnDestroy(): void {
-    this.destroyAnglePicker();
+    this.destroyDatePicker();
   }
 
   @HostListener('click', ['$event'])
@@ -157,7 +165,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
 
   public toggle() {
     if (this.pickerRef || this.isDisabled) {
-      this.destroyAnglePicker();
+      this.destroyDatePicker();
       return;
     }
 
@@ -173,13 +181,13 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
         instance.minDate = this.min;
         instance.maxDate = this.max;
         instance.setTheme = this.theme;
-        instance.config = this.config;
-
+        instance.updateConfig(this.config);
         instance.writeValue(this.value);
 
         instance.change.subscribe((c: Date) => {
           this.value = c;
           this.emitChange(c);
+          this.destroyDatePicker();
         });
 
         // instance.closed.subscribe(() => ref.close());
@@ -190,7 +198,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
     });
   }
 
-  private destroyAnglePicker() {
+  private destroyDatePicker() {
     this.pickerRef?.close();
     this.pickerRef = undefined;
   }

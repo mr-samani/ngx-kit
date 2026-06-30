@@ -20,8 +20,7 @@ export abstract class NgxDatePickerBase {
   viewMonths: DatePickerViewMonth[] = [];
   viewYears: DatePickerViewYear[] = [];
   displayMonth = '';
-  // getting new date, current year and month
-  date?: Date | null = new Date();
+
   minDate: Date | null = null;
   maxDate: Date | null = null;
 
@@ -76,8 +75,6 @@ export abstract class NgxDatePickerBase {
   renderDay(selected?: CalendarDate, _events?: MsEvents[]) {
     this.viewDays = [];
     let firstDayofMonth = this.adapter.firstDayofMonth(this.currYear, this.currMonth);
-    debugger;
-
     let lastDateofMonth = this.adapter.lastDateofMonth(this.currYear, this.currMonth);
     let lastDayofMonth = this.adapter.lastDayofMonth(this.currYear, this.currMonth);
     let lastDateofLastMonth = this.adapter.lastDateofLastMonth(this.currYear, this.currMonth);
@@ -111,7 +108,7 @@ export abstract class NgxDatePickerBase {
       const events = this.getEvents(date, _events);
       this.viewDays.push({
         day: i,
-        active: this.checkActiveDate(this.currYear, this.currMonth, i),
+        active: this.checkActiveDate(date),
         isToday: isToday,
         selected:
           i === selected?.day &&
@@ -140,9 +137,8 @@ export abstract class NgxDatePickerBase {
     }
   }
 
-  checkActiveDate(year: number, month: number, day: number) {
-    const d = this.adapter.getDate({ locale: this._locale, year, month, day });
-    let c = clampDate(d, this.minDate, this.maxDate);
+  checkActiveDate(date: Date) {
+    let c = clampDate(date, this.minDate, this.maxDate);
     if (c < 0) {
       return false;
     } else if (c > 0) {

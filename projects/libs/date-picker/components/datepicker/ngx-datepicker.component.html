@@ -11,7 +11,7 @@
       <span id="prev" class="material-symbols-rounded" (click)="previous()">
         <ng-template
           [ngTemplateOutlet]="
-            _config.previousButtonTemplate || defaultPreviousBTNTemplate
+            config.previousButtonTemplate || defaultPreviousBTNTemplate
           "></ng-template>
       </span>
     </div>
@@ -19,27 +19,27 @@
       <span (click)="changeView('year')">
         {{ currYear }}
         <ng-template
-          [ngTemplateOutlet]="_config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
+          [ngTemplateOutlet]="config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
       </span>
       <span (click)="changeView('month')">
         {{ displayMonth }}
         <ng-template
-          [ngTemplateOutlet]="_config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
+          [ngTemplateOutlet]="config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
       </span>
     </span>
     <div class="icons">
       <span id="next" class="material-symbols-rounded" (click)="next()">
         <ng-template
-          [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
+          [ngTemplateOutlet]="config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
       </span>
     </div>
   </div>
   <div class="calendar">
     @if (view === 'day') {
       <ul class="weeks">
-        @for (w of minWeeks; track $index) {
-          <li>
-            {{ w }}
+        @for (w of weekDays; track $index) {
+          <li [title]="w.name">
+            {{ w.min }}
           </li>
         }
       </ul>
@@ -87,14 +87,14 @@
       {{selected|json}}
     </pre> -->
     <div class="calendar-footer">
-      @if (_config.clearButton) {
+      @if (config.clearButton) {
         <button class="today dtp-btn" (click)="clear()">
-          {{ _config.clearButtonText }}
+          {{ config.clearButtonText }}
         </button>
       }
-      @if (_config.todayButton) {
+      @if (config.todayButton) {
         <button class="today dtp-btn" (click)="gotoToday()">
-          {{ _config.todayButtonText }}
+          {{ config.todayButtonText }}
         </button>
       }
     </div>

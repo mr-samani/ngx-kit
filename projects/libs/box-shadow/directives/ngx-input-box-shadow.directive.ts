@@ -40,8 +40,8 @@ export class NgxInputBoxShadow implements OnDestroy, ControlValueAccessor, Valid
 
   value = '';
 
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
+  protected _onChange = (value: string) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
   constructor(
     private el: ElementRef,

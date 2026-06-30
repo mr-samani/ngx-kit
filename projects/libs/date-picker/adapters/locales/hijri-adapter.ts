@@ -129,7 +129,6 @@ export class HijriAdapter implements IDateAdapter {
 
   getLastOf(date: Date | null, t: DatePickerView): Date | null {
     if (!date) return date;
-    debugger
     const h = HijriConverter.parse(date);
 
     switch (t) {
