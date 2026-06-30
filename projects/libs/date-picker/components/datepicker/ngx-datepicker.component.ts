@@ -11,10 +11,10 @@ import {
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
-import { MsViewDay } from '../../models/view-day';
-import { MsViewMonth } from '../../models/view-month';
-import { MsViewYear } from '../../models/view-year';
-import { MsView } from '../../models/view';
+import { DatePickerViewDay } from '../../models/view-day';
+import { DatePickerViewMonth } from '../../models/view-month';
+import { DatePickerViewYear } from '../../models/view-year';
+import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../../adapters/calendar-date';
 import { CommonModule } from '@angular/common';
 import { BrowserService } from 'ngx-kit/shared';
@@ -89,7 +89,7 @@ export class NgxInputDatePickerComponent
     }
   }
 
-  @Input() view: MsView = 'day';
+  @Input() view: DatePickerView = 'day';
 
   @Output() change = new EventEmitter<Date | null>();
 
@@ -113,6 +113,7 @@ export class NgxInputDatePickerComponent
     this.months = this.adapter.longMonths;
     this.minWeeks = this.adapter.shortDays;
     if (!this.selected) {
+    debugger;
       this.gotoToday();
     } else {
       this.renderCalendar(this.view);
@@ -194,7 +195,7 @@ export class NgxInputDatePickerComponent
     this.changeView('day');
   }
 
-  changeView(v: MsView) {
+  changeView(v: DatePickerView) {
     this.view = v;
     this.renderCalendar(this.view);
   }
@@ -237,7 +238,7 @@ export class NgxInputDatePickerComponent
     this.renderCalendar(this.view);
   }
 
-  selectDay(ev: Event, item: MsViewDay) {
+  selectDay(ev: Event, item: DatePickerViewDay) {
     ev.stopPropagation();
     if (item.active) {
       this.selected = {
@@ -249,14 +250,14 @@ export class NgxInputDatePickerComponent
       this.change.emit(this._date);
     }
   }
-  selectMonth(ev: Event, item: MsViewMonth) {
+  selectMonth(ev: Event, item: DatePickerViewMonth) {
     ev.stopPropagation();
     if (item.active) {
       this.currMonth = item.month;
       this.changeView('day');
     }
   }
-  selectYear(ev: Event, item: MsViewYear) {
+  selectYear(ev: Event, item: DatePickerViewYear) {
     ev.stopPropagation();
     if (item.active) {
       this.currYear = item.year;

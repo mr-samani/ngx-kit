@@ -3,6 +3,6 @@ import { MsDATE } from './date';
 
 
 
-export class MsViewYear extends MsDATE {
+export class DatePickerViewYear extends MsDATE {
   year!: number;
 }

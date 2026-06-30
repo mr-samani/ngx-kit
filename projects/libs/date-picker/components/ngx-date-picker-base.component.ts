@@ -1,8 +1,8 @@
 import { clampDate, clampMonth, clampYear, compareDate } from '../helpers/date.helper';
 import { IDateAdapter } from '../adapters/IAdapter';
-import { MsViewYear } from '../models/view-year';
-import { MsViewMonth } from '../models/view-month';
-import { MsViewDay } from '../models/view-day';
+import { DatePickerViewYear } from '../models/view-year';
+import { DatePickerViewMonth } from '../models/view-month';
+import { DatePickerViewDay } from '../models/view-day';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents } from '../models/events';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
@@ -16,9 +16,9 @@ export abstract class NgxDatePickerBase {
   currMonth!: number;
 
   months: string[] = [];
-  viewDays: MsViewDay[] = [];
-  viewMonths: MsViewMonth[] = [];
-  viewYears: MsViewYear[] = [];
+  viewDays: DatePickerViewDay[] = [];
+  viewMonths: DatePickerViewMonth[] = [];
+  viewYears: DatePickerViewYear[] = [];
   displayMonth = '';
   // getting new date, current year and month
   date?: Date | null = new Date();

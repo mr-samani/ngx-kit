@@ -1,6 +1,6 @@
 import { genFormatDate } from '../../helpers/date-format.helper';
 import { Jalali } from '../../helpers/jalali.helper';
-import { MsView } from '../../models/view';
+import { DatePickerView } from '../../models/view';
 import { IDateAdapter } from '../IAdapter';
 import { CalendarDate } from '../calendar-date';
 
@@ -175,7 +175,7 @@ export class JalaliAdapter implements IDateAdapter {
   }
   // _______________________________________________________________________________________
 
-  getStartOf(date: Date | null, t: MsView) {
+  getStartOf(date: Date | null, t: DatePickerView) {
     if (!date) {
       return date;
     }
@@ -191,7 +191,7 @@ export class JalaliAdapter implements IDateAdapter {
     }
   }
 
-  getLastOf(date: Date | null, t: MsView) {
+  getLastOf(date: Date | null, t: DatePickerView) {
     if (!date) {
       return date;
     }

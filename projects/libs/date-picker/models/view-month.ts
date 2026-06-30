@@ -3,7 +3,7 @@ import { MsDATE } from './date';
 
 
 
-export class MsViewMonth extends MsDATE {
+export class DatePickerViewMonth extends MsDATE {
   month!: number;
   displayMonth!: string;
 }

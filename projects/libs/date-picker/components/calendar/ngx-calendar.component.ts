@@ -12,11 +12,11 @@ import {
 } from '@angular/core';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
-import { MsViewYear } from '../../models/view-year';
-import { MsViewMonth } from '../../models/view-month';
-import { MsViewDay } from '../../models/view-day';
+import { DatePickerViewYear } from '../../models/view-year';
+import { DatePickerViewMonth } from '../../models/view-month';
+import { DatePickerViewDay } from '../../models/view-day';
 import { MsEvents } from '../../models/events';
-import { MsView } from '../../models/view';
+import { DatePickerView } from '../../models/view';
 import { ISelectedEvent } from '../../models/selected-event';
 import { CommonModule } from '@angular/common';
 import { deserialize, sameDate } from '../../helpers/date.helper';
@@ -54,7 +54,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     }
   }
 
-  @Input() view: MsView = 'day';
+  @Input() view: DatePickerView = 'day';
   _events: MsEvents[] = [];
   @Input() set events(val: MsEvents[]) {
     if (val && Array.isArray(val)) {
@@ -62,7 +62,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     }
   }
 
-  @Output() dateChange = new EventEmitter<MsViewDay>();
+  @Output() dateChange = new EventEmitter<DatePickerViewDay>();
   @Output() selectEvent = new EventEmitter<ISelectedEvent>();
 
   defaultHeight = 600;
@@ -114,7 +114,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     super.renderCalendar(view, undefined, this._events, () => {});
   }
 
-  changeView(v: MsView) {
+  changeView(v: DatePickerView) {
     this.view = v;
     this.renderCalendar(this.view);
   }
@@ -127,20 +127,20 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     this.changeView('day');
   }
 
-  selectDay(ev: Event, item: MsViewDay) {
+  selectDay(ev: Event, item: DatePickerViewDay) {
     ev.stopPropagation();
     if (item.active) {
       this.dateChange.emit(item);
     }
   }
-  selectMonth(ev: Event, item: MsViewMonth) {
+  selectMonth(ev: Event, item: DatePickerViewMonth) {
     ev.stopPropagation();
     if (item.active) {
       this.currMonth = item.month;
       this.changeView('day');
     }
   }
-  selectYear(ev: Event, item: MsViewYear) {
+  selectYear(ev: Event, item: DatePickerViewYear) {
     ev.stopPropagation();
     if (item.active) {
       this.currYear = item.year;
@@ -186,7 +186,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     this.renderCalendar(this.view);
   }
 
-  onclickEvent(item: MsViewDay, event: MsEvents) {
+  onclickEvent(item: DatePickerViewDay, event: MsEvents) {
     this.selectEvent.emit({
       date: item.date!,
       event: event,

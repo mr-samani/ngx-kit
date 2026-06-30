@@ -4,7 +4,7 @@ import { MsDATE } from './date';
 
 
 
-export class MsViewDay extends MsDATE {
+export class DatePickerViewDay extends MsDATE {
   day!: number;
   events?: MsEvents[];
 }

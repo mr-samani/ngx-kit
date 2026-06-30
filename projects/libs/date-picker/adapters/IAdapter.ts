@@ -1,4 +1,4 @@
-import { MsView } from '../models/view';
+import { DatePickerView } from '../models/view';
 import { CalendarDate } from './calendar-date';
 
 export interface IDateAdapter {
@@ -51,6 +51,6 @@ export interface IDateAdapter {
 
   formatDate(date: CalendarDate, format: string): string | null;
 
-  getStartOf(date: Date | null, t: MsView): Date | null;
-  getLastOf(date: Date | null, t: MsView): Date | null;
+  getStartOf(date: Date | null, t: DatePickerView): Date | null;
+  getLastOf(date: Date | null, t: DatePickerView): Date | null;
 }

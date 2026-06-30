@@ -1,7 +1,7 @@
 import { CalendarDate, IDateAdapter } from "ngx-kit/date-picker";
-import { MsView } from "ngx-kit/date-picker/models/view";
+import { DatePickerView } from "ngx-kit/date-picker/models/view";
 
-export class HijriAdapter implements IDateAdapter{
+export class JapanesAdapter implements IDateAdapter{
     get longMonths(): string[] {
         throw new Error("Method not implemented.");
     }
@@ -39,10 +39,10 @@ export class HijriAdapter implements IDateAdapter{
     formatDate(date: CalendarDate, format: string): string | null {
         throw new Error("Method not implemented.");
     }
-    getStartOf(date: Date | null, t: MsView): Date | null {
+    getStartOf(date: Date | null, t: DatePickerView): Date | null {
         throw new Error("Method not implemented.");
     }
-    getLastOf(date: Date | null, t: MsView): Date | null {
+    getLastOf(date: Date | null, t: DatePickerView): Date | null {
         throw new Error("Method not implemented.");
     }
 

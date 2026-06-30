@@ -1,5 +1,5 @@
 import { genFormatDate } from "../../helpers/date-format.helper";
-import {  MsView } from "../../models/view";
+import {  DatePickerView } from "../../models/view";
 import { IDateAdapter } from "../IAdapter";
 import { CalendarDate } from "../calendar-date";
 
@@ -106,7 +106,7 @@ export class GregorianAdapter implements IDateAdapter {
         return genFormatDate(date, format, this.longMonths, this.longDays);
 
     }
-    getStartOf(date: Date | null, t:  MsView) {
+    getStartOf(date: Date | null, t:  DatePickerView) {
         if (!date) {
             return date;
         }
@@ -120,7 +120,7 @@ export class GregorianAdapter implements IDateAdapter {
         }
     }
 
-    getLastOf(date: Date | null, t:  MsView) {
+    getLastOf(date: Date | null, t:  DatePickerView) {
         if (!date) {
             return date;
         }

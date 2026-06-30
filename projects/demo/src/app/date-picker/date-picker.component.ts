@@ -14,7 +14,7 @@ import {
   NgxInputDatePickerComponent,
   provideDateAdapters,
 } from 'ngx-kit/date-picker';
-import { HijriAdapter } from './custom-adapters/hijri-adapter';
+import { JapanesAdapter } from './custom-adapters/japanes-adapter';
 
 @Component({
   selector: 'app-date-picker',
@@ -29,13 +29,13 @@ import { HijriAdapter } from './custom-adapters/hijri-adapter';
   ],
   providers: [
     provideDateAdapters({
-      locale: 'hi',
-      useClass: HijriAdapter,
+      locale: 'jp',
+      useClass: JapanesAdapter,
     }),
   ],
 })
 export class DatePickerComponent implements OnInit {
-  locale: string = 'en';
+  locale: string = 'zh';
   availableLocals = getLocals();
   minDate?: Date; // = new Date('2023-03-02');
   maxDate?: Date; // = new Date('2023-03-17');
