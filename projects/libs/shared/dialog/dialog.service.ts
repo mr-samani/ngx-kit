@@ -221,9 +221,9 @@ export class DialogService implements OnDestroy {
 
     dialog.className = `tips-${verticalPos}`;
 
-    dialog.style.top = `${top}px`;
-    dialog.style.left = left != 'auto' ? `${left}px` : left;
-    dialog.style.right = right != 'auto' ? `${right}px` : right;
+    dialog.style.top = `${top + window.scrollY}px`;
+    dialog.style.left = left != 'auto' ? `${left + window.scrollX}px` : left;
+    dialog.style.right = right != 'auto' ? `${right + window.scrollX}px` : right;
     dialog.style.transform = 'none';
     dialog.style.visibility = 'visible';
   }
