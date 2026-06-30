@@ -46,6 +46,9 @@ import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
       multi: true,
     },
   ],
+  host: {
+    '[class.dark]': 'theme=="dark"',
+  },
 })
 export class NgxInputDatePickerComponent
   extends NgxDatePickerBase

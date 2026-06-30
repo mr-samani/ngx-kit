@@ -13,6 +13,7 @@ import { getLocals, NgxCalendarComponent, provideDateAdapters } from 'ngx-kit/da
 })
 export class CalendarComponent {
   locale: string = 'fa';
+  theme: 'auto' | 'dark' | 'light' = 'auto';
 
   availableLocals = getLocals();
 }

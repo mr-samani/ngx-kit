@@ -1,9 +1,23 @@
-$borderColor: #c0c0c0;
+:host {
+  --ngx-color-bg: #fff;
+  --ngx-color-text: #000;
+  --ngx-border-color: #c0c0c0;
+}
+
+:host-context(.dark) {
+  --ngx-color-bg: #222;
+  --ngx-color-text: #fff;
+  --ngx-border-color: #c0c0c0;
+}
 
 .wrapper {
+  background-color: var(--ngx-color-bg);
+  color: var(--ngx-color-text);
+  border-radius: 5px;
   .dtp-btn {
-    background: #fff;
-    border: 1px #dfdfdf solid;
+    background: none;
+    border: none;
+    color: inherit;
     border-radius: 3px;
     padding: 3px 15px;
     box-shadow: 0 0 4px rgb(0 0 0 / 20%);
@@ -17,6 +31,9 @@ $borderColor: #c0c0c0;
     }
     &.active {
       background: #87879e;
+    }
+    svg {
+      fill: var(--ngx-color-text);
     }
   }
 
@@ -61,7 +78,7 @@ $borderColor: #c0c0c0;
     list-style: none;
     padding: 0;
     margin: 0;
-    border: 1px $borderColor solid;
+    border: 1px var(--ngx-border-color) solid;
     border-bottom: none;
   }
 
@@ -96,8 +113,8 @@ $borderColor: #c0c0c0;
 
   li {
     position: relative;
-    border-right: 1px $borderColor solid;
-    border-bottom: 1px $borderColor solid;
+    border-right: 1px var(--ngx-border-color) solid;
+    border-bottom: 1px var(--ngx-border-color) solid;
     padding: 4px;
 
     &.de-active {
@@ -109,7 +126,7 @@ $borderColor: #c0c0c0;
     }
 
     &.today {
-      background-color: #fffadf;
+      background-color: #ff9d0130;
     }
   }
 
@@ -131,7 +148,7 @@ $borderColor: #c0c0c0;
 .ms-day-events {
   .ms-day-event {
     color: #3f51b5;
-    background: #e4e6f2;
+    background: var(--ngx-color-bg);
     border: 1px #3f51b51f solid;
     border-radius: 4px;
     min-height: 25px;

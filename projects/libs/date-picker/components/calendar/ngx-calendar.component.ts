@@ -4,9 +4,11 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  inject,
   Input,
   OnInit,
   Output,
+  viewChild,
   ViewChild,
 } from '@angular/core';
 import { NgxDatePickerConfig } from '../config';
@@ -18,14 +20,28 @@ import { CommonModule } from '@angular/common';
 import { deserialize, sameDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
+import { BrowserService } from 'ngx-kit/shared';
 @Component({
   selector: 'ngx-calendar',
   templateUrl: './ngx-calendar.component.html',
   styleUrls: ['./ngx-calendar.component.scss'],
   imports: [CommonModule],
   providers: [DateAdapterRegistry],
+  host: {
+    '[class.dark]': 'theme=="dark"',
+  },
 })
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, AfterViewInit {
+  protected readonly browserService = inject(BrowserService);
+
+  theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
+  @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
+    if (!val || val == 'auto') {
+      this.theme = this.browserService.prefersDarkMode ? 'dark' : 'light';
+    } else {
+      this.theme = val;
+    }
+  }
   _config = new NgxDatePickerConfig();
   @Input() set config(val: NgxDatePickerConfig) {
     this._config = { ...new NgxDatePickerConfig(), ...val };
@@ -51,7 +67,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     }
   }
 
-  @Input() view: CalendarView = 'week';
+  @Input() view: CalendarView = 'day';
   _events: MsEvents[] = [];
   @Input() set events(val: MsEvents[]) {
     if (val && Array.isArray(val)) {
@@ -67,9 +83,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
 
   selected?: Date;
 
-  // @ViewChild('datepickerWrapper', { static: false }) wrapper!: ElementRef<HTMLElement>;
-  @ViewChild('daysContainer', { static: false })
-  daysContainer!: ElementRef<HTMLElement>;
+  calendarWrapper = viewChild<ElementRef<HTMLElement>>('calendarWrapper');
   constructor() {
     super();
   }
@@ -96,7 +110,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
   }
 
   calcCellSize() {
-    const fullWidth = this.daysContainer.nativeElement.clientWidth;
+    const fullWidth = this.calendarWrapper()?.nativeElement?.clientWidth ?? 0;
     const cellHeight = fullWidth / 6;
     this.minHeight = fullWidth > this.defaultHeight ? this.defaultHeight : fullWidth;
     if (fullWidth <= 500) {

@@ -36,6 +36,8 @@ import { JapanesAdapter } from './custom-adapters/japanes-adapter';
 })
 export class DatePickerComponent implements OnInit {
   locale: string = 'fa';
+  theme: 'auto' | 'dark' | 'light' = 'auto';
+
   availableLocals = getLocals();
   minDate?: Date; // = new Date('2023-03-02');
   maxDate?: Date; // = new Date('2023-03-17');

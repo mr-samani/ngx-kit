@@ -29,8 +29,8 @@
       {{ view }}
       <button
         class="dayview dtp-btn"
-        (click)="changeView('month')"
-        [class.active]="view == 'month'"
+        (click)="changeView('day')"
+        [class.active]="view == 'day'"
         title="Month View">
         Month
       </button>
@@ -57,8 +57,8 @@
       </button>
     </div>
   </div>
-  <div class="calendar">
-    @if (view === 'month') {
+  <div class="calendar" #calendarWrapper>
+    @if (view === 'day') {
       <ul class="weeks">
         @for (w of weeks; track $index) {
           <li>
@@ -66,7 +66,7 @@
           </li>
         }
       </ul>
-      <ul class="days" [style.minHeight.px]="minHeight" #daysContainer>
+      <ul class="days" [style.minHeight.px]="minHeight">
         @for (item of viewDays; track $index) {
           <li
             [class.de-active]="!item.active"
@@ -90,7 +90,7 @@
           </li>
         }
       </ul>
-    } @else if (view == 'week' || view == 'day') {
+    } @else if (view == 'week' || view == 'month') {
       <table>
         <thead>
           <tr>

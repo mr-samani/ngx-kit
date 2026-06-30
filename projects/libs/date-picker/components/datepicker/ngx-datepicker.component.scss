@@ -1,15 +1,37 @@
+:host {
+  --ngx-color-bg: #fff;
+  --ngx-color-text: #000;
+  --ngx-border-color: #c0c0c0;
+
+  --ngx-datepicker-header-bg: #6200ee;
+  --ngx-datepicker-header-text: #fff;
+  --ngx-datepicker-subheader-bg: #e0d5ef;
+  --ngx-datepicker-subheader-text: #272727;
+}
+
+:host-context(.dark) {
+  --ngx-color-bg: #222;
+  --ngx-color-text: #fff;
+  --ngx-border-color: #c0c0c0;
+
+  --ngx-datepicker-header-bg: #6200ee;
+  --ngx-datepicker-header-text: #fff;
+  --ngx-datepicker-subheader-bg: #8e819e;
+  --ngx-datepicker-subheader-text: #272727;
+}
+
 .wrapper {
-  background: #fff;
+  background: var(--ngx-color-bg);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-  color: #303030;
+  color: var(--ngx-color-text);
   border-radius: 6px;
   overflow: hidden;
 
   .header {
     display: block;
     padding: 15px 15px 10px;
-    background-color: #6200ee;
-    color: #fff;
+    background-color: var(--ngx-datepicker-header-bg);
+    color: var(--ngx-datepicker-header-text);
     font-size: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -21,7 +43,8 @@
     display: flex;
     align-items: center;
     padding: 5px 10px 5px;
-    background: #e0d5ef;
+    background-color: var(--ngx-datepicker-subheader-bg);
+    color: var(--ngx-datepicker-subheader-text);
 
     .current-date {
       font-size: 1rem;
@@ -51,7 +74,7 @@
         user-select: none;
         border-radius: 50%;
         &:hover {
-          background: #f2f2f2;
+          background: #f2f2f272;
         }
       }
     }
@@ -63,8 +86,9 @@
     gap: 5px;
 
     .dtp-btn {
-      background: #fff;
-      border: 1px #dfdfdf solid;
+      background: none;
+      color: inherit;
+      border: 1px #9f9f9f8b solid;
       border-radius: 3px;
       padding: 3px 15px;
       box-shadow: 0 0 4px rgb(0 0 0 / 20%);
@@ -131,9 +155,9 @@
     justify-content: center;
     border: 1px transparent solid;
     transition: all 300ms;
-
+    color: inherit;
     &:not(.active):hover {
-      background: #dfdfdf;
+      background: #dfdfdf68;
     }
 
     &.de-active {
@@ -150,9 +174,9 @@
   }
 
   .weeks {
-    border-bottom: 1px #e7e7e7 solid;
+    border-bottom: 1px #e7e7e758 solid;
     margin-bottom: 10px;
-
+    padding-bottom: 5px;
     li {
       font-weight: 500;
       cursor: default;
