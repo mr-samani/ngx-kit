@@ -1,7 +1,8 @@
 <div class="row">
   <select name="locale" [(ngModel)]="locale">
-    <option value="fa">Jalali ('fa')</option>
-    <option value="en">Gregorian ('en')</option>
+    @for (item of availableLocals; track $index) {
+      <option [value]="item">{{ item }}</option>
+    }
   </select>
 </div>
 <ngx-calendar [locale]="locale"></ngx-calendar>

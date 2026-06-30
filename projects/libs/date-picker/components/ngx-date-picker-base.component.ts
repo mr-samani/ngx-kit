@@ -76,6 +76,8 @@ export abstract class NgxDatePickerBase {
   renderDay(selected?: CalendarDate, _events?: MsEvents[]) {
     this.viewDays = [];
     let firstDayofMonth = this.adapter.firstDayofMonth(this.currYear, this.currMonth);
+    debugger;
+
     let lastDateofMonth = this.adapter.lastDateofMonth(this.currYear, this.currMonth);
     let lastDayofMonth = this.adapter.lastDayofMonth(this.currYear, this.currMonth);
     let lastDateofLastMonth = this.adapter.lastDateofLastMonth(this.currYear, this.currMonth);

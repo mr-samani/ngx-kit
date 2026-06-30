@@ -1,5 +1,5 @@
 import { genFormatDate } from '../../helpers/date-format.helper';
-import { Jalali } from '../../helpers/jalali.helper';
+import { Jalali } from '../converters/jalali-converter.helper';
 import { DatePickerView } from '../../models/view';
 import { IDateAdapter } from '../IAdapter';
 import { CalendarDate } from '../calendar-date';

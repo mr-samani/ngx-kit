@@ -1,53 +1,18 @@
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../calendar-date';
+import { ChineseConverter } from '../converters/chinese-converter.helper';
 import { IDateAdapter } from '../IAdapter';
 
 /**
  * تقویم سنتی چینی (农历)
- * نکته: شماره سال برگشتی از Intl می‌تواند سال مطلق (مثل 4721)
- * یا شماره در دوره 60 ساله باشد، بسته به نسخه ICU.
+ * منطق تبدیل تاریخ در ChineseConverter (helpers/chinese-converter.helper.ts) است.
+ *
+ * ⚠️ محدودیت شناخته‌شده: ماه‌های کبیسه (闰) فعلاً به ماه عادیِ هم‌نام
+ * نگاشت می‌شوند؛ جزئیات در chinese-converter.helper.ts.
  */
-const CHINESE_LOCALE = 'zh-CN-u-ca-chinese';
-/**
- * تبدیل نام ماه چینی به شماره
- * ماه‌های عادی: 正月(1), 二月(2), ..., 腊月(12)
- * ماه کبیسه: 闰正月(1), 闰二月(2), ...
- */
-const CHINESE_MONTH_MAP: Record<string, number> = {
-  正月: 1,
-  二月: 2,
-  三月: 3,
-  四月: 4,
-  五月: 5,
-  六月: 6,
-  七月: 7,
-  八月: 8,
-  九月: 9,
-  十月: 10,
-  冬月: 11, // ماه یازدهم
-  腊月: 12, // ماه دوازدهم
-  闰正月: 1,
-  闰二月: 2,
-  闰三月: 3,
-  闰四月: 4,
-  闰五月: 5,
-  闰六月: 6,
-  闰七月: 7,
-  闰八月: 8,
-  闰九月: 9,
-  闰十月: 10,
-  闰冬月: 11,
-  闰腊月: 12,
-};
 export class ChineseAdapter implements IDateAdapter {
   /** یکشنبه = 0 */
   startOfWeek = 0;
-
-  private readonly parser = new Intl.DateTimeFormat(CHINESE_LOCALE, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-  });
 
   get longMonths(): string[] {
     return [
@@ -79,107 +44,41 @@ export class ChineseAdapter implements IDateAdapter {
   }
 
   toLocale(date: Date): CalendarDate {
-    const c = this.parseChinese(date);
+    const c = ChineseConverter.parse(date);
     return { locale: 'zh', day: c.day, month: c.month, year: c.year, date: new Date() };
   }
+
   today() {
     return this.toLocale(new Date());
   }
 
-  /** استخراج تاریخ چینی از JS Date - با تشخیص ماه کبیسه */
-  private parseChinese(date: Date): {
-    day: number;
-    month: number;
-    year: number;
-    isLeapMonth: boolean;
-  } {
-    const parts = this.parser.formatToParts(date);
-
-    const dayPart = parts.find((p) => p.type === 'day')!;
-    const monthPart = parts.find((p) => p.type === 'month')!;
-    const yearPart = parts.find((p) => p.type === 'year' || p.type === ('relatedYear' as any))!;
-
-    // تبدیل اعداد به لاتین (برای اطمینان)
-    const toLatin = (str: string) =>
-      str.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0));
-
-    const day = parseInt(toLatin(dayPart.value), 10);
-    const isLeap = monthPart.value.includes('闰');
-    const monthNum = CHINESE_MONTH_MAP[monthPart.value] ?? 0;
-    const year = parseInt(toLatin(yearPart.value), 10);
-
-    return { day, month: monthNum - 1, year, isLeapMonth: isLeap };
-  }
-
-  /** پیدا کردن JS Date معادل روز اول ماه چینی (غیر کبیسه) */
-  private firstDayOfChineseMonth(year: number, month: number): Date {
-    // تخمین اولیه: epoch هوانگ‌دی ≈ 2697 قبل از میلاد
-    const gregorianGuess = year > 2000 ? year - 2697 : year;
-    const guess = new Date(gregorianGuess, month, 1);
-
-    for (let i = -45; i <= 45; i++) {
-      const test = new Date(guess);
-      test.setDate(test.getDate() + i);
-      const c = this.parseChinese(test);
-      if (c.year === year && c.month === month && c.day === 1 && !c.isLeapMonth) {
-        return test;
-      }
-    }
-
-    return guess;
-  }
-
-  /** تبدیل تاریخ چینی به JS Date */
-  private toGregorian(year: number, month: number, day: number): Date {
-    const firstDay = this.firstDayOfChineseMonth(year, month);
-    const result = new Date(firstDay);
-    result.setDate(result.getDate() + day - 1);
-    return result;
-  }
-
   firstDayofMonth(year: number, month: number): number {
-    return this.firstDayOfChineseMonth(year, month).getDay();
+    return ChineseConverter.firstDayOfMonth(year, month).getDay();
   }
 
   lastDateofMonth(year: number, month: number): number {
-    const firstDay = this.firstDayOfChineseMonth(year, month);
-
-    // جلو برو تا برسی به ماه بعد
-    for (let i = 1; i <= 60; i++) {
-      const test = new Date(firstDay);
-      test.setDate(test.getDate() + i);
-      const c = this.parseChinese(test);
-      if (c.year !== year || c.month !== month || c.isLeapMonth) {
-        test.setDate(test.getDate() - 1);
-        return this.parseChinese(test).day;
-      }
-    }
-
-    return 30; // fallback
+    return ChineseConverter.daysInMonth(year, month);
   }
 
   lastDayofMonth(year: number, month: number): number {
-    const firstDay = this.firstDayOfChineseMonth(year, month);
-    const lastDay = this.lastDateofMonth(year, month);
-    const last = new Date(firstDay);
-    last.setDate(last.getDate() + lastDay - 1);
-    return last.getDay();
+    const lastDate = this.lastDateofMonth(year, month);
+    return ChineseConverter.toGregorian(year, month, lastDate).getDay();
   }
 
   /**
    * روز آخر ماه قبل - با یک ترفند ساده:
-   * روز قبل از روز اول ماه فعلی، حتماً آخرین روز ماه قبل است
-   * (چه ماه عادی چه کبیسه)
+   * روز قبل از روز اول ماه فعلی، حتماً آخرین روز ماه قبل است.
    */
   lastDateofLastMonth(year: number, month: number): number {
-    const firstOfThis = this.firstDayOfChineseMonth(year, month);
+    const firstOfThis = ChineseConverter.firstDayOfMonth(year, month);
     const lastOfPrev = new Date(firstOfThis);
     lastOfPrev.setDate(lastOfPrev.getDate() - 1);
-    return this.parseChinese(lastOfPrev).day;
+    return ChineseConverter.parse(lastOfPrev).day;
   }
 
+  /** month start with zero */
   getDate(date: CalendarDate): Date {
-    const jsDate = this.toGregorian(date.year, date.month ?? 1, date.day ?? 1);
+    const jsDate = ChineseConverter.toGregorian(date.year, date.month ?? 0, date.day ?? 1);
     if (date.hours !== undefined) jsDate.setHours(date.hours);
     if (date.minutes !== undefined) jsDate.setMinutes(date.minutes);
     if (date.seconds !== undefined) jsDate.setSeconds(date.seconds);
@@ -188,7 +87,7 @@ export class ChineseAdapter implements IDateAdapter {
   }
 
   getOutputDate(date: Date): CalendarDate {
-    const c = this.parseChinese(date);
+    const c = ChineseConverter.parse(date);
     return {
       locale: 'zh',
       year: c.year,
@@ -217,34 +116,38 @@ export class ChineseAdapter implements IDateAdapter {
       options.weekday = 'long';
     }
 
-    return new Intl.DateTimeFormat(CHINESE_LOCALE, options).format(jsDate);
+    return new Intl.DateTimeFormat('zh-CN-u-ca-chinese', options).format(jsDate);
   }
 
   getStartOf(date: Date | null, t: DatePickerView): Date | null {
     if (!date) return date;
-    const c = this.parseChinese(date);
+    const c = ChineseConverter.parse(date);
 
     switch (t) {
       case 'year':
-        return this.firstDayOfChineseMonth(c.year, 0);
+        return ChineseConverter.firstDayOfMonth(c.year, 0);
       case 'month':
-        return this.firstDayOfChineseMonth(c.year, c.month);
+        return ChineseConverter.firstDayOfMonth(c.year, c.month);
       case 'day':
-        return this.toGregorian(c.year, c.month, c.day);
+        return ChineseConverter.toGregorian(c.year, c.month, c.day);
     }
   }
 
   getLastOf(date: Date | null, t: DatePickerView): Date | null {
     if (!date) return date;
-    const c = this.parseChinese(date);
+    const c = ChineseConverter.parse(date);
 
     switch (t) {
       case 'year':
-        return this.toGregorian(c.year, 11, this.lastDateofMonth(c.year, 11));
+        return ChineseConverter.toGregorian(c.year, 11, ChineseConverter.daysInMonth(c.year, 11));
       case 'month':
-        return this.toGregorian(c.year, c.month, this.lastDateofMonth(c.year, c.month));
+        return ChineseConverter.toGregorian(
+          c.year,
+          c.month,
+          ChineseConverter.daysInMonth(c.year, c.month),
+        );
       case 'day':
-        return this.toGregorian(c.year, c.month, c.day);
+        return ChineseConverter.toGregorian(c.year, c.month, c.day);
     }
   }
 }

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgxCalendarComponent } from 'ngx-kit/date-picker';
+import { getLocals, NgxCalendarComponent, provideDateAdapters } from 'ngx-kit/date-picker';
 
 @Component({
   selector: 'app-calendar',
@@ -9,7 +9,10 @@ import { NgxCalendarComponent } from 'ngx-kit/date-picker';
   styleUrls: ['./calendar.component.scss'],
   standalone: true,
   imports: [CommonModule, FormsModule, NgxCalendarComponent],
+  providers: [provideDateAdapters()],
 })
 export class CalendarComponent {
   locale: string = 'fa';
+
+  availableLocals = getLocals();
 }
