@@ -30,14 +30,14 @@
   <div class="calendar">
     @if (view === 'day') {
       <ul class="weeks">
-        @for (w of weeks; track w) {
+        @for (w of weeks; track $index) {
           <li>
             {{ w }}
           </li>
         }
       </ul>
       <ul class="days" [style.minHeight.px]="minHeight" #daysContainer>
-        @for (item of viewDays; track item) {
+        @for (item of viewDays; track $index) {
           <li
             [class.de-active]="!item.active"
             [class.today]="item.isToday"
@@ -46,7 +46,7 @@
             <div>{{ item.day }}</div>
             @if (item.events) {
               <div class="ms-day-events">
-                @for (event of item.events; track event) {
+                @for (event of item.events; track $index) {
                   <a
                     tabindex="0"
                     class="ms-day-event"

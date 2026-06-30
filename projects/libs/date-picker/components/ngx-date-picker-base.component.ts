@@ -5,12 +5,13 @@ import { MsViewMonth } from '../models/view-month';
 import { MsViewDay } from '../models/view-day';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents } from '../models/events';
-import { Locale } from '../adapters/locale';
-import { CalendarAdapterFactory } from '../adapters/factory';
+import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
+import { inject } from '@angular/core';
 
 export abstract class NgxDatePickerBase {
-  protected _locale: Locale = 'en';
-  adapter: IDateAdapter = CalendarAdapterFactory.create(this._locale);
+  protected _locale: string = 'en';
+  protected dateAdapterRegistry = inject(DateAdapterRegistry);
+  adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this._locale);
   currYear!: number;
   currMonth!: number;
 

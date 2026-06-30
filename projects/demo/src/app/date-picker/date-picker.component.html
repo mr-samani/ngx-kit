@@ -31,8 +31,9 @@
   <!-- ------------------------ configurations ----------------------------------- -->
   <div class="row">
     <select name="locale" [(ngModel)]="locale">
-      <option value="fa">Jalali ('fa')</option>
-      <option value="en">Gregorian ('en')</option>
+      @for (item of availableLocals; track $index) {
+        <option [value]="item">{{item}}</option>
+      }
     </select>
   </div>
   <div class="d-flex flex-wrap align-items-center">
@@ -88,6 +89,6 @@
     }
   </div>
 </div>
-<ngx-datepicker [config]="config"></ngx-datepicker>
+<ngx-datepicker [config]="config" [locale]="locale"></ngx-datepicker>
 
 <pre>{{ config | json }}</pre>

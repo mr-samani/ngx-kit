@@ -8,10 +8,13 @@ import {
   Validators,
 } from '@angular/forms';
 import {
+  getLocals,
   NgxDatePickerConfig,
   NgxInputDatePicker,
   NgxInputDatePickerComponent,
+  provideDateAdapters,
 } from 'ngx-kit/date-picker';
+import { HijriAdapter } from './custom-adapters/hijri-adapter';
 
 @Component({
   selector: 'app-date-picker',
@@ -24,9 +27,16 @@ import {
     NgxInputDatePicker,
     NgxInputDatePickerComponent,
   ],
+  providers: [
+    provideDateAdapters({
+      locale: 'hi',
+      useClass: HijriAdapter,
+    }),
+  ],
 })
 export class DatePickerComponent implements OnInit {
-  locale: 'fa' | 'en' = 'en';
+  locale: string = 'en';
+  availableLocals = getLocals();
   minDate?: Date; // = new Date('2023-03-02');
   maxDate?: Date; // = new Date('2023-03-17');
 
@@ -42,6 +52,7 @@ export class DatePickerComponent implements OnInit {
     this.form = fb.group({
       date: ['', [Validators.required]],
     });
+    console.log('availableLocals', this.availableLocals);
   }
 
   ngOnInit(): void {}

@@ -26,8 +26,7 @@ import {
   ValidationErrors,
   Validator,
 } from '@angular/forms';
-import { Locale } from '../../adapters/locale';
-import { CalendarAdapterFactory } from '../../adapters/factory';
+import { DateAdapterRegistry } from 'ngx-kit/date-picker/adapters/date-adapter-registry';
 
 @Component({
   selector: 'ngx-datepicker',
@@ -35,6 +34,7 @@ import { CalendarAdapterFactory } from '../../adapters/factory';
   styleUrls: ['./ngx-datepicker.component.scss'],
   imports: [CommonModule],
   providers: [
+    DateAdapterRegistry,
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NgxInputDatePickerComponent),
@@ -52,6 +52,7 @@ export class NgxInputDatePickerComponent
   implements ControlValueAccessor, Validator, OnInit
 {
   browserService = inject(BrowserService);
+
   theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
   @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
     if (!val || val == 'auto') {
@@ -65,9 +66,9 @@ export class NgxInputDatePickerComponent
   @Input() set config(val: NgxDatePickerConfig) {
     this._config = { ...new NgxDatePickerConfig(), ...val };
   }
-  @Input() set locale(val: Locale) {
+  @Input() set locale(val: string) {
     this._locale = val;
-    this.adapter = CalendarAdapterFactory.create(this._locale);
+    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
     this.ngOnInit();
   }
   /** The minimum valid date. */

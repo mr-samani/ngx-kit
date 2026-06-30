@@ -24,9 +24,8 @@ import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepi
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
 import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 import { IDateAdapter } from '../adapters/IAdapter';
-import { Locale } from '../adapters/locale';
 import { NgxDatePickerConfig } from '../components/config';
-import { CalendarAdapterFactory } from '../adapters/factory';
+import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 
 @Directive({
   selector: '[ngxInputDatePicker]',
@@ -36,6 +35,7 @@ import { CalendarAdapterFactory } from '../adapters/factory';
     '[attr.readOnly]': 'true',
   },
   providers: [
+    DateAdapterRegistry,
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NgxInputDatePicker),
@@ -49,6 +49,8 @@ import { CalendarAdapterFactory } from '../adapters/factory';
   ],
 })
 export class NgxInputDatePicker implements ControlValueAccessor, Validator {
+  dateAdapterRegistry = inject(DateAdapterRegistry);
+
   @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
   openOnCLick = input<boolean>(true);
 
@@ -56,10 +58,10 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   private value?: Date | null;
   private pickerRef?: DialogOverlayRef<NgxInputDatePickerComponent>;
   adapter!: IDateAdapter;
-  private _locale: Locale = 'en';
-  @Input() set locale(val: Locale) {
+  private _locale: string = 'en';
+  @Input() set locale(val: string) {
     this._locale = val;
-    this.adapter = CalendarAdapterFactory.create(this._locale);
+    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
   }
 
   _onChange = (value: Date | null | undefined) => {};

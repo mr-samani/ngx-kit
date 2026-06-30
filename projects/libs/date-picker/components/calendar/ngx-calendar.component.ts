@@ -4,6 +4,7 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  inject,
   Input,
   OnInit,
   Output,
@@ -18,23 +19,23 @@ import { MsEvents } from '../../models/events';
 import { MsView } from '../../models/view';
 import { ISelectedEvent } from '../../models/selected-event';
 import { CommonModule } from '@angular/common';
-import { Locale } from '../../adapters/locale';
 import { deserialize, sameDate } from '../../helpers/date.helper';
-import { CalendarAdapterFactory } from '../../adapters/factory';
+import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 @Component({
   selector: 'ngx-calendar',
   templateUrl: './ngx-calendar.component.html',
   styleUrls: ['./ngx-calendar.component.scss'],
   imports: [CommonModule],
+  providers: [DateAdapterRegistry],
 })
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, AfterViewInit {
   _config = new NgxDatePickerConfig();
   @Input() set config(val: NgxDatePickerConfig) {
     this._config = { ...new NgxDatePickerConfig(), ...val };
   }
-  @Input() set locale(val: Locale) {
+  @Input() set locale(val: string) {
     this._locale = val;
-    this.adapter = CalendarAdapterFactory.create(this._locale);
+    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
     this.ngOnInit();
   }
   /** The minimum valid date. */
