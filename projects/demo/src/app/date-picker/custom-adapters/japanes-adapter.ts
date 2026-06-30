@@ -36,9 +36,6 @@ export class JapanesAdapter implements IDateAdapter {
   getDate(date: CalendarDate): Date {
     throw new Error('Method not implemented.');
   }
-  getOutputDate(date: Date): CalendarDate {
-    throw new Error('Method not implemented.');
-  }
   formatDate(date: CalendarDate, format: string): string | null {
     throw new Error('Method not implemented.');
   }

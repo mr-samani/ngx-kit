@@ -1,12 +1,12 @@
 import { clampDate, clampMonth, clampYear, compareDate } from '../helpers/date.helper';
 import { IDateAdapter } from '../adapters/IAdapter';
-import { DatePickerViewYear } from '../models/view-year';
-import { DatePickerViewMonth } from '../models/view-month';
-import { DatePickerViewDay } from '../models/view-day';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents } from '../models/events';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { inject } from '@angular/core';
+import { CalendarView, DatePickerView } from '../models/view';
+import { DateViewDay, DateViewMonth, DateViewWeek, DateViewYear } from '../models/date';
+import { convertNumberToTime } from '../helpers/time.helper';
 
 export abstract class NgxDatePickerBase {
   protected _locale: string = 'en';
@@ -14,18 +14,21 @@ export abstract class NgxDatePickerBase {
   adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this._locale);
   currYear!: number;
   currMonth!: number;
+  currentWeek!: number;
 
   months: string[] = [];
-  viewDays: DatePickerViewDay[] = [];
-  viewMonths: DatePickerViewMonth[] = [];
-  viewYears: DatePickerViewYear[] = [];
+  weeks: string[] = [];
+  viewDays: DateViewDay[] = [];
+  viewMonths: DateViewMonth[] = [];
+  viewYears: DateViewYear[] = [];
+  viewWeeks: DateViewWeek[] = [];
   displayMonth = '';
 
   minDate: Date | null = null;
   maxDate: Date | null = null;
 
   renderCalendar(
-    view: 'day' | 'month' | 'year',
+    view: CalendarView | DatePickerView,
     selected?: CalendarDate,
     events?: MsEvents[],
     callback?: Function,
@@ -39,6 +42,9 @@ export abstract class NgxDatePickerBase {
         break;
       case 'year':
         this.renderYear();
+        break;
+      case 'week':
+        this.renderWeek();
         break;
     }
     this.displayMonth = this.months[this.currMonth];
@@ -68,6 +74,20 @@ export abstract class NgxDatePickerBase {
         displayMonth: this.months[i],
         selected: i === this.currMonth,
         active: this.checkActiveMonth(this.currYear, i),
+      });
+    }
+  }
+
+  /** only in calendar view */
+  renderWeek() {
+    this.viewWeeks = [];
+    for (let t = 0; t <= 24; t = t + 0.5) {
+      this.viewWeeks.push({
+        time: t,
+        displayTime: convertNumberToTime(t),
+        weeks: this.weeks,
+        active: true,
+        selected: false,
       });
     }
   }

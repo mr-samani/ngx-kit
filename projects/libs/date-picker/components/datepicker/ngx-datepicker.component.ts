@@ -13,9 +13,6 @@ import {
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
-import { DatePickerViewDay } from '../../models/view-day';
-import { DatePickerViewMonth } from '../../models/view-month';
-import { DatePickerViewYear } from '../../models/view-year';
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../../adapters/calendar-date';
 import { CommonModule } from '@angular/common';
@@ -28,7 +25,8 @@ import {
   ValidationErrors,
   Validator,
 } from '@angular/forms';
-import { DateAdapterRegistry } from 'ngx-kit/date-picker/adapters/date-adapter-registry';
+import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
+import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
 
 @Component({
   selector: 'ngx-datepicker',
@@ -141,6 +139,7 @@ export class NgxInputDatePickerComponent
     } else {
       this.selected = undefined;
     }
+    this.init();
   }
   validate(control: AbstractControl): ValidationErrors | null {
     if (this.selected?.date) {
@@ -181,7 +180,7 @@ export class NgxInputDatePickerComponent
     super.renderCalendar(view, this.selected, [], () => {
       let d = this.selected?.date;
       this.calendarHeader =
-        (d && this.adapter.formatDate(this.adapter.getOutputDate(d), 'EEEE - d MMMM, yyyy')) ?? '';
+        (d && this.adapter.formatDate(this.adapter.toLocale(d), 'EEEE - d MMMM, yyyy')) ?? '';
     });
   }
 
@@ -233,7 +232,7 @@ export class NgxInputDatePickerComponent
     this.renderCalendar(this.view);
   }
 
-  selectDay(ev: Event, item: DatePickerViewDay) {
+  selectDay(ev: Event, item: DateViewDay) {
     ev.stopPropagation();
     if (item.active) {
       this.selected = {
@@ -246,14 +245,14 @@ export class NgxInputDatePickerComponent
       this.change.emit(this.selected.date);
     }
   }
-  selectMonth(ev: Event, item: DatePickerViewMonth) {
+  selectMonth(ev: Event, item: DateViewMonth) {
     ev.stopPropagation();
     if (item.active) {
       this.currMonth = item.month;
       this.changeView('day');
     }
   }
-  selectYear(ev: Event, item: DatePickerViewYear) {
+  selectYear(ev: Event, item: DateViewYear) {
     ev.stopPropagation();
     if (item.active) {
       this.currYear = item.year;

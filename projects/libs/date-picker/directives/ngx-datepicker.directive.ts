@@ -236,7 +236,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   protected _formatValue(value: Date | null, setChange = false) {
     let val = '';
     if (value && this.adapter) {
-      let o = this.adapter.getOutputDate(value);
+      let o = this.adapter.toLocale(value);
       val = (value && this.adapter.formatDate(o, this.displayFormat)) ?? '';
     }
     this.renderer.setProperty(this.el.nativeElement, 'value', val);
@@ -246,3 +246,4 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
     }
   }
 }
+

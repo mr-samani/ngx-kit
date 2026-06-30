@@ -25,10 +25,40 @@
         {{ displayMonth }}
       </span>
     </div>
-    <div class="view-mode"></div>
+    <div class="view-mode">
+      {{ view }}
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('month')"
+        [class.active]="view == 'month'"
+        title="Month View">
+        Month
+      </button>
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('week')"
+        [class.active]="view == 'week'"
+        title="Week View">
+        Week
+      </button>
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('day')"
+        [class.active]="view == 'day'"
+        title="Day View">
+        Day
+      </button>
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('event')"
+        [class.active]="view == 'event'"
+        title="Day View">
+        Event
+      </button>
+    </div>
   </div>
   <div class="calendar">
-    @if (view === 'day') {
+    @if (view === 'month') {
       <ul class="weeks">
         @for (w of weeks; track $index) {
           <li>
@@ -60,6 +90,29 @@
           </li>
         }
       </ul>
+    } @else if (view == 'week' || view == 'day') {
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            @for (w of weeks; track $index) {
+              <th>{{ w }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of viewWeeks; track $index; let i = $index) {
+            <tr>
+              <td [title]="item.displayTime">{{ item.time % 1 == 0 ? item.time : '' }}</td>
+              @for (w of item.weeks; track $index) {
+                <td></td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (view == 'event') {
+      not implemented
     }
   </div>
 </div>

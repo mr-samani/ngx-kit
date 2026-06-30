@@ -46,7 +46,6 @@ export interface IDateAdapter {
   lastDateofLastMonth(year: number, month: number): number;
 
   getDate(date: CalendarDate): Date;
-  getOutputDate(date: Date): CalendarDate;
 
   formatDate(date: CalendarDate, format: string): string | null;
 

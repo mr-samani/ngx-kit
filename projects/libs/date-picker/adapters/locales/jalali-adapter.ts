@@ -45,7 +45,12 @@ export class JalaliAdapter implements IDateAdapter {
       day: jd.jd,
       month: jd.jm - 1,
       year: jd.jy,
-      date: new Date(),
+      date,
+      hours: date.getHours(),
+      minutes: date.getMinutes(),
+      seconds: date.getSeconds(),
+      milliseconds: date.getMilliseconds(),
+      dayOfWeek: date.getDay() + this.startOfWeek,
     };
   }
   today() {
@@ -143,21 +148,6 @@ export class JalaliAdapter implements IDateAdapter {
     return d;
   }
 
-  getOutputDate(date: Date): CalendarDate {
-    let jDate = Jalali.toJalaali(date);
-    return {
-      locale: 'fa',
-      year: jDate.jy,
-      month: jDate.jm - 1,
-      day: jDate.jd,
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      seconds: date.getSeconds(),
-      milliseconds: date.getMilliseconds(),
-      dayOfWeek: date.getDay() + this.startOfWeek,
-      date: date,
-    };
-  }
   formatDate(date: CalendarDate, format: string) {
     if (!date) {
       return '';

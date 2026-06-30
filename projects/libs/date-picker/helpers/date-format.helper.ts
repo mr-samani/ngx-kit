@@ -1,6 +1,6 @@
 // Date and Time Patterns
 
-import { CalendarDate } from "../adapters/calendar-date";
+import { CalendarDate } from '../adapters/calendar-date';
 
 // yy = 2-digit year; yyyy = full year
 
@@ -18,66 +18,78 @@ import { CalendarDate } from "../adapters/calendar-date";
 
 // S = miliseconds
 
+export function genFormatDate(
+  date: CalendarDate,
+  pattern = 'M/d/yyyy',
+  monthNames: string[],
+  dayNames: string[],
+): string {
+  if (!date) {
+    return '';
+  }
 
-export function genFormatDate(date: CalendarDate, patternStr: string, monthNames: string[], dayOfWeekNames: string[]) {
-    if (!date) {
-        return '';
-    }
-    if (!patternStr) {
-        patternStr = 'M/d/yyyy';
-    }
-    var day = date.day ?? 0,
-        month = date.month ?? 0,
-        year = date.year ?? 0,
-        hour = date.hours ?? 0,
-        minute = date.minutes ?? 0,
-        second = date.seconds ?? 0,
-        miliseconds = date.milliseconds ?? 0,
-        h = hour % 12,
-        hh = twoDigitPad(h),
-        HH = twoDigitPad(hour),
-        mm = twoDigitPad(minute),
-        ss = twoDigitPad(second),
-        aaa = hour < 12 ? 'AM' : 'PM',
-        EEEE = dayOfWeekNames[date.dayOfWeek ? date.dayOfWeek - 1 : 0],
-        EEE = EEEE.substring(0, 3),
-        dd = twoDigitPad(day),
-        M = month + 1,
-        MM = twoDigitPad(M),
-        MMMM = monthNames[month],
-        MMM = MMMM.substring(0, 3),
-        yyyy = year + "",
-        yy = yyyy.substring(2, 2)
-        ;
-    // checks to see if month name will be used
-    patternStr = patternStr
-        .replace('hh', hh).replace('h', h.toString())
-        .replace('HH', HH).replace('H', hour.toString())
-        .replace('mm', mm).replace('m', minute.toString())
-        .replace('ss', ss).replace('s', second.toString())
-        .replace('S', miliseconds.toString())
-        .replace('dd', dd).replace('d', day.toString())
+  const day = date.day ?? 0;
+  const month = date.month ?? 0;
+  const year = date.year ?? 0;
+  const hour24 = date.hours ?? 0;
+  const minute = date.minutes ?? 0;
+  const second = date.seconds ?? 0;
+  const ms = date.milliseconds ?? 0;
+  const dayOfWeek = date.dayOfWeek ?? 0;
 
-        .replace('EEEE', EEEE).replace('EEE', EEE)
-        .replace('yyyy', yyyy)
-        .replace('yy', yy)
-        .replace('aaa', aaa);
-    if (patternStr.indexOf('MMM') > -1) {
-        patternStr = patternStr
-            .replace('MMMM', MMMM)
-            .replace('MMM', MMM);
-    }
-    else {
-        patternStr = patternStr
-            .replace('MM', MM)
-            .replace('M', M.toString());
-    }
-    return patternStr;
+  const hour12 = hour24 % 12 || 12;
+
+  const tokens: Record<string, string> = {
+    yyyy: year.toString(),
+
+    yy: year.toString().slice(-2),
+
+    MMMM: monthNames[month] ?? '',
+
+    MMM: (monthNames[month] ?? '').substring(0, 3),
+
+    MM: twoDigitPad(month + 1),
+
+    M: (month + 1).toString(),
+
+    EEEE: dayNames[dayOfWeek] ?? '',
+
+    EEE: (dayNames[dayOfWeek] ?? '').substring(0, 3),
+
+    dd: twoDigitPad(day),
+
+    d: day.toString(),
+
+    HH: twoDigitPad(hour24),
+
+    H: hour24.toString(),
+
+    hh: twoDigitPad(hour12),
+
+    h: hour12.toString(),
+
+    mm: twoDigitPad(minute),
+
+    m: minute.toString(),
+
+    ss: twoDigitPad(second),
+
+    s: second.toString(),
+
+    S: ms.toString().padStart(3, '0'),
+
+    aaa: hour24 < 12 ? 'AM' : 'PM',
+  };
+
+  return pattern.replace(
+    /yyyy|yy|MMMM|MMM|MM|M|EEEE|EEE|dd|d|HH|H|hh|h|mm|m|ss|s|S|aaa/g,
+    (token) => tokens[token],
+  );
 }
+
 export function twoDigitPad(num: number): string {
-    return num < 10 ? "0" + num : num.toString();
+  return num.toString().padStart(2, '0');
 }
-
 
 // console.log(formatDate(new Date())); // 12/19/2022
 // console.log(formatDate(new Date(), 'dd-MMM-yyyy')); //OP's request 19-Dec-2022
@@ -85,5 +97,3 @@ export function twoDigitPad(num: number): string {
 // console.log(formatDate(new Date(), 'EEE, MMM d, yyyy HH:mm')); //Mon, Dec 19, 2022 10:44
 // console.log(formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss.S')); //2022-12-19 10:44:35.438
 // console.log(formatDate(new Date(), 'M/dd/yyyy h:mmaaa')); //12/19/2022 10:44AM
-
-

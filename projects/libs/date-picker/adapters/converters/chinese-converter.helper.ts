@@ -10,7 +10,6 @@
  * عادیِ هم‌نام نگاشت می‌کند و کاربر نمی‌تواند مستقیماً وارد ماه کبیسه
  * شود. این یک محدودیتِ آگاهانه است، نه باگ سهوی؛ برای رفع کامل باید
  * فیلد isLeapMonth به CalendarDate اضافه و در همه‌جا (toLocale,
- * getOutputDate, getDate, ...) منتقل شود.
  */
 const CHINESE_LOCALE = 'zh-CN-u-ca-chinese';
 

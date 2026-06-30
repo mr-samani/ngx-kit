@@ -44,7 +44,18 @@ export class HijriAdapter implements IDateAdapter {
 
   toLocale(date: Date): CalendarDate {
     const h = HijriConverter.parse(date);
-    return { locale: 'ar', day: h.day, month: h.month, year: h.year, date: new Date() };
+    return {
+      locale: 'ar',
+      day: h.day,
+      month: h.month,
+      year: h.year,
+      date,
+      hours: date.getHours(),
+      minutes: date.getMinutes(),
+      seconds: date.getSeconds(),
+      milliseconds: date.getMilliseconds(),
+      dayOfWeek: date.getDay(),
+    };
   }
 
   today() {
@@ -78,22 +89,6 @@ export class HijriAdapter implements IDateAdapter {
     if (date.seconds !== undefined) jsDate.setSeconds(date.seconds);
     if (date.milliseconds !== undefined) jsDate.setMilliseconds(date.milliseconds);
     return jsDate;
-  }
-
-  getOutputDate(date: Date): CalendarDate {
-    const h = HijriConverter.parse(date);
-    return {
-      locale: 'ar',
-      year: h.year,
-      month: h.month,
-      day: h.day,
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      seconds: date.getSeconds(),
-      milliseconds: date.getMilliseconds(),
-      dayOfWeek: date.getDay(),
-      date: date,
-    };
   }
 
   formatDate(date: CalendarDate, format: string): string | null {

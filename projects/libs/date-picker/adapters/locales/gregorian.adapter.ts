@@ -39,6 +39,11 @@ export class GregorianAdapter implements IDateAdapter {
       month: d.getMonth(),
       year: d.getFullYear(),
       date: d,
+      hours: date.getHours(),
+      minutes: date.getMinutes(),
+      seconds: date.getSeconds(),
+      milliseconds: date.getMilliseconds(),
+      dayOfWeek: date.getDay(),
     };
   }
   today() {
@@ -96,20 +101,6 @@ export class GregorianAdapter implements IDateAdapter {
         (date.milliseconds ?? 0);
     }
     return new Date(str);
-  }
-  getOutputDate(date: Date): CalendarDate {
-    return {
-      locale: 'en',
-      year: date.getFullYear(),
-      month: date.getMonth(),
-      day: date.getDate(),
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      seconds: date.getSeconds(),
-      milliseconds: date.getMilliseconds(),
-      dayOfWeek: date.getDay(),
-      date: date,
-    };
   }
 
   formatDate(date: CalendarDate, format: string) {
