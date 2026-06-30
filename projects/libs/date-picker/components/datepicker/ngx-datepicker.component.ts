@@ -112,10 +112,13 @@ export class NgxInputDatePickerComponent
   ngOnInit(): void {
     this.months = this.adapter.longMonths;
     this.minWeeks = this.adapter.shortDays;
-    if (!this.selected) {
-    debugger;
+    if (!this.selected?.date) {
       this.gotoToday();
     } else {
+      let l = this.adapter.toLocale(this.selected.date);
+      this.currYear = l.year;
+      this.currMonth = l.month ?? 1;
+      this._date = l.date!;
       this.renderCalendar(this.view);
     }
   }
@@ -190,7 +193,7 @@ export class NgxInputDatePickerComponent
     let today = this.adapter.today();
     this.selected = today;
     this.currYear = today.year;
-    this.currMonth = today.month;
+    this.currMonth = today.month ?? 1;
     this.calendarHeader = this.adapter.formatDate(today, 'EEEE, d MMMM, yyyy') ?? '';
     this.changeView('day');
   }
@@ -246,6 +249,7 @@ export class NgxInputDatePickerComponent
         year: this.currYear,
         month: this.currMonth,
         day: item.day,
+        date: item.date,
       };
       this.change.emit(this._date);
     }

@@ -123,7 +123,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     let today = this.adapter.today();
     this.selected = this.adapter.getDate(today);
     this.currYear = today.year;
-    this.currMonth = today.month;
+    this.currMonth = today.month??1;
     this.changeView('day');
   }
 

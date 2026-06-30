@@ -78,9 +78,12 @@ export class ChineseAdapter implements IDateAdapter {
     return ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
   }
 
+  toLocale(date: Date): CalendarDate {
+    const c = this.parseChinese(date);
+    return { locale: 'zh', day: c.day, month: c.month, year: c.year, date: new Date() };
+  }
   today() {
-    const c = this.parseChinese(new Date());
-    return { locale: 'zh', day: c.day, month: c.month, year: c.year };
+    return this.toLocale(new Date());
   }
 
   /** استخراج تاریخ چینی از JS Date - با تشخیص ماه کبیسه */
@@ -90,7 +93,6 @@ export class ChineseAdapter implements IDateAdapter {
     year: number;
     isLeapMonth: boolean;
   } {
-    debugger;
     const parts = this.parser.formatToParts(date);
 
     const dayPart = parts.find((p) => p.type === 'day')!;
@@ -197,6 +199,7 @@ export class ChineseAdapter implements IDateAdapter {
       seconds: date.getSeconds(),
       milliseconds: date.getMilliseconds(),
       dayOfWeek: date.getDay(),
+      date: date,
     };
   }
 

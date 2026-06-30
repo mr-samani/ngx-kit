@@ -87,6 +87,7 @@ export class DialogService implements OnDestroy {
     dialogElement.style.maxWidth = '100vw';
     dialogElement.style.maxHeight = '100vh';
     dialogElement.style.overflow = 'visible';
+    dialogElement.style.visibility = 'hidden';
     dialogElement.style.zIndex = `${1000 + this.openDialogs.size}`;
 
     this.doc.body.appendChild(dialogElement);
@@ -177,7 +178,10 @@ export class DialogService implements OnDestroy {
     let verticalPos: 'above' | 'bottom' = 'above';
 
     //  vertical position
-    if (placement === 'bottom' || (placement === 'auto' && spaceBelow >= dialogRect.height + margin)) {
+    if (
+      placement === 'bottom' ||
+      (placement === 'auto' && spaceBelow >= dialogRect.height + margin)
+    ) {
       top = anchorRect.bottom + margin;
       verticalPos = 'above';
       if (top + dialogRect.height > vh - margin) {
@@ -221,6 +225,7 @@ export class DialogService implements OnDestroy {
     dialog.style.left = left != 'auto' ? `${left}px` : left;
     dialog.style.right = right != 'auto' ? `${right}px` : right;
     dialog.style.transform = 'none';
+    dialog.style.visibility = 'visible';
   }
 
   private getLastDialog(): DialogInstance | undefined {

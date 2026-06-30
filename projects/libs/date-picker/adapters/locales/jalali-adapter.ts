@@ -38,14 +38,18 @@ export class JalaliAdapter implements IDateAdapter {
 
   constructor() {}
 
-  today() {
-    let jToday = Jalali.toJalaali(new Date());
+  toLocale(date: Date): CalendarDate {
+    let jd = Jalali.toJalaali(date);
     return {
       locale: 'fa',
-      day: jToday.jd,
-      month: jToday.jm - 1,
-      year: jToday.jy,
+      day: jd.jd,
+      month: jd.jm - 1,
+      year: jd.jy,
+      date: new Date(),
     };
+  }
+  today() {
+    return this.toLocale(new Date());
   }
   /**
    *  getting first day of month
@@ -151,6 +155,7 @@ export class JalaliAdapter implements IDateAdapter {
       seconds: date.getSeconds(),
       milliseconds: date.getMilliseconds(),
       dayOfWeek: date.getDay() + this.startOfWeek,
+      date: date,
     };
   }
   formatDate(date: CalendarDate, format: string) {

@@ -8,12 +8,11 @@ export interface IDateAdapter {
   get longDays(): string[];
   startOfWeek: number;
 
-  today(): {
-    locale: string;
-    day: number;
-    month: number;
-    year: number;
-  };
+  /** convert js date to locale */
+  toLocale(date: Date): CalendarDate;
+
+  /** get today of localy */
+  today(): CalendarDate;
 
   /**
    *  getting first day of month

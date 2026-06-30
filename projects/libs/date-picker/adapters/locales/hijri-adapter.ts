@@ -48,9 +48,12 @@ export class HijriAdapter implements IDateAdapter {
     return ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
   }
 
+  toLocale(date: Date): CalendarDate {
+    const h = this.parseHijri(date);
+    return { locale: 'ar', day: h.day, month: h.month, year: h.year, date: new Date() };
+  }
   today() {
-    const h = this.parseHijri(new Date());
-    return { locale: 'ar', day: h.day, month: h.month, year: h.year };
+    return this.toLocale(new Date());
   }
 
   /**
@@ -139,6 +142,7 @@ export class HijriAdapter implements IDateAdapter {
       seconds: date.getSeconds(),
       milliseconds: date.getMilliseconds(),
       dayOfWeek: date.getDay(),
+      date: date,
     };
   }
 
