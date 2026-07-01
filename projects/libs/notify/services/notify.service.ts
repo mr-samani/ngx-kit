@@ -9,7 +9,7 @@ import {
   ApplicationRef,
 } from '@angular/core';
 import { NgxNotifyOptions } from '../models/notify-options';
-import { NgxNotifyPayload, NgxPgNotifyType } from '../models/notify.model';
+import { INotifyEnd, NgxNotifyPayload, NgxPgNotifyType } from '../models/notify.model';
 import { WINDOW } from 'ngx-kit/shared';
 import { NGX_NOTIFY_CONFIG } from '../models/notify-config';
 import { NgxPgNotificationComponent } from '../components/notification.component';
@@ -31,17 +31,7 @@ export class NgxNotifyService {
   private doc = inject(DOCUMENT);
   private win = inject(WINDOW);
   private defaultOptions = inject(NGX_NOTIFY_CONFIG);
-  constructor() {
-    if (this.win) {
-      // global event listeners for notifications finishing or close
-      this.win.addEventListener('ngx-notify:finish', (e: any) =>
-        this.onNotificationFinish(e.detail.id, e.detail.el),
-      );
-      this.win.addEventListener('ngx-notify:close', (e: any) =>
-        this.onNotificationClose(e.detail.id, e.detail.el),
-      );
-    }
-  }
+  constructor() {}
 
   configureContainer(position: NgxNotifyOptions['position'], containerClass: string) {
     if (this.container) return; // created already
@@ -110,6 +100,9 @@ export class NgxNotifyService {
       hostElement: host,
     });
     compRef.instance.payload = payload;
+    compRef.instance.onClose.subscribe((d) => this.removeEl(d));
+    compRef.instance.onFinish.subscribe((d) => this.removeEl(d));
+
     // Registers the component’s view so it participates in change detection cycle.
     this.appRef.attachView(compRef.hostView);
     // store visible
@@ -131,19 +124,12 @@ export class NgxNotifyService {
     }, 300);
   }
 
-  private removeEl(el: HTMLElement, id: string) {
-    if (el) this.removeNode(el, id);
+  private removeEl(d: INotifyEnd) {
+    if (d.el) this.removeNode(d.el, d.id);
     else {
       // if in queue remove it
-      this.queue = this.queue.filter((q) => q.id !== id);
+      this.queue = this.queue.filter((q) => q.id !== d.id);
     }
-  }
-
-  private onNotificationFinish(id: string, el: HTMLElement) {
-    this.removeEl(el, id);
-  }
-  private onNotificationClose(id: string, el: HTMLElement) {
-    this.removeEl(el, id);
   }
 
   private _showNextIfPossible() {

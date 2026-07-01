@@ -7,3 +7,8 @@ export interface NgxNotifyPayload {
   type: NgxPgNotifyType;
   options: NgxNotifyOptions;
 }
+
+export interface INotifyEnd {
+  id: string;
+  el: HTMLElement;
+}

@@ -10,8 +10,9 @@ import {
   Renderer2,
   afterNextRender,
   signal,
+  output,
 } from '@angular/core';
-import { NgxNotifyPayload } from '../models/notify.model';
+import { INotifyEnd, NgxNotifyPayload } from '../models/notify.model';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -23,6 +24,9 @@ import { CommonModule } from '@angular/common';
 export class NgxPgNotificationComponent implements OnInit, OnDestroy {
   @Input() payload!: NgxNotifyPayload;
   @Input() containerClass = 'ngx-notify';
+
+  onClose = output<INotifyEnd>();
+  onFinish = output<INotifyEnd>();
 
   private _timeoutId: any = null;
   private _remaining = 0;
@@ -61,7 +65,10 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
     this.clearTimer();
     this._remaining = ms;
     this._endTs = Date.now() + ms;
-    this._timeoutId = setTimeout(() => this.finish(), ms);
+    this._timeoutId = setTimeout(
+      () => this.onFinish.emit({ id: this.payload.id, el: this.el.nativeElement }),
+      ms,
+    );
   }
   pauseTimer() {
     if (!this._timeoutId) return;
@@ -76,21 +83,9 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
     this.startTimer(this._remaining);
   }
 
-  finish() {
-    // dispatch custom event for service to remove
-    const ev = new CustomEvent('ngx-notify:finish', {
-      detail: { id: this.payload.id, el: this.el.nativeElement },
-    });
-    window?.dispatchEvent(ev);
-  }
-
   close(ev?: Event) {
-    debugger;
     if (ev) ev.stopPropagation();
-    const evn = new CustomEvent('ngx-notify:close', {
-      detail: { id: this.payload.id, el: this.el.nativeElement },
-    });
-    window?.dispatchEvent(evn);
+    this.onClose.emit({ id: this.payload.id, el: this.el.nativeElement });
   }
 
   onMouseEnter() {

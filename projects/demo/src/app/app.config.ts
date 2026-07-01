@@ -5,5 +5,8 @@ import { routes } from './app.routes';
 import { provideNotify } from 'ngx-kit/notify';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes), provideNotify({ timeout: 5000, dismissible: true })],
+  providers: [
+    provideRouter(routes),
+    provideNotify({ timeout: 5000, dismissible: true, position: 'bottom-center' }),
+  ],
 };
