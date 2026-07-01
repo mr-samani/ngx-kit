@@ -1,0 +1,5 @@
+<div class="ngx-dialog-overlay" (click)="onOverlayClicked($event)">
+  <div class="ngx-dialog" (click)="onDialogClicked($event)" #ngxDialog>
+    <ng-container *ngComponentOutlet="component"></ng-container>
+  </div>
+</div>

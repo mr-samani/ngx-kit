@@ -35,4 +35,8 @@ export const routes: Routes = [
     path: 'notify',
     loadComponent: () => import('./notify/notify.component').then((c) => c.NotifyComponent),
   },
+  {
+    path: 'dialog',
+    loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
+  },
 ];
