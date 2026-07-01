@@ -1,0 +1,12 @@
+<div
+  class="{{ containerClass }} {{ containerClass }}-{{ payload.type }} {{ showClass() }}"
+  role="status"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
+  [attr.aria-live]="payload.type === 'error' || payload.type === 'warning' ? 'assertive' : 'polite'"
+  [attr.data-id]="payload.id">
+  <span [innerHTML]="safeMessage"></span>
+  @if (payload.options.dismissible) {
+    <button class="ngx-close" (click)="close($event)" aria-label="close">×</button>
+  }
+</div>

@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  margin: 8px 0;
+}
+.ngx-notify {
+  min-width: 240px;
+  width: 500px;
+  max-width: 100%;
+  padding: 14px 18px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  font-family: Inter, Roboto, Arial, sans-serif;
+  font-size: 14px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+  pointer-events: auto;
+}
+.ngx-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ngx-notify-info {
+  background: #0a78cc;
+  color: #e8f3ff;
+}
+.ngx-notify-success {
+  background: #03bc50;
+  color: #ebeceb;
+}
+.ngx-notify-warning {
+  background: #e28408;
+  color: #fff4e5;
+}
+.ngx-notify-error {
+  background: #e7012b;
+  color: #ffecec;
+}
+
+.ngx-close {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}

@@ -4,6 +4,7 @@ export * from './saturation/saturation.component';
 
 export * from './slider/slider.component';
 export * from './utils/get-offset-position';
+export * from './utils/window';
 export * from './contracts/IPosition';
 
 export * from './services/browser.service';
