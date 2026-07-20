@@ -1,12 +1,10 @@
 import {
   Directive,
   OnDestroy,
-  ElementRef,
-  ViewContainerRef,
   HostListener,
   input,
-  Type,
   ApplicationRef,
+  ElementRef,
 } from '@angular/core';
 import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
@@ -21,6 +19,7 @@ export class NgxContextMenu implements OnDestroy {
   private containerRef?: OverlayRef<NgxMenuPanel>;
 
   constructor(
+    private el: ElementRef,
     private appRef: ApplicationRef,
     private overlayService: OverlayService,
   ) {}
@@ -44,7 +43,8 @@ export class NgxContextMenu implements OnDestroy {
     const t = this.ngxContextMenu().template();
     if (!t) return;
     this.containerRef = this.overlayService.openTemplate({
-      anchor: { x, y },
+      anchor: this.el.nativeElement,
+      point: { x, y },
       template: t,
       appRef: this.appRef,
       alignment: 'start',

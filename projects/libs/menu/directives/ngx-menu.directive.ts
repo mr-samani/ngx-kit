@@ -51,7 +51,6 @@ export class NgxMenu implements OnDestroy {
       alignment: 'start',
       placement: 'auto',
       // configure: (instance, ref) => {
-      //   debugger;
       //   instance.overlay = ref.nativeElement;
       //   instance.open();
       //   // instance.closed.subscribe(() => ref.close());

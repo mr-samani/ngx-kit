@@ -1,10 +1,11 @@
 import { Injectable, OnDestroy, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { OverlayAnchor, OverlayOptions, TemplateOptions } from './overlay-options';
+import { OverlayOptions, TemplateOptions } from './overlay-options';
 import { OverlayRef } from './overlay-ref';
 import { PlacementConfig } from './placement-config';
 import { OverlayInstance } from './overlay-instance';
-import { FOCUSABLE_SELECTOR, isElementAnchor } from './utils';
+export const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService implements OnDestroy {
@@ -25,6 +26,7 @@ export class OverlayService implements OnDestroy {
   open<T>(options: OverlayOptions<T>): OverlayRef<T> {
     const {
       anchor,
+      point,
       component,
       viewContainerRef,
       configure,
@@ -50,6 +52,7 @@ export class OverlayService implements OnDestroy {
     const instance: OverlayInstance = {
       element,
       anchor,
+      point,
       placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
       componentRef,
       onClosed,
@@ -71,7 +74,7 @@ export class OverlayService implements OnDestroy {
   }
 
   openTemplate(options: TemplateOptions): OverlayRef<any> {
-    const { anchor, template, appRef, onClosed, placement, alignment, margin } = options;
+    const { anchor, point, template, appRef, onClosed, placement, alignment, margin } = options;
 
     this.attachGlobalListeners();
 
@@ -83,6 +86,7 @@ export class OverlayService implements OnDestroy {
     const instance: OverlayInstance = {
       element,
       anchor,
+      point,
       placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
       embeddedView: view,
       appRef,
@@ -236,9 +240,16 @@ export class OverlayService implements OnDestroy {
       rect.left <= event.clientX &&
       event.clientX <= rect.right;
 
+    const anchRect = lastDialog.anchor.getBoundingClientRect();
+    const clickWasInsideAnchor =
+      anchRect.top <= event.clientY &&
+      event.clientY <= anchRect.bottom &&
+      anchRect.left <= event.clientX &&
+      event.clientX <= anchRect.right;
+
     if (!clickWasInsideDialog) {
-      if (event.type == 'contextmenu' && !isElementAnchor(lastDialog.anchor)) {
-        lastDialog.anchor = {
+      if (event.type == 'contextmenu' && lastDialog.point && clickWasInsideAnchor) {
+        lastDialog.point = {
           x: event.clientX,
           y: event.clientY,
         };
@@ -265,21 +276,18 @@ export class OverlayService implements OnDestroy {
     });
   }
 
-  private getAnchorRect(anchor: OverlayAnchor): DOMRect {
-    if (isElementAnchor(anchor)) {
-      return anchor.getBoundingClientRect();
-    }
-    // anchor یک نقطه‌ست (مثلاً محل کلیک راست) → مستطیل صفرابعاد روی همون نقطه
-    return new DOMRect(anchor.x, anchor.y, 0, 0);
-  }
-
   private positionDialog(instance: OverlayInstance): void {
-    const { anchor, element: dialog, placementConfig } = instance;
+    const { anchor, element: dialog, placementConfig, point } = instance;
     const { placement, alignment, margin } = placementConfig;
 
     if (!dialog.isConnected) return;
 
-    const anchorRect = this.getAnchorRect(anchor);
+    let anchorRect: DOMRect;
+    if (point) {
+      anchorRect = new DOMRect(point.x, point.y, 0, 0);
+    } else {
+      anchorRect = anchor.getBoundingClientRect();
+    }
     const dialogRect = dialog.getBoundingClientRect();
 
     const vw = window.innerWidth;

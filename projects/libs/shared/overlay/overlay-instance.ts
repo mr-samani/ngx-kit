@@ -1,10 +1,11 @@
 import { ComponentRef, EmbeddedViewRef, ApplicationRef } from '@angular/core';
-import { OverlayAnchor } from './overlay-options';
 import { PlacementConfig } from './placement-config';
+import { Point } from './overlay-options';
 
 export interface OverlayInstance {
   element: HTMLDialogElement;
-  anchor: OverlayAnchor;
+  anchor: HTMLElement;
+  point?: Point;
   placementConfig: PlacementConfig;
 
   componentRef?: ComponentRef<any>;

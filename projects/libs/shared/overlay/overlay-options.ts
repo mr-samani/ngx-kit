@@ -9,13 +9,13 @@ export interface Point {
   y: number;
 }
 
-export type OverlayAnchor = HTMLElement | Point;
-
 export type Placement = 'top' | 'bottom' | 'auto';
 export type Alignment = 'start' | 'center' | 'end';
 
 export interface BaseOverlayOptions {
-  anchor: OverlayAnchor;
+  anchor: HTMLElement;
+  /** pointer for context menu */
+  point?: Point;
   placement?: Placement;
   alignment?: Alignment;
   margin?: number;
