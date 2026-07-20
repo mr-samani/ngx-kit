@@ -1,10 +1,11 @@
-import { ComponentRef } from '@angular/core';
+import { ComponentRef, TemplateRef } from '@angular/core';
 
-export class DialogOverlayRef<T> {
+export class OverlayRef<T> {
   constructor(
-    public readonly componentRef: ComponentRef<T>,
     private readonly dialogEl: HTMLDialogElement,
     private readonly teardownFn: () => void,
+    public readonly componentRef?: ComponentRef<T>,
+    public readonly templateRef?: TemplateRef<T>,
   ) {}
 
   close(): void {

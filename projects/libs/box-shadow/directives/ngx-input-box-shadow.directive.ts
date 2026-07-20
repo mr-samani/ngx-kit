@@ -20,7 +20,7 @@ import {
 } from '@angular/forms';
 import { DOCUMENT } from '@angular/common';
 import { NgxBoxShadowComponent } from '../components/box-shadow.component';
-import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, DialogService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputBoxShadow]',
@@ -36,7 +36,7 @@ import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 export class NgxInputBoxShadow implements OnDestroy, ControlValueAccessor, Validator {
   @Input() setInputBackground = true;
 
-  private pickerRef?: DialogOverlayRef<NgxBoxShadowComponent>;
+  private pickerRef?: OverlayRef<NgxBoxShadowComponent>;
 
   value = '';
 

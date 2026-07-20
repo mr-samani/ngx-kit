@@ -1,0 +1,88 @@
+<button [ngxMenuTrigger]="menu1" class="btn-icon">
+  <i class="fa fa-grid bold"></i>
+</button>
+<ngx-menu #menu1="NgxMenu">
+  <p>Content of menu</p>
+
+  <div class="box-container">
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-link"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-face-sunglasses"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-campground"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-mountain-city"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-icons"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-sun-plant-wilt"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-car-side-bolt"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-cubes"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-gears"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+    <div class="box" ngx-menu-item>
+      <span class="icon">
+        <i class="fa fa-phone-intercom"></i>
+      </span>
+      <span class="title">sample menu</span>
+    </div>
+  </div>
+</ngx-menu>
+
+<button [ngxMenuTrigger]="menu2" class="btn-icon">
+  <i class="fa fa-ellipsis-vertical bold"></i>
+</button>
+<ngx-menu #menu2="NgxMenu" class="menu-example-2">
+  <ngx-menu-item>
+    <i class="fa fa-edit"></i>
+    <span>Menu item 1</span>
+  </ngx-menu-item>
+  <ngx-menu-item>Menu item 2</ngx-menu-item>
+  <ngx-menu-item>Menu item 3</ngx-menu-item>
+  <ngx-menu-item>Menu item 4</ngx-menu-item>
+  <ngx-menu-item>Menu item 5</ngx-menu-item>
+  <ngx-menu-divider></ngx-menu-divider>
+  <ngx-menu-item class="text-danger">
+    <i class="fa fa-trash"></i>
+    <span>Menu item 6</span>
+  </ngx-menu-item>
+</ngx-menu>

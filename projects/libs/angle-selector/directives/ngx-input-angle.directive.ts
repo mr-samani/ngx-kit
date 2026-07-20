@@ -19,7 +19,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, DialogService } from 'ngx-kit/shared';
 import { NgxAngleSelectorComponent } from '../components/input-angle.component';
 
 @Directive({
@@ -44,12 +44,12 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
   openOnCLick = input<boolean>(true);
   @Output() change = new EventEmitter<number>();
   private value?: number | null;
-  private pickerRef?: DialogOverlayRef<NgxAngleSelectorComponent>;
+  private pickerRef?: OverlayRef<NgxAngleSelectorComponent>;
   inValid: boolean = false;
 
   private isDisabled = false;
   protected _onChange = (value?: number | null) => {};
-  protected _onTouched =  () => {};
+  protected _onTouched = () => {};
   _onValidateChange = () => {};
 
   constructor(
@@ -89,7 +89,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
     this.renderer.setProperty(this.el.nativeElement, 'value', this.value);
 
     this.inValid = false;
-    if (this.pickerRef) {
+    if (this.pickerRef && this.pickerRef.componentRef) {
       this.pickerRef.componentRef.instance.writeValue(this.value);
     }
     this._onValidateChange();

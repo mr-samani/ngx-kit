@@ -39,4 +39,8 @@ export const routes: Routes = [
     path: 'dialog',
     loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
   },
+  {
+    path: 'menu',
+    loadComponent: () => import('./menu/menu.component').then((c) => c.MenuComponent),
+  },
 ];

@@ -1,14 +1,14 @@
-import { Injectable, Inject, ComponentRef, ApplicationRef, OnDestroy, inject } from '@angular/core';
+import { Injectable, ComponentRef, OnDestroy, inject, TemplateRef } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { DialogOptions } from './dialog-options';
-import { DialogOverlayRef } from './dialog-overlay-ref';
+import { DialogOptions, TemplateOptions } from './dialog-options';
+import { OverlayRef } from './dialog-overlay-ref';
 
 interface DialogInstance {
   id: number;
   anchor: HTMLElement;
   element: HTMLDialogElement;
-  componentRef: ComponentRef<any>;
-  options: DialogOptions<any>;
+  ref: ComponentRef<any> | TemplateRef<any>;
+  options: DialogOptions<any> | TemplateOptions;
   cleanup: () => void;
 }
 
@@ -49,7 +49,7 @@ export class DialogService implements OnDestroy {
     this.closeAll();
   }
 
-  handleGlobalListeners() {
+  private handleGlobalListeners() {
     // مطمئن شویم لیسنرها فقط یک بار اضافه شده‌اند
     if (!this.globalKeyDownAdded) {
       this.doc.addEventListener('keydown', this.globalKeyDownListener);
@@ -65,17 +65,7 @@ export class DialogService implements OnDestroy {
     }
   }
 
-  open<T>(options: DialogOptions<T>): DialogOverlayRef<T> {
-    const { anchor, component, viewContainerRef, configure, onClosed } = options;
-
-    if (!viewContainerRef) {
-      throw new Error('ViewContainerRef is required to render dialog content.');
-    }
-
-    this.handleGlobalListeners();
-
-    const id = ++this.idCounter;
-
+  private generateDialog() {
     const dialogElement = this.doc.createElement('dialog');
 
     dialogElement.style.position = 'absolute';
@@ -91,6 +81,18 @@ export class DialogService implements OnDestroy {
     dialogElement.style.zIndex = `${1000 + this.openDialogs.size}`;
 
     this.doc.body.appendChild(dialogElement);
+    return dialogElement;
+  }
+
+  open<T>(options: DialogOptions<T>): OverlayRef<T> {
+    const { anchor, component, viewContainerRef, configure, onClosed } = options;
+    if (!viewContainerRef) {
+      throw new Error('ViewContainerRef is required to render dialog content.');
+    }
+
+    this.handleGlobalListeners();
+    const id = ++this.idCounter;
+    const dialogElement = this.generateDialog();
 
     const componentRef = viewContainerRef.createComponent(component);
 
@@ -112,21 +114,19 @@ export class DialogService implements OnDestroy {
 
       onClosed?.();
     };
-
     const instance: DialogInstance = {
       id,
       anchor,
       element: dialogElement,
-      componentRef: componentRef as ComponentRef<T>,
+      ref: componentRef as ComponentRef<T>,
       options: options,
       cleanup,
     };
-
     this.openDialogs.set(id, instance);
     dialogElement.showModal();
 
     if (configure) {
-      const ref = new DialogOverlayRef(componentRef, dialogElement, cleanup);
+      const ref = new OverlayRef(dialogElement, cleanup, componentRef);
       configure(componentRef.instance, ref);
     }
 
@@ -142,8 +142,58 @@ export class DialogService implements OnDestroy {
         (focusable as HTMLElement).focus();
       }
     }, 0);
+    const ref = new OverlayRef(dialogElement, cleanup, componentRef);
+    return ref;
+  }
 
-    const ref = new DialogOverlayRef(componentRef, dialogElement, cleanup);
+  openTemplate(options: TemplateOptions): OverlayRef<any> {
+    const { anchor, template, appRef, onClosed } = options;
+    this.handleGlobalListeners();
+    const id = ++this.idCounter;
+    const dialogElement = this.generateDialog();
+
+    const view = template.createEmbeddedView({});
+    appRef.attachView(view);
+    dialogElement.append(...view.rootNodes);
+
+    // تابع پاک‌سازی اختصاصی برای این دیالوگ
+    const cleanup = () => {
+      if (!this.openDialogs.has(id)) return; // جلوگیری از پاک‌سازی مجدد
+
+      this.openDialogs.delete(id);
+
+      if (template.elementRef?.nativeElement?.parentNode) {
+        template.elementRef.nativeElement.remove();
+      }
+      appRef.detachView(view);
+      view.destroy();
+      dialogElement.remove();
+      onClosed?.();
+    };
+    const instance: DialogInstance = {
+      id,
+      anchor,
+      element: dialogElement,
+      ref: template,
+      options: options,
+      cleanup,
+    };
+    this.openDialogs.set(id, instance);
+    dialogElement.showModal();
+
+    requestAnimationFrame(() => {
+      this.positionDialog(instance);
+    });
+
+    setTimeout(() => {
+      const focusable = dialogElement.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable) {
+        (focusable as HTMLElement).focus();
+      }
+    }, 0);
+    const ref = new OverlayRef(dialogElement, cleanup, undefined, template);
     return ref;
   }
 
@@ -242,7 +292,7 @@ export class DialogService implements OnDestroy {
     });
   }
 
-  handleClickOnBackdrop(event: PointerEvent) {
+  private handleClickOnBackdrop(event: PointerEvent) {
     const target = event.target;
 
     const lastDialog = this.getLastDialog();

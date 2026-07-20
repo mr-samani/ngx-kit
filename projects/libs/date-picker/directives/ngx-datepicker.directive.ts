@@ -23,7 +23,7 @@ import {
 } from '@angular/forms';
 import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepicker.component';
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
-import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, DialogService } from 'ngx-kit/shared';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { NgxDatePickerConfig } from '../components/config';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
@@ -57,7 +57,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
 
   @Output() change = new EventEmitter<Date>();
   private value?: Date | null;
-  private pickerRef?: DialogOverlayRef<NgxInputDatePickerComponent>;
+  private pickerRef?: OverlayRef<NgxInputDatePickerComponent>;
   adapter!: IDateAdapter;
   private _locale: string = 'en';
   @Input() set locale(val: string) {
@@ -108,7 +108,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
 
   updateConfig(val: NgxDatePickerConfig) {
     this.config = { ...new NgxDatePickerConfig(), ...val };
-    if (this.pickerRef) {
+    if (this.pickerRef && this.pickerRef.componentRef) {
       this.pickerRef.componentRef.instance.updateConfig(this.config);
     }
   }

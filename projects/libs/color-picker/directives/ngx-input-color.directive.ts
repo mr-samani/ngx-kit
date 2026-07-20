@@ -23,7 +23,7 @@ import { ColorInspector } from '../contracts/ColorInspector.enum';
 import { NgxInputColorComponent } from '../components/input-color.component';
 import { NgxColor } from '../utils/color-helper';
 import { OutputType } from '../contracts/OutputType';
-import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, DialogService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputColor]',
@@ -82,7 +82,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   }
   @Output() change = new EventEmitter<string>();
   private color?: NgxColor;
-  private pickerRef?: DialogOverlayRef<NgxInputColorComponent>;
+  private pickerRef?: OverlayRef<NgxInputColorComponent>;
   private isHostInput = false;
   inValid: boolean = false;
   protected _onChange = (value: string) => {};
