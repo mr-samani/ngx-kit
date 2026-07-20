@@ -19,7 +19,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { OverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { NgxAngleSelectorComponent } from '../components/input-angle.component';
 
 @Directive({
@@ -56,7 +56,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
     private el: ElementRef<HTMLInputElement>,
     private renderer: Renderer2,
     private viewContainerRef: ViewContainerRef,
-    private dialogService: DialogService,
+    private overlayService: OverlayService,
   ) {}
 
   ngOnDestroy(): void {
@@ -140,7 +140,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
       return;
     }
 
-    this.pickerRef = this.dialogService.open({
+    this.pickerRef = this.overlayService.open({
       anchor: this.el.nativeElement,
       component: NgxAngleSelectorComponent,
       viewContainerRef: this.viewContainerRef,

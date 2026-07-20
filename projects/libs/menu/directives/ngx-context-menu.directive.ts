@@ -12,16 +12,15 @@ import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
 
 @Directive({
-  selector: '[ngxMenu]',
-  exportAs: 'ngxMenu',
+  selector: '[ngxContextMenu]',
+  exportAs: 'ngxContextMenu',
 })
-export class NgxMenu implements OnDestroy {
-  ngxMenu = input.required<NgxMenuPanel>();
+export class NgxContextMenu implements OnDestroy {
+  ngxContextMenu = input.required<NgxMenuPanel>();
 
   private containerRef?: OverlayRef<NgxMenuPanel>;
 
   constructor(
-    private el: ElementRef,
     private appRef: ApplicationRef,
     private overlayService: OverlayService,
   ) {}
@@ -30,32 +29,26 @@ export class NgxMenu implements OnDestroy {
     this.destroyContainer();
   }
 
-  @HostListener('click', ['$event'])
-  onClick(ev: Event) {
+  @HostListener('contextmenu', ['$event'])
+  onClick(ev: PointerEvent) {
     ev.stopPropagation();
     ev.preventDefault();
-    this.toggleContainer();
+    this.toggleContainer(ev.clientX, ev.clientY);
   }
 
-  private toggleContainer() {
+  private toggleContainer(x: number, y: number) {
     if (this.containerRef) {
       this.destroyContainer();
       return;
     }
-    const t = this.ngxMenu().template();
+    const t = this.ngxContextMenu().template();
     if (!t) return;
     this.containerRef = this.overlayService.openTemplate({
-      anchor: this.el.nativeElement,
+      anchor: { x, y },
       template: t,
       appRef: this.appRef,
       alignment: 'start',
       placement: 'auto',
-      // configure: (instance, ref) => {
-      //   debugger;
-      //   instance.overlay = ref.nativeElement;
-      //   instance.open();
-      //   // instance.closed.subscribe(() => ref.close());
-      // },
       onClosed: () => {
         this.containerRef = undefined;
       },

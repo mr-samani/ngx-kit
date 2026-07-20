@@ -23,7 +23,7 @@ import {
 } from '@angular/forms';
 import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepicker.component';
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
-import { OverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { NgxDatePickerConfig } from '../components/config';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
@@ -101,7 +101,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
 
   private isDisabled = false;
 
-  private readonly dialogService = inject(DialogService);
+  private readonly overlayService = inject(OverlayService);
   private readonly viewContainerRef = inject(ViewContainerRef);
   private readonly renderer = inject(Renderer2);
   constructor(private el: ElementRef<HTMLInputElement>) {}
@@ -169,7 +169,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
       return;
     }
 
-    this.pickerRef = this.dialogService.open({
+    this.pickerRef = this.overlayService.open({
       anchor: this.el.nativeElement,
       component: NgxInputDatePickerComponent,
       viewContainerRef: this.viewContainerRef,

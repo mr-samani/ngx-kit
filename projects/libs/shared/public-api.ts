@@ -12,6 +12,6 @@ export * from './contracts/IPosition';
 
 export * from './services/browser.service';
 
-export * from './dialog/dialog-options';
-export * from './dialog/dialog-overlay-ref';
-export * from './dialog/dialog.service';
+export * from './overlay/overlay-options';
+export * from './overlay/overlay-ref';
+export * from './overlay/overlay.service';

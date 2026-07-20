@@ -1,3 +1,6 @@
+section {
+  min-height: 50vh;
+}
 .box-container {
   display: flex;
   align-items: center;
@@ -40,4 +43,12 @@
 }
 .text-danger {
   color: red;
+}
+
+.card-context-menu {
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+  width: 500px;
+  height: 200px;
+  border-radius: 5px;
+  overflow: auto;
 }

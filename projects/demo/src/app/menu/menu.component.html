@@ -1,88 +1,125 @@
-<button [ngxMenuTrigger]="menu1" class="btn-icon">
-  <i class="fa fa-grid bold"></i>
-</button>
-<ngx-menu #menu1="NgxMenu">
-  <p>Content of menu</p>
+<section>
+  <h3>List Menu:</h3>
+  <button [ngxMenu]="menu2" class="btn-icon">
+    <i class="fa fa-ellipsis-vertical bold"></i>
+  </button>
+  <ngx-menu #menu2="NgxMenu" class="menu-example-2">
+    <ngx-menu-item>
+      <i class="fa fa-edit"></i>
+      <span>Menu item 1</span>
+    </ngx-menu-item>
+    <ngx-menu-item>Menu item 2</ngx-menu-item>
+    <ngx-menu-item>Menu item 3</ngx-menu-item>
+    <ngx-menu-item>Menu item 4</ngx-menu-item>
+    <ngx-menu-item>Menu item 5</ngx-menu-item>
+    <ngx-menu-divider></ngx-menu-divider>
+    <ngx-menu-item class="text-danger">
+      <i class="fa fa-trash"></i>
+      <span>Menu item 6</span>
+    </ngx-menu-item>
+  </ngx-menu>
+</section>
 
-  <div class="box-container">
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-link"></i>
-      </span>
-      <span class="title">sample menu</span>
+<section>
+  <h3>Custom Menu</h3>
+  <button [ngxMenu]="menu1" class="btn-icon">
+    <i class="fa fa-grid bold"></i>
+  </button>
+  <ngx-menu #menu1="NgxMenu">
+    <p>Content of menu</p>
+
+    <div class="box-container">
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-link"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-face-sunglasses"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-campground"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-mountain-city"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-icons"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-sun-plant-wilt"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-car-side-bolt"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-cubes"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-gears"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
+      <div class="box" ngx-menu-item>
+        <span class="icon">
+          <i class="fa fa-phone-intercom"></i>
+        </span>
+        <span class="title">sample menu</span>
+      </div>
     </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-face-sunglasses"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-campground"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-mountain-city"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-icons"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-sun-plant-wilt"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-car-side-bolt"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-cubes"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-gears"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
-    <div class="box" ngx-menu-item>
-      <span class="icon">
-        <i class="fa fa-phone-intercom"></i>
-      </span>
-      <span class="title">sample menu</span>
-    </div>
+  </ngx-menu>
+</section>
+
+<section>
+  <h3>Context menu</h3>
+
+  <div class="card-context-menu" [ngxContextMenu]="menu3">
+    <p>
+      Right click on this card or click
+      <a [ngxMenu]="menu3">here</a>
+      !
+    </p>
   </div>
-</ngx-menu>
 
-<button [ngxMenuTrigger]="menu2" class="btn-icon">
-  <i class="fa fa-ellipsis-vertical bold"></i>
-</button>
-<ngx-menu #menu2="NgxMenu" class="menu-example-2">
-  <ngx-menu-item>
-    <i class="fa fa-edit"></i>
-    <span>Menu item 1</span>
-  </ngx-menu-item>
-  <ngx-menu-item>Menu item 2</ngx-menu-item>
-  <ngx-menu-item>Menu item 3</ngx-menu-item>
-  <ngx-menu-item>Menu item 4</ngx-menu-item>
-  <ngx-menu-item>Menu item 5</ngx-menu-item>
-  <ngx-menu-divider></ngx-menu-divider>
-  <ngx-menu-item class="text-danger">
-    <i class="fa fa-trash"></i>
-    <span>Menu item 6</span>
-  </ngx-menu-item>
-</ngx-menu>
+  <ngx-menu #menu3="NgxMenu" class="menu-example-2">
+    <ngx-menu-item>
+      <i class="fa fa-scissors"></i>
+      Cut
+    </ngx-menu-item>
+    <ngx-menu-item>
+      <i class="fa fa-files"></i>
+      Copy
+    </ngx-menu-item>
+    <ngx-menu-item>
+      <i class="fa fa-clipboard"></i>
+      Paste
+    </ngx-menu-item>
+    <ngx-menu-item>
+      <i class="fa fa-trash"></i>
+      Delete
+    </ngx-menu-item>
+  </ngx-menu>
+</section>

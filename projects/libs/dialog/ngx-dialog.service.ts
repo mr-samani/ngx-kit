@@ -17,7 +17,7 @@ import { DIALOG_DATA, DIALOG_REF } from './dialog.tokens';
 import { randomStrnig } from 'ngx-kit/shared';
 
 @Injectable()
-export class NgxDialogService {
+export class NgxOverlayService {
   dialogComponentRefs: ComponentRef<NgxDialogComponent>[] = [];
   _defaultOptions: NgxDialogConfig | undefined;
   constructor(

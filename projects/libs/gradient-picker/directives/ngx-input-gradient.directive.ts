@@ -21,7 +21,7 @@ import {
 } from '@angular/forms';
 import { NgxInputGradientComponent } from '../components/input-gradient.component';
 import { isValidGradient, parseGradient } from '../utils/build-gradient';
-import { OverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputGradient]',
@@ -73,7 +73,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
     private el: ElementRef<HTMLInputElement>,
     private renderer: Renderer2,
     private viewContainerRef: ViewContainerRef,
-    private dialogService: DialogService,
+    private overlayService: OverlayService,
   ) {}
 
   @HostListener('click', ['$event']) onClick(ev: Event) {
@@ -132,7 +132,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
       return;
     }
 
-    this.pickerRef = this.dialogService.open({
+    this.pickerRef = this.overlayService.open({
       anchor: this.el.nativeElement,
       component: NgxInputGradientComponent,
       viewContainerRef: this.viewContainerRef,

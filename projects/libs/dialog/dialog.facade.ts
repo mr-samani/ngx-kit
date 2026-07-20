@@ -1,11 +1,11 @@
 import { Type } from '@angular/core';
 import { NgxDialogConfig } from './ngx-dialog-config';
-import { NgxDialogService } from './ngx-dialog.service';
+import { NgxOverlayService } from './ngx-dialog.service';
 import { NgxDialogRef } from './ngx-dialog-ref';
 
 export class Dialog {
-  private static serviceInstance: NgxDialogService | null = null;
-  static _setService(svc: NgxDialogService) {
+  private static serviceInstance: NgxOverlayService | null = null;
+  static _setService(svc: NgxOverlayService) {
     this.serviceInstance = svc;
   }
 

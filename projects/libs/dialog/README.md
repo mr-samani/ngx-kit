@@ -31,7 +31,7 @@ export class AppModule { }
 
 ```
 import { Component, OnInit } from '@angular/core';
-import { NgxDialogService } from 'ngx-dialog';
+import { NgxOverlayService } from 'ngx-dialog';
 import { ModalComponent } from './modal/modal.component';
 
 @Component({
@@ -42,7 +42,7 @@ import { ModalComponent } from './modal/modal.component';
 export class DemoComponent implements OnInit {
 
   constructor(
-    private ngxDialog: NgxDialogService
+    private ngxDialog: NgxOverlayService
   ) { }
 
   ngOnInit(): void {
@@ -71,7 +71,7 @@ export class DemoComponent implements OnInit {
 ```
 import { JsonPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { NgxDialogConfig, DIALOG_REF, NgxDialogService } from 'ngx-dialog';
+import { NgxDialogConfig, DIALOG_REF, NgxOverlayService } from 'ngx-dialog';
 
 @Component({
   selector: 'app-modal',
@@ -84,7 +84,7 @@ export class ModalComponent implements OnInit {
 
   constructor(
     public config: NgxDialogConfig,
-    private ngxDialog: NgxDialogService
+    private ngxDialog: NgxOverlayService
   ) {
     this.data = config.data;
   }

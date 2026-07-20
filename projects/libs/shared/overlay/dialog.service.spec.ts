@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Component, ViewContainerRef } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { DialogService } from './dialog.service';
+import { OverlayService } from './overlay.service';
 
 @Component({
   template: `
@@ -10,8 +10,8 @@ import { DialogService } from './dialog.service';
 })
 class MockComponent {}
 
-describe('DialogService', () => {
-  let service: DialogService;
+describe('OverlayService', () => {
+  let service: OverlayService;
   let viewContainerRef: ViewContainerRef;
   let documentRef: Document;
 
@@ -28,9 +28,9 @@ describe('DialogService', () => {
     }
 
     TestBed.configureTestingModule({
-      providers: [DialogService],
+      providers: [OverlayService],
     });
-    service = TestBed.inject(DialogService);
+    service = TestBed.inject(OverlayService);
     documentRef = TestBed.inject(DOCUMENT);
 
     // fake ViewContainerRef
