@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
+import { OverlayInstance } from 'ngx-kit/shared/overlay/overlay-instance';
 
 @Directive({
   selector: '[ngxContextMenu]',
@@ -51,6 +52,9 @@ export class NgxContextMenu implements OnDestroy {
       placement: 'auto',
       onClosed: () => {
         this.containerRef = undefined;
+      },
+      configure: (instance: OverlayInstance, ref: OverlayRef<NgxMenuPanel>) => {
+        this.ngxContextMenu().containerRef = ref;
       },
     });
   }

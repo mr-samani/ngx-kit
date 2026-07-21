@@ -74,7 +74,8 @@ export class OverlayService implements OnDestroy {
   }
 
   openTemplate(options: TemplateOptions): OverlayRef<any> {
-    const { anchor, point, template, appRef, onClosed, placement, alignment, margin } = options;
+    const { anchor, point, template, appRef, configure, onClosed, placement, alignment, margin } =
+      options;
 
     this.attachGlobalListeners();
 
@@ -101,6 +102,7 @@ export class OverlayService implements OnDestroy {
     element.showModal();
 
     const ref = new OverlayRef(element, instance.cleanup, undefined, template);
+    configure?.(instance, ref);
 
     this.scheduleInitialLayout(instance);
 

@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, TemplateRef, viewChild } from '@angular/core';
+import { Component, input, OnInit, TemplateRef, viewChild, viewChildren } from '@angular/core';
+import { NgxMenuItem } from '../ngx-menu-item/menu-item.component';
+import { OverlayRef } from 'ngx-kit/shared';
+import { MenuContext, NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
 
 @Component({
   selector: 'ngx-menu',
@@ -50,8 +53,15 @@ import { Component, input, TemplateRef, viewChild } from '@angular/core';
     }
   `,
   imports: [CommonModule],
+  providers: [{ provide: NGX_MENU_CONTEXT, useExisting: NgxMenuPanel }],
 })
-export class NgxMenuPanel {
+export class NgxMenuPanel implements MenuContext {
   template = viewChild<TemplateRef<any>>(TemplateRef);
   class = input<string>('class');
+
+  containerRef?: OverlayRef<NgxMenuPanel>;
+
+  close(): void {
+    this.containerRef?.close();
+  }
 }

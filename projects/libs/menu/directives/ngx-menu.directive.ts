@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
+import { OverlayInstance } from 'ngx-kit/shared/overlay/overlay-instance';
 
 @Directive({
   selector: '[ngxMenu]',
@@ -50,13 +51,11 @@ export class NgxMenu implements OnDestroy {
       appRef: this.appRef,
       alignment: 'start',
       placement: 'auto',
-      // configure: (instance, ref) => {
-      //   instance.overlay = ref.nativeElement;
-      //   instance.open();
-      //   // instance.closed.subscribe(() => ref.close());
-      // },
       onClosed: () => {
         this.containerRef = undefined;
+      },
+      configure: (instance: OverlayInstance, ref: OverlayRef<NgxMenuPanel>) => {
+        this.ngxMenu().containerRef = ref;
       },
     });
   }

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, inject, output } from '@angular/core';
+import { NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
 
 @Component({
   selector: 'ngx-menu-item,[ngx-menu-item]',
@@ -20,4 +21,11 @@ import { Component } from '@angular/core';
     }
   `,
 })
-export class NgxMenuItem {}
+export class NgxMenuItem {
+  menuContext = inject(NGX_MENU_CONTEXT);
+
+  @HostListener('click')
+  onClick() {
+    this.menuContext?.close();
+  }
+}
