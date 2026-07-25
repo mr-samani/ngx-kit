@@ -56,7 +56,7 @@ export class DatePickerComponent implements OnInit {
     this.form = fb.group({
       date: ['', [Validators.required]],
     });
-    console.log('availableLocals', this.availableLocals);
+    // console.log('availableLocals', this.availableLocals);
   }
 
   ngOnInit(): void {}

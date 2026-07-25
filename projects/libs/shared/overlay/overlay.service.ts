@@ -145,7 +145,6 @@ export class OverlayService implements OnDestroy {
     style.maxHeight = '100vh';
     style.overflow = 'visible';
     style.visibility = 'hidden';
-    style.animation = 'menu-enter 120ms cubic-bezier(0, 0, 0.2, 1)';
 
     // شمارنده‌ی صعودی مستقل از تعداد فعلی دیالوگ‌های باز؛ در نسخه‌ی قبلی
     // با استفاده از openDialogs.size محاسبه می‌شد که بعد از بستن دیالوگ‌ها
@@ -231,7 +230,6 @@ export class OverlayService implements OnDestroy {
   private handleClickOnBackdrop(event: MouseEvent): void {
     const lastDialog = this.getLastDialog();
     if (!lastDialog || !lastDialog.element.open) return;
-    event.preventDefault();
     // کلیک باید دقیقاً روی خودِ دیالوگ (بک‌دراپ) باشه، نه محتوای داخلش
     if (event.target !== lastDialog.element) return;
 
@@ -254,6 +252,7 @@ export class OverlayService implements OnDestroy {
 
     if (!clickWasInsideDialog) {
       if (event.type == 'contextmenu' && lastDialog.point && clickWasInsideAnchor) {
+        event.preventDefault();
         lastDialog.point = {
           x: event.clientX,
           y: event.clientY,
@@ -295,8 +294,8 @@ export class OverlayService implements OnDestroy {
     }
     const dialogRect = dialog.getBoundingClientRect();
 
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const vw = Math.min(document.body.clientWidth, window.innerWidth);
+    const vh = Math.min(document.body.clientHeight, window.innerHeight);
     const isRTL = getComputedStyle(this.doc.documentElement).direction === 'rtl';
 
     let top = 0;
@@ -337,7 +336,6 @@ export class OverlayService implements OnDestroy {
     } else {
       left = isRTL ? anchorRect.left : anchorRect.right; //- dialogRect.width;
     }
-
     if (left !== 'auto') {
       left = Math.min(Math.max(left, margin), vw - dialogRect.width - margin);
     }
@@ -349,5 +347,6 @@ export class OverlayService implements OnDestroy {
     dialog.style.transformOrigin = verticalPos == 'above' ? 'left top' : 'left bottom';
     // dialog.style.transform = 'none';
     dialog.style.visibility = 'visible';
+    dialog.style.animation = 'menu-enter 120ms cubic-bezier(0, 0, 0.2, 1)';
   }
 }

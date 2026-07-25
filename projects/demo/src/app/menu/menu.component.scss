@@ -52,3 +52,22 @@ section {
   border-radius: 5px;
   overflow: auto;
 }
+
+
+
+
+
+
+
+
+::ng-deep{
+
+.user-nav-btn{
+  position: fixed;
+  right: 10px;
+  top: 10px;
+}
+.user-nav{
+  width: 800px;
+}
+}

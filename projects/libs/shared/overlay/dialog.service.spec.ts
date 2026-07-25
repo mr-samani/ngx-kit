@@ -355,7 +355,7 @@ describe('OverlayService', () => {
     });
     setTimeout(() => {
       const dialogRect = document.querySelector('dialog')?.getBoundingClientRect();
-      console.log(dialogRect);
+     // console.log(dialogRect);
       expect(dialogRect?.top).toBeGreaterThan(0);
       expect(dialogRect?.right).toBeGreaterThan(0);
       expect(dialogRect?.bottom).toBeGreaterThan(0);
