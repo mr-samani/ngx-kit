@@ -15,3 +15,5 @@ export * from './services/browser.service';
 export * from './overlay/overlay-options';
 export * from './overlay/overlay-ref';
 export * from './overlay/overlay.service';
+export * from './overlay/overlay-instance';
+

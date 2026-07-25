@@ -1,5 +1,6 @@
-import { Component, HostListener, inject, output } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
+import { NgxMenu } from '../../directives/ngx-menu.directive';
 
 @Component({
   selector: 'ngx-menu-item,[ngx-menu-item]',
@@ -23,9 +24,16 @@ import { NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
 })
 export class NgxMenuItem {
   menuContext = inject(NGX_MENU_CONTEXT);
+  childMenu = inject(NgxMenu, {
+    self: true,
+    optional: true,
+  });
 
   @HostListener('click')
   onClick() {
+    if (this.childMenu?.ngxMenu) {
+      return;
+    }
     this.menuContext?.close();
   }
 }

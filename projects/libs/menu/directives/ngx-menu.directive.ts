@@ -2,15 +2,12 @@ import {
   Directive,
   OnDestroy,
   ElementRef,
-  ViewContainerRef,
   HostListener,
   input,
-  Type,
   ApplicationRef,
 } from '@angular/core';
-import { OverlayRef, OverlayService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService, OverlayInstance, Alignment, Placement } from 'ngx-kit/shared';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
-import { OverlayInstance } from 'ngx-kit/shared/overlay/overlay-instance';
 
 @Directive({
   selector: '[ngxMenu]',
@@ -18,6 +15,8 @@ import { OverlayInstance } from 'ngx-kit/shared/overlay/overlay-instance';
 })
 export class NgxMenu implements OnDestroy {
   ngxMenu = input.required<NgxMenuPanel>();
+  placement = input<Placement>();
+  alignment = input<Alignment>();
 
   private containerRef?: OverlayRef<NgxMenuPanel>;
 
@@ -49,10 +48,11 @@ export class NgxMenu implements OnDestroy {
       anchor: this.el.nativeElement,
       template: t,
       appRef: this.appRef,
-      alignment: 'start',
-      placement: 'auto',
+      alignment: this.alignment() ?? 'start',
+      placement: this.placement() ?? 'auto',
       onClosed: () => {
         this.containerRef = undefined;
+        this.overlayService.closeAll();
       },
       configure: (instance: OverlayInstance, ref: OverlayRef<NgxMenuPanel>) => {
         this.ngxMenu().containerRef = ref;

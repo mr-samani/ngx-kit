@@ -6,6 +6,7 @@ import { PlacementConfig } from './placement-config';
 import { OverlayInstance } from './overlay-instance';
 export const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+export const DIALOG_OVERLAY_CLASSNAME = 'ngx-ui-overlay';
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService implements OnDestroy {
@@ -132,6 +133,7 @@ export class OverlayService implements OnDestroy {
 
   private createDialogElement(): HTMLDialogElement {
     const element = this.doc.createElement('dialog');
+    element.className = DIALOG_OVERLAY_CLASSNAME;
     const style = element.style;
     style.position = 'absolute';
     style.outline = 'none';
@@ -143,6 +145,8 @@ export class OverlayService implements OnDestroy {
     style.maxHeight = '100vh';
     style.overflow = 'visible';
     style.visibility = 'hidden';
+    style.animation = 'menu-enter 120ms cubic-bezier(0, 0, 0.2, 1)';
+
     // شمارنده‌ی صعودی مستقل از تعداد فعلی دیالوگ‌های باز؛ در نسخه‌ی قبلی
     // با استفاده از openDialogs.size محاسبه می‌شد که بعد از بستن دیالوگ‌ها
     // می‌تونست باعث تکرار zIndex بین دو دیالوگ بشه.
@@ -225,10 +229,9 @@ export class OverlayService implements OnDestroy {
   };
 
   private handleClickOnBackdrop(event: MouseEvent): void {
-    event.preventDefault();
     const lastDialog = this.getLastDialog();
     if (!lastDialog || !lastDialog.element.open) return;
-
+    event.preventDefault();
     // کلیک باید دقیقاً روی خودِ دیالوگ (بک‌دراپ) باشه، نه محتوای داخلش
     if (event.target !== lastDialog.element) return;
 
@@ -332,18 +335,19 @@ export class OverlayService implements OnDestroy {
         left = anchorRect.left;
       }
     } else {
-      left = isRTL ? anchorRect.left : anchorRect.right - dialogRect.width;
+      left = isRTL ? anchorRect.left : anchorRect.right; //- dialogRect.width;
     }
 
     if (left !== 'auto') {
       left = Math.min(Math.max(left, margin), vw - dialogRect.width - margin);
     }
 
-    dialog.className = `tips-${verticalPos}`;
+    dialog.className = `${DIALOG_OVERLAY_CLASSNAME} tips-${verticalPos}`;
     dialog.style.top = `${top + window.scrollY}px`;
     dialog.style.left = left !== 'auto' ? `${left + window.scrollX}px` : 'auto';
     dialog.style.right = right !== 'auto' ? `${right + window.scrollX}px` : 'auto';
-    dialog.style.transform = 'none';
+    dialog.style.transformOrigin = verticalPos == 'above' ? 'left top' : 'left bottom';
+    // dialog.style.transform = 'none';
     dialog.style.visibility = 'visible';
   }
 }
