@@ -53,21 +53,17 @@ section {
   overflow: auto;
 }
 
+::ng-deep {
+  .user-nav-btn {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+  }
+  .user-nav {
+    width: 800px;
+  }
 
-
-
-
-
-
-
-::ng-deep{
-
-.user-nav-btn{
-  position: fixed;
-  right: 10px;
-  top: 10px;
-}
-.user-nav{
-  width: 800px;
-}
+  .red-bg {
+    background-color: red !important;
+  }
 }

@@ -339,6 +339,9 @@ export class OverlayService implements OnDestroy {
     if (left !== 'auto') {
       left = Math.min(Math.max(left, margin), vw - dialogRect.width - margin);
     }
+    if (right !== 'auto') {
+      right = Math.min(Math.max(right, margin), vw - dialogRect.width - margin);
+    }
 
     dialog.className = `${DIALOG_OVERLAY_CLASSNAME} tips-${verticalPos}`;
     dialog.style.top = `${top + window.scrollY}px`;

@@ -15,7 +15,7 @@
     <ngx-menu-item>Menu item 3</ngx-menu-item>
     <ngx-menu-item>Menu item 4</ngx-menu-item>
     <ngx-menu-item>Menu item 5</ngx-menu-item>
-    <ngx-menu-divider></ngx-menu-divider>
+    <div ngx-menu-divider></div>
     <ngx-menu-item class="text-danger">
       <i class="fa fa-trash"></i>
       <span>Menu item 6</span>
@@ -28,9 +28,10 @@
   <button [ngxMenu]="menu1" class="btn-icon">
     <i class="fa fa-grid bold"></i>
   </button>
-  <ngx-menu #menu1="NgxMenu">
+  <ngx-menu #menu1="NgxMenu" [class]="x() ? 'red-bg' : ''">
     <p>Content of menu</p>
-
+    <button (click)="x.update((u) => !u)">xxx</button>
+    {{ x() }}
     <div class="box-container">
       <div class="box" ngx-menu-item>
         <span class="icon">

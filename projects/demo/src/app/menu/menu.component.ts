@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { NgxMenuModule } from 'ngx-kit/menu';
 import { Notify } from 'ngx-kit/notify';
 
@@ -10,6 +10,7 @@ import { Notify } from 'ngx-kit/notify';
   styleUrl: './menu.component.scss',
 })
 export class MenuComponent {
+  x = signal(false);
   action(act: string) {
     Notify.info(`Clicked on "${act}"!`);
   }

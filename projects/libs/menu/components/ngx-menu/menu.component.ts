@@ -7,7 +7,7 @@ import { MenuContext, NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
   selector: 'ngx-menu,[ngx-menu]',
   template: `
     <ng-template>
-      <div class="ngx-menu-panel" [ngClass]="class()">
+      <div class="ngx-menu-panel" [class]="class()">
         <ng-content></ng-content>
       </div>
     </ng-template>
