@@ -7,12 +7,15 @@ import {
   Injector,
   EnvironmentInjector,
   ApplicationRef,
+  signal,
+  input,
 } from '@angular/core';
 import { NgxNotifyOptions } from '../models/notify-options';
 import { INotifyEnd, NgxNotifyPayload, NgxPgNotifyType } from '../models/notify.model';
 import { WINDOW } from 'ngx-kit/shared';
 import { NGX_NOTIFY_CONFIG } from '../models/notify-config';
 import { NgxPgNotificationComponent } from '../components/notification.component';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 // We'll include a tiny inline uuid fallback if uuid package is not available
 function makeId() {
@@ -70,14 +73,19 @@ export class NgxNotifyService {
     this.container = container;
   }
 
-  show(message: string, type: NgxPgNotifyType = 'info', options?: NgxNotifyOptions) {
+  show(
+    message: string,
+    description?: string,
+    type: NgxPgNotifyType = 'info',
+    options?: NgxNotifyOptions,
+  ) {
     const opts: NgxNotifyOptions = { ...this.defaultOptions, ...(options || {}) };
     const id =
       typeof (this.win as any).crypto?.randomUUID === 'function'
         ? (this.win as any).crypto.randomUUID()
         : makeId();
 
-    const payload: NgxNotifyPayload = { id, message, type, options: opts };
+    const payload: NgxNotifyPayload = { id, message, description, type, options: opts };
 
     this.configureContainer(opts.position!, opts.containerClass!);
 
@@ -99,7 +107,7 @@ export class NgxNotifyService {
       environmentInjector: this.envInjector,
       hostElement: host,
     });
-    compRef.instance.payload = payload;
+    compRef.setInput('payload', payload);
     compRef.instance.onClose.subscribe((d) => this.removeEl(d));
     compRef.instance.onFinish.subscribe((d) => this.removeEl(d));
 

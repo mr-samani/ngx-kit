@@ -7,13 +7,15 @@ import {
   DOCUMENT,
   inject,
   ElementRef,
-  Renderer2,
   afterNextRender,
   signal,
   output,
+  input,
+  effect,
 } from '@angular/core';
 import { INotifyEnd, NgxNotifyPayload } from '../models/notify.model';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'ngx-notification',
@@ -22,39 +24,51 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
 })
 export class NgxPgNotificationComponent implements OnInit, OnDestroy {
-  @Input() payload!: NgxNotifyPayload;
+  payload = input.required<NgxNotifyPayload>();
   @Input() containerClass = 'ngx-notify';
 
   onClose = output<INotifyEnd>();
   onFinish = output<INotifyEnd>();
 
-  private _timeoutId: any = null;
+  private _rafId = 0;
+  private _duration = 0;
   private _remaining = 0;
   private _endTs = 0;
   private _paused = false;
 
-  safeMessage = '';
+  progressBar = signal(0);
+
+  safeMessage: SafeHtml | string = '';
+  safeDescription: SafeHtml | string = '';
   showClass = signal('');
-  private doc = inject(DOCUMENT);
-  private el = inject(ElementRef);
-  constructor(private cdr: ChangeDetectorRef) {
+  protected doc = inject(DOCUMENT);
+  protected el = inject(ElementRef);
+  protected sanitizer = inject(DomSanitizer);
+  protected chdr = inject(ChangeDetectorRef);
+  constructor() {
     afterNextRender(() => {
       this.showClass.set('ngx-show');
+      this.chdr.detectChanges();
+    });
+    effect(() => {
+      const payload = this.payload();
+
+      // decide how to render message
+      if (payload.options.allowHtml) {
+        this.safeMessage = this.sanitizer.bypassSecurityTrustHtml(payload.message);
+        this.safeDescription = this.sanitizer.bypassSecurityTrustHtml(payload.description ?? '');
+      } else {
+        this.safeMessage = this.escapeHtml(payload.message);
+        this.safeDescription = this.escapeHtml(payload.description);
+      }
+    });
+    effect(() => {
+      const timeout = this.payload().options.timeout ?? 0;
+      this.startTimer(timeout);
     });
   }
 
-  ngOnInit(): void {
-    // decide how to render message
-    if (this.payload.options.allowHtml) {
-      this.safeMessage = this.payload.message;
-    } else {
-      this.safeMessage = this.escapeHtml(this.payload.message);
-    }
-
-    if (this.payload.options.timeout && this.payload.options.timeout > 0) {
-      this.startTimer(this.payload.options.timeout);
-    }
-  }
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this.clearTimer();
@@ -63,52 +77,84 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
   // Public API to start timer (used by service when created)
   startTimer(ms: number) {
     this.clearTimer();
+
+    if (!this._paused) {
+      this._duration = ms;
+    }
     this._remaining = ms;
-    this._endTs = Date.now() + ms;
-    this._timeoutId = setTimeout(
-      () => this.onFinish.emit({ id: this.payload.id, el: this.el.nativeElement }),
-      ms,
-    );
+    this._endTs = performance.now() + ms;
+
+    this.animateProgress();
   }
   pauseTimer() {
-    if (!this._timeoutId) return;
     this._paused = true;
-    clearTimeout(this._timeoutId);
-    this._remaining = Math.max(0, this._endTs - Date.now());
+
+    cancelAnimationFrame(this._rafId);
+
+    this._remaining = Math.max(0, this._endTs - performance.now());
   }
 
   resumeTimer() {
-    if (!this._paused || this._remaining <= 0) return;
+    if (!this._paused || this._remaining <= 0) {
+      return;
+    }
+
     this._paused = false;
+
     this.startTimer(this._remaining);
+  }
+
+  private clearTimer() {
+    cancelAnimationFrame(this._rafId);
+    this._rafId = 0;
+    this.progressBar.set(0);
+  }
+
+  private animateProgress() {
+    const update = () => {
+      const remaining = Math.max(0, this._endTs - performance.now());
+
+      const percent = ((this._duration - remaining) / this._duration) * 100;
+
+      this.progressBar.set(percent);
+
+      if (remaining <= 0) {
+        this.progressBar.set(100);
+
+        this.onFinish.emit({
+          id: this.payload().id,
+          el: this.el.nativeElement,
+        });
+
+        return;
+      }
+
+      this._rafId = requestAnimationFrame(update);
+    };
+
+    this._rafId = requestAnimationFrame(update);
   }
 
   close(ev?: Event) {
     if (ev) ev.stopPropagation();
-    this.onClose.emit({ id: this.payload.id, el: this.el.nativeElement });
+    this.onClose.emit({ id: this.payload().id, el: this.el.nativeElement });
   }
 
   onMouseEnter() {
-    if (this.payload.options.pauseOnHover) this.pauseTimer();
+    if (this.payload().options.pauseOnHover) this.pauseTimer();
   }
   onMouseLeave() {
-    if (this.payload.options.pauseOnHover) this.resumeTimer();
+    if (this.payload().options.pauseOnHover) this.resumeTimer();
   }
 
-  escapeHtml(input: string) {
+  escapeHtml(input?: string) {
+    if (!input) return '';
     const div = this.doc.createElement('div');
     div.appendChild(this.doc.createTextNode(input));
-    return div.innerHTML;
+    return div.textContent;
   }
 
   ngOnDestroyCleanup() {
     this.clearTimer();
-  }
-
-  private clearTimer() {
-    if (this._timeoutId) {
-      clearTimeout(this._timeoutId);
-      this._timeoutId = null;
-    }
   }
 }

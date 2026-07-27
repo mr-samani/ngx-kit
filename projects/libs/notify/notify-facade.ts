@@ -10,8 +10,9 @@ export class Notify {
   static injector: Injector;
 
   static show(
-    message: string,
     type: 'info' | 'success' | 'warning' | 'error' = 'info',
+    message: string,
+    description?: string,
     options?: NgxNotifyOptions,
   ) {
     if (!Notify.injector) {
@@ -20,19 +21,20 @@ export class Notify {
       );
       return;
     }
-    Notify.injector.get(NGX_NOTIFY_API).show(message, type, options);
+    Notify.injector.get(NGX_NOTIFY_API).show(message, description, type, options);
   }
 
-  static info(message: string, options?: NgxNotifyOptions) {
-    this.show(message, 'info', options);
+  static info(message: string, description?: string, options?: NgxNotifyOptions) {
+    this.show('info', message, description, options);
   }
-  static success(message: string, options?: NgxNotifyOptions) {
-    this.show(message, 'success', options);
+
+  static success(message: string, description?: string, options?: NgxNotifyOptions) {
+    this.show('success', message, description, options);
   }
-  static warning(message: string, options?: NgxNotifyOptions) {
-    this.show(message, 'warning', options);
+  static warning(message: string, description?: string, options?: NgxNotifyOptions) {
+    this.show('warning', message, description, options);
   }
-  static error(message: string, options?: NgxNotifyOptions) {
-    this.show(message, 'error', options);
+  static error(message: string, description?: string, options?: NgxNotifyOptions) {
+    this.show('error', message, description, options);
   }
 }

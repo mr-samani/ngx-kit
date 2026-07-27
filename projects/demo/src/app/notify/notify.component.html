@@ -1,1 +1,31 @@
 <button (click)="showNotify()">Show Notify</button>
+
+<div class="input-group">
+  <label>Message</label>
+  <input type="text" name="title" [(ngModel)]="payload().message" />
+</div>
+<div class="input-group">
+  <label>Description</label>
+  <input type="text" name="title" [(ngModel)]="payload().description" />
+</div>
+
+<div class="radio-group">
+  <label>
+    <input type="radio" name="type" [(ngModel)]="payload().type" value="info" />
+    Info
+  </label>
+  <label>
+    <input type="radio" name="type" [(ngModel)]="payload().type" value="success" />
+    Success
+  </label>
+  <label>
+    <input type="radio" name="type" [(ngModel)]="payload().type" value="warning" />
+    Warning
+  </label>
+  <label>
+    <input type="radio" name="type" [(ngModel)]="payload().type" value="error" />
+    Error
+  </label>
+</div>
+
+<ngx-notification [payload]="payload()"></ngx-notification>
