@@ -4,18 +4,15 @@ import {
   DOCUMENT,
   inject,
   createComponent,
-  Injector,
   EnvironmentInjector,
   ApplicationRef,
-  signal,
-  input,
+  EventEmitter,
 } from '@angular/core';
 import { NgxNotifyOptions } from '../models/notify-options';
-import { INotifyEnd, NgxNotifyPayload, NgxPgNotifyType } from '../models/notify.model';
+import { INotifyEnd, NgxNotifyPayload, NgxNotifyType } from '../models/notify.model';
 import { WINDOW } from 'ngx-kit/shared';
 import { NGX_NOTIFY_CONFIG } from '../models/notify-config';
-import { NgxPgNotificationComponent } from '../components/notification.component';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { NgxNotificationComponent } from '../components/notification.component';
 
 // We'll include a tiny inline uuid fallback if uuid package is not available
 function makeId() {
@@ -37,46 +34,57 @@ export class NgxNotifyService {
   constructor() {}
 
   configureContainer(position: NgxNotifyOptions['position'], containerClass: string) {
-    if (this.container) return; // created already
+    if (!this.container) {
+      this.container = this.doc.createElement('div');
+      this.doc.body.appendChild(this.container);
+    }
 
-    const container = this.doc.createElement('div');
-    container.className = containerClass + ' ngx-notify-container ' + `ngx-pos-${position}`;
-    container.style.position = 'fixed';
-    container.style.zIndex = '99999';
+    this.container.className = containerClass + ' ngx-notify-container ' + `ngx-pos-${position}`;
+    this.container.style.position = 'fixed';
+    this.container.style.zIndex = '99999';
 
     // center special
     if (position === 'center') {
-      container.style.left = '50%';
-      container.style.top = '50%';
-      container.style.transform = 'translate(-50%,-50%)';
-      container.style.display = 'flex';
-      container.style.flexDirection = 'column';
-      container.style.alignItems = 'center';
-      container.style.pointerEvents = 'none';
+      this.container.style.left = '50%';
+      this.container.style.top = '50%';
+      this.container.style.transform = 'translate(-50%,-50%)';
+      this.container.style.display = 'flex';
+      this.container.style.flexDirection = 'column';
+      this.container.style.alignItems = 'center';
+      this.container.style.pointerEvents = 'none';
     } else {
       if (position?.includes('center')) {
-        container.style.left = '50%';
-        container.style.transform = 'translateX(-50%)';
+        this.container.style.left = '50%';
+        this.container.style.transform = 'translateX(-50%)';
+      } else {
+        this.container.style.transform = 'translateX(0)';
       }
       // corners
-      if (position?.includes('top')) container.style.top = '20px';
-      else container.style.bottom = '20px';
-      if (position?.includes('left')) container.style.left = '20px';
+      if (position?.includes('top')) {
+        this.container.style.top = '20px';
+      } else {
+        this.container.style.bottom = '20px';
+      }
+      if (position?.includes('left')) {
+        this.container.style.left = '20px';
+        this.container.style.right = 'auto';
+      }
+      if (position?.includes('right')) {
+        this.container.style.right = '20px';
+        this.container.style.left = 'auto';
+      }
       //  else container.style.right = '20px';
-      container.style.display = 'flex';
-      container.style.flexDirection = 'column';
-      if (position?.includes('bottom')) container.style.flexDirection = 'column-reverse';
-      container.style.pointerEvents = 'none';
+      this.container.style.display = 'flex';
+      this.container.style.flexDirection = 'column';
+      if (position?.includes('bottom')) this.container.style.flexDirection = 'column-reverse';
+      this.container.style.pointerEvents = 'none';
     }
-
-    this.doc.body.appendChild(container);
-    this.container = container;
   }
 
   show(
     message: string,
     description?: string,
-    type: NgxPgNotifyType = 'info',
+    type: NgxNotifyType = 'info',
     options?: NgxNotifyOptions,
   ) {
     const opts: NgxNotifyOptions = { ...this.defaultOptions, ...(options || {}) };
@@ -85,7 +93,15 @@ export class NgxNotifyService {
         ? (this.win as any).crypto.randomUUID()
         : makeId();
 
-    const payload: NgxNotifyPayload = { id, message, description, type, options: opts };
+    const payload: NgxNotifyPayload = {
+      id,
+      message,
+      description,
+      type,
+      options: opts,
+      onClose: new EventEmitter(),
+      onFinish: new EventEmitter(),
+    };
 
     this.configureContainer(opts.position!, opts.containerClass!);
 
@@ -95,6 +111,7 @@ export class NgxNotifyService {
     } else {
       this._createAndShow(payload);
     }
+    return payload;
   }
 
   private _createAndShow(payload: NgxNotifyPayload) {
@@ -103,13 +120,20 @@ export class NgxNotifyService {
     const host = document.createElement('div');
     this.container!.appendChild(host);
 
-    const compRef = createComponent(NgxPgNotificationComponent, {
+    const compRef = createComponent(NgxNotificationComponent, {
       environmentInjector: this.envInjector,
       hostElement: host,
     });
     compRef.setInput('payload', payload);
-    compRef.instance.onClose.subscribe((d) => this.removeEl(d));
-    compRef.instance.onFinish.subscribe((d) => this.removeEl(d));
+    compRef.instance.onClose.subscribe((d) => {
+      this.removeEl(d);
+      payload.onClose.emit(d);
+    });
+    compRef.instance.onFinish.subscribe((d) => {
+      this.removeEl(d);
+      payload.onFinish.emit(d);
+      payload.onClose.emit(d);
+    });
 
     // Registers the component’s view so it participates in change detection cycle.
     this.appRef.attachView(compRef.hostView);

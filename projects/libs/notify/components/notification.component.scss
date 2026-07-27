@@ -105,12 +105,14 @@
 .ngx-notify-progress {
   position: absolute;
   bottom: 0;
-  height: 6px;
+  height: 4px;
   left: 60px;
   right: 0;
+  overflow: hidden;
   .progress-bar {
     background-color: var(--var-ngx-progress-bar-bg);
     height: 100%;
-    transition: width 300ms;
+    transform: scaleX(0);
+    transform-origin: left;
   }
 }

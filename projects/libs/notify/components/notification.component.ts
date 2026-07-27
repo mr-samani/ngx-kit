@@ -12,6 +12,7 @@ import {
   output,
   input,
   effect,
+  viewChild,
 } from '@angular/core';
 import { INotifyEnd, NgxNotifyPayload } from '../models/notify.model';
 import { CommonModule } from '@angular/common';
@@ -23,10 +24,11 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   styleUrls: ['./notification.component.scss'],
   imports: [CommonModule],
 })
-export class NgxPgNotificationComponent implements OnInit, OnDestroy {
+export class NgxNotificationComponent implements OnInit, OnDestroy {
   payload = input.required<NgxNotifyPayload>();
   @Input() containerClass = 'ngx-notify';
 
+  bar = viewChild<ElementRef<HTMLElement>>('bar');
   onClose = output<INotifyEnd>();
   onFinish = output<INotifyEnd>();
 
@@ -35,8 +37,6 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
   private _remaining = 0;
   private _endTs = 0;
   private _paused = false;
-
-  progressBar = signal(0);
 
   safeMessage: SafeHtml | string = '';
   safeDescription: SafeHtml | string = '';
@@ -84,14 +84,24 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
     this._remaining = ms;
     this._endTs = performance.now() + ms;
 
+    const bar = this.bar()?.nativeElement;
+    if (bar) {
+      bar.style.transition = `transform ${ms}ms linear`;
+      bar.style.transform = 'scaleX(1)';
+    }
+
     this.animateProgress();
   }
   pauseTimer() {
     this._paused = true;
-
     cancelAnimationFrame(this._rafId);
-
     this._remaining = Math.max(0, this._endTs - performance.now());
+    const bar = this.bar()?.nativeElement;
+    if (bar) {
+      const matrix = getComputedStyle(bar).transform;
+      bar.style.transition = 'none';
+      bar.style.transform = matrix;
+    }
   }
 
   resumeTimer() {
@@ -107,25 +117,16 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
   private clearTimer() {
     cancelAnimationFrame(this._rafId);
     this._rafId = 0;
-    this.progressBar.set(0);
   }
 
   private animateProgress() {
     const update = () => {
       const remaining = Math.max(0, this._endTs - performance.now());
-
-      const percent = ((this._duration - remaining) / this._duration) * 100;
-
-      this.progressBar.set(percent);
-
       if (remaining <= 0) {
-        this.progressBar.set(100);
-
         this.onFinish.emit({
           id: this.payload().id,
           el: this.el.nativeElement,
         });
-
         return;
       }
 
@@ -145,6 +146,9 @@ export class NgxPgNotificationComponent implements OnInit, OnDestroy {
   }
   onMouseLeave() {
     if (this.payload().options.pauseOnHover) this.resumeTimer();
+  }
+  onTap() {
+    if (this.payload().options.closeOnTap) this.close();
   }
 
   escapeHtml(input?: string) {

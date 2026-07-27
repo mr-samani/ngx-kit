@@ -12,6 +12,7 @@ export const NGX_NOTIFY_DEFAULTS: Required<NgxNotifyOptions> = {
   allowHtml: false,
   pauseOnHover: true,
   dismissible: true,
+  closeOnTap: true,
   containerClass: 'ngx-bg-notify',
   notificationClass: 'ngx-notify',
 };

@@ -3,6 +3,7 @@
   role="status"
   (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()"
+  (click)="onTap()"
   [attr.aria-live]="
     payload().type === 'error' || payload().type === 'warning' ? 'assertive' : 'polite'
   "
@@ -59,6 +60,6 @@
   }
 
   <div class="ngx-notify-progress">
-    <div class="progress-bar" [style.width.%]="progressBar()"></div>
+    <div class="progress-bar" #bar></div>
   </div>
 </div>

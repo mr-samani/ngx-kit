@@ -1,3 +1,5 @@
+import { NgxNotifyPositionType } from './notify.model';
+
 export interface NgxNotifyOptions {
   /**
    * Time out (ms)
@@ -9,14 +11,7 @@ export interface NgxNotifyOptions {
    * Notify position
    * @default top-center
    */
-  position?:
-    | 'center'
-    | 'top-left'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-right'
-    | 'top-center'
-    | 'bottom-center';
+  position?: NgxNotifyPositionType;
   /**
    * How many visible at once
    * queued, prevents overlap
@@ -38,6 +33,11 @@ export interface NgxNotifyOptions {
    * @default true
    */
   dismissible?: boolean;
+  /**
+   * close on tap notify
+   * @default true
+   */
+  closeOnTap?: boolean;
   /**
    * Additional container class
    */
