@@ -1,0 +1,19 @@
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  --menu-hover: light-dark(rgb(0, 162, 255), rgba(124, 124, 249, 0.388));
+  li a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 8px 10px;
+    border-bottom: 1px rgba(108, 108, 108, 0.257) solid;
+    transition: all 300ms;
+    border-radius: 5px;
+    cursor: pointer;
+    &:hover {
+      background-color: var(--menu-hover);
+    }
+  }
+}

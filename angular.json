@@ -29,7 +29,10 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"]
+            "styles": [
+              "./projects/libs/styles/all.css",
+              "projects/demo/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

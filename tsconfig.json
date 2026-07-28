@@ -19,7 +19,8 @@
     "moduleResolution": "bundler",
     "paths": {
       "ngx-kit/*": ["./projects/libs/*"],
-      "ngx-kit": ["./projects/libs"]
+      "ngx-kit": ["./projects/libs"],
+      "@demo/*": ["./projects/demo/src/app/*"]
     },
     "declaration": false
   },

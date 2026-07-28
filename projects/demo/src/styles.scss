@@ -1,7 +1,25 @@
+@use './scss//material.scss';
+
 body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: inherit;
+
+  --mat-sys-corner-full: 6px;
+  --mat-button-protected-container-height: 38px;
+  --mat-sys-corner-extra-large: 10px;
+  // Reset the user agent margin.
   margin: 0;
-  font-family: tahoma;
+  height: 100%;
 }
+
 * {
   box-sizing: border-box;
 }

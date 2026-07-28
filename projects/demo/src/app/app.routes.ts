@@ -1,46 +1,13 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'color-picker', pathMatch: 'full' },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
-    path: 'color-picker',
-    loadComponent: () =>
-      import('./color-picker/color-picker.component').then((c) => c.ColorPickerComponent),
+    path: 'home',
+    loadComponent: () => import('./home/home').then((c) => c.Home),
   },
   {
-    path: 'gradient-picker',
-    loadComponent: () =>
-      import('./gradient-picker/gradient-picker.component').then((c) => c.GradientPickerComponent),
-  },
-  {
-    path: 'box-shadow',
-    loadComponent: () =>
-      import('./box-shadow/box-shadow.component').then((c) => c.BoxShadowComponent),
-  },
-  {
-    path: 'angle-selector',
-    loadComponent: () =>
-      import('./angle-selector/angle-selector.component').then((c) => c.AngleSelectorComponent),
-  },
-  {
-    path: 'date-picker',
-    loadComponent: () =>
-      import('./date-picker/date-picker.component').then((c) => c.DatePickerComponent),
-  },
-  {
-    path: 'calendar',
-    loadComponent: () => import('./calendar/calendar.component').then((c) => c.CalendarComponent),
-  },
-  {
-    path: 'notify',
-    loadComponent: () => import('./notify/notify.component').then((c) => c.NotifyComponent),
-  },
-  {
-    path: 'dialog',
-    loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
-  },
-  {
-    path: 'menu',
-    loadComponent: () => import('./menu/menu.component').then((c) => c.MenuComponent),
+    path: 'components',
+    loadChildren: () => import('./components/components-module').then((m) => m.ComponentsModule),
   },
 ];
