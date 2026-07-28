@@ -4,6 +4,7 @@ import { OverlayOptions, TemplateOptions } from './overlay-options';
 import { OverlayRef } from './overlay-ref';
 import { PlacementConfig } from './placement-config';
 import { OverlayInstance } from './overlay-instance';
+import { IsRtl } from '../utils/is-rtl';
 export const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 export const DIALOG_OVERLAY_CLASSNAME = 'ngx-ui-overlay';
@@ -296,7 +297,7 @@ export class OverlayService implements OnDestroy {
 
     const vw = Math.min(document.body.clientWidth, window.innerWidth);
     const vh = Math.min(document.body.clientHeight, window.innerHeight);
-    const isRTL = getComputedStyle(this.doc.documentElement).direction === 'rtl';
+    const isRTL = IsRtl();
 
     let top = 0;
     let left: number | 'auto' = 'auto';

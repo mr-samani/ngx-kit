@@ -17,8 +17,12 @@
       <i class="fa fa-moon"></i>
     }
   </button>
-  <button matIconButton class="dir-btn" aria-label="Page Direction" (click)="toggleDirection()">
-    @if (isRtl()) {
+  <button
+    matIconButton
+    class="dir-btn"
+    aria-label="Page Direction"
+    (click)="direction.toggleDirection()">
+    @if (direction.isRtl()) {
       LTR
     } @else {
       RTL

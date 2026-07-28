@@ -15,11 +15,15 @@ import { MenuContext, NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
   exportAs: 'NgxMenu',
   styles: `
     .ngx-menu-panel {
+      --ngx-menu-bg: light-dark(#ffffff, #252425);
+      --ngx-menu-fg: light-dark(#000000, #ffffff);
+    }
+    .ngx-menu-panel {
       overflow: auto;
       box-sizing: border-box;
       outline: 0;
-      background-color: var(--ngx-menu-bg, #ffffff);
-      color: var(--ngx-menu-fg, #111111);
+      background-color: var(--ngx-menu-bg);
+      color: var(--ngx-menu-fg);
       box-shadow: var(--ngx-menu-shadow, 0px 0px 4px rgb(0 0 0 / 30%));
       border-radius: var(--ngx-menu-radius, 10px);
       padding: var(--ngx-menu-padding, 5px);

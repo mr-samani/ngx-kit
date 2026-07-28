@@ -15,6 +15,7 @@ import { NgxMenu } from '../../directives/ngx-menu.directive';
       box-sizing: border-box;
       outline: 0;
       padding: var(--ngx-menu-item-padding, 6px 12px);
+      transition: all 300ms;
       &:hover {
         cursor: pointer;
         background-color: var(--ngx-menu-item-padding, #9bc6ff68);

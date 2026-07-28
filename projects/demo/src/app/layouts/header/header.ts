@@ -3,6 +3,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { DarkModeService } from '@demo/shared/services/dark-mode.service';
 import { ComponentsRoutingModule } from '../../components/components-routing-module';
+import { IsRtl } from 'ngx-kit/shared/utils/is-rtl';
+import { DirectionService } from '@demo/shared/services/direction.service';
 @Component({
   selector: 'app-header',
   imports: [MatToolbarModule, MatButtonModule, ComponentsRoutingModule],
@@ -12,15 +14,7 @@ import { ComponentsRoutingModule } from '../../components/components-routing-mod
 export class Header {
   protected doc = inject(DOCUMENT);
   public darkMode = inject(DarkModeService);
-  isRtl = signal(false);
+  public direction = inject(DirectionService);
 
-  constructor() {
-    const dir = document.documentElement.getAttribute('dir') || 'ltr';
-    this.isRtl.update((u) => (u = dir == 'rtl' ? true : false));
-  }
-
-  toggleDirection() {
-    this.isRtl.update((u) => !u);
-    document.documentElement.setAttribute('dir', this.isRtl() ? 'rtl' : 'ltr');
-  }
+  constructor() {}
 }

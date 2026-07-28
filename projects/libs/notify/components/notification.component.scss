@@ -1,7 +1,7 @@
 :host {
   display: block;
   margin: 8px 0;
-  --ngx-notify-content-bg: light-dark(#ffffff, #000);
+  --ngx-notify-content-bg: light-dark(#ffffff, #262b35);
   --ngx-notify-content-fg: light-dark(#000, #fff);
 }
 .ngx-notify {
@@ -10,7 +10,7 @@
   width: 500px;
   max-width: 100%;
   border-radius: 8px;
-  box-shadow: 0 0px 30px rgb(103 102 102 / 26%);
+  box-shadow: 0 0px 30px rgba(103, 102, 102, 0.488);
   opacity: 0;
   transform: translateY(-8px);
   transition:
@@ -114,5 +114,21 @@
     height: 100%;
     transform: scaleX(0);
     transform-origin: left;
+  }
+}
+
+::ng-deep {
+  html[dir='rtl'],
+  body[dir='ltr'] {
+    .ngx-notify-content {
+      border-radius: 0px 0px 15px 0px;
+    }
+    .ngx-notify-progress {
+      left: 0;
+      right: 60px;
+      .progress-bar {
+        transform-origin: right !important;
+      }
+    }
   }
 }
