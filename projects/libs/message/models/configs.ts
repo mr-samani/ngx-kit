@@ -3,7 +3,8 @@ import { IMessageOptions } from './message-options.interface';
 import { NgxMessageService } from '../public-api';
 import { MessageOptions } from './message-options';
 
-export type MessageIcon = 'None' | 'success' | 'error' | 'warning' | 'info' | 'question';
+export type MessageIcon =
+  'None' | 'success' | 'error' | 'warning' | 'info' | 'question' | 'loading';
 
 export const NGX_MESSAGE_CONFIGS = new InjectionToken<IMessageOptions>('ngx-message-configs');
 
@@ -32,8 +33,6 @@ export const NGX_MESSAGE_DEFAULT_OPTIONS: MessageOptions = {
   denyButtonAriaLabel: '',
   cancelButtonAriaLabel: '',
   reverseButtons: false,
-  showCloseButton: false,
+  showCloseButton: true,
   containerClass: '',
 };
-
-

@@ -7,6 +7,8 @@ export * from './slider/slider.component';
 export * from './utils/get-offset-position';
 export * from './utils/window';
 export * from './utils/string';
+export * from './utils/is-rtl';
+export * from './utils/confetti';
 
 export * from './contracts/IPosition';
 
@@ -16,4 +18,3 @@ export * from './overlay/overlay-options';
 export * from './overlay/overlay-ref';
 export * from './overlay/overlay.service';
 export * from './overlay/overlay-instance';
-

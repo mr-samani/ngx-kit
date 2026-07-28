@@ -32,8 +32,9 @@ export class MessageComponent {
     this.options.title = 'Message Title';
     this.options.text = 'Message Body';
     this.options.icon = 'success';
-
     this.options.useOverlay = true;
+    this.options.showCloseButton = true;
+    this.options.showCancelButton = true;
   }
 
   ngOnInit(): void {}

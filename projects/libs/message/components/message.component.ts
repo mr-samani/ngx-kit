@@ -1,15 +1,29 @@
-import { Component, HostListener } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DOCUMENT,
+  ElementRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { IMessageOptions } from '../models/message-options.interface';
 import { Subject } from 'rxjs';
 import { MessageResult, DismissReason } from '../models/message-result';
 import { CommonModule } from '@angular/common';
 import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/configs';
+import { ICONS } from '../models/icons';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { makeConfetti } from 'ngx-kit/shared';
 
 @Component({
   selector: 'ngx-message',
   templateUrl: 'message.component.html',
-  styleUrls: ['./message.component.scss', './message-icons.scss'],
-  standalone: true,
+  styleUrls: ['./message.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   imports: [CommonModule],
   providers: [
     {
@@ -18,12 +32,30 @@ import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/conf
     },
   ],
 })
-export class NgxMessageComponent {
+export class NgxMessageComponent implements OnInit, AfterViewInit {
+  icon?: SafeHtml;
+  showIcon = signal(true);
   options!: IMessageOptions;
+  confetti = viewChild<ElementRef<HTMLDivElement>>('confetti');
   index = 0;
+
+  protected sanitizer = inject(DomSanitizer);
+  protected doc = inject(DOCUMENT);
 
   private readonly _onClose = new Subject<{ index: number; result: MessageResult<any> }>();
   public onClose = this._onClose.asObservable();
+
+  ngOnInit(): void {
+    this.showIcon.update((x) => (x = this.options.icon != 'None'));
+    this.icon = this.sanitizer.bypassSecurityTrustHtml(ICONS[this.options.icon ?? 'None']);
+  }
+
+  ngAfterViewInit(): void {
+    const confetti = this.confetti()?.nativeElement;
+    if (this.options.icon == 'success' && confetti) {
+      makeConfetti(this.doc, confetti);
+    }
+  }
 
   @HostListener('document:keydown.escape', ['$event'])
   onScapeKey(event: Event) {

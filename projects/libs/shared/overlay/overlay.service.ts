@@ -297,7 +297,7 @@ export class OverlayService implements OnDestroy {
 
     const vw = Math.min(document.body.clientWidth, window.innerWidth);
     const vh = Math.min(document.body.clientHeight, window.innerHeight);
-    const isRTL = IsRtl();
+    const isRTL = IsRtl(this.doc);
 
     let top = 0;
     let left: number | 'auto' = 'auto';

@@ -1,83 +1,46 @@
 <div
-  class="ngx-message-container"
+  class="ngx-msg-overlay show"
   (click)="onOutSideClick()"
   [ngClass]="options.containerClass"
-  [class.has-backdrop]="options.backdrop">
-  <div class="ngx-message-inner" (click)="innerOnClick($event)">
+  [class.has-backdrop]="options.backdrop"
+  [attr.data-type]="options.icon">
+  <div class="ngx-msg-modal" (click)="innerOnClick($event)">
+    <div class="confetti" #confetti></div>
     @if (options.showCloseButton) {
-      <div class="ngx-message-header">
-        <button class="ngx-message-close" (click)="close()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-            <path
-              fill="currentColor"
-              d="M312.1 375c9.369 9.369 9.369 24.57 0 33.94s-24.57 9.369-33.94 0L160 289.9l-119 119c-9.369 9.369-24.57 9.369-33.94 0s-9.369-24.57 0-33.94L126.1 256L7.027 136.1c-9.369-9.369-9.369-24.57 0-33.94s24.57-9.369 33.94 0L160 222.1l119-119c9.369-9.369 24.57-9.369 33.94 0s9.369 24.57 0 33.94L193.9 256L312.1 375z" />
-          </svg>
-        </button>
+      <button class="close-x" (click)="close()" aria-label="Close">✕</button>
+    }
+    @if (showIcon()) {
+      <div class="icon-stage">
+        <div class="icon-ring"></div>
+        <div class="icon-disc" [innerHTML]="icon"></div>
       </div>
     }
-
-    <!-- --------- icon -------- -->
-    @switch (options.icon) {
-      @case ('success') {
-        <div class="alert-icon alert-success alert-icon-show" style="display: flex">
-          <div class="alert-success-circular-line-left"></div>
-          <span class="alert-success-line-tip"></span>
-          <span class="alert-success-line-long"></span>
-          <div class="alert-success-ring"></div>
-          <div class="alert-success-fix"></div>
-          <div class="alert-success-circular-line-right"></div>
-        </div>
-      }
-      @case ('error') {
-        <div class="alert-icon alert-error alert-icon-show" style="display: flex">
-          <span class="alert-x-mark">
-            <span class="alert-x-mark-line-left"></span>
-            <span class="alert-x-mark-line-right"></span>
-          </span>
-        </div>
-      }
-      @case ('info') {
-        <div class="alert-icon alert-info alert-icon-show" style="display: flex">
-          <div class="alert-icon-content">i</div>
-        </div>
-      }
-      @case ('question') {
-        <div class="alert-icon alert-question alert-icon-show" style="display: flex">
-          <div class="alert-icon-content">?</div>
-        </div>
-      }
-      @case ('warning') {
-        <div class="alert-icon alert-warning alert-icon-show" style="display: flex">
-          <div class="alert-icon-content">!</div>
-        </div>
-      }
-    }
-    <!-- --------- /icon -------- -->
-
-    <div class="ngx-message-title">
-      {{ options.title }}
-    </div>
-    <div class="ngx-message-body">
+    <h2>{{ options.title }}</h2>
+    <p class="desc">
       {{ options.text }}
       <span [innerHTML]="options.html"></span>
-    </div>
-    <div class="ngx-message-footer">
+    </p>
+
+    <div class="ngx-msg-actions">
       @if (options.showCancelButton) {
         <button
-          class="btn-cancel"
+          class="btn btn-ghost"
           (click)="onCancel()"
           [attr.aria-label]="options.cancelButtonAriaLabel">
           {{ options.cancelButtonText }}
         </button>
       }
       @if (options.showDenyButton) {
-        <button class="btn-deny" (click)="onDeny()" [attr.aria-label]="options.denyButtonAriaLabel">
+        <button
+          class="btn btn-ghost"
+          (click)="onDeny()"
+          [attr.aria-label]="options.denyButtonAriaLabel">
           {{ options.denyButtonText }}
         </button>
       }
       @if (options.showConfirmButton) {
         <button
-          class="btn-confirm"
+          class="btn btn-primary"
           (click)="onConfirm()"
           [attr.aria-label]="options.confirmButtonAriaLabel">
           {{ options.confirmButtonText }}

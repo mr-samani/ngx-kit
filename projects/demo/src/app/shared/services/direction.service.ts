@@ -1,5 +1,4 @@
 import { Injectable, signal } from '@angular/core';
-import { IsRtl } from 'ngx-kit/shared/utils/is-rtl';
 export type DirectionType = 'ltr' | 'rtl';
 @Injectable({
   providedIn: 'root',

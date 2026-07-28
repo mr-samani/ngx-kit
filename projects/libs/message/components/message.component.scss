@@ -1,127 +1,408 @@
-:host {
-  --ngx-message-bg: light-dark(#ffffff, #252425);
-  --ngx-message-fg: light-dark(#000000, #ffffff);
+ngx-message {
+  --bg-0: #0a0c14;
+  --bg-1: #0f1220;
+  --panel: rgba(22, 25, 40, 0.72);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --ink-0: #f3f4fb;
+  --ink-1: #a8adc4;
+  --ink-2: #6b7090;
 
-  // وقتی به عنوان popover نمایش داده میشه
-  &:popover-open {
-    // ریست استایل‌های پیش‌فرض مرورگر
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    overflow: auto;
-  }
+  --violet: #8b7bff;
+  --violet-2: #5b4fd1;
+  --cyan: #43e0d8;
+  --amber: #ffb454;
+  --rose: #ff6b8b;
+  --emerald: #3ee08f;
+
+  --success-a: #3ee08f;
+  --success-b: #1fb8b0;
+  --error-a: #ff6b8b;
+  --error-b: #c23f6b;
+  --warning-a: #ffc45c;
+  --warning-b: #ff8a4c;
+  --info-a: #7cc1ff;
+  --info-b: #5b6cff;
+  --confirm-a: #c58bff;
+  --confirm-b: #7b5cff;
 }
-.ngx-message-container {
+
+/* =====================================================
+     OVERLAY + MODAL
+  ===================================================== */
+.ngx-msg-overlay {
   position: fixed;
+  inset: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  z-index: 9999;
-  top: 0px;
-  bottom: 0px;
+  padding: 24px;
+  background: rgba(6, 7, 14, 0.55);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.35s ease,
+    visibility 0.35s ease;
+}
+.ngx-msg-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ngx-msg-modal {
+  position: relative;
   width: 100%;
-
-  &.has-backdrop {
-    background: #0000001e;
+  max-width: 400px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 26px;
+  padding: 38px 30px 28px;
+  text-align: center;
+  box-shadow:
+    0 30px 80px -20px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  transform: translateY(28px) scale(0.92);
+  opacity: 0;
+  transition:
+    transform 0.1s,
+    opacity 0.1s;
+  overflow: hidden;
+}
+.ngx-msg-overlay.show .ngx-msg-modal {
+  animation: modalIn 0.55s cubic-bezier(0.2, 1.1, 0.3, 1) forwards;
+}
+.ngx-msg-overlay.closing .ngx-msg-modal {
+  animation: modalOut 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+@keyframes modalIn {
+  0% {
+    transform: translateY(28px) scale(0.9);
+    opacity: 0;
   }
-
-  .ngx-message-inner {
-    background-color: var(--ngx-message-bg);
-    color: var(--ngx-message-fg);
-    box-shadow: var(--ngx-message-shadow, 0px 0px 4px rgb(0 0 0 / 30%));
-    border-radius: var(--ngx-message-radius, 10px);
-    width: 400px;
-    max-width: 95%;
-    min-height: 150px;
-    animation: ShowAlert 0.3s;
+  60% {
+    transform: translateY(-4px) scale(1.015);
+    opacity: 1;
   }
-
-  .ngx-message-header {
-    display: flex;
-    align-items: center;
-    font-size: 30px;
-    min-height: 40px;
-
-    .ngx-message-close {
-      background: none;
-      border: none;
-      outline: none;
-      cursor: pointer;
-
-      svg {
-        width: 20px;
-        height: 20px;
-      }
-    }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
-
-  .ngx-message-body {
-    padding: 5px 15px 15px 15px;
-    text-align: center;
-    max-height: calc(100vh - 120px);
-    overflow: auto;
-    line-height: 2;
-  }
-
-  .ngx-message-title {
-    padding: 15px;
-    text-align: center;
-    font-size: 1.2rem;
-  }
-
-  .ngx-message-footer {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 15px;
-    gap: 6px;
-    justify-content: center;
-
-    button {
-      background: none;
-      border: none;
-      background-color: #007bff;
-      color: #fff;
-      padding: 8px 15px;
-      border-radius: 3px;
-      cursor: pointer;
-
-      &.btn-confirm {
-        background-color: #007bff;
-      }
-
-      &.btn-cancel {
-        background-color: #6e7881;
-      }
-
-      &.btn-deny {
-        background-color: #dc3741;
-      }
-    }
+}
+@keyframes modalOut {
+  to {
+    transform: translateY(14px) scale(0.94);
+    opacity: 0;
   }
 }
 
-@keyframes ShowAlert {
-  0% {
-    transform: scale(0.7);
-  }
+/* soft radial glow that sits behind the icon, colored per type */
+.ngx-msg-modal::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  translate: -50% 0;
+  width: 260px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--type-glow, radial-gradient(circle, rgba(139, 123, 255, 0.35), transparent 70%));
+  filter: blur(20px);
+  pointer-events: none;
+}
 
-  45% {
-    transform: scale(1.05);
-  }
+.ngx-msg-modal .close-x {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+.ngx-msg-modal .close-x:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-0);
+  transform: rotate(90deg);
+}
 
-  80% {
-    transform: scale(0.95);
+/* ---------- icon stage ---------- */
+.icon-stage {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 4px auto 22px;
+}
+.icon-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(
+    --type-ring,
+    conic-gradient(from 0deg, var(--violet), var(--cyan), var(--violet))
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 3px),
+    #000 calc(100% - 2.5px)
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  opacity: 0;
+}
+.ngx-msg-overlay.show .icon-ring {
+  animation:
+    ringIn 0.8s 0.05s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+    ringSpin 6s linear infinite;
+}
+@keyframes ringIn {
+  to {
+    opacity: 1;
   }
+}
+@keyframes ringSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-  100% {
+.icon-disc {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--type-disc, linear-gradient(150deg, var(--violet), var(--violet-2)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px -6px var(--type-shadow, rgba(139, 123, 255, 0.55));
+  transform: scale(0);
+}
+.ngx-msg-overlay.show .icon-disc {
+  animation: discPop 0.6s 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes discPop {
+  to {
     transform: scale(1);
   }
+}
+
+.icon-disc svg {
+  width: 46px;
+  height: 46px;
+  overflow: visible;
+}
+.icon-disc .draw {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+}
+.ngx-msg-overlay.show .icon-disc .draw {
+  animation: draw 0.5s 0.42s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.icon-disc .dot-mark {
+  fill: #fff;
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: center;
+}
+.ngx-msg-overlay.show .icon-disc .dot-mark {
+  animation: dotPop 0.3s 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes dotPop {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* spinner (loading type) */
+.spinner-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.spinner {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- text ---------- */
+.ngx-msg-modal h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.ngx-msg-modal p.desc {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--ink-1);
+  margin: 0 0 26px;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.ngx-msg-overlay.show .ngx-msg-modal h2 {
+  animation: textIn 0.5s 0.3s ease forwards;
+}
+.ngx-msg-overlay.show .ngx-msg-modal p.desc {
+  animation: textIn 0.5s 0.38s ease forwards;
+}
+@keyframes textIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- buttons ---------- */
+.ngx-msg-modal .ngx-msg-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.ngx-msg-overlay.show .ngx-msg-modal .ngx-msg-actions {
+  animation: textIn 0.5s 0.46s ease forwards;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 13px;
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.2s,
+    box-shadow 0.2s;
+  flex: 1;
+  max-width: 170px;
+}
+.btn:active {
+  transform: scale(0.95);
+}
+.btn-primary {
+  color: #0a0c14;
+  background: var(--type-btn, linear-gradient(135deg, var(--violet), var(--cyan)));
+  box-shadow: 0 10px 24px -8px var(--type-shadow, rgba(139, 123, 255, 0.6));
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.btn-ghost {
+  color: var(--ink-1);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--panel-border);
+}
+.btn-ghost:hover {
+  color: var(--ink-0);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--type-btn, linear-gradient(90deg, var(--violet), var(--cyan)));
+  width: 100%;
+  transform-origin: right center;
+}
+[dir='rtl'] .progress {
+  transform-origin: left center;
+}
+/* ---------- type theme variables ---------- */
+.ngx-msg-overlay[data-type='success'] .ngx-msg-modal {
+  --type-ring: conic-gradient(from 0deg, var(--success-a), var(--success-b), var(--success-a));
+  --type-disc: linear-gradient(150deg, var(--success-a), var(--success-b));
+  --type-shadow: rgba(62, 224, 143, 0.5);
+  --type-btn: linear-gradient(135deg, var(--success-a), var(--success-b));
+  --type-glow: radial-gradient(circle, rgba(62, 224, 143, 0.35), transparent 70%);
+}
+.ngx-msg-overlay[data-type='error'] .ngx-msg-modal {
+  --type-ring: conic-gradient(from 0deg, var(--error-a), var(--error-b), var(--error-a));
+  --type-disc: linear-gradient(150deg, var(--error-a), var(--error-b));
+  --type-shadow: rgba(255, 107, 139, 0.5);
+  --type-btn: linear-gradient(135deg, var(--error-a), var(--error-b));
+  --type-glow: radial-gradient(circle, rgba(255, 107, 139, 0.35), transparent 70%);
+}
+.ngx-msg-overlay[data-type='warning'] .ngx-msg-modal {
+  --type-ring: conic-gradient(from 0deg, var(--warning-a), var(--warning-b), var(--warning-a));
+  --type-disc: linear-gradient(150deg, var(--warning-a), var(--warning-b));
+  --type-shadow: rgba(255, 140, 76, 0.5);
+  --type-btn: linear-gradient(135deg, var(--warning-a), var(--warning-b));
+  --type-glow: radial-gradient(circle, rgba(255, 140, 76, 0.35), transparent 70%);
+}
+.ngx-msg-overlay[data-type='info'] .ngx-msg-modal {
+  --type-ring: conic-gradient(from 0deg, var(--info-a), var(--info-b), var(--info-a));
+  --type-disc: linear-gradient(150deg, var(--info-a), var(--info-b));
+  --type-shadow: rgba(91, 108, 255, 0.5);
+  --type-btn: linear-gradient(135deg, var(--info-a), var(--info-b));
+  --type-glow: radial-gradient(circle, rgba(91, 108, 255, 0.35), transparent 70%);
+}
+.ngx-msg-overlay[data-type='confirm'] .ngx-msg-modal {
+  --type-ring: conic-gradient(from 0deg, var(--confirm-a), var(--confirm-b), var(--confirm-a));
+  --type-disc: linear-gradient(150deg, var(--confirm-a), var(--confirm-b));
+  --type-shadow: rgba(123, 92, 255, 0.5);
+  --type-btn: linear-gradient(135deg, var(--confirm-a), var(--confirm-b));
+  --type-glow: radial-gradient(circle, rgba(123, 92, 255, 0.35), transparent 70%);
+}
+.ngx-msg-overlay[data-type='loading'] .ngx-msg-modal {
+  --type-disc: linear-gradient(150deg, #9aa3c0, #565c78);
+  --type-glow: radial-gradient(circle, rgba(154, 163, 192, 0.3), transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.btn:focus-visible,
+.trigger:focus-visible,
+.close-x:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
 }
