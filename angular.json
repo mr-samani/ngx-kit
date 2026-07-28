@@ -96,40 +96,6 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
-        },
-        "storybook": {
-          "builder": "@storybook/angular:start-storybook",
-          "options": {
-            "configDir": "projects/storybook/.storybook",
-            "browserTarget": "ngx-kit:build",
-            "compodoc": true,
-            "compodocArgs": [
-              "-p",
-              "tsconfig.compodoc.json",
-              "-e",
-              "json",
-              "-d",
-              "projects/storybook/.storybook/documentation"
-            ],
-            "port": 6006
-          }
-        },
-        "build-storybook": {
-          "builder": "@storybook/angular:build-storybook",
-          "options": {
-            "configDir": "projects/storybook/.storybook",
-            "browserTarget": "ngx-kit:build",
-            "compodoc": true,
-            "compodocArgs": [
-              "-p",
-              "tsconfig.compodoc.json",
-              "-e",
-              "json",
-              "-d",
-              "projects/storybook/.storybook/documentation"
-            ],
-            "outputDir": "docs"
-          }
         }
       }
     }
