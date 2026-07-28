@@ -2,7 +2,7 @@ import { Component, DOCUMENT, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { DarkModeService } from '@demo/shared/services/dark-mode.service';
-import { ComponentsRoutingModule } from '../../components/components-routing-module';
+import { ComponentsRoutingModule } from '../../components/components-routing.module';
 import { IsRtl } from 'ngx-kit/shared/utils/is-rtl';
 import { DirectionService } from '@demo/shared/services/direction.service';
 @Component({

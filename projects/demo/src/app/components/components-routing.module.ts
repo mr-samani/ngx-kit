@@ -52,6 +52,10 @@ const routes: Routes = [
         path: 'menu',
         loadComponent: () => import('./menu/menu.component').then((c) => c.MenuComponent),
       },
+      {
+        path: 'message',
+        loadComponent: () => import('./message/message').then((c) => c.MessageComponent),
+      },
     ],
   },
 ];

@@ -18,7 +18,7 @@ export class Notify {
   ): NgxNotifyPayload {
     if (!Notify.injector) {
       throw new Error(
-        'ngx-notify: Error on EnvironmentProvider. Ensure "provideNotify()" in root provider.',
+        'ngx-kit: Error on EnvironmentProvider. Ensure "provideNotify()" in root provider.',
       );
     }
     return Notify.injector.get(NGX_NOTIFY_API).show(message, description, type, options);

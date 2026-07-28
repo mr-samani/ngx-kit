@@ -1,0 +1,127 @@
+:host {
+  --ngx-message-bg: light-dark(#ffffff, #252425);
+  --ngx-message-fg: light-dark(#000000, #ffffff);
+
+  // وقتی به عنوان popover نمایش داده میشه
+  &:popover-open {
+    // ریست استایل‌های پیش‌فرض مرورگر
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+  }
+}
+.ngx-message-container {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 9999;
+  top: 0px;
+  bottom: 0px;
+  width: 100%;
+
+  &.has-backdrop {
+    background: #0000001e;
+  }
+
+  .ngx-message-inner {
+    background-color: var(--ngx-message-bg);
+    color: var(--ngx-message-fg);
+    box-shadow: var(--ngx-message-shadow, 0px 0px 4px rgb(0 0 0 / 30%));
+    border-radius: var(--ngx-message-radius, 10px);
+    width: 400px;
+    max-width: 95%;
+    min-height: 150px;
+    animation: ShowAlert 0.3s;
+  }
+
+  .ngx-message-header {
+    display: flex;
+    align-items: center;
+    font-size: 30px;
+    min-height: 40px;
+
+    .ngx-message-close {
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .ngx-message-body {
+    padding: 5px 15px 15px 15px;
+    text-align: center;
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+    line-height: 2;
+  }
+
+  .ngx-message-title {
+    padding: 15px;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+
+  .ngx-message-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 15px;
+    gap: 6px;
+    justify-content: center;
+
+    button {
+      background: none;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+
+      &.btn-confirm {
+        background-color: #007bff;
+      }
+
+      &.btn-cancel {
+        background-color: #6e7881;
+      }
+
+      &.btn-deny {
+        background-color: #dc3741;
+      }
+    }
+  }
+}
+
+@keyframes ShowAlert {
+  0% {
+    transform: scale(0.7);
+  }
+
+  45% {
+    transform: scale(1.05);
+  }
+
+  80% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}

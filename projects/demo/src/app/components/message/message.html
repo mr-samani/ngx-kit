@@ -1,0 +1,93 @@
+<mat-card class="container">
+  <mat-card-title>Alert Demo</mat-card-title>
+  <mat-card-content>
+    <div class="configuration">
+      <mat-form-field appearance="outline">
+        <mat-label>Title</mat-label>
+        <input matInput type="text" [(ngModel)]="options.title" name="title" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Text</mat-label>
+        <input matInput type="text" [(ngModel)]="options.text" name="text" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Html</mat-label>
+        <input matInput type="text" [(ngModel)]="options.html" name="html" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Icon</mat-label>
+        <mat-select type="text" [(ngModel)]="options.icon" name="icon">
+          <mat-option [value]="''">None</mat-option>
+          <mat-option [value]="'success'">Success</mat-option>
+          <mat-option [value]="'error'">Error</mat-option>
+          <mat-option [value]="'info'">Info</mat-option>
+          <mat-option [value]="'warning'">Warning</mat-option>
+          <mat-option [value]="'question'">Question</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-checkbox [(ngModel)]="options.showCloseButton" name="showCloseButton">
+        Show Close Button
+      </mat-checkbox>
+      <mat-checkbox [(ngModel)]="options.allowOutsideClick" name="allowOutsideClick">
+        Allow Outside Click
+      </mat-checkbox>
+      <mat-checkbox [(ngModel)]="options.allowEnterKey" name="allowEnterKey">
+        Allow Enter Key
+      </mat-checkbox>
+      <mat-checkbox [(ngModel)]="options.allowEscapeKey" name="allowEscapeKey">
+        Allow Escape Key
+      </mat-checkbox>
+    </div>
+    <!-- -------------------------- -->
+
+    <div class="configuration">
+      <mat-checkbox [(ngModel)]="options.showConfirmButton" name="showConfirmButton">
+        Show confirm button
+      </mat-checkbox>
+      <mat-form-field appearance="outline">
+        <mat-label>Text</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="options.confirmButtonText"
+          name="confirmButtonText" />
+      </mat-form-field>
+    </div>
+    <div class="configuration">
+      <mat-checkbox [(ngModel)]="options.showCancelButton">Show Cancel button</mat-checkbox>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Text</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="options.cancelButtonText"
+          name="cancelButtonText" />
+      </mat-form-field>
+    </div>
+    <div class="configuration">
+      <mat-checkbox [(ngModel)]="options.showDenyButton">Show Deny button</mat-checkbox>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Text</mat-label>
+        <input matInput type="text" [(ngModel)]="options.denyButtonText" name="cancelButtonText" />
+      </mat-form-field>
+    </div>
+
+    <div class="configuration">
+      <mat-checkbox [(ngModel)]="options.useOverlay">
+        Use Overlay popover (add popover="manual" to show dialog in top layer)
+      </mat-checkbox>
+    </div>
+
+    <button (click)="openModal()" mat-raised-button color="primary" class="btn-demo">
+      Show Alert
+    </button>
+    <h5>Result:</h5>
+    <pre dir="ltr" style="text-align: left">{{ result | json }}</pre>
+  </mat-card-content>
+</mat-card>
