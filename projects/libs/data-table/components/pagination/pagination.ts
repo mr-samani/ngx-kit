@@ -1,9 +1,6 @@
-import { AfterViewInit, Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  NGX_PAGINATION_CONFIG,
-  NGX_PAGINATION_CONFIG_DEFAULT,
-} from '../../tokens/pagination-config.token';
+import { NGX_PAGINATION_CONFIG } from '../../tokens/pagination-config.token';
 import { PageEvent } from '../../types/PageEvent';
 
 @Component({
@@ -11,12 +8,6 @@ import { PageEvent } from '../../types/PageEvent';
   templateUrl: './pagination.html',
   styleUrls: ['./pagination.scss'],
   imports: [FormsModule],
-  providers: [
-    {
-      provide: NGX_PAGINATION_CONFIG,
-      useValue: NGX_PAGINATION_CONFIG_DEFAULT,
-    },
-  ],
 })
 export class NgxPagination {
   protected readonly config = inject(NGX_PAGINATION_CONFIG);

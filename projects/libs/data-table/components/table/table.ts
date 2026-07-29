@@ -7,7 +7,6 @@ import {
   EventEmitter,
   inject,
   input,
-  Input,
   OnInit,
   output,
   Output,
@@ -18,26 +17,19 @@ import {
 } from '@angular/core';
 import { FieldsType, SortEvent } from '../../types/FieldsType';
 import { TableCellDirective } from '../../directives/table-cell.directive';
-import { NGX_TABLE_CONFIG, NGX_TABLE_CONFIG_DEFAULT } from '../../tokens/table-config.token';
-import {
-  NGX_PAGINATION_CONFIG,
-  NGX_PAGINATION_CONFIG_DEFAULT,
-} from '../../tokens/pagination-config.token';
+import { NGX_TABLE_CONFIG } from '../../tokens/table-config.token';
+import { NGX_PAGINATION_CONFIG } from '../../tokens/pagination-config.token';
 import { PageEvent } from '../../types/PageEvent';
 import { CommonModule } from '@angular/common';
 import { NgxPagination } from '../pagination/pagination';
 import { LazyLoadEvent } from '../../types/LazyLoadEvent';
-import { Field } from '@angular/forms/signals';
 
 @Component({
   selector: 'ngx-table',
   templateUrl: './table.html',
   styleUrls: ['./table.scss'],
   imports: [CommonModule, NgxPagination],
-  providers: [
-    { provide: NGX_TABLE_CONFIG, useValue: NGX_TABLE_CONFIG_DEFAULT },
-    { provide: NGX_PAGINATION_CONFIG, useValue: NGX_PAGINATION_CONFIG_DEFAULT },
-  ],
+  providers: [],
 })
 export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   protected readonly config = inject(NGX_TABLE_CONFIG);
@@ -69,18 +61,26 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
 
   constructor() {
     effect(() => {
-      const d = this.data();
-      this.loadList(d);
+      const data = this.data();
+
+      if (this.lazy()) {
+        this.list.set(data);
+        return;
+      }
+
+      this.loadClientPage(data);
     });
   }
 
   ngOnInit(): void {
-    this.lazyLoad.emit({
-      first: 0,
-      pageIndex: 1,
-      pageSize: this.pageSize(),
-      sorts: [],
-    });
+    if (this.lazy()) {
+      this.lazyLoad.emit({
+        first: 0,
+        pageIndex: 1,
+        pageSize: this.pageSize(),
+        sorts: [],
+      });
+    }
   }
   ngAfterContentInit(): void {
     this.templateMap.clear();
@@ -91,24 +91,35 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     this.adjustScroll(this.tableContainer()?.nativeElement);
   }
 
-  loadList(data: T[]) {
+  private loadClientPage(data: T[]): void {
     const from = (this.page - 1) * this.pageSize();
     const to = from + this.pageSize();
-    this.list.update((u) => (u = data.slice(from, to)));
+
+    this.list.set(data.slice(from, to));
   }
 
-  onSortChange(field: string) {
-    if (this.sortField == field) {
-      this.sortDirection = this.sortDirection == 'asc' ? 'desc' : 'asc';
+  onSortChange(event: PageEvent) {
+    this.page = event.page;
+
+    if (this.lazy()) {
+      this.lazyLoad.emit({
+        first: (event.page - 1) * event.pageSize,
+        pageIndex: event.page,
+        pageSize: event.pageSize,
+        sorts: this.sortField
+          ? [
+              {
+                field: this.sortField as Extract<keyof T, string>,
+                direction: this.sortDirection,
+              },
+            ]
+          : [],
+      });
+
+      return;
     }
-    this.sortField = field;
-    if (this.lazy() == false) {
-      this.sortList();
-    }
-    this.sortChange.emit({
-      field: this.sortField,
-      direction: this.sortDirection,
-    });
+
+    this.loadClientPage(this.data());
   }
 
   // getTemplate(column: string): TemplateRef<any> | null {
