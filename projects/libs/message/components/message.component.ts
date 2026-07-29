@@ -14,7 +14,7 @@ import { IMessageOptions } from '../models/message-options.interface';
 import { Subject } from 'rxjs';
 import { MessageResult, DismissReason } from '../models/message-result';
 import { CommonModule } from '@angular/common';
-import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/configs';
+import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/tokens';
 import { ICONS } from '../models/icons';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { makeConfetti } from 'ngx-kit/shared';

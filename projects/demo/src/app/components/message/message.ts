@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,7 +13,6 @@ import { MessageOptions, MessageResult, MSG } from 'ngx-kit/message';
   imports: [
     CommonModule,
     FormsModule,
-    MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -40,8 +38,26 @@ export class MessageComponent {
   ngOnInit(): void {}
 
   openModal() {
-    MSG.show(this.options).then((result) => {
+    MSG.show(this.options).afterClose.subscribe((result) => {
       this.result = result;
     });
+  }
+
+  showLoading() {
+    let msg = MSG.fire({
+      icon: 'loading',
+      text: 'Please Wait...',
+      showConfirmButton: false,
+      allowEnterKey: false,
+      allowEscapeKey: false,
+      allowOutsideClick: false,
+      showCloseButton: false,
+    });
+    msg.afterClose.subscribe((r) => {
+      console.log(r);
+    });
+    setTimeout(() => {
+      msg.close();
+    }, 5000);
   }
 }

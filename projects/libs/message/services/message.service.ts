@@ -4,13 +4,14 @@ import {
   createComponent,
   EmbeddedViewRef,
   EnvironmentInjector,
+  EventEmitter,
   Inject,
   Injectable,
   Injector,
 } from '@angular/core';
-import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/configs';
+import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/tokens';
 import { IMessageOptions } from '../models/message-options.interface';
-import { MessageResult } from '../models/message-result';
+import { MessageOutput, MessageResult } from '../models/message-result';
 import { DOCUMENT } from '@angular/common';
 import { NgxMessageComponent } from '../components/message.component';
 import { applyDefaultConfig } from './apply-default';
@@ -29,29 +30,34 @@ export class NgxMessageService {
     @Inject(DOCUMENT) private _doc: Document,
   ) {}
 
-  public show(c?: IMessageOptions): Promise<MessageResult<any>> {
+  public show<T = any>(c?: IMessageOptions): MessageOutput<T> {
     let d = applyDefaultConfig(
       this.injector.get(NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS),
       NGX_MESSAGE_DEFAULT_OPTIONS,
     );
     const config = applyDefaultConfig(c, d);
-    return new Promise((resolve, reject) => {
-      const componentRef = createComponent(NgxMessageComponent, {
-        environmentInjector: this.envInjector,
-      });
 
-      this.appRef.attachView(componentRef.hostView);
-
-      this.appendDialogComponentToBody(componentRef, config);
-      componentRef.instance.options = config;
-      componentRef.instance.index = this.insertedId;
-      componentRef.instance.onClose.subscribe((result) => {
-        this.removeDialogComponentFromBody(result.index);
-        resolve(result.result);
-      });
-      this.alerts.push(componentRef);
-      this.insertedId++;
+    const componentRef = createComponent(NgxMessageComponent, {
+      environmentInjector: this.envInjector,
     });
+
+    this.appRef.attachView(componentRef.hostView);
+    const payload: MessageOutput<T> = {
+      close: () => componentRef.instance.close(),
+      id: this.insertedId,
+      afterClose: new EventEmitter(),
+    };
+    this.appendDialogComponentToBody(componentRef, config);
+    componentRef.instance.options = config;
+    componentRef.instance.index = this.insertedId;
+    componentRef.instance.onClose.subscribe((result) => {
+      this.removeDialogComponentFromBody(result.index);
+      payload.afterClose.emit(result.result);
+    });
+    this.alerts.push(componentRef);
+
+    this.insertedId++;
+    return payload;
   }
 
   private removeDialogComponentFromBody(index: number): void {

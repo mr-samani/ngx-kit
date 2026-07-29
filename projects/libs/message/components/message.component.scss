@@ -1,10 +1,11 @@
-ngx-message {
+:root {
   --bg-0: #0a0c14;
   --bg-1: #0f1220;
-  --panel: rgba(22, 25, 40, 0.72);
-  --panel-border: rgba(255, 255, 255, 0.08);
-  --ink-0: #f3f4fb;
-  --ink-1: #a8adc4;
+  --ngx-msg-panel-bg: light-dark(#ffffffc4, #161928b8);
+  --ngx-msg-panel-fg: light-dark(#000, #fff);
+  --ngx-msg-panel-border: light-dark(#4545454a, #ffffff14);
+  --ink-0: light-dark(#212121 #f3f4fb);
+  --ink-1: light-dark(#2d2e32, #a8adc4);
   --ink-2: #6b7090;
 
   --violet: #8b7bff;
@@ -55,8 +56,9 @@ ngx-message {
   position: relative;
   width: 100%;
   max-width: 400px;
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
+  background-color: var(--ngx-msg-panel-bg);
+  color: var(--ngx-msg-panel-fg);
+  border: 1px solid var(--ngx-msg-panel-border);
   border-radius: 26px;
   padding: 38px 30px 28px;
   text-align: center;
@@ -119,7 +121,7 @@ ngx-message {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--ngx-msg-panel-border);
   background: rgba(255, 255, 255, 0.03);
   color: var(--ink-2);
   display: flex;
@@ -261,7 +263,6 @@ ngx-message {
 
 /* ---------- text ---------- */
 .ngx-msg-modal h2 {
-  font-family: 'Space Grotesk', sans-serif;
   font-size: 22px;
   font-weight: 700;
   margin: 0 0 10px;
@@ -332,7 +333,7 @@ ngx-message {
 .btn-ghost {
   color: var(--ink-1);
   background: rgba(255, 255, 255, 0.045);
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--ngx-msg-panel-border);
 }
 .btn-ghost:hover {
   color: var(--ink-0);

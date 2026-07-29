@@ -10,7 +10,7 @@ import {
   NGX_MESSAGE_API,
   NGX_MESSAGE_CONFIGS,
   NGX_MESSAGE_DEFAULT_OPTIONS,
-} from './models/configs';
+} from './models/tokens';
 import { NgxMessageService } from './services/message.service';
 import { MSG as MessageFacade } from './message-facade';
 

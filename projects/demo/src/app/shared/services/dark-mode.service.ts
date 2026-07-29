@@ -2,7 +2,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { DOCUMENT, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 export const DARK_MODE_KEY = 'dark';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -40,8 +39,10 @@ export class DarkModeService {
   private setHtmlDarkMode() {
     if (this.isDarkMode()) {
       this.doc.documentElement.classList.add('dark-scheme');
+      this.doc.documentElement.classList.remove('light-scheme');
     } else {
       this.doc.documentElement.classList.remove('dark-scheme');
+      this.doc.documentElement.classList.add('light-scheme');
     }
   }
 }

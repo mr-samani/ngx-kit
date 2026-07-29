@@ -30,10 +30,12 @@ html {
       surface: #ffffff,
       on-surface: #191919,
       surface-container: #f6f8fb,
+      surface-container-low: #ffffff,
     )
   );
 
   &.dark-scheme {
+    color-scheme: dark;
     @include mat.theme-overrides(
       (
         primary: #3aa0ff,
@@ -43,6 +45,10 @@ html {
         surface-container: #222222,
       )
     );
+  }
+
+  &.light-scheme {
+    color-scheme: light;
   }
 
   &[lang='fa-IR'] {

@@ -1,4 +1,4 @@
-import { MessageIcon } from './configs';
+import { MessageIcon } from './MessageIcon';
 
 export interface IMessageOptions {
   /**
