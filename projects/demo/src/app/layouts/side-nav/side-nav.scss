@@ -15,5 +15,8 @@ ul {
     &:hover {
       background-color: var(--menu-hover);
     }
+    &.active {
+      color: rgba(54, 54, 247, 0.54);
+    }
   }
 }

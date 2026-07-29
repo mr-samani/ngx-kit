@@ -1,34 +1,14 @@
 <nav>
   <ul>
-    <li>
-      <a routerLink="/components/color-picker" routerLinkActive="active">Color Picker</a>
-    </li>
-    <li>
-      <a routerLink="/components/gradient-picker" routerLinkActive="active">Gradient Picker</a>
-    </li>
-    <li>
-      <a routerLink="/components/box-shadow" routerLinkActive="active">Box Shadow</a>
-    </li>
-    <li>
-      <a routerLink="/components/angle-selector" routerLinkActive="active">Angle</a>
-    </li>
-    <li>
-      <a routerLink="/components/date-picker" routerLinkActive="active">DatePicker</a>
-    </li>
-    <li>
-      <a routerLink="/components/calendar" routerLinkActive="active">Calendar</a>
-    </li>
-    <li>
-      <a routerLink="/components/notify" routerLinkActive="active">Notify</a>
-    </li>
-    <li>
-      <a routerLink="/components/dialog" routerLinkActive="active">Dialog</a>
-    </li>
-    <li>
-      <a routerLink="/components/menu" routerLinkActive="active">Menu</a>
-    </li>
-    <li>
-      <a routerLink="/components/message" routerLinkActive="active">Message</a>
-    </li>
+    @for (cat of list; track $index) {
+      <li>
+        <span>{{ cat.name }}</span>
+      </li>
+      @for (item of cat.items; track $index) {
+        <li>
+          <a [routerLink]="item.url" routerLinkActive="active">{{ item.title }}</a>
+        </li>
+      }
+    }
   </ul>
 </nav>
