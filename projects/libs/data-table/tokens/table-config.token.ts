@@ -7,6 +7,7 @@ export const NGX_TABLE_CONFIG = new InjectionToken<NgxTableOptions>('NGX_TABLE_C
 });
 
 export const NGX_TABLE_CONFIG_DEFAULT: NgxTableOptions = {
+  showRecordNumber: true,
   hoverable: true,
   multiSort: true,
   resizable: false,

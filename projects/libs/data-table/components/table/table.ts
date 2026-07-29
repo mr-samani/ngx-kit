@@ -38,11 +38,12 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   readonly fields = input.required<FieldsType<T>[]>();
   readonly data = input.required<T[]>();
   readonly totalRecords = input.required<number>();
-
+  readonly showRecordNumber = input(this.config.showRecordNumber);
   list = signal<readonly T[]>([]);
 
   readonly operations = input<TemplateRef<any>>();
   readonly operationWidth = input(60);
+  readonly numWidth = input(60);
   readonly pageSize = input(this.paginationConfig.defaultPageSize);
   readonly loading = input(false);
   readonly multiSort = input(this.config.multiSort);
@@ -110,6 +111,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   }
 
   onPageChange(event: PageEvent) {
+    debugger;
     this.page = event.page;
 
     if (this.lazy()) {

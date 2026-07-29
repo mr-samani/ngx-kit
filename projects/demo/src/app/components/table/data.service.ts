@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { delay, Observable, of } from 'rxjs';
 
 export class UserDto {
   fullName = '';
@@ -59,7 +59,7 @@ export class DataService {
     return of({
       items: page,
       totalCount: items.length,
-    });
+    }).pipe(delay(1000));
   }
 
   private generateUsers(count: number): UserDto[] {

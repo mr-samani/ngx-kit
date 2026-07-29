@@ -10,6 +10,7 @@ export type TableCellFormatter = (
 ) => unknown;
 
 export interface NgxTableOptions {
+  showRecordNumber?: boolean;
   labels: TableLable;
   /** Enable multi-column sort by default (Ctrl/Shift + click) unless a table overrides it. */
   multiSort?: boolean;

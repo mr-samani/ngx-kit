@@ -10,6 +10,14 @@
             {{ config.labels.operation }}
           </div>
         }
+        @if (showRecordNumber()) {
+          <div
+            class="th-mrs operations"
+            [style.max-width.px]="numWidth()"
+            [style.min-width.px]="numWidth()">
+            #
+          </div>
+        }
         @for (item of fields(); track $index) {
           <div class="th-mrs" [style.max-width.px]="item.width" [style.min-width.px]="item.width">
             {{ item.title }}
@@ -61,6 +69,20 @@
               </div>
             </div>
           }
+
+          @if (showRecordNumber()) {
+            <div
+              class="td-mrs operations"
+              vAlign="middle"
+              [style.max-width.px]="numWidth()"
+              [style.min-width.px]="numWidth()">
+              <div class="cel">
+                <span class="cell-title"></span>
+                {{ pageSize() * (page - 1) + $index + 1 }}
+              </div>
+            </div>
+          }
+
           @for (f of fields(); track $index) {
             @let template = getTemplate(f.column);
             @let renderer = getRenderer(f);

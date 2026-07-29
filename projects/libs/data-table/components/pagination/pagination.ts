@@ -106,14 +106,14 @@ export class NgxPagination {
 
   next() {
     if (this.currentPage() < this.paginationCount) {
-      this.currentPage.update((p) => p++);
+      this.currentPage.update((p) => ++p);
     }
     this.onPageChange(this.currentPage());
   }
 
   previous() {
     if (this.currentPage() > 1) {
-      this.currentPage.update((p) => p--);
+      this.currentPage.update((p) => --p);
     }
     this.onPageChange(this.currentPage());
   }

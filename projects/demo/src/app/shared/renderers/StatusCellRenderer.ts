@@ -27,26 +27,24 @@ type UserStatus = 'active' | 'inactive' | 'blocked' | 'pending';
       border-radius: 20px;
       font-size: 12px;
       font-weight: 500;
+      color: #000;
     }
 
     .status--active {
-      color: #166534;
-      background: #dcfce7;
+      background: #166534;
     }
 
     .status--inactive {
-      color: #374151;
-      background: #f3f4f6;
+      background: #374151;
+      color: #fff;
     }
 
     .status--blocked {
-      color: #991b1b;
-      background: #fee2e2;
+      background: #991b1b;
     }
 
     .status--pending {
-      color: #92400e;
-      background: #fef3c7;
+      background: #92400e;
     }
   `,
 })
