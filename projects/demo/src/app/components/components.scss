@@ -1,12 +1,9 @@
 :host {
-  display: flex;
-  padding: 10px;
-}
-app-side-nav {
-  width: 220px;
+    display: grid;
+    padding: 10px;
+    grid-template-columns: 220px 1fr;
 }
 .content {
-  flex: auto;
   padding: 0 15px;
   border-left: 1px rgba(103, 103, 103, 0.342) solid;
   //header:56px - host:padding-top:10px - host:padding-bottom:10px

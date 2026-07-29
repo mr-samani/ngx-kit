@@ -1,0 +1,59 @@
+.ngx-paginator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--ngx-table-header-fg, #334155);
+}
+
+.ngx-paginator__size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  select {
+    border: 1px solid var(--ngx-table-border-color, #e5e7eb);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+}
+
+.ngx-paginator__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ngx-paginator__page {
+  min-width: 4.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ngx-btn {
+  border: 1px solid var(--ngx-table-border-color, #e5e7eb);
+  background: #fff;
+  border-radius: 6px;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--ngx-table-accent, #4f46e5);
+    color: #fff;
+    border-color: var(--ngx-table-accent, #4f46e5);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}

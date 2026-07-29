@@ -1,0 +1,20 @@
+<div class="ngx-paginator">
+  <div class="ngx-paginator__size">
+    <label for="ngxPageSize">{{ locale.rowsPerPage }}</label>
+    <select id="ngxPageSize" (change)="onPageSizeSelect($event)">
+      @for (opt of pageSizeOptions(); track opt) {
+        <option [value]="opt" [selected]="opt === pageSize()">{{ opt }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="ngx-paginator__range">{{ rangeLabel() }}</div>
+
+  <div class="ngx-paginator__nav">
+    <button type="button" class="ngx-btn" (click)="goFirst()" [disabled]="!canPrev()" [attr.aria-label]="locale.first">«</button>
+    <button type="button" class="ngx-btn" (click)="goPrev()" [disabled]="!canPrev()" [attr.aria-label]="locale.previous">‹</button>
+    <span class="ngx-paginator__page">{{ pageIndex() + 1 }} / {{ pageCount() }}</span>
+    <button type="button" class="ngx-btn" (click)="goNext()" [disabled]="!canNext()" [attr.aria-label]="locale.next">›</button>
+    <button type="button" class="ngx-btn" (click)="goLast()" [disabled]="!canNext()" [attr.aria-label]="locale.last">»</button>
+  </div>
+</div>

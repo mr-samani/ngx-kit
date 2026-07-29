@@ -70,7 +70,17 @@ export const MENU_LIST: ICategory[] = [
       },
     ],
   },
-  { name: 'Table', items: [] },
+  {
+    name: 'Table',
+    items: [
+      {
+        title: 'Table With Paginator',
+        description: '',
+        image: '',
+        url: '/components/table',
+      },
+    ],
+  },
   {
     name: 'Others',
     items: [

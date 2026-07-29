@@ -56,6 +56,10 @@ const routes: Routes = [
         path: 'message',
         loadComponent: () => import('./message/message').then((c) => c.MessageComponent),
       },
+      {
+        path: 'table',
+        loadComponent: () => import('./table/demo-table.component').then((c) => c.DemoTable),
+      },
     ],
   },
 ];
