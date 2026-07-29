@@ -26,13 +26,17 @@
       cursor: pointer;
       &.disabled {
         cursor: not-allowed;
+        opacity: 0.4;
       }
       &.active:not(:disabled) {
         background-color: var(--bs-pagination-active-bg);
       }
       a {
+        display: block;
         color: inherit;
         text-decoration: none;
+        width: 100%;
+        height: 100%;
         svg {
           width: 100%;
           height: 12px;

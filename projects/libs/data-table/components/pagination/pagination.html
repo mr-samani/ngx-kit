@@ -12,7 +12,7 @@
   <div class="ngx-paination_page-numbers">
     <ul>
       <!-- Previous Page Link -->
-      <li [class.disabled]="currentPage() === 1" [title]="labels().first">
+      <li [class.disabled]="page() === 1" [title]="labels().first">
         <a (click)="first()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
             <path
@@ -21,7 +21,7 @@
           </svg>
         </a>
       </li>
-      <li [class.disabled]="currentPage() === 1" [title]="labels().previous">
+      <li [class.disabled]="page() === 1" [title]="labels().previous">
         <a (click)="previous()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
             <path
@@ -32,19 +32,19 @@
       </li>
 
       <!-- Pagination Elements -->
-      @for (item of pages; track $index) {
-        <li class="page-num" [class.active]="item === currentPage()">
-          @if (item !== currentPage() && item != '...') {
-            <a (click)="onPageChange(item)">{{ item }}</a>
+      @for (item of pages(); track $index) {
+        <li class="page-num" [class.active]="+item === page()">
+          @if (item !== page() && item != '...') {
+            <a (click)="goto(+item)">{{ item }}</a>
           }
-          @if (item === currentPage() || item == '...') {
+          @if (item === page() || item == '...') {
             <span>{{ item }}</span>
           }
         </li>
       }
 
       <!-- Next Page Link -->
-      <li [class.disabled]="currentPage() === paginationCount" [title]="labels().next">
+      <li [class.disabled]="page() === totalPages()" [title]="labels().next">
         <a (click)="next()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
             <path
@@ -53,7 +53,7 @@
           </svg>
         </a>
       </li>
-      <li [class.disabled]="currentPage() === paginationCount" [title]="labels().last">
+      <li [class.disabled]="page() === totalPages()" [title]="labels().last">
         <a (click)="last()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
             <path
@@ -66,7 +66,10 @@
 
     <div class="ngx-paination_page-size">
       <span>{{ labels().pageSize }}:</span>
-      <select name="pageSize" (change)="onpageSizeChange()">
+      <select
+        name="pageSize"
+        [ngModel]="pageSize()"
+        (ngModelChange)="pageSize.update((u) => (u = $event))">
         @for (opt of pageSizeOptions(); track $index) {
           <option [value]="opt" [selected]="opt === pageSize()">
             {{ opt }}

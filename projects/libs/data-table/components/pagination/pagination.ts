@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NGX_PAGINATION_CONFIG } from '../../tokens/pagination-config.token';
 import { PageEvent } from '../../types/PageEvent';
@@ -12,118 +12,116 @@ import { PageEvent } from '../../types/PageEvent';
 export class NgxPagination {
   protected readonly config = inject(NGX_PAGINATION_CONFIG);
   readonly total = input.required<number>();
-  readonly pageSize = input(this.config.defaultPageSize);
+
+  readonly page = model(1);
+
+  readonly pageSize = model(this.config.defaultPageSize);
+
   readonly pageSizeOptions = input(this.config.pageSizeOptions);
+
   readonly labels = input(this.config.labels);
 
-  /**
-   * current page
-   * - start with: 1
-   **/
-  currentPage = signal(1);
-  readonly pageChange = output<number>();
-  readonly onChange = output<PageEvent>();
+  readonly siblingCount = input(1);
 
-  paginationCount = 0;
-  pages: any[] = [];
-  firstItem = signal(0);
-  lastItem = signal(0);
+  readonly boundaryCount = input(1);
+
+  readonly paginate = output<PageEvent>();
+
+  readonly totalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.total() / this.pageSize()));
+  });
+  readonly firstItem = computed(() => {
+    if (this.total() === 0) return 0;
+
+    return (this.page() - 1) * this.pageSize() + 1;
+  });
+
+  readonly lastItem = computed(() => {
+    return Math.min(
+      this.firstItem() + this.pageSize() - 1,
+
+      this.total(),
+    );
+  });
+  readonly pages = computed(() =>
+    this.buildPages(this.page(), this.totalPages(), this.siblingCount(), this.boundaryCount()),
+  );
 
   constructor() {
     effect(() => {
-      const t = this.total();
-      const s = this.pageSize();
-      this.setupPage();
+      const page = this.page();
+
+      const pageSize = +this.pageSize();
+
+      // this.pageChange.emit(page);
+      debugger;
+      this.paginate.emit({
+        page,
+        pageSize,
+      });
+    });
+
+    effect(() => {
+      const max = this.totalPages();
+      if (this.page() > max) this.page.set(max);
     });
   }
 
-  setupPage() {
-    this.paginationCount = Math.ceil(this.total() / this.pageSize());
+  private buildPages(
+    current: number,
+    total: number,
+    sibling = 1,
+    boundary = 1,
+  ): (number | string)[] {
+    const range = (start: number, end: number) =>
+      Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
-    if (this.currentPage() < 1 || this.currentPage() > this.paginationCount) {
-      this.currentPage.set(1);
-      this.pageChange.emit(this.currentPage());
-    }
+    const totalNumbers = sibling * 2 + boundary * 2 + 3;
 
-    const pages: any[] = [];
-    const delta = 2; // چند صفحه قبل و بعد از page نشان داده شود
+    if (total <= totalNumbers) return range(1, total);
 
-    const left = Math.max(2, this.currentPage() - delta);
-    const right = Math.min(this.paginationCount - 1, this.currentPage() + delta);
+    const leftSibling = Math.max(current - sibling, boundary + 2);
 
-    // همیشه صفحه اول
-    pages.push(1);
+    const rightSibling = Math.min(current + sibling, total - boundary - 1);
 
-    // ... اگر فاصله زیاد بود
-    if (left > 2) {
-      pages.push('...');
-    }
+    const showLeftDots = leftSibling > boundary + 2;
 
-    // صفحات میانی
-    for (let i = left; i <= right; i++) {
-      pages.push(i);
-    }
+    const showRightDots = rightSibling < total - boundary - 1;
 
-    // ... اگر فاصله زیاد بود
-    if (right < this.paginationCount - 1) {
-      pages.push('...');
-    }
+    const pages: (number | string)[] = [];
 
-    // همیشه صفحه آخر
-    if (this.paginationCount > 1) {
-      pages.push(this.paginationCount);
-    }
+    pages.push(...range(1, boundary));
 
-    this.pages = pages;
+    if (showLeftDots) pages.push('...');
+    else pages.push(...range(boundary + 1, leftSibling - 1));
 
-    this.firstItem.update((u) => (u = (this.currentPage() - 1) * this.pageSize() + 1));
-    this.lastItem.update(
-      (u) => (u = Math.min(this.firstItem() + this.pageSize() - 1, this.total())),
-    );
-  }
+    pages.push(...range(leftSibling, rightSibling));
 
-  onPageChange(page: number) {
-    this.currentPage.set(page);
-    this.setupPage();
-    this.pageChange.emit(page);
-    this.onChange.emit({
-      page: this.currentPage(),
-      pageSize: this.pageSize(),
-    });
-  }
+    if (showRightDots) pages.push('...');
+    else pages.push(...range(rightSibling + 1, total - boundary));
 
-  onpageSizeChange() {
-    this.setupPage();
-    if (this.paginationCount < this.currentPage()) {
-      this.currentPage.set(1);
-    }
-    this.pageChange.emit(this.currentPage());
-    this.onChange.emit({
-      page: this.currentPage(),
-      pageSize: +this.pageSize(),
-    });
+    pages.push(...range(total - boundary + 1, total));
+
+    return pages;
   }
 
   next() {
-    if (this.currentPage() < this.paginationCount) {
-      this.currentPage.update((p) => ++p);
-    }
-    this.onPageChange(this.currentPage());
+    this.page.update((p) => Math.min(p + 1, this.totalPages()));
   }
 
   previous() {
-    if (this.currentPage() > 1) {
-      this.currentPage.update((p) => --p);
-    }
-    this.onPageChange(this.currentPage());
+    this.page.update((p) => Math.max(1, p - 1));
   }
 
   first() {
-    this.currentPage.set(1);
-    this.onPageChange(this.currentPage());
+    this.page.set(1);
   }
   last() {
-    this.currentPage.set(this.paginationCount);
-    this.onPageChange(this.currentPage());
+    this.page.set(this.totalPages());
+  }
+  goto(page: number) {
+    if (typeof page !== 'number') return;
+
+    this.page.set(page);
   }
 }

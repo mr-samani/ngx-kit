@@ -1,12 +1,14 @@
 import {
   AfterContentInit,
   Component,
+  computed,
   ContentChildren,
   effect,
   ElementRef,
   EventEmitter,
   inject,
   input,
+  model,
   OnInit,
   output,
   Output,
@@ -65,6 +67,10 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     effect(() => {
       const data = this.data();
 
+      data.map(
+        (r: any, index) => (r.ngxRecordNumber = this.pageSize() * (this.page - 1) + index + 1),
+      );
+
       if (this.lazy()) {
         this.list.set(data);
         return;
@@ -109,9 +115,12 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   sortList() {
     // this._list = orderBy(this._list, [this.sortField], [this.sortDirection]);
   }
-
-  onPageChange(event: PageEvent) {
+  getRecordNumber(item: T) {
     debugger;
+    return (item as any).ngxRecordNumber;
+  }
+  onPageChange(event: PageEvent) {
+    console.log('p', event);
     this.page = event.page;
 
     if (this.lazy()) {

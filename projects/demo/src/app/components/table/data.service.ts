@@ -29,6 +29,7 @@ export class DataService {
   private readonly allUsers = this.generateUsers(100);
 
   getUsers(input: GetInputDto): Observable<PagedResult<UserDto>> {
+    console.debug('Get user list Input:', input);
     let items = [...this.allUsers];
 
     // sorting

@@ -54,6 +54,7 @@
         <div class="no-data">{{ config.labels.noData }}</div>
       }
       @for (item of list(); track $index) {
+        @let num = getRecordNumber(item);
         <div class="tr-mrs">
           @if (operations()) {
             <div
@@ -78,12 +79,12 @@
               [style.min-width.px]="numWidth()">
               <div class="cel">
                 <span class="cell-title"></span>
-                {{ pageSize() * (page - 1) + $index + 1 }}
+                {{ num }}
               </div>
             </div>
           }
 
-          @for (f of fields(); track $index) {
+          @for (f of fields(); track f.column) {
             @let template = getTemplate(f.column);
             @let renderer = getRenderer(f);
 
@@ -131,6 +132,7 @@
 </div>
 
 <ngx-pagination
+  [(page)]="page"
+  [pageSize]="pageSize()"
   [total]="totalRecords()"
-  (pageChange)="page = $event"
-  (onChange)="onPageChange($event)"></ngx-pagination>
+  (paginate)="onPageChange($event)"></ngx-pagination>
