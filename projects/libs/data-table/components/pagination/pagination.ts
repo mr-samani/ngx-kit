@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, input, output, signal } from '@angular/core';
+import { AfterViewInit, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NGX_PAGINATION_CONFIG,
@@ -18,33 +18,35 @@ import { PageEvent } from '../../types/PageEvent';
     },
   ],
 })
-export class NgxPagination implements AfterViewInit {
+export class NgxPagination {
   protected readonly config = inject(NGX_PAGINATION_CONFIG);
-  total = input.required<number>();
-  pageSize = input(this.config.defaultPageSize);
-  pageSizeOptions = input(this.config.pageSizeOptions);
-  labels = input(this.config.labels);
+  readonly total = input.required<number>();
+  readonly pageSize = input(this.config.defaultPageSize);
+  readonly pageSizeOptions = input(this.config.pageSizeOptions);
+  readonly labels = input(this.config.labels);
+
   /**
    * current page
    * - start with: 1
    **/
   currentPage = signal(1);
-  pageChange = output<number>();
-  onChange = output<PageEvent>();
+  readonly pageChange = output<number>();
+  readonly onChange = output<PageEvent>();
 
   paginationCount = 0;
   pages: any[] = [];
-  firstItem = 0;
-  lastItem = 0;
+  firstItem = signal(0);
+  lastItem = signal(0);
 
-  constructor() {}
-
-  ngAfterViewInit(): void {
-    this.setupPage();
+  constructor() {
+    effect(() => {
+      const t = this.total();
+      const s = this.pageSize();
+      this.setupPage();
+    });
   }
 
   setupPage() {
-    debugger;
     this.paginationCount = Math.ceil(this.total() / this.pageSize());
 
     if (this.currentPage() < 1 || this.currentPage() > this.paginationCount) {
@@ -83,8 +85,10 @@ export class NgxPagination implements AfterViewInit {
 
     this.pages = pages;
 
-    this.firstItem = (this.currentPage() - 1) * this.pageSize() + 1;
-    this.lastItem = Math.min(this.firstItem + this.pageSize() - 1, this.total());
+    this.firstItem.update((u) => (u = (this.currentPage() - 1) * this.pageSize() + 1));
+    this.lastItem.update(
+      (u) => (u = Math.min(this.firstItem() + this.pageSize() - 1, this.total())),
+    );
   }
 
   onPageChange(page: number) {

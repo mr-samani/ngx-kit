@@ -10,4 +10,9 @@ export const NGX_TABLE_CONFIG_DEFAULT: TableGlobalConfig = {
   resizable: false,
   stickyHeader: true,
   stripedRows: true,
+  labels: {
+    noData: 'There is no data to display!',
+    loading: 'Loading...',
+    operation: 'Operation',
+  },
 };

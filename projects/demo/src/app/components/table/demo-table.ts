@@ -1,37 +1,48 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 
-import { NgxPagination } from 'ngx-kit/data-table';
+import { FieldsType, LazyLoadEvent, NgxPagination, NgxTable } from 'ngx-kit/data-table';
+import { DataService, UserDto } from './data.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-demo-table',
   templateUrl: './demo-table.html',
   styleUrls: ['./demo-table.scss'],
-  imports: [NgxPagination],
-  providers: [],
+  imports: [NgxPagination, NgxTable],
+  providers: [DataService],
 })
 export class DemoTable {
-  //private readonly tenantsService = inject(TenantsService);
+  private readonly service = inject(DataService);
+  fields: FieldsType<UserDto>[] = [
+    { column: 'fullName', title: this.l('Name') },
+    { column: 'userName', title: this.l('UserName') },
+    { column: 'email', title: this.l('Email') },
+    { column: 'roles', title: this.l('Roles') },
+  ];
+  loading = signal(false);
+  rows = signal<UserDto[]>([]);
+  total = signal(0);
+  constructor() {}
 
-  constructor() {
-    // this.fetchPage({ pageIndex: 0, pageSize: 10, first: 0, sorts: [] });
+  /**
+   * localize
+   */
+  l(key: string) {
+    return key;
   }
 
-  // protected onLazyLoad(event: LazyLoadEvent<Tenant>): void {
-  //   this.fetchPage(event);
-  // }
-
-  // private fetchPage(event: LazyLoadEvent<Tenant>): void {
-  //   this.loading.set(true);
-  //   this.tenantsService
-  //     .getTenants({
-  //       skipCount: event.first,
-  //       maxResultCount: event.pageSize,
-  //       sorting: event.sorts.map((s) => `${s.field} ${s.direction}`).join(','),
-  //     })
-  //     .subscribe((result) => {
-  //       this.rows.set(result.items);
-  //       this.total.set(result.totalCount);
-  //       this.loading.set(false);
-  //     });
-  // }
+  getData(event: LazyLoadEvent<UserDto>): void {
+    this.loading.set(true);
+    this.service
+      .getUsers({
+        skipCount: event.first,
+        maxResultCount: event.pageSize,
+        sorting: event.sorts.map((s) => `${s.field} ${s.direction}`).join(','),
+      })
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe((result) => {
+        this.rows.set(result.items);
+        this.total.set(result.totalCount);
+      });
+  }
 }

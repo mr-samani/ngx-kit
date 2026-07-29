@@ -1,6 +1,7 @@
 :host {
   --ngx-pagination-border: light-dark(#dbdbdb, #373737);
   --ngx-pagination-border-radius: 4px;
+  --bs-pagination-active-bg: light-dark(#6485fa, #6485fa);
 }
 .ngx-pagination {
   display: flex;
@@ -26,9 +27,16 @@
       &.disabled {
         cursor: not-allowed;
       }
+      &.active:not(:disabled) {
+        background-color: var(--bs-pagination-active-bg);
+      }
       a {
         color: inherit;
         text-decoration: none;
+        svg {
+          width: 100%;
+          height: 12px;
+        }
       }
     }
   }
@@ -48,28 +56,16 @@
 
 ::ng-deep {
   [dir='rtl'] {
-    .pagination {
-      .page-item .fa {
+    .ngx-paination_page-numbers {
+      li svg {
         transform: rotate(180deg);
       }
     }
   }
 }
 
-@media (max-width: 768px) {
-  .pagination .page-item.page-num {
-    display: none;
-  }
-}
-
-.page-link {
-  background: none;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.page-item.active:not(:disabled) {
-  .page-link {
-    background: var(--bs-pagination-active-bg);
-  }
-}
+// @media (max-width: 768px) {
+//   .pagination .page-item.page-num {
+//     display: none;
+//   }
+// }

@@ -18,6 +18,15 @@
   </span>
 </ng-template> -->
 
-
-
+<h3>Sample Pagination</h3>
 <ngx-pagination [total]="120"></ngx-pagination>
+
+<h3>Sample Table With pagination</h3>
+<ngx-table
+  [data]="rows()"
+  [totalRecords]="total()"
+  [fields]="fields"
+  [loading]="loading()"
+  [multiSort]="true"
+  [lazy]="true"
+  (lazyLoad)="getData($event)"></ngx-table>
