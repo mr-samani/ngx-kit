@@ -14,23 +14,23 @@ export function mergeConfig<T>(base: T, override?: Partial<T>): T {
 
 function merge(base: any, override: any): any {
   if (override === undefined) {
-    return structuredClone(base);
+    return base;
   }
 
   if (base === undefined) {
-    return structuredClone(override);
+    return override;
   }
 
-  // Array => replace
   if (Array.isArray(base) && Array.isArray(override)) {
-    return structuredClone(override);
+    return [...override];
   }
 
-  // Object => deep merge
   if (isPlainObject(base) && isPlainObject(override)) {
-    const result: Record<string, any> = { ...base };
+    const result: Record<string, any> = {};
 
-    for (const key of Object.keys(override)) {
+    const keys = new Set([...Object.keys(base), ...Object.keys(override)]);
+
+    for (const key of keys) {
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
         continue;
       }
@@ -41,6 +41,6 @@ function merge(base: any, override: any): any {
     return result;
   }
 
-  // Primitive / Date / RegExp / Function / ...
-  return structuredClone(override);
+  // Primitive / Function / Class / Date / RegExp ...
+  return override;
 }

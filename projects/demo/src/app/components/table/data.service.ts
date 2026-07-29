@@ -1,11 +1,16 @@
-import { Observable, of } from 'rxjs';
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
 
 export class UserDto {
-  fullName: string = '';
-  userName: string = '';
-  email: string = '';
+  fullName = '';
+  userName = '';
+  email = '';
   roles: string[] = [];
+  isActive?: boolean;
+
+  avatarUrl?: string;
+  status?: 'active' | 'inactive' | 'blocked' | 'pending';
+  createdAt?: string;
 }
 
 export interface PagedResult<T> {
@@ -19,26 +24,107 @@ export interface GetInputDto {
   sorting?: string;
 }
 
-/**
- * Replace this with your real ABP/HttpClient service. Shape shown here
- * matches the `(lazyLoad)` contract expected in users-table.component.ts.
- */
 @Injectable()
 export class DataService {
+  private readonly allUsers = this.generateUsers(100);
+
   getUsers(input: GetInputDto): Observable<PagedResult<UserDto>> {
-    // return this.http.get<PagedResult<UserDto>>('/api/services/app/Users/GetAll', { params: ... });\
-    const items: UserDto[] = [
-      {
-        userName: 'mr-samani',
-        fullName: 'mohammadreza samani',
-        email: 'mohammadreza@samani.com',
-        roles: ['admin', 'user'],
-      },
-    ];
+    let items = [...this.allUsers];
+
+    // sorting
+    if (input.sorting) {
+      const [field, direction] = input.sorting.split(' ');
+
+      items.sort((a: any, b: any) => {
+        const av = a[field];
+        const bv = b[field];
+
+        if (av == null) return 1;
+        if (bv == null) return -1;
+
+        if (av < bv) {
+          return direction === 'desc' ? 1 : -1;
+        }
+
+        if (av > bv) {
+          return direction === 'desc' ? -1 : 1;
+        }
+
+        return 0;
+      });
+    }
+
+    const page = items.slice(input.skipCount, input.skipCount + input.maxResultCount);
 
     return of({
-      items,
+      items: page,
       totalCount: items.length,
+    });
+  }
+
+  private generateUsers(count: number): UserDto[] {
+    const firstNames = [
+      'محمدرضا',
+      'علی',
+      'حسین',
+      'محمد',
+      'امیر',
+      'رضا',
+      'سعید',
+      'مهدی',
+      'پویا',
+      'احسان',
+    ];
+
+    const lastNames = [
+      'سامانی',
+      'احمدی',
+      'کریمی',
+      'محمدی',
+      'حسینی',
+      'نوری',
+      'اکبری',
+      'کاظمی',
+      'صادقی',
+      'جعفری',
+    ];
+
+    const roleSets = [
+      ['Admin'],
+      ['User'],
+      ['Manager'],
+      ['Admin', 'User'],
+      ['Editor'],
+      ['Support'],
+      ['Developer'],
+      ['Developer', 'Admin'],
+      ['Guest'],
+      [],
+    ];
+
+    const statuses: UserDto['status'][] = ['active', 'inactive', 'blocked', 'pending'];
+
+    return Array.from({ length: count }, (_, i) => {
+      const first = firstNames[i % firstNames.length];
+      const last = lastNames[Math.floor(i / firstNames.length) % lastNames.length];
+
+      const user = new UserDto();
+
+      user.fullName = `${first} ${last}`;
+      user.userName = `${first.toLowerCase()}${i + 1}`;
+      user.email = i % 11 === 0 ? '' : `user${i + 1}@example.com`;
+
+      user.roles = roleSets[i % roleSets.length];
+
+      user.isActive = i % 7 === 0 ? undefined : i % 2 === 0;
+
+      user.status = statuses[i % statuses.length];
+
+      user.createdAt = new Date(2024, i % 12, (i % 28) + 1, i % 24, i % 60).toISOString();
+
+      user.avatarUrl = i % 3 === 0 ? `https://i.pravatar.cc/150?img=${(i % 70) + 1}` : undefined;
+
+      return user;
     });
   }
 }

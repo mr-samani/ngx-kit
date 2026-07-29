@@ -77,7 +77,7 @@ export const MENU_LIST: ICategory[] = [
         title: 'Table With Paginator',
         description: '',
         image: '',
-        url: '/components/data-table',
+        url: '/components/table',
       },
     ],
   },

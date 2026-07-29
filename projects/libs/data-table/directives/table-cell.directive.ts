@@ -1,9 +1,12 @@
-import { Directive, Input, TemplateRef } from '@angular/core';
+import { Directive, inject, input, Input, TemplateRef } from '@angular/core';
 
 @Directive({
-  selector: '[tableCell]',
+  selector: 'ng-template[ngxTableCell]',
 })
 export class TableCellDirective {
-  @Input('tableCell') columnName!: string;
-  constructor(public template: TemplateRef<any>) {}
+  readonly column = input.required<string>({
+    alias: 'ngxTableCell',
+  });
+
+  readonly template = inject(TemplateRef);
 }

@@ -13,6 +13,7 @@ import {
   QueryList,
   signal,
   TemplateRef,
+  Type,
   viewChild,
 } from '@angular/core';
 import { FieldsType, SortEvent } from '../../types/FieldsType';
@@ -86,7 +87,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     this.templateMap.clear();
     this.cellTemplates.forEach((cell) => {
       // console.log(cell.columnName, cell.template);
-      this.templateMap.set(cell.columnName, cell.template);
+      this.templateMap.set(cell.column.name, cell.template);
     });
     this.adjustScroll(this.tableContainer()?.nativeElement);
   }
@@ -98,7 +99,17 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     this.list.set(data.slice(from, to));
   }
 
-  onSortChange(event: PageEvent) {
+  onSortChange(item: FieldsType<T>) {}
+
+  protected getTemplate(column: Extract<keyof T, string>): TemplateRef<unknown> | null {
+    return this.templateMap.get(column) ?? null;
+  }
+
+  sortList() {
+    // this._list = orderBy(this._list, [this.sortField], [this.sortDirection]);
+  }
+
+  onPageChange(event: PageEvent) {
     this.page = event.page;
 
     if (this.lazy()) {
@@ -122,20 +133,6 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     this.loadClientPage(this.data());
   }
 
-  // getTemplate(column: string): TemplateRef<any> | null {
-  //   return this.templateMap.get(column) ?? null;
-  // }
-
-  sortList() {
-    // this._list = orderBy(this._list, [this.sortField], [this.sortDirection]);
-  }
-
-  onPageChange(ev: PageEvent) {
-    const f = (ev.page - 1) * ev.pageSize;
-    const t = f + ev.pageSize;
-    this.list.update((u) => this.data().slice(f, t));
-  }
-
   /**
    * اگر بدنه جدول اسکرول شد هدر جدول نیز منطبق شود
    */
@@ -149,8 +146,48 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     });
   }
 
-  protected cellValue(row: any, col: FieldsType<T>): string {
-    const value = row[col.column];
+  protected getRenderer(field: FieldsType<T>): Type<unknown> | null {
+    const key = field.renderer ?? field.dataType;
+
+    if (!key) {
+      return null;
+    }
+
+    return this.config.renderers?.[key] ?? null;
+  }
+
+  protected getCellValue(row: T, field: FieldsType<T>): unknown {
+    return row[field.column];
+  }
+
+  protected formatCellValue(row: T, field: FieldsType<T>): string {
+    const value = this.getCellValue(row, field);
+
+    if (typeof field.formatter === 'function') {
+      return this.stringify(field.formatter(value, row, field as FieldsType<object>));
+    }
+
+    if (typeof field.formatter === 'string') {
+      const formatter = this.config.formatters?.[field.formatter];
+
+      if (formatter) {
+        return this.stringify(formatter(value, row, field as FieldsType<object>));
+      }
+    }
+
+    return this.stringify(value);
+  }
+
+  private stringify(value: unknown): string {
     return value == null ? '' : String(value);
+  }
+
+  protected getRendererInputs(row: T, field: FieldsType<T>): Record<string, unknown> {
+    return {
+      value: this.getCellValue(row, field),
+      row,
+      field,
+      ...field.rendererInputs,
+    };
   }
 }

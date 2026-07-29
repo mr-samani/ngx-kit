@@ -29,4 +29,10 @@
   [loading]="loading()"
   [multiSort]="true"
   [lazy]="true"
-  (lazyLoad)="getData($event)"></ngx-table>
+  (lazyLoad)="getData($event)">
+  <ng-template ngxTableCell="userName" let-user let-value="value">
+    fff
+    <strong>{{ value }}</strong>
+    <small>{{ user.userName }}</small>
+  </ng-template>
+</ngx-table>

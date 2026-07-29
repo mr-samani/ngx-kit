@@ -1,7 +1,8 @@
 import { PaginationLabel } from './PaginationLabel';
 
-export interface PaginationConfigs {
+export interface NgxPaginationOptions {
   labels: PaginationLabel;
   pageSizeOptions: number[];
   defaultPageSize: number;
 }
+ 

@@ -14,10 +14,55 @@ import { finalize } from 'rxjs';
 export class DemoTable {
   private readonly service = inject(DataService);
   fields: FieldsType<UserDto>[] = [
-    { column: 'fullName', title: this.l('Name') },
-    { column: 'userName', title: this.l('UserName') },
-    { column: 'email', title: this.l('Email') },
-    { column: 'roles', title: this.l('Roles') },
+    {
+      column: 'avatarUrl',
+      title: 'کاربر',
+      renderer: 'avatar',
+      width: 220,
+      rendererInputs: {
+        nameField: 'fullName',
+        showName: true,
+      },
+    },
+    {
+      column: 'userName',
+      title: 'نام کاربری',
+      width: 160,
+    },
+    {
+      column: 'email',
+      title: 'ایمیل',
+      formatter: 'emptyDash',
+      width: 230,
+    },
+    {
+      column: 'isActive',
+      title: 'فعال',
+      renderer: 'boolean',
+      width: 90,
+    },
+    {
+      column: 'status',
+      title: 'وضعیت',
+      renderer: 'status',
+      width: 120,
+    },
+    {
+      column: 'roles',
+      title: 'نقش‌ها',
+      renderer: 'roles',
+      width: 240,
+      wrap: true,
+    },
+    {
+      column: 'createdAt',
+      title: 'تاریخ ایجاد',
+      renderer: 'date',
+      width: 170,
+      rendererInputs: {
+        format: 'yyyy/MM/dd HH:mm',
+      },
+    },
   ];
   loading = signal(false);
   rows = signal<UserDto[]>([]);

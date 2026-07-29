@@ -16,7 +16,7 @@
             <span
               class="sort-icon"
               [class.active]="sortField == item.column"
-              (click)="onSortChange(item.column)">
+              (click)="onSortChange(item)">
               @if (sortField == item.column && sortDirection == 'asc') {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
                   <path
@@ -61,7 +61,10 @@
               </div>
             </div>
           }
-          @for (f of fields(); track f) {
+          @for (f of fields(); track $index) {
+            @let template = getTemplate(f.column);
+            @let renderer = getRenderer(f);
+
             <div
               class="td-mrs"
               vAlign="middle"
@@ -69,9 +72,24 @@
               [style.min-width.px]="f.width">
               <div class="cel" [class.wrap]="f.wrap">
                 <span class="cell-title">{{ f.title }}</span>
-                <ng-container
-                  [ngTemplateOutlet]="cellData"
-                  [ngTemplateOutletContext]="{ item, column: f }"></ng-container>
+                @if (template) {
+                  <ng-container
+                    [ngTemplateOutlet]="template"
+                    [ngTemplateOutletContext]="{
+                      $implicit: item,
+                      row: item,
+                      value: getCellValue(item, f),
+                      field: f,
+                    }"></ng-container>
+                } @else if (renderer) {
+                  <ng-container
+                    *ngComponentOutlet="
+                      renderer;
+                      inputs: getRendererInputs(item, f)
+                    "></ng-container>
+                } @else {
+                  {{ formatCellValue(item, f) }}
+                }
                 @if (f.prefix) {
                   <span>{{ f.prefix }}</span>
                 }
@@ -94,7 +112,3 @@
   [total]="totalRecords()"
   (pageChange)="page = $event"
   (onChange)="onPageChange($event)"></ngx-pagination>
-
-<ng-template #cellData let-item="item" let-column="column">
-  {{ cellValue(item, column) }}
-</ng-template>

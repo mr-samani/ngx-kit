@@ -4,9 +4,9 @@ import {
   NGX_PAGINATION_CONFIG_DEFAULT,
 } from '../tokens/pagination-config.token';
 import { mergeConfig } from 'ngx-kit/shared';
-import { PaginationConfigs } from '../types/configs';
+import { NgxPaginationOptions } from '../types/PaginationOptions';
 
-export function providePagination(options?: PaginationConfigs): EnvironmentProviders {
+export function providePagination(options?: NgxPaginationOptions): EnvironmentProviders {
   return makeEnvironmentProviders([
     {
       provide: NGX_PAGINATION_CONFIG,

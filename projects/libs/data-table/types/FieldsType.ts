@@ -1,7 +1,9 @@
-export class FieldsType<T = any> {
+import { TableCellFormatter } from './TableOptions';
+
+export class FieldsType<T extends Object> {
   title!: string;
-  column!: string;
-  type?:
+  column!: Extract<keyof T, string>;
+  dataType?:
     | 'text'
     | 'image'
     | 'profilePicture'
@@ -9,6 +11,7 @@ export class FieldsType<T = any> {
     | 'time'
     | 'dateTime'
     | 'yesNo'
+    | 'boolean'
     | 'number'
     | 'localize'
     | 'template'
@@ -18,9 +21,23 @@ export class FieldsType<T = any> {
     | undefined;
   width?: number;
   wrap?: boolean;
-  localizeKey?: string;
 
   prefix?: string;
+
+  /**
+   * نام renderer ثبت‌شده در provideTable
+   */
+  renderer?: string;
+
+  /**
+   * ورودی‌های اضافه برای renderer
+   */
+  rendererInputs?: Record<string, unknown>;
+
+  /**
+   * نام formatter سراسری یا تابع اختصاصی
+   */
+  formatter?: string | TableCellFormatter;
 }
 
 export class SortEvent {
