@@ -1,5 +1,6 @@
 import { Observable, of } from 'rxjs';
 import { Tenant } from './tenants.model';
+import { Injectable } from '@angular/core';
 
 export interface PagedResult<T> {
   items: T[];
@@ -16,6 +17,7 @@ export interface GetTenantsInput {
  * Replace this with your real ABP/HttpClient service. Shape shown here
  * matches the `(lazyLoad)` contract expected in tenants-table.component.ts.
  */
+@Injectable()
 export class TenantsService {
   getTenants(input: GetTenantsInput): Observable<PagedResult<Tenant>> {
     // return this.http.get<PagedResult<Tenant>>('/api/services/app/Tenant/GetAll', { params: ... });

@@ -1,0 +1,62 @@
+<nav class="ngx-pagination">
+  <div class="">
+    {{ labels().showing }}
+    <span class="fw-semibold">{{ firstItem }}</span>
+    {{ labels().to }}
+    <span class="fw-semibold">{{ lastItem }}</span>
+    {{ labels().of }}
+    <span class="fw-semibold">{{ total() }}</span>
+    {{ labels().results }}
+  </div>
+
+  <div class="ngx-paination_page-numbers">
+    <ul>
+      <!-- Previous Page Link -->
+      <li [class.disabled]="currentPage() === 1" [title]="labels().first">
+        <a (click)="first()">
+          <i class="fa fa-chevrons-left"></i>
+        </a>
+      </li>
+      <li [class.disabled]="currentPage() === 1" [title]="labels().previous">
+        <a (click)="previous()">
+          <i class="fa fa-chevron-left"></i>
+        </a>
+      </li>
+
+      <!-- Pagination Elements -->
+      @for (item of pages; track $index) {
+        <li class="page-num" [class.active]="item === currentPage()">
+          @if (item !== currentPage() && item != '...') {
+            <a (click)="onPageChange(item)">{{ item }}</a>
+          }
+          @if (item === currentPage() || item == '...') {
+            <span>{{ item }}</span>
+          }
+        </li>
+      }
+
+      <!-- Next Page Link -->
+      <li [class.disabled]="currentPage() === paginationCount" [title]="labels().next">
+        <a (click)="next()">
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+      <li [class.disabled]="currentPage() === paginationCount" [title]="labels().last">
+        <a (click)="last()">
+          <i class="fa fa-chevrons-right"></i>
+        </a>
+      </li>
+    </ul>
+
+    <div class="ngx-paination_page-size">
+      <span>{{ labels().pageSize }}:</span>
+      <select [(ngModel)]="pageSize" name="pageSize" (change)="onpageSizeChange()">
+        @for (item of pageSizeOptions(); track $index) {
+          <option [value]="item">
+            {{ item }}
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+</nav>

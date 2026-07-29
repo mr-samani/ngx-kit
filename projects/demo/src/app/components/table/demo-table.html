@@ -1,0 +1,23 @@
+<!-- <ngx-table
+  [data]="rows()"
+  [columns]="columns"
+  [lazy]="true"
+  [loading]="loading()"
+  [totalRecords]="total()"
+  [multiSort]="true"
+  (lazyLoad)="onLazyLoad($event)"></ngx-table> -->
+
+<!--
+      A custom cell template for the "isActive" column. \`ctx.$implicit\` is
+      typed as Tenant — \`ctx.$implicit.isActive\` autocompletes and is
+      type-checked exactly like everywhere else.
+    -->
+<!-- <ng-template #activeCell let-row>
+  <span class="badge" [class.badge--on]="row.isActive" [class.badge--off]="!row.isActive">
+    {{ row.isActive ? 'Yes' : 'No' }}
+  </span>
+</ng-template> -->
+
+
+
+<ngx-pagination [total]="120"></ngx-pagination>
