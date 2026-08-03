@@ -1,0 +1,134 @@
+:host {
+  display: block;
+  margin: 8px 0;
+  --ngx-notify-content-bg: light-dark(#ffffff, #262b35);
+  --ngx-notify-content-fg: light-dark(#000, #fff);
+}
+.ngx-notify {
+  display: flex;
+  min-width: 240px;
+  width: 500px;
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 0px 30px rgba(103, 102, 102, 0.488);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.ngx-notify-icon-container {
+  width: 60px;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .ngx-notify-icon {
+    padding: 15px;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.ngx-notify-content {
+  background-color: var(--ngx-notify-content-bg);
+  color: var(--ngx-notify-content-fg);
+  padding: 15px;
+  border-radius: 0 0 0 15px;
+  flex: auto;
+  .ngx-notify-title {
+    font-size: 1rem;
+  }
+  .ngx-notify-description {
+    opacity: 0.8;
+    font-size: 0.8rem;
+  }
+}
+
+.ngx-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ngx-notify-info {
+  background: #1cacff;
+  --var-ngx-progress-bar-bg: #1cacff;
+
+  color: #e8f3ff;
+}
+.ngx-notify-success {
+  background: #54c999;
+  --var-ngx-progress-bar-bg: #54c999;
+
+  color: #ebeceb;
+}
+.ngx-notify-warning {
+  background: #ffb242;
+  --var-ngx-progress-bar-bg: #ffb242;
+
+  color: #ffecec;
+}
+.ngx-notify-error {
+  background: #ff3c39;
+  --var-ngx-progress-bar-bg: #ff3c39;
+
+  color: #ffecec;
+}
+
+.ngx-notify-close-container {
+  background-color: var(--ngx-notify-content-bg);
+  color: var(--ngx-notify-content-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .ngx-notify-close {
+    background: transparent;
+    border: none;
+    width: 22px;
+    height: 22px;
+    line-height: 0;
+    margin: 0 5px;
+    cursor: pointer;
+    transform: rotate(0deg);
+    transition: transform 0.4s;
+    &:hover {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.ngx-notify-progress {
+  position: absolute;
+  bottom: 0;
+  height: 4px;
+  left: 60px;
+  right: 0;
+  overflow: hidden;
+  .progress-bar {
+    background-color: var(--var-ngx-progress-bar-bg);
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+}
+
+::ng-deep {
+  html[dir='rtl'],
+  body[dir='ltr'] {
+    .ngx-notify-content {
+      border-radius: 0px 0px 15px 0px;
+    }
+    .ngx-notify-progress {
+      left: 0;
+      right: 60px;
+      .progress-bar {
+        transform-origin: right !important;
+      }
+    }
+  }
+}

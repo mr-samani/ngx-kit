@@ -38,7 +38,11 @@ declare const EyeDropper: any;
   templateUrl: './input-color.component.html',
   styleUrls: ['./input-color.component.scss'],
   providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NgxInputColorComponent), multi: true },
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NgxInputColorComponent),
+      multi: true,
+    },
     {
       provide: NG_VALIDATORS,
       multi: true,
@@ -49,7 +53,15 @@ declare const EyeDropper: any;
   host: {
     '[class.dark]': 'theme=="dark"',
   },
-  imports: [CommonModule, FormsModule, EnumToArrayPipe, PickerComponent, CmykComponent, HslComponent, RgbComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    EnumToArrayPipe,
+    PickerComponent,
+    CmykComponent,
+    HslComponent,
+    RgbComponent,
+  ],
 })
 export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   browserService = inject(BrowserService);
@@ -112,9 +124,9 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
   /** @ignore */
   isDisabled = false;
   /**@ignore */
-  private _onChange = (value: string) => {};
+  protected _onChange = (value: string) => {};
   /**@ignore */
-  private _onTouched = () => {};
+  protected _onTouched = () => {};
   /**@ignore */
   private _onValidateChange = () => {};
 

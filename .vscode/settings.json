@@ -8,7 +8,9 @@
     "node_modules": true,
     "**/dist": true,
     ".angular":true,
-    "**/docs":true
+    "**/docs":true,
+    // style generated auto wit scss forlder
+    "**/projects/libs/styles":true
 
   },
   "js/ts.tsdk.path": "node_modules\\typescript\\lib"

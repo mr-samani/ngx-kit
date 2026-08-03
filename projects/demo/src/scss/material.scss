@@ -1,0 +1,69 @@
+@use '@angular/material' as mat;
+
+html {
+  --app-font: axiforma;
+  height: 100%;
+  font-size: 14px;
+  color-scheme: light dark;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+        theme-type: color-scheme,
+      ),
+      density: (
+        scale: -2,
+      ),
+    )
+  );
+  @include mat.theme-overrides(
+    (
+      primary: #0078d4,
+      on-primary: white,
+
+      secondary: #5b8def,
+
+      tertiary: #7c3aed,
+
+      surface: #ffffff,
+      on-surface: #191919,
+      surface-container: #f6f8fb,
+      surface-container-low: #ffffff,
+    )
+  );
+
+  &.dark-scheme {
+    color-scheme: dark;
+    @include mat.theme-overrides(
+      (
+        primary: #3aa0ff,
+
+        surface: #181818,
+        on-surface: #d6d6d6,
+        surface-container: #222222,
+      )
+    );
+  }
+
+  &.light-scheme {
+    color-scheme: light;
+  }
+
+  &[lang='fa-IR'] {
+    font-family: iranSans;
+    --app-font: iranSans;
+  }
+}
+.primary-toolbar {
+  --mat-toolbar-container-background-color: var(--mat-sys-primary);
+  --mat-toolbar-container-text-color: var(--mat-sys-on-primary);
+}
+
+.mdc-button__label:has(i.fa) {
+  i.fa {
+    font-size: 16px;
+    margin: 0 5px;
+  }
+}

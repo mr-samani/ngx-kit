@@ -1,0 +1,208 @@
+:host {
+  --ngx-color-bg: #fff;
+  --ngx-color-text: #000;
+  --ngx-border-color: #c0c0c0;
+
+  --ngx-datepicker-header-bg: #6200ee;
+  --ngx-datepicker-header-text: #fff;
+  --ngx-datepicker-subheader-bg: #e0d5ef;
+  --ngx-datepicker-subheader-text: #272727;
+}
+
+:host-context(.dark) {
+  --ngx-color-bg: #222;
+  --ngx-color-text: #fff;
+  --ngx-border-color: #c0c0c0;
+
+  --ngx-datepicker-header-bg: #6200ee;
+  --ngx-datepicker-header-text: #fff;
+  --ngx-datepicker-subheader-bg: #8e819e;
+  --ngx-datepicker-subheader-text: #272727;
+}
+
+.wrapper {
+  background: var(--ngx-color-bg);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+  color: var(--ngx-color-text);
+  border-radius: 6px;
+  overflow: hidden;
+
+  .header {
+    display: block;
+    padding: 15px 15px 10px;
+    background-color: var(--ngx-datepicker-header-bg);
+    color: var(--ngx-datepicker-header-text);
+    font-size: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .sub-header {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px 5px;
+    background-color: var(--ngx-datepicker-subheader-bg);
+    color: var(--ngx-datepicker-subheader-text);
+
+    .current-date {
+      font-size: 1rem;
+      font-weight: 800;
+      flex: auto;
+      display: flex;
+      align-items: center;
+
+      span {
+        flex: auto;
+        text-align: center;
+      }
+    }
+
+    .icons {
+      display: flex;
+
+      span {
+        height: 38px;
+        width: 38px;
+        margin: 0 1px;
+        cursor: pointer;
+        color: #878787;
+        text-align: center;
+        line-height: 38px;
+        font-size: 1.9rem;
+        user-select: none;
+        border-radius: 50%;
+        &:hover {
+          background: #f2f2f272;
+        }
+      }
+    }
+  }
+
+  .calendar-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+
+    .dtp-btn {
+      background: none;
+      color: inherit;
+      border: 1px #9f9f9f8b solid;
+      border-radius: 3px;
+      padding: 3px 15px;
+      box-shadow: 0 0 4px rgb(0 0 0 / 20%);
+      transition: all 300ms;
+
+      &:not([disabled]):hover {
+        cursor: pointer;
+        background: #87879e;
+      }
+    }
+  }
+}
+
+/*---------------------------------*/
+
+.calendar {
+  padding: 10px;
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+  }
+
+  .days {
+    margin-bottom: 20px;
+
+    li {
+      height: 40px;
+      width: 40px;
+    }
+  }
+
+  .months {
+    margin-bottom: 20px;
+
+    li {
+      height: 40px;
+      width: 33%;
+    }
+  }
+
+  .years {
+    margin-bottom: 20px;
+
+    li {
+      height: 40px;
+      width: 25%;
+    }
+  }
+
+  li {
+    z-index: 1;
+    cursor: pointer;
+    position: relative;
+    color: #333;
+    font-size: 12px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px transparent solid;
+    transition: all 300ms;
+    color: inherit;
+    &:not(.active):hover {
+      background: #dfdfdf68;
+    }
+
+    &.de-active {
+      opacity: 0.2;
+    }
+
+    &.selected {
+      border: 1px #1216fa solid;
+    }
+
+    &.today {
+      background-color: #9b59b6;
+    }
+  }
+
+  .weeks {
+    border-bottom: 1px #e7e7e758 solid;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    li {
+      font-weight: 500;
+      cursor: default;
+      flex: auto;
+      flex-wrap: nowrap;
+
+      &:hover {
+        background: none;
+      }
+    }
+  }
+}
+
+/* rtl*/
+::ng-deep {
+  body[dir='rtl'],
+  html[dir='rtl'] {
+    .wrapper {
+      .sub-header {
+        .icons {
+          #next,
+          #prev {
+            transform: rotate(180deg);
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,5 +4,6 @@
   "deleteDestPath": true,
   "lib": {
     "entryFile": "public-api.ts"
-  }
+  },
+  "assets": ["styles/**/*.css"]
 }

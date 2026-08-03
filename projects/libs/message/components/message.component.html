@@ -1,0 +1,51 @@
+<div
+  class="ngx-msg-overlay show"
+  (click)="onOutSideClick()"
+  [ngClass]="options.containerClass"
+  [class.has-backdrop]="options.backdrop"
+  [attr.data-type]="options.icon">
+  <div class="ngx-msg-modal" (click)="innerOnClick($event)">
+    <div class="confetti" #confetti></div>
+    @if (options.showCloseButton) {
+      <button class="close-x" (click)="close()" aria-label="Close">✕</button>
+    }
+    @if (showIcon()) {
+      <div class="icon-stage">
+        <div class="icon-ring"></div>
+        <div class="icon-disc" [innerHTML]="icon"></div>
+      </div>
+    }
+    <h2>{{ options.title }}</h2>
+    <p class="desc">
+      {{ options.text }}
+      <span [innerHTML]="options.html"></span>
+    </p>
+
+    <div class="ngx-msg-actions">
+      @if (options.showCancelButton) {
+        <button
+          class="btn btn-ghost"
+          (click)="onCancel()"
+          [attr.aria-label]="options.cancelButtonAriaLabel">
+          {{ options.cancelButtonText }}
+        </button>
+      }
+      @if (options.showDenyButton) {
+        <button
+          class="btn btn-ghost"
+          (click)="onDeny()"
+          [attr.aria-label]="options.denyButtonAriaLabel">
+          {{ options.denyButtonText }}
+        </button>
+      }
+      @if (options.showConfirmButton) {
+        <button
+          class="btn btn-primary"
+          (click)="onConfirm()"
+          [attr.aria-label]="options.confirmButtonAriaLabel">
+          {{ options.confirmButtonText }}
+        </button>
+      }
+    </div>
+  </div>
+</div>

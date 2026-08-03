@@ -1,0 +1,142 @@
+<div class="wrapper" #datepickerWrapper>
+  <div class="header">
+    <div class="nxt-prv-buttons">
+      <button id="prev" class="previous dtp-btn" (click)="previous()" title="Previous">
+        <ng-template
+          [ngTemplateOutlet]="
+            _config.previousButtonTemplate || defaultPreviousBTNTemplate
+          "></ng-template>
+      </button>
+      @if (_config.todayButton) {
+        <button class="today dtp-btn" (click)="gotoToday()">
+          {{ _config.todayButtonText }}
+        </button>
+      }
+      <button id="next" class="next dtp-btn" (click)="next()" title="Next">
+        <ng-template
+          [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
+      </button>
+    </div>
+    <div class="current-date">
+      <span>
+        {{ currYear }}
+      </span>
+      <span>
+        {{ displayMonth }}
+      </span>
+    </div>
+    <div class="view-mode">
+      {{ view }}
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('day')"
+        [class.active]="view == 'day'"
+        title="Month View">
+        Month
+      </button>
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('week')"
+        [class.active]="view == 'week'"
+        title="Week View">
+        Week
+      </button>
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('day')"
+        [class.active]="view == 'day'"
+        title="Day View">
+        Day
+      </button>
+      <button
+        class="dayview dtp-btn"
+        (click)="changeView('event')"
+        [class.active]="view == 'event'"
+        title="Day View">
+        Event
+      </button>
+    </div>
+  </div>
+  <div class="calendar" #calendarWrapper>
+    @if (view === 'day') {
+      <ul class="weeks">
+        @for (w of weeks; track $index) {
+          <li>
+            {{ w }}
+          </li>
+        }
+      </ul>
+      <ul class="days" [style.minHeight.px]="minHeight">
+        @for (item of viewDays; track $index) {
+          <li
+            [class.de-active]="!item.active"
+            [class.today]="item.isToday"
+            [class.selected]="item.selected"
+            (click)="selectDay($event, item)">
+            <div>{{ item.day }}</div>
+            @if (item.events) {
+              <div class="ms-day-events">
+                @for (event of item.events; track $index) {
+                  <a
+                    tabindex="0"
+                    class="ms-day-event"
+                    [title]="event.title"
+                    (click)="onclickEvent(item, event)">
+                    {{ event.title }}
+                  </a>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    } @else if (view == 'week' || view == 'month') {
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            @for (w of weeks; track $index) {
+              <th>{{ w }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of viewWeeks; track $index; let i = $index) {
+            <tr>
+              <td [title]="item.displayTime">{{ item.time % 1 == 0 ? item.time : '' }}</td>
+              @for (w of item.weeks; track $index) {
+                <td></td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (view == 'event') {
+      not implemented
+    }
+  </div>
+</div>
+
+<ng-template #defaultPreviousBTNTemplate>
+  <svg width="15px" height="30px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+    <path
+      class="fa-secondary"
+      d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z" />
+  </svg>
+</ng-template>
+
+<ng-template #defaultNextBTNTemplate>
+  <svg width="15px" height="30px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+    <path
+      class="fa-secondary"
+      d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z" />
+  </svg>
+</ng-template>
+
+<ng-template #defaultCaretDownIcon>
+  <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+    <path
+      class="fa-secondary"
+      d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
+  </svg>
+</ng-template>

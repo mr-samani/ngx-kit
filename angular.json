@@ -29,7 +29,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": ["projects/demo/src/styles.scss"]
+            "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -41,16 +41,17 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"
             },
             "development": {
+              "sourceMap": true,
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "production"
@@ -95,40 +96,6 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
-        },
-        "storybook": {
-          "builder": "@storybook/angular:start-storybook",
-          "options": {
-            "configDir": "projects/storybook/.storybook",
-            "browserTarget": "ngx-kit:build",
-            "compodoc": true,
-            "compodocArgs": [
-              "-p",
-              "tsconfig.compodoc.json",
-              "-e",
-              "json",
-              "-d",
-              "projects/storybook/.storybook/documentation"
-            ],
-            "port": 6006
-          }
-        },
-        "build-storybook": {
-          "builder": "@storybook/angular:build-storybook",
-          "options": {
-            "configDir": "projects/storybook/.storybook",
-            "browserTarget": "ngx-kit:build",
-            "compodoc": true,
-            "compodocArgs": [
-              "-p",
-              "tsconfig.compodoc.json",
-              "-e",
-              "json",
-              "-d",
-              "projects/storybook/.storybook/documentation"
-            ],
-            "outputDir": "docs"
-          }
         }
       }
     }

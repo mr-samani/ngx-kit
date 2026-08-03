@@ -1,0 +1,31 @@
+<mat-toolbar class="primary-toolbar">
+  <span>NGX kit</span>
+
+  <button matButton="" aria-label="Home page" [routerLink]="'/'">
+    <i class="fa fa-home"></i>
+    <span>Home</span>
+  </button>
+  <button matButton="" aria-label="Components" [routerLink]="'/components'">
+    <i class="fa fa-package"></i>
+    <span>Components</span>
+  </button>
+  <span class="spacer"></span>
+  <button matIconButton aria-label="Dark mode" (click)="darkMode.toggleDarkMode()">
+    @if (darkMode.isDarkMode()) {
+      <i class="fa fa-sun-bright"></i>
+    } @else {
+      <i class="fa fa-moon"></i>
+    }
+  </button>
+  <button
+    matIconButton
+    class="dir-btn"
+    aria-label="Page Direction"
+    (click)="direction.toggleDirection()">
+    @if (direction.isRtl()) {
+      LTR
+    } @else {
+      RTL
+    }
+  </button>
+</mat-toolbar>

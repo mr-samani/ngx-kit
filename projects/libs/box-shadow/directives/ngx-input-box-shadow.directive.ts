@@ -20,7 +20,7 @@ import {
 } from '@angular/forms';
 import { DOCUMENT } from '@angular/common';
 import { NgxBoxShadowComponent } from '../components/box-shadow.component';
-import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputBoxShadow]',
@@ -36,18 +36,18 @@ import { DialogOverlayRef, DialogService } from 'ngx-kit/shared';
 export class NgxInputBoxShadow implements OnDestroy, ControlValueAccessor, Validator {
   @Input() setInputBackground = true;
 
-  private pickerRef?: DialogOverlayRef<NgxBoxShadowComponent>;
+  private pickerRef?: OverlayRef<NgxBoxShadowComponent>;
 
   value = '';
 
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
+  protected _onChange = (value: string) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
   constructor(
     private el: ElementRef,
     private viewContainerRef: ViewContainerRef,
     private renderer: Renderer2,
-    private dialogService: DialogService,
+    private overlayService: OverlayService,
   ) {}
 
   @HostListener('click', ['$event']) onClick(ev: Event) {
@@ -89,7 +89,7 @@ export class NgxInputBoxShadow implements OnDestroy, ControlValueAccessor, Valid
       this.destroyPicker();
       return;
     }
-    this.pickerRef = this.dialogService.open({
+    this.pickerRef = this.overlayService.open({
       anchor: this.el.nativeElement,
       component: NgxBoxShadowComponent,
       viewContainerRef: this.viewContainerRef,

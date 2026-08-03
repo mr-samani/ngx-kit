@@ -1,0 +1,49 @@
+<nav class="ngx-pagination">
+  <div class="ngx-pagination__summary">
+    {{ labels().showing }}
+    <span class="fw-semibold">{{ firstItem() }}</span>
+    {{ labels().to }}
+    <span class="fw-semibold">{{ lastItem() }}</span>
+    {{ labels().of }}
+    <span class="fw-semibold">{{ total() }}</span>
+    {{ labels().results }}
+  </div>
+
+  <div class="ngx-pagination__controls">
+    <ul class="ngx-pagination__list">
+      <li [class.disabled]="page() === 1" [title]="labels().first">
+        <a (click)="first()" class="icon">«</a>
+      </li>
+      <li [class.disabled]="page() === 1" [title]="labels().previous">
+        <a (click)="previous()" class="icon">‹</a>
+      </li>
+
+      @for (item of pages(); track $index) {
+        <li class="ngx-pagination__page-num" [class.active]="item === page()">
+          @if (item !== page() && item !== '...') {
+            <a (click)="goto(+item)">{{ item }}</a>
+          }
+          @if (item === page() || item === '...') {
+            <span>{{ item }}</span>
+          }
+        </li>
+      }
+
+      <li [class.disabled]="page() === totalPages()" [title]="labels().next">
+        <a (click)="next()" class="icon">›</a>
+      </li>
+      <li [class.disabled]="page() === totalPages()" [title]="labels().last">
+        <a (click)="last()" class="icon">»</a>
+      </li>
+    </ul>
+
+    <div class="ngx-pagination__page-size">
+      <span>{{ labels().pageSize }}:</span>
+      <select [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
+        @for (opt of pageSizeOptions(); track opt) {
+          <option [value]="opt" [selected]="opt === pageSize()">{{ opt }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</nav>

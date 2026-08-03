@@ -68,8 +68,8 @@ export class NgxInputGradientComponent implements OnInit, OnDestroy, ControlValu
   selectedIndex = 0;
 
   isDisabled = false;
-  _onChange = (value: string) => {};
-  _onTouched = () => {};
+  protected _onChange = (value: string) => {};
+  protected _onTouched =  () => {};
   _onValidateChange = () => {};
 
   @ViewChild('rangeSlider', { static: true }) rangeSlider?: RangeSliderComponent;

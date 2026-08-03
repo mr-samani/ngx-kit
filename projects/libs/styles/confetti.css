@@ -1,0 +1,28 @@
+/* ---------- confetti (success only) ---------- */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 26px;
+}
+
+.confetti span {
+  position: absolute;
+  top: -10%;
+  width: 7px;
+  height: 12px;
+  opacity: 0;
+  animation: fall 1.6s ease-in forwards;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(340px) rotate(340deg);
+  }
+}

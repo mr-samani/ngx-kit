@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgxColor } from '../../utils/color-helper';
 import { CMYK } from '../../contracts/color-interface';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { SliderComponent } from 'ngx-kit/shared';
 
@@ -9,7 +9,7 @@ import { SliderComponent } from 'ngx-kit/shared';
   selector: 'app-cmyk',
   templateUrl: './cmyk.component.html',
   styleUrls: ['./cmyk.component.scss'],
-  imports: [CommonModule, FormsModule, SliderComponent],
+  imports: [FormsModule, SliderComponent],
 })
 export class CmykComponent implements OnInit {
   cyanSliderBackground = '';

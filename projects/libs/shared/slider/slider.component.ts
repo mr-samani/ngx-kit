@@ -56,9 +56,9 @@ export class SliderComponent implements OnInit, ControlValueAccessor, Validator 
   x = 0;
   myControl = new FormControl<number | null>(null);
   isDisabled = false;
-  _onChange = (value: any) => {};
-  _onTouched = () => {};
-  _validatorOnChange = () => {};
+  protected _onChange = (value: any) => {};
+  protected _onTouched =  () => {};
+  protected _validatorOnChange =  () => {};
   private sliderRect?: DOMRect;
   private thumbRect?: DOMRect;
   constructor() {}
