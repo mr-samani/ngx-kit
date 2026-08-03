@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open --port=2924",
-    "build": "ng build demo",
+    "build": "ng build demo --base-href=/ngx-kit ",
     "watch": "ng build --watch --configuration development",
     "build:styles": "sass projects/libs/scss:projects/libs/styles --no-source-map",
     "build:lib": "npm run build:styles &&  ng build ngx-kit",
