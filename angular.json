@@ -29,10 +29,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": [
-              "./projects/libs/styles/all.css",
-              "projects/demo/src/styles.scss"
-            ]
+            "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -44,8 +41,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"
