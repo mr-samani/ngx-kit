@@ -1,180 +1,117 @@
 :host {
-  --border-color: light-dark(#70707030, #2a2a3e);
-  --header-height: 50px;
-  --header-padding-y: 8px;
-  --bg-color: light-dark(#eeeeee, #111118);
-  --fg-color: light-dark(#000000, #ffffff);
-  --header-shadow-color: light-dark(#00000024, #00000066);
-  --header-bg: light-dark(#e5e5e5, #1a1a26);
+  --ngx-table-accent: light-dark(#4f46e5, #818cf8);
+  --ngx-table-border: light-dark(#e5e7eb, #27272a);
+  --ngx-table-header-bg: light-dark(#f8fafc, #18181b);
+  --ngx-table-header-fg: light-dark(#334155, #d4d4d8);
+  --ngx-table-row-bg: light-dark(#ffffff, #111114);
+  --ngx-table-row-alt-bg: light-dark(#f9fafb, #17171b);
+  --ngx-table-row-hover-bg: light-dark(#eef2ff, #1e1b4b);
+  --ngx-table-text: light-dark(#1e293b, #e4e4e7);
+  --ngx-table-radius: 12px;
+
+  display: block;
+  color: var(--ngx-table-text);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-.table-responsive {
+.ngx-table-wrapper {
   position: relative;
+  border: 1px solid var(--ngx-table-border);
+  border-radius: var(--ngx-table-radius);
+  overflow: hidden;
+  background: var(--ngx-table-row-bg);
 }
 
-.table-mrs {
-  border: 1px var(--border-color) solid;
-  border-radius: 32px;
-  corner-shape: squircle;
-  overflow: hidden;
-  background-color: var(--bg-color);
-  color: var(--fg-color);
+// یک کانتینر اسکرول واحد برای هدر و بدنه با هم؛ یعنی هم اسکرول افقی خودکار
+// سینک می‌مونه (چون هر دو داخل همون کانتینر هستن) و هم هدر با position:sticky
+// چسبیده می‌مونه — بدون هیچ scroll-listener دستی و بدون نشتی حافظه.
+.ngx-table-scroll {
+  overflow: auto;
+  max-height: 75vh;
+
+  &::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ngx-table-border) 60%, gray);
+    border-radius: 8px;
+  }
+}
+
+.ngx-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
+  width: max-content;
 }
 
 .thead-mrs {
-  background: var(--header-bg);
-  height: var(--header-height);
-  padding: var(--header-padding-y) 0px;
-  box-shadow: 0px 0px 10px 5px var(--header-shadow-color);
-  /* auto scroled by body*/
-  overflow: hidden;
-}
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
 
-.tbody-mrs {
-  border-top: 1px var(--border-color) solid;
-  overflow: auto;
-  height: calc(
-    var(--available-content-height, 100vh) - (var(--header-height) + var(--header-padding-y) * 2)
-  );
-  min-height: 200px;
+  &--sticky {
+    position: sticky;
+    top: 0;
+  }
 }
 
 .tr-mrs {
   display: flex;
-  border-bottom: 1px var(--border-color) solid;
+  align-items: stretch;
 }
 
-.tbody-mrs .tr-mrs {
-  animation: showrow 350ms cubic-bezier(0.4, -0.32, 0.4, 1.24);
-  &:hover {
-    background: rgba(108, 99, 255, 0.04);
-  }
-}
-
-.tr-mrs:last-child {
-  border-bottom: none;
-}
-
-.thead-mrs .th-mrs {
-  padding: 5px 10px;
-  flex: 1;
-  border-right: 1px var(--border-color) solid;
-  align-items: center;
-  justify-content: space-between;
-  display: flex;
-  gap: 5px;
-  overflow: hidden;
-  &:hover {
-    .sort-icon {
-      opacity: 1;
-    }
-  }
-}
-
-.th-mrs:last-child {
-  border: none;
-}
-
+.th-mrs,
 .td-mrs {
-  padding: 8px 10px;
-  flex: 100;
+  position: relative;
+  box-sizing: border-box;
   overflow: hidden;
-  margin: auto 0;
-}
+  border-bottom: 1px solid var(--ngx-table-border);
+  border-inline-end: 1px solid var(--ngx-table-border);
 
-.td-mrs .cel {
-  overflow: hidden;
-  max-width: 100%;
-  :not(.wrap) {
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  &:last-child {
+    border-inline-end: none;
   }
-  /* margin: auto 0; */
 }
 
-.cel .cell-title {
-  display: none;
-}
+.th-mrs {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: var(--ngx-table-header-bg);
+  color: var(--ngx-table-header-fg);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  padding: 0.75rem 1rem;
+  user-select: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 
-.text-wrap {
-  white-space: normal;
-}
-
-@media (max-width: 768px) {
-  .thead-mrs {
-    display: none;
-  }
-
-  .tr-mrs {
-    flex-direction: column;
-    .td-mrs {
-      max-width: unset !important;
-      width: unset !important;
-      .cel {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
+  &--sortable {
+    cursor: pointer;
+    &:hover {
+      color: var(--ngx-table-accent);
     }
   }
 
-  .cel .cell-title {
-    color: #6bb6f3;
-    display: inline-block;
-    font-weight: 600;
+  &.operations {
+    justify-content: center;
   }
 }
 
-@keyframes showrow {
-  from {
-    margin-top: -100px;
-    opacity: 0;
-  }
-
-  to {
-    margin-top: 0px;
-    opacity: 1;
-  }
-}
-
-/*----------------------------------*/
-.loading-container {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  .loading {
-    background: #3b3b3ba3;
-    color: #fff;
-    border: 10px #3939392e solid;
-    border-radius: 10px;
-    padding: 18px 25px;
-  }
-}
-
-.no-data {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 2rem;
-  opacity: 0.5;
+.th-mrs__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sort-icon {
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 500ms;
-  width: 16px;
-  height: 16px;
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: none;
+  opacity: 0.4;
+  display: inline-flex;
+
   svg {
     width: 100%;
     height: 100%;
@@ -184,14 +121,122 @@
   }
 }
 
-.tag {
-  color: #fff;
-  padding: 0 10px;
-  border-radius: 5px;
-  &.tag-success {
-    background: #008e44;
+// دستگیره‌ی ریسایز روی لبه‌ی «انتهای منطقی» — زیر dir="rtl" خودش جابه‌جا می‌شود.
+.ngx-table__resize-handle,
+[ngxColumnResize] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: -3px;
+  width: 6px;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 3;
+
+  &:hover,
+  &:active {
+    background: var(--ngx-table-accent);
+    opacity: 0.5;
   }
-  &.tag-danger {
-    background: #bb001b;
+}
+
+.td-mrs {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+
+  &.operations {
+    justify-content: center;
+  }
+}
+
+.cel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &.wrap {
+    white-space: normal;
+  }
+}
+
+.cell-title {
+  display: none; // فقط در حالت کارت موبایل نمایش داده می‌شود
+  font-weight: 600;
+  color: var(--ngx-table-header-fg);
+}
+
+.ngx-table--striped .tbody-mrs .tr-mrs:nth-child(even) {
+  background: var(--ngx-table-row-alt-bg);
+}
+.ngx-table--hover .tbody-mrs .tr-mrs:hover {
+  background: var(--ngx-table-row-hover-bg);
+}
+.tr-mrs {
+  transition: background-color 0.15s ease;
+}
+
+.no-data {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.loading-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ngx-table-row-bg) 75%, transparent);
+  backdrop-filter: blur(1px);
+}
+.loading {
+  font-size: 0.875rem;
+  color: var(--ngx-table-accent);
+}
+
+// --------------------------------------------------------------- کارت موبایل
+@media (max-width: 768px) {
+  .ngx-table-scroll {
+    overflow: visible;
+    max-height: none;
+  }
+  .ngx-table {
+    width: 100%;
+  }
+  .thead-mrs {
+    display: none;
+  }
+  .tbody-mrs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  .tr-mrs {
+    flex-direction: column;
+    border: 1px solid var(--ngx-table-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .td-mrs {
+    flex: 1 1 auto !important;
+    width: 100%;
+    border-inline-end: none;
+    justify-content: space-between;
+  }
+  .cel {
+    justify-content: flex-end;
+    white-space: normal;
+    text-align: end;
+  }
+  .cell-title {
+    display: inline;
   }
 }

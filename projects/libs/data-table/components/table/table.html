@@ -1,138 +1,162 @@
-<div class="table-responsive" #tableContainer>
-  <div class="table-mrs">
-    <div class="thead-mrs">
-      <div class="tr-mrs">
-        @if (operations()) {
-          <div
-            class="th-mrs operations"
-            [style.max-width.px]="operationWidth()"
-            [style.min-width.px]="operationWidth()">
-            {{ config.labels.operation }}
-          </div>
-        }
-        @if (showRecordNumber()) {
-          <div
-            class="th-mrs operations"
-            [style.max-width.px]="numWidth()"
-            [style.min-width.px]="numWidth()">
-            #
-          </div>
-        }
-        @for (item of fields(); track $index) {
-          <div class="th-mrs" [style.max-width.px]="item.width" [style.min-width.px]="item.width">
-            {{ item.title }}
-            <span
-              class="sort-icon"
-              [class.active]="sortField == item.column"
-              (click)="onSortChange(item)">
-              @if (sortField == item.column && sortDirection == 'asc') {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-                  <path
-                    fill="currentColor"
-                    d="M368 432h-64c-8.844 0-15.1 7.156-15.1 16S295.2 464 304 464h64c8.844 0 16-7.156 16-16S376.8 432 368 432zM432 304h-128c-8.844 0-15.1 7.156-15.1 16S295.2 336 304 336h128c8.844 0 16-7.156 16-16S440.8 304 432 304zM496 176h-192c-8.844 0-15.1 7.156-15.1 16S295.2 208 304 208h192C504.8 208 512 200.8 512 192S504.8 176 496 176zM560 48h-256c-8.844 0-15.1 7.156-15.1 16S295.2 80 304 80h256C568.8 80 576 72.84 576 64S568.8 48 560 48zM224 352c-4.094 0-8.188 1.562-11.31 4.688L144 425.4V48C144 39.16 136.8 32 128 32S112 39.16 112 48v377.4l-68.69-68.69c-6.25-6.25-16.38-6.25-22.62 0s-6.25 16.38 0 22.62l96 96c6.25 6.25 16.38 6.25 22.62 0l96-96c6.25-6.25 6.25-16.38 0-22.62C232.2 353.6 228.1 352 224 352z" />
-                </svg>
-              } @else if (sortField == item.column && sortDirection == 'desc') {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-                  <path
-                    fill="currentColor"
-                    d="M304 208h128C440.8 208 448 200.8 448 192s-7.156-16-16-16h-128c-8.844 0-15.1 7.156-15.1 16S295.2 208 304 208zM304 336h192c8.844 0 16-7.156 16-16s-7.156-16-16-16h-192c-8.844 0-15.1 7.156-15.1 16S295.2 336 304 336zM304 80h64c8.844 0 16-7.156 16-16S376.8 48 368 48h-64c-8.844 0-15.1 7.156-15.1 16S295.2 80 304 80zM560 432h-256c-8.844 0-15.1 7.156-15.1 16S295.2 464 304 464h256c8.844 0 16-7.156 16-16S568.8 432 560 432zM224 352c-4.094 0-8.188 1.562-11.31 4.688L144 425.4V48C144 39.16 136.8 32 128 32S112 39.16 112 48v377.4l-68.69-68.69c-6.25-6.25-16.38-6.25-22.62 0s-6.25 16.38 0 22.62l96 96c6.25 6.25 16.38 6.25 22.62 0l96-96c6.25-6.25 6.25-16.38 0-22.62C232.2 353.6 228.1 352 224 352z" />
-                </svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                  <path
-                    fill="currentColor"
-                    d="M224 352c-4.094 0-8.188 1.562-11.31 4.688L144 425.4V48C144 39.16 136.8 32 128 32S112 39.16 112 48v377.4l-68.69-68.69c-6.25-6.25-16.38-6.25-22.62 0s-6.25 16.38 0 22.62l96 96c6.25 6.25 16.38 6.25 22.62 0l96-96c6.25-6.25 6.25-16.38 0-22.62C232.2 353.6 228.1 352 224 352zM427.3 132.7l-96-96c-6.25-6.25-16.38-6.25-22.62 0l-96 96c-6.25 6.25-6.25 16.38 0 22.62s16.38 6.25 22.62 0L304 86.63V464c0 8.844 7.156 16 16 16s16-7.156 16-16V86.63l68.69 68.69C407.8 158.4 411.9 160 416 160s8.188-1.562 11.31-4.688C433.6 149.1 433.6 138.9 427.3 132.7z" />
-                </svg>
-              }
-            </span>
-          </div>
-        }
-      </div>
-    </div>
-    <div class="tbody-mrs">
-      @if (!loading() && list().length === 0) {
-        <div class="no-data">{{ config.labels.noData }}</div>
-      }
-      @for (item of list(); track $index) {
-        @let num = getRecordNumber(item);
-        <div class="tr-mrs">
+<div class="ngx-table-wrapper" [class.ngx-table--loading]="loading()">
+  <div class="ngx-table-scroll">
+    <div
+      class="ngx-table"
+      [class.ngx-table--striped]="config.stripedRows"
+      [class.ngx-table--hover]="config.hoverable"
+      role="table">
+      <div class="thead-mrs" [class.thead-mrs--sticky]="config.stickyHeader" role="rowgroup">
+        <div class="tr-mrs" role="row">
           @if (operations()) {
             <div
-              class="td-mrs operations"
-              vAlign="middle"
-              [style.max-width.px]="operationWidth()"
-              [style.min-width.px]="operationWidth()">
-              <div class="cel">
-                <span class="cell-title">{{ config.labels.operation }}:</span>
-                <ng-container
-                  [ngTemplateOutlet]="operations()"
-                  [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
-              </div>
+              class="th-mrs operations"
+              role="columnheader"
+              [style.flex]="'0 0 ' + operationWidth() + 'px'">
+              {{ config.labels.operation }}
             </div>
           }
-
           @if (showRecordNumber()) {
             <div
-              class="td-mrs operations"
-              vAlign="middle"
-              [style.max-width.px]="numWidth()"
-              [style.min-width.px]="numWidth()">
-              <div class="cel">
-                <span class="cell-title"></span>
-                {{ num }}
-              </div>
+              class="th-mrs operations"
+              role="columnheader"
+              [style.flex]="'0 0 ' + numWidth() + 'px'">
+              #
             </div>
           }
 
           @for (f of fields(); track f.column) {
-            @let template = getTemplate(f.column);
-            @let renderer = getRenderer(f);
-
             <div
-              class="td-mrs"
-              vAlign="middle"
-              [style.max-width.px]="f.width"
-              [style.min-width.px]="f.width">
-              <div class="cel" [class.wrap]="f.wrap">
-                <span class="cell-title">{{ f.title }}</span>
-                @if (template) {
-                  <ng-container
-                    [ngTemplateOutlet]="template"
-                    [ngTemplateOutletContext]="{
-                      $implicit: item,
-                      row: item,
-                      value: getCellValue(item, f),
-                      field: f,
-                    }"></ng-container>
-                } @else if (renderer) {
-                  <ng-container
-                    *ngComponentOutlet="
-                      renderer;
-                      inputs: getRendererInputs(item, f)
-                    "></ng-container>
-                } @else {
-                  {{ formatCellValue(item, f) }}
-                }
-                @if (f.prefix) {
-                  <span>{{ f.prefix }}</span>
-                }
-              </div>
+              class="th-mrs"
+              role="columnheader"
+              [class.th-mrs--sortable]="f.sortable"
+              [style.flex]="'0 0 ' + columnWidth(f.column) + 'px'"
+              [attr.aria-sort]="
+                sortDirectionFor(f.column) === 'asc'
+                  ? 'ascending'
+                  : sortDirectionFor(f.column) === 'desc'
+                    ? 'descending'
+                    : null
+              "
+              (click)="onHeaderClick(f, $event)">
+              <span class="th-mrs__title">{{ f.title }}</span>
+
+              @if (f.sortable) {
+                <span class="sort-icon" [class.active]="sortDirectionFor(f.column) !== null">
+                  @if (sortDirectionFor(f.column) === 'asc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path
+                        fill="currentColor"
+                        d="M182.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8H96V448c0 17.7 14.3 32 32 32s32-14.3 32-32V224h64c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-128-128z" />
+                    </svg>
+                  } @else if (sortDirectionFor(f.column) === 'desc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path
+                        fill="currentColor"
+                        d="M137.4 470.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8H224V64c0-17.7-14.3-32-32-32s-32 14.3-32 32V288H96c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z" />
+                    </svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path
+                        fill="currentColor"
+                        d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l96 96c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8H224v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V192H96c-12.9 0-24.6-7.8-29.6-19.8s-2.3-25.7 6.9-34.9l96-96zM32 400c0-17.7 14.3-32 32-32H256c17.7 0 32 14.3 32 32s-14.3 32-32 32H64c-17.7 0-32-14.3-32-32z"
+                        opacity=".35" />
+                    </svg>
+                  }
+                </span>
+              }
+
+              @if (isResizable(f)) {
+                <span
+                  ngxColumnResize
+                  [ngxColumnResizeWidth]="columnWidth(f.column)"
+                  [ngxColumnResizeMin]="columnMin(f)"
+                  [ngxColumnResizeMax]="columnMax(f)"
+                  [ngxColumnResizeDir]="resolvedDirection()"
+                  (resizing)="onColumnResizing(f.column, $event)"
+                  (resizeEnd)="onColumnResizeEnd(f.column, $event)"
+                  (click)="$event.stopPropagation()"></span>
+              }
             </div>
           }
         </div>
-      }
-    </div>
-  </div>
+      </div>
 
-  @if (loading()) {
-    <div class="loading-container">
-      <div class="loading">{{ config.labels.loading }}</div>
+      <div class="tbody-mrs" role="rowgroup">
+        @if (!loading() && pagedData().length === 0) {
+          <div class="no-data">{{ config.labels.noData }}</div>
+        }
+
+        @for (row of pagedData(); track trackBy()($index, row); let rowIndex = $index) {
+          <div class="tr-mrs" role="row">
+            @if (operations()) {
+              <div
+                class="td-mrs operations"
+                role="cell"
+                [style.flex]="'0 0 ' + operationWidth() + 'px'">
+                <div class="cel">
+                  <span class="cell-title">{{ config.labels.operation }}:</span>
+                  <ng-container
+                    [ngTemplateOutlet]="operations()!"
+                    [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
+                </div>
+              </div>
+            }
+
+            @if (showRecordNumber()) {
+              <div class="td-mrs operations" role="cell" [style.flex]="'0 0 ' + numWidth() + 'px'">
+                <div class="cel">{{ recordNumber(rowIndex) }}</div>
+              </div>
+            }
+
+            @for (f of fields(); track f.column) {
+              @let template = getTemplate(f.column);
+              @let renderer = getRenderer(f);
+
+              <div class="td-mrs" role="cell" [style.flex]="'0 0 ' + columnWidth(f.column) + 'px'">
+                <div class="cel" [class.wrap]="f.wrap">
+                  <span class="cell-title">{{ f.title }}</span>
+
+                  @if (template) {
+                    <ng-container
+                      [ngTemplateOutlet]="template"
+                      [ngTemplateOutletContext]="{
+                        $implicit: row,
+                        row: row,
+                        value: getCellValue(row, f),
+                        rowIndex: rowIndex,
+                        field: f,
+                      }"></ng-container>
+                  } @else if (renderer) {
+                    <ng-container
+                      *ngComponentOutlet="
+                        renderer;
+                        inputs: getRendererInputs(row, f)
+                      "></ng-container>
+                  } @else {
+                    {{ formatCellValue(row, f) }}
+                  }
+
+                  @if (f.prefix) {
+                    <span>{{ f.prefix }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
-  }
+
+    @if (loading()) {
+      <div class="loading-container">
+        <div class="loading">{{ config.labels.loading }}</div>
+      </div>
+    }
+  </div>
 </div>
 
 <ngx-pagination
-  [(page)]="page"
-  [pageSize]="pageSize()"
-  [total]="totalRecords()"
-  (paginate)="onPageChange($event)"></ngx-pagination>
+  [page]="page()"
+  [pageSize]="pageSizeS()"
+  [total]="totalCount()"
+  (paginate)="onPaginate($event)"></ngx-pagination>

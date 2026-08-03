@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { FieldsType, TableCellRendererComponent } from 'ngx-kit/data-table';
+import { CellRendererComponent, TableFieldBase } from 'ngx-kit/data-table';
 
 @Component({
   selector: 'app-avatar-cell',
@@ -10,15 +10,10 @@ import { FieldsType, TableCellRendererComponent } from 'ngx-kit/data-table';
       @if (value()) {
         <img class="avatar" [src]="value()!" [alt]="displayName()" />
       } @else {
-        <span class="avatar avatar--fallback">
-          {{ initials() }}
-        </span>
+        <span class="avatar avatar--fallback">{{ initials() }}</span>
       }
-
       @if (showName()) {
-        <span class="user-name">
-          {{ displayName() }}
-        </span>
+        <span class="user-name">{{ displayName() }}</span>
       }
     </div>
   `,
@@ -28,7 +23,6 @@ import { FieldsType, TableCellRendererComponent } from 'ngx-kit/data-table';
       align-items: center;
       gap: 8px;
     }
-
     .avatar {
       display: inline-flex;
       align-items: center;
@@ -39,45 +33,43 @@ import { FieldsType, TableCellRendererComponent } from 'ngx-kit/data-table';
       border-radius: 50%;
       object-fit: cover;
     }
-
     .avatar--fallback {
       color: #1e3a8a;
       background: #dbeafe;
       font-size: 13px;
       font-weight: 600;
     }
-
     .user-name {
       white-space: nowrap;
     }
   `,
 })
-export class AvatarCellRenderer<
-  T extends Record<string, unknown>,
-> implements TableCellRendererComponent<string | null, T> {
+export class AvatarCellRenderer<T extends object> implements CellRendererComponent<
+  string | null,
+  T
+> {
   readonly value = input.required<string | null>();
   readonly row = input.required<T>();
-  readonly field = input.required<FieldsType<T>>();
+  readonly field = input.required<TableFieldBase<T>>();
 
+  // این دو ورودی اضافه به‌صورت خودکار در rendererInputs همان ستون در
+  // defineFields(...) قابل تنظیم و type-check می‌شوند.
   readonly nameField = input('fullName');
   readonly showName = input(true);
 
-  readonly displayName = computed(() => {
+  // مهم: چون این‌ها computed داخلی هستند نه ورودی، protected شده‌اند تا در
+  // استخراج rendererInputs (که فقط از روی امضای callable تشخیص می‌دهد)
+  // اشتباهاً به‌عنوان یک ورودی قابل تنظیم دیده نشوند.
+  protected readonly displayName = computed(() => {
     const field = this.nameField();
-    const value = this.row()[field];
-
+    const value = (this.row() as Record<string, unknown>)[field];
     return value == null ? '' : String(value);
   });
 
-  readonly initials = computed(() => {
+  protected readonly initials = computed(() => {
     const name = this.displayName().trim();
-
-    if (!name) {
-      return '?';
-    }
-
+    if (!name) return '?';
     const parts = name.split(/\s+/);
-
     return parts
       .slice(0, 2)
       .map((part) => part.charAt(0))

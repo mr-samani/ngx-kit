@@ -56,6 +56,14 @@ export class MSG {
       ...options,
     });
   }
+  static question(title: string, text?: string, options?: IMessageOptions) {
+    return this.show({
+      icon: 'question',
+      title,
+      text,
+      ...options,
+    });
+  }
   static loading(title: string, text?: string, options?: IMessageOptions) {
     return this.show({
       icon: 'loading',

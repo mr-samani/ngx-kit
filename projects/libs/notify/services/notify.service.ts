@@ -101,6 +101,7 @@ export class NgxNotifyService {
       options: opts,
       onClose: new EventEmitter(),
       onFinish: new EventEmitter(),
+      close: () => this.close(id),
     };
 
     this.configureContainer(opts.position!, opts.containerClass!);
@@ -124,6 +125,7 @@ export class NgxNotifyService {
       environmentInjector: this.envInjector,
       hostElement: host,
     });
+
     compRef.setInput('payload', payload);
     compRef.instance.onClose.subscribe((d) => {
       this.removeEl(d);
@@ -139,6 +141,15 @@ export class NgxNotifyService {
     this.appRef.attachView(compRef.hostView);
     // store visible
     this.visible.push({ ref: compRef, payload });
+  }
+
+  private close(id: string) {
+    const el = this.visible.find((x) => x.payload.id == id)?.ref?.instance?.el;
+    if (el) {
+      this.removeEl({ id, el });
+    }
+    // if in queue remove it
+    this.queue = this.queue.filter((q) => q.id !== id);
   }
   private removeNode(node: HTMLElement, id: string) {
     node.style.opacity = '0';

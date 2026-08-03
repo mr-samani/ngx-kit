@@ -1,27 +1,5 @@
-<!-- <ngx-table
-  [data]="rows()"
-  [columns]="columns"
-  [lazy]="true"
-  [loading]="loading()"
-  [totalRecords]="total()"
-  [multiSort]="true"
-  (lazyLoad)="onLazyLoad($event)"></ngx-table> -->
+<h3>جدول کاربران (Lazy، سورت، ریسایز، رندرر تایپ‌سیف)</h3>
 
-<!--
-      A custom cell template for the "isActive" column. \`ctx.$implicit\` is
-      typed as Tenant — \`ctx.$implicit.isActive\` autocompletes and is
-      type-checked exactly like everywhere else.
-    -->
-<!-- <ng-template #activeCell let-row>
-  <span class="badge" [class.badge--on]="row.isActive" [class.badge--off]="!row.isActive">
-    {{ row.isActive ? 'Yes' : 'No' }}
-  </span>
-</ng-template> -->
-
-<h3>Sample Pagination</h3>
-<ngx-pagination [total]="120"></ngx-pagination>
-
-<h3>Sample Table With pagination</h3>
 <ngx-table
   [data]="rows()"
   [totalRecords]="total()"
@@ -29,10 +7,14 @@
   [loading]="loading()"
   [multiSort]="true"
   [lazy]="true"
-  (lazyLoad)="getData($event)">
+  (lazyLoad)="onLazyLoad($event)">
+  <!--
+    قالب سفارشی برای ستون userName. row/value اینجا any هستند (محدودیت
+    شناخته‌شده‌ی این روش projection پویا)؛ برای type-safety کامل روی row/value،
+    از field.cellTemplate با ViewChild استفاده کنید (به README مراجعه کنید).
+  -->
   <ng-template ngxTableCell="userName" let-user let-value="value">
-    fff
     <strong>{{ value }}</strong>
-    <small>{{ user.userName }}</small>
+    <small>{{ '@' + user.userName }}</small>
   </ng-template>
 </ngx-table>

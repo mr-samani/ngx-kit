@@ -134,6 +134,8 @@
     background 0.2s,
     color 0.2s,
     transform 0.2s;
+  transform-origin: center;
+  font-family: none;
 }
 .ngx-msg-modal .close-x:hover {
   background: rgba(255, 255, 255, 0.08);
@@ -142,122 +144,122 @@
 }
 
 /* ---------- icon stage ---------- */
-.icon-stage {
-  position: relative;
-  width: 96px;
-  height: 96px;
-  margin: 4px auto 22px;
-}
-.icon-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(
-    --type-ring,
-    conic-gradient(from 0deg, var(--violet), var(--cyan), var(--violet))
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 3px),
-    #000 calc(100% - 2.5px)
-  );
-  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
-  opacity: 0;
-}
-.ngx-msg-overlay.show .icon-ring {
-  animation:
-    ringIn 0.8s 0.05s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
-    ringSpin 6s linear infinite;
-}
-@keyframes ringIn {
-  to {
-    opacity: 1;
+.ngx-msg-overlay {
+  .icon-stage {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    margin: 4px auto 22px;
   }
-}
-@keyframes ringSpin {
-  to {
-    transform: rotate(360deg);
+  .icon-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(
+      --type-ring,
+      conic-gradient(from 0deg, var(--violet), var(--cyan), var(--violet))
+    );
+    -webkit-mask: radial-gradient(
+      farthest-side,
+      transparent calc(100% - 3px),
+      #000 calc(100% - 2.5px)
+    );
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+    opacity: 0;
   }
-}
+  &.show .icon-ring {
+    animation:
+      ringIn 0.8s 0.05s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+      ringSpin 6s linear infinite;
+  }
+  @keyframes ringIn {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes ringSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .icon-disc {
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: var(--type-disc, linear-gradient(150deg, var(--violet), var(--violet-2)));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px -6px var(--type-shadow, rgba(139, 123, 255, 0.55));
+    transform: scale(0);
+  }
+  .ngx-msg-overlay.show .icon-disc {
+    animation: discPop 0.6s 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes discPop {
+    to {
+      transform: scale(1);
+    }
+  }
+  .icon-disc svg {
+    width: 46px;
+    height: 46px;
+    overflow: visible;
+  }
+  .icon-disc .draw {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 5.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+  }
+  &.show .icon-disc .draw {
+    animation: draw 0.5s 0.42s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 
-.icon-disc {
-  position: absolute;
-  inset: 8px;
-  border-radius: 50%;
-  background: var(--type-disc, linear-gradient(150deg, var(--violet), var(--violet-2)));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 30px -6px var(--type-shadow, rgba(139, 123, 255, 0.55));
-  transform: scale(0);
-}
-.ngx-msg-overlay.show .icon-disc {
-  animation: discPop 0.6s 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-@keyframes discPop {
-  to {
-    transform: scale(1);
+  .icon-disc .dot-mark {
+    fill: #fff;
+    opacity: 0;
+    transform: scale(0);
+    transform-origin: center;
   }
-}
-
-.icon-disc svg {
-  width: 46px;
-  height: 46px;
-  overflow: visible;
-}
-.icon-disc .draw {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 5.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 80;
-  stroke-dashoffset: 80;
-}
-.ngx-msg-overlay.show .icon-disc .draw {
-  animation: draw 0.5s 0.42s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-@keyframes draw {
-  to {
-    stroke-dashoffset: 0;
+  &.show .icon-disc .dot-mark {
+    animation: dotPop 0.3s 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
-}
-
-.icon-disc .dot-mark {
-  fill: #fff;
-  opacity: 0;
-  transform: scale(0);
-  transform-origin: center;
-}
-.ngx-msg-overlay.show .icon-disc .dot-mark {
-  animation: dotPop 0.3s 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-@keyframes dotPop {
-  to {
-    opacity: 1;
-    transform: scale(1);
+  @keyframes dotPop {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-}
 
-/* spinner (loading type) */
-.spinner-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-.spinner {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 5px solid rgba(255, 255, 255, 0.18);
-  border-top-color: #fff;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  /* spinner (loading type) */
+  .spinner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .spinner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 5px solid rgba(255, 255, 255, 0.18);
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 }
 
@@ -301,57 +303,73 @@
 .ngx-msg-overlay.show .ngx-msg-modal .ngx-msg-actions {
   animation: textIn 0.5s 0.46s ease forwards;
 }
+.ngx-msg-overlay {
+  .btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 700;
+    padding: 12px 22px;
+    border-radius: 13px;
+    transition:
+      transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+      filter 0.2s,
+      box-shadow 0.2s;
+    flex: 1;
+    max-width: 170px;
+  }
+  .btn:active {
+    transform: scale(0.95);
+  }
+  .btn-primary {
+    color: #0a0c14;
+    background: var(--type-btn, linear-gradient(135deg, var(--violet), var(--cyan)));
+    box-shadow: 0 10px 24px -8px var(--type-shadow, rgba(139, 123, 255, 0.6));
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    color: var(--ink-1);
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--ngx-msg-panel-border);
+  }
+  .btn-ghost:hover {
+    color: var(--ink-0);
+    background: rgba(255, 255, 255, 0.08);
+  }
 
-.btn {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14.5px;
-  font-weight: 700;
-  padding: 12px 22px;
-  border-radius: 13px;
-  transition:
-    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-    filter 0.2s,
-    box-shadow 0.2s;
-  flex: 1;
-  max-width: 170px;
-}
-.btn:active {
-  transform: scale(0.95);
-}
-.btn-primary {
-  color: #0a0c14;
-  background: var(--type-btn, linear-gradient(135deg, var(--violet), var(--cyan)));
-  box-shadow: 0 10px 24px -8px var(--type-shadow, rgba(139, 123, 255, 0.6));
-}
-.btn-primary:hover {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
-}
-.btn-ghost {
-  color: var(--ink-1);
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid var(--ngx-msg-panel-border);
-}
-.btn-ghost:hover {
-  color: var(--ink-0);
-  background: rgba(255, 255, 255, 0.08);
+  .progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--type-btn, linear-gradient(90deg, var(--violet), var(--cyan)));
+    width: 100%;
+    transform-origin: right center;
+  }
+  [dir='rtl'] .progress {
+    transform-origin: left center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  .btn:focus-visible,
+  .trigger:focus-visible,
+  .close-x:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
 }
 
-.progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: var(--type-btn, linear-gradient(90deg, var(--violet), var(--cyan)));
-  width: 100%;
-  transform-origin: right center;
-}
-[dir='rtl'] .progress {
-  transform-origin: left center;
-}
 /* ---------- type theme variables ---------- */
 .ngx-msg-overlay[data-type='success'] .ngx-msg-modal {
   --type-ring: conic-gradient(from 0deg, var(--success-a), var(--success-b), var(--success-a));
@@ -391,19 +409,4 @@
 .ngx-msg-overlay[data-type='loading'] .ngx-msg-modal {
   --type-disc: linear-gradient(150deg, #9aa3c0, #565c78);
   --type-glow: radial-gradient(circle, rgba(154, 163, 192, 0.3), transparent 70%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
-.btn:focus-visible,
-.trigger:focus-visible,
-.close-x:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
 }

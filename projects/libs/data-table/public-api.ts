@@ -1,18 +1,22 @@
-export * from './components/pagination/pagination';
-export * from './components/table/table';
+// types
+export * from './types/sort.types';
+export * from './types/page.types';
+export * from './types/pagination.types';
+export * from './types/table-field.types';
+export * from './types/table-options.types';
 
-export * from './tokens/pagination-config.token';
+// tokens
 export * from './tokens/table-config.token';
+export * from './tokens/pagination-config.token';
 
-export * from './providers/pagination-provider';
-export * from './providers/table-provider';
+// providers
+export * from './providers/provide-table';
+export * from './providers/provide-pagination';
 
-export * from './types/PaginationLabel';
-export * from './types/TableOptions';
-export * from './types/PaginationOptions';
+// directives
+export * from './directives/table-cell.directive';
+export * from './directives/column-resize.directive';
 
-export * from './types/PageEvent';
-export * from './types/LazyLoadEvent';
-export * from './types/FieldsType';
-
-export * from './types/TableCellRenderer';
+// components
+export * from './components/table/table';
+export * from './components/pagination/pagination';

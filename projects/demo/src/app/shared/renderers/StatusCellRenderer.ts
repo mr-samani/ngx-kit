@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { FieldsType, TableCellRendererComponent } from 'ngx-kit/data-table';
+import { CellRendererComponent, TableFieldBase } from 'ngx-kit/data-table';
 
-type UserStatus = 'active' | 'inactive' | 'blocked' | 'pending';
+export type UserStatus = 'active' | 'inactive' | 'blocked' | 'pending';
 
 @Component({
   selector: 'app-status-cell',
@@ -27,43 +27,34 @@ type UserStatus = 'active' | 'inactive' | 'blocked' | 'pending';
       border-radius: 20px;
       font-size: 12px;
       font-weight: 500;
-      color: #000;
+      color: #fff;
     }
-
     .status--active {
       background: #166534;
     }
-
     .status--inactive {
       background: #374151;
-      color: #fff;
     }
-
     .status--blocked {
       background: #991b1b;
     }
-
     .status--pending {
       background: #92400e;
     }
   `,
 })
-export class StatusCellRenderer<T extends object> implements TableCellRendererComponent<
-  UserStatus,
-  T
-> {
+export class StatusCellRenderer<T extends object> implements CellRendererComponent<UserStatus, T> {
   readonly value = input.required<UserStatus>();
   readonly row = input.required<T>();
-  readonly field = input.required<FieldsType<T>>();
+  readonly field = input.required<TableFieldBase<T>>();
 
-  readonly label = computed(() => {
+  protected readonly label = computed(() => {
     const labels: Record<UserStatus, string> = {
       active: 'فعال',
       inactive: 'غیرفعال',
       blocked: 'مسدود',
       pending: 'در انتظار',
     };
-
     return labels[this.value()] ?? this.value();
   });
 }

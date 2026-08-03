@@ -7,6 +7,11 @@ export interface PaginationLabel {
   to: string;
   of: string;
   results: string;
-  perPage: string;
   pageSize: string;
+}
+
+export interface NgxPaginationOptions {
+  labels: PaginationLabel;
+  pageSizeOptions: number[];
+  defaultPageSize: number;
 }

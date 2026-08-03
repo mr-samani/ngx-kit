@@ -20,6 +20,7 @@ export interface NgxNotifyPayload {
 
   onClose: EventEmitter<INotifyEnd>;
   onFinish: EventEmitter<INotifyEnd>;
+  close: () => void;
 }
 
 export interface INotifyEnd {
