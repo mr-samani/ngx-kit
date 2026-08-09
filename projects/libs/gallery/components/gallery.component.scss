@@ -1,0 +1,233 @@
+:host {
+  display: block;
+}
+
+/* ---------- Grid ---------- */
+.ngx-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ngx-gallery-cols, 3), 1fr);
+  gap: 0.5rem;
+}
+
+.ngx-gallery-grid-item {
+  appearance: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: light-dark(#f3f4f6, #18181b);
+
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 200ms ease;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/* ---------- Carousel ---------- */
+.ngx-gallery-carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.ngx-gallery-track {
+  display: flex;
+  touch-action: pan-y;
+  cursor: grab;
+  transition: transform 250ms ease;
+
+  &:active {
+    cursor: grabbing;
+    transition: none;
+  }
+}
+
+.ngx-gallery-slide {
+  flex: 0 0 100%;
+  position: relative;
+
+  img {
+    inline-size: 100%;
+    block-size: 320px;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+}
+
+.ngx-gallery-caption {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.ngx-gallery-nav {
+  position: absolute;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.65);
+  }
+}
+.ngx-gallery-nav--prev {
+  inset-inline-start: 0.5rem;
+}
+.ngx-gallery-nav--next {
+  inset-inline-end: 0.5rem;
+}
+
+.ngx-gallery-dots {
+  position: absolute;
+  inset-block-end: 0.6rem;
+  inset-inline: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.ngx-gallery-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+
+  &.active {
+    background: #fff;
+  }
+}
+
+/* ---------- Slideshow ---------- */
+.ngx-gallery-slideshow-main {
+  position: relative;
+  block-size: 380px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: light-dark(#f3f4f6, #18181b);
+}
+
+.ngx-gallery-slideshow-img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+
+  &.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.ngx-gallery-thumbs {
+  display: flex;
+  gap: 0.4rem;
+  margin-block-start: 0.5rem;
+  overflow-x: auto;
+}
+
+.ngx-gallery-thumb {
+  flex: 0 0 auto;
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &.active {
+    border-color: light-dark(#2563eb, #60a5fa);
+  }
+}
+
+/* ---------- Lightbox ---------- */
+.ngx-gallery-lightbox {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-inline-size: 92vw;
+  max-block-size: 92vh;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+  }
+
+  &[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.ngx-gallery-lightbox-img {
+  max-inline-size: 90vw;
+  max-block-size: 85vh;
+  display: block;
+  border-radius: 6px;
+}
+
+.ngx-gallery-lightbox-caption {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 1rem;
+  text-align: center;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.ngx-gallery-lightbox-close {
+  position: fixed;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}

@@ -1,0 +1,122 @@
+:host {
+  display: block;
+}
+
+.ngx-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  border: 2px dashed light-dark(#c9cdd4, #3f3f46);
+  border-radius: 12px;
+  background: light-dark(#fafafa, #1c1c20);
+  color: light-dark(#4b5563, #a1a1aa);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+
+  &:hover:not(.disabled) {
+    border-color: light-dark(#93c5fd, #3b82f6);
+  }
+
+  &:focus-visible {
+    outline: 2px solid light-dark(#2563eb, #60a5fa);
+    outline-offset: 2px;
+  }
+
+  &.dragging {
+    border-color: light-dark(#2563eb, #60a5fa);
+    background: light-dark(#eff6ff, #16213a);
+    transform: scale(1.01);
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.ngx-dropzone-input {
+  position: absolute;
+  inset-inline-start: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.ngx-dropzone-icon {
+  color: light-dark(#9ca3af, #71717a);
+}
+
+.ngx-dropzone-text {
+  font-size: 0.9rem;
+}
+
+.ngx-dropzone-hint {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.ngx-dropzone-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ngx-dropzone-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: light-dark(#f4f4f5, #232327);
+  font-size: 0.8rem;
+}
+
+.ngx-dropzone-thumb {
+  inline-size: 32px;
+  block-size: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.ngx-dropzone-file-icon {
+  inline-size: 32px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ngx-dropzone-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: light-dark(#1f2937, #e4e4e7);
+}
+
+.ngx-dropzone-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: light-dark(#9ca3af, #71717a);
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.2rem;
+  border-radius: 4px;
+
+  &:hover {
+    color: light-dark(#dc2626, #f87171);
+    background: light-dark(#fee2e2, #3f1d1d);
+  }
+}

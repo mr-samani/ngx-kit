@@ -1,0 +1,68 @@
+<div
+  class="ngx-dropzone"
+  [class.dragging]="isDragging()"
+  [class.disabled]="disabled()"
+  tabindex="0"
+  role="button"
+  [attr.aria-disabled]="disabled()"
+  (click)="onBrowseClick()"
+  (keydown)="onKeydown($event)"
+  (dragenter)="onDragEnter($event)"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+>
+  <input
+    #fileInput
+    type="file"
+    class="ngx-dropzone-input"
+    [accept]="accept()"
+    [multiple]="multiple()"
+    [disabled]="disabled()"
+    (click)="$event.stopPropagation()"
+    (change)="onFileInputChange($event)"
+  />
+
+  <ng-content select="[dropzone-icon]">
+    <svg class="ngx-dropzone-icon" viewBox="0 0 24 24" fill="none" width="40" height="40">
+      <path
+        d="M12 16V4M12 4l-4 4M12 4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </ng-content>
+
+  <div class="ngx-dropzone-text">
+    <ng-content>فایل‌ها را اینجا رها کنید یا کلیک کنید</ng-content>
+  </div>
+
+  @if (hint()) {
+    <div class="ngx-dropzone-hint">{{ hint() }}</div>
+  }
+</div>
+
+@if (showFileList() && files().length) {
+  <ul class="ngx-dropzone-list">
+    @for (item of files(); track item.id) {
+      <li class="ngx-dropzone-item">
+        @if (item.previewUrl) {
+          <img class="ngx-dropzone-thumb" [src]="item.previewUrl" [alt]="item.file.name" />
+        } @else {
+          <span class="ngx-dropzone-file-icon">📄</span>
+        }
+        <span class="ngx-dropzone-name" [title]="item.file.name">{{ item.file.name }}</span>
+        <button
+          type="button"
+          class="ngx-dropzone-remove"
+          [attr.aria-label]="'حذف ' + item.file.name"
+          (click)="removeFile(item.id)"
+        >
+          ✕
+        </button>
+      </li>
+    }
+  </ul>
+}

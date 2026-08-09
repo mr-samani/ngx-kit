@@ -1,0 +1,124 @@
+@if (loading()) {
+  <div class="ngx-ie-state">در حال بارگذاری تصویر…</div>
+} @else if (loadError()) {
+  <div class="ngx-ie-state ngx-ie-state--error">{{ loadError() }}</div>
+} @else if (stageImageUrl()) {
+  <div class="ngx-ie-layout">
+    <div class="ngx-ie-stage-wrap">
+      <div
+        class="ngx-ie-stage"
+        [style.width.px]="stageSize().width"
+        [style.height.px]="stageSize().height"
+      >
+        <img class="ngx-ie-stage-img" [src]="stageImageUrl()" alt="" draggable="false" />
+
+        <div
+          class="ngx-ie-crop-box"
+          [style.left]="cropOverlayStyle().left"
+          [style.top]="cropOverlayStyle().top"
+          [style.width]="cropOverlayStyle().width"
+          [style.height]="cropOverlayStyle().height"
+          ngxPointerDrag
+          (dragStart)="onMoveDragStart()"
+          (dragMove)="onMoveDragMove($event)"
+        >
+          <span
+            class="ngx-ie-handle ngx-ie-handle--nw"
+            ngxPointerDrag
+            (dragStart)="onResizeDragStart()"
+            (dragMove)="onResizeDragMove('nw', $event)"
+          ></span>
+          <span
+            class="ngx-ie-handle ngx-ie-handle--ne"
+            ngxPointerDrag
+            (dragStart)="onResizeDragStart()"
+            (dragMove)="onResizeDragMove('ne', $event)"
+          ></span>
+          <span
+            class="ngx-ie-handle ngx-ie-handle--sw"
+            ngxPointerDrag
+            (dragStart)="onResizeDragStart()"
+            (dragMove)="onResizeDragMove('sw', $event)"
+          ></span>
+          <span
+            class="ngx-ie-handle ngx-ie-handle--se"
+            ngxPointerDrag
+            (dragStart)="onResizeDragStart()"
+            (dragMove)="onResizeDragMove('se', $event)"
+          ></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ngx-ie-panel">
+      <div class="ngx-ie-preview">
+        @if (previewUrl(); as url) {
+          <img [src]="url" alt="پیش‌نمایش" />
+        }
+      </div>
+
+      <div class="ngx-ie-row ngx-ie-rotate-row">
+        <button type="button" (click)="rotateBy(-90)" title="چرخش ۹۰ درجه به چپ">⟲ 90</button>
+        <button type="button" (click)="rotateBy(90)" title="چرخش ۹۰ درجه به راست">⟳ 90</button>
+      </div>
+
+      <label class="ngx-ie-field">
+        <span>چرخش دقیق ({{ rotation() }}°)</span>
+        <slider [ngModel]="rotation()" (ngModelChange)="rotation.set($event)" [min]="-180" [max]="180"></slider>
+      </label>
+
+      <label class="ngx-ie-field">
+        <span>روشنایی ({{ brightness() }}%)</span>
+        <slider [ngModel]="brightness()" (ngModelChange)="brightness.set($event)" [min]="0" [max]="200"></slider>
+      </label>
+
+      <label class="ngx-ie-field">
+        <span>کنتراست ({{ contrast() }}%)</span>
+        <slider [ngModel]="contrast()" (ngModelChange)="contrast.set($event)" [min]="0" [max]="200"></slider>
+      </label>
+
+      <label class="ngx-ie-field">
+        <span>اشباع رنگ ({{ saturation() }}%)</span>
+        <slider [ngModel]="saturation()" (ngModelChange)="saturation.set($event)" [min]="0" [max]="200"></slider>
+      </label>
+
+      <div class="ngx-ie-field">
+        <span>افکت</span>
+        <div class="ngx-ie-filter-row">
+          <button type="button" [class.active]="filterPreset() === 'none'" (click)="setFilter('none')">
+            هیچ‌کدام
+          </button>
+          <button type="button" [class.active]="filterPreset() === 'grayscale'" (click)="setFilter('grayscale')">
+            سیاه‌وسفید
+          </button>
+          <button type="button" [class.active]="filterPreset() === 'sepia'" (click)="setFilter('sepia')">
+            سپیا
+          </button>
+          <button type="button" [class.active]="filterPreset() === 'invert'" (click)="setFilter('invert')">
+            معکوس
+          </button>
+          <button type="button" [class.active]="filterPreset() === 'cartoon'" (click)="setFilter('cartoon')">
+            کارتونی
+          </button>
+        </div>
+      </div>
+
+      <label class="ngx-ie-field">
+        <span>کیفیت خروجی ({{ (quality() * 100) | number: '1.0-0' }}٪)</span>
+        <slider
+          [ngModel]="quality() * 100"
+          (ngModelChange)="quality.set($event / 100)"
+          [min]="10"
+          [max]="100"
+        ></slider>
+      </label>
+
+      <div class="ngx-ie-row ngx-ie-actions">
+        <button type="button" class="ngx-ie-btn-secondary" (click)="cancel()">انصراف</button>
+        <button type="button" class="ngx-ie-btn-primary" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'در حال ذخیره…' : 'ذخیره' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

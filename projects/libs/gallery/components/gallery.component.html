@@ -1,0 +1,125 @@
+@switch (theme()) {
+  @case ('grid') {
+    <div class="ngx-gallery-grid" [style.--ngx-gallery-cols]="columns()">
+      @for (img of images(); track img.src; let i = $index) {
+        <button type="button" class="ngx-gallery-grid-item" (click)="openLightbox(i)">
+          <img [src]="img.thumbSrc || img.src" [alt]="img.alt || ''" loading="lazy" />
+        </button>
+      }
+    </div>
+  }
+
+  @case ('carousel') {
+    <div class="ngx-gallery-carousel">
+      <div
+        class="ngx-gallery-track"
+        #track
+        [style.transform]="trackStyle().transform"
+        (mousedown)="onTrackDragStart($event)"
+        (touchstart)="onTrackDragStart($event)"
+      >
+        @for (img of images(); track img.src; let i = $index) {
+          <div class="ngx-gallery-slide">
+            <img [src]="img.src" [alt]="img.alt || ''" draggable="false" (click)="openLightbox(i)" />
+            @if (img.caption) {
+              <div class="ngx-gallery-caption">{{ img.caption }}</div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (images().length > 1) {
+        <button type="button" class="ngx-gallery-nav ngx-gallery-nav--prev" (click)="prev()" aria-label="قبلی">
+          ‹
+        </button>
+        <button type="button" class="ngx-gallery-nav ngx-gallery-nav--next" (click)="next()" aria-label="بعدی">
+          ›
+        </button>
+        <div class="ngx-gallery-dots">
+          @for (img of images(); track img.src; let i = $index) {
+            <button
+              type="button"
+              class="ngx-gallery-dot"
+              [class.active]="i === activeIndex()"
+              (click)="goTo(i)"
+              [attr.aria-label]="'برو به تصویر ' + (i + 1)"
+            ></button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @case ('slideshow') {
+    <div class="ngx-gallery-slideshow">
+      <div
+        class="ngx-gallery-slideshow-main"
+        (mousedown)="onTrackDragStart($event)"
+        (touchstart)="onTrackDragStart($event)"
+      >
+        @for (img of images(); track img.src; let i = $index) {
+          <img
+            class="ngx-gallery-slideshow-img"
+            [class.active]="i === activeIndex()"
+            [src]="img.src"
+            [alt]="img.alt || ''"
+            draggable="false"
+            (click)="openLightbox(activeIndex())"
+          />
+        }
+        @if (images().length > 1) {
+          <button type="button" class="ngx-gallery-nav ngx-gallery-nav--prev" (click)="prev()" aria-label="قبلی">
+            ‹
+          </button>
+          <button type="button" class="ngx-gallery-nav ngx-gallery-nav--next" (click)="next()" aria-label="بعدی">
+            ›
+          </button>
+        }
+      </div>
+
+      @if (images().length > 1) {
+        <div class="ngx-gallery-thumbs">
+          @for (img of images(); track img.src; let i = $index) {
+            <button
+              type="button"
+              class="ngx-gallery-thumb"
+              [class.active]="i === activeIndex()"
+              (click)="goTo(i)"
+            >
+              <img [src]="img.thumbSrc || img.src" [alt]="img.alt || ''" loading="lazy" />
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+}
+
+<dialog #lightboxDialog class="ngx-gallery-lightbox" (keydown)="onLightboxKeydown($event)" (close)="closeLightbox()">
+  @if (lightboxOpen()) {
+    <button type="button" class="ngx-gallery-lightbox-close" (click)="closeLightbox()" aria-label="بستن">✕</button>
+    @if (images().length > 1) {
+      <button
+        type="button"
+        class="ngx-gallery-nav ngx-gallery-nav--prev"
+        (click)="lightboxPrev()"
+        aria-label="قبلی"
+      >
+        ‹
+      </button>
+      <button
+        type="button"
+        class="ngx-gallery-nav ngx-gallery-nav--next"
+        (click)="lightboxNext()"
+        aria-label="بعدی"
+      >
+        ›
+      </button>
+    }
+    @let current = images()[lightboxIndex()];
+    <img class="ngx-gallery-lightbox-img" [src]="current.src" [alt]="current.alt || ''" />
+    @if (current.caption) {
+      <div class="ngx-gallery-lightbox-caption">{{ current.caption }}</div>
+    }
+  }
+</dialog>
