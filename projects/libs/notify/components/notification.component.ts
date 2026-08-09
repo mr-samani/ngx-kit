@@ -157,8 +157,4 @@ export class NgxNotificationComponent implements OnInit, OnDestroy {
     div.appendChild(this.doc.createTextNode(input));
     return div.textContent;
   }
-
-  ngOnDestroyCleanup() {
-    this.clearTimer();
-  }
 }

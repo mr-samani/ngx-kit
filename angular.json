@@ -27,6 +27,16 @@
               {
                 "glob": "**/*",
                 "input": "projects/demo/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "/assets/monaco/"
+              },
+              {
+                "glob": "**/*.{ts,html,scss}",
+                "input": "projects/demo/src/app/components",
+                "output": "/examples/"
               }
             ],
             "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"]

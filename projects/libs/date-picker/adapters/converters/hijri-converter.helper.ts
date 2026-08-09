@@ -68,7 +68,22 @@ export namespace HijriConverter {
    * از آن)، پس جستجوی «آخرین day1 در همان روز یا قبل‌تر» همیشه
    * دقیقاً day1 همان ماه هدف را پیدا می‌کند.
    */
+  // نتیجه‌ی firstDayOfMonth فقط تابعی از (year, month) هست و در طول عمر
+  // صفحه هیچ‌وقت عوض نمی‌شه، پس کش‌کردنش کاملاً امنه. اهمیتش اینجاست که
+  // renderCalendar (در ngx-date-picker-base.component) برای هر سلولِ روزِ
+  // نمایش‌داده‌شده در گرید ماه (~۳۰ تا ۴۲ تا) یک‌بار adapter.getDate() صدا
+  // می‌زنه، و هرکدوم به toGregorian() → firstDayOfMonth() ختم می‌شه — یعنی
+  // بدون کش، این جست‌وجوی نسبتاً سنگین (که خودش می‌تونه تا حدود ۱۲۰۰ بار
+  // تکرار داخلی و هر بار تا ۳۵ فراخوانی Intl.DateTimeFormat داشته باشه) به
+  // ازای هر بار رندر یک ماه، ده‌ها بار برای همون (year, month) تکرار می‌شد —
+  // مخصوصاً وقتی کاربر به سال‌های دور از «امروز» ناوبری می‌کنه، محسوس کند بود.
+  const firstDayOfMonthCache = new Map<string, Date>();
+
   export function firstDayOfMonth(year: number, month: number): Date {
+    const cacheKey = `${year}-${month}`;
+    const cached = firstDayOfMonthCache.get(cacheKey);
+    if (cached) return new Date(cached);
+
     let anchorDate = firstOfMonthAtOrBefore(new Date());
     let h = parse(anchorDate);
 
@@ -84,6 +99,7 @@ export namespace HijriConverter {
       h = parse(anchorDate);
       guard++;
     }
+    firstDayOfMonthCache.set(cacheKey, anchorDate);
     return anchorDate;
   }
 

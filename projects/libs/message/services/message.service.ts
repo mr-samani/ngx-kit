@@ -20,8 +20,14 @@ import { applyDefaultConfig } from './apply-default';
   providedIn: 'root',
 })
 export class NgxMessageService {
-  currentAdIndex = -1;
-  alerts: ComponentRef<NgxMessageComponent>[] = [];
+  // قبلاً یه آرایه‌ی معمولی بود (`ComponentRef[]`) و removeDialogComponentFromBody
+  // فقط componentRef رو destroy می‌کرد ولی هیچ‌وقت از آرایه حذفش نمی‌کرد — یعنی
+  // این سرویس (که providedIn:'root' و singleton سراسریه) به ازای هر پیامی که
+  // تا حالا تو کل عمر اپ نشون داده شده، یک رفرنس destroy-شده رو برای همیشه نگه
+  // می‌داشت: یک نشتی حافظه‌ی پیوسته. با Map<id, ComponentRef> جایگزین شد که
+  // با delete واقعاً entry رو آزاد می‌کنه؛ کلید هم شناسه‌ی پایدارِ پیام (insertedId)
+  // هست، نه موقعیتِ آرایه (که با splice ممکن بود جابه‌جا و نامعتبر بشه).
+  alerts = new Map<number, ComponentRef<NgxMessageComponent>>();
   insertedId = 0;
   constructor(
     private appRef: ApplicationRef,
@@ -42,39 +48,40 @@ export class NgxMessageService {
     });
 
     this.appRef.attachView(componentRef.hostView);
+    const id = this.insertedId++;
     const payload: MessageOutput<T> = {
       close: () => componentRef.instance.close(),
-      id: this.insertedId,
+      id,
       afterClose: new EventEmitter(),
     };
     this.appendDialogComponentToBody(componentRef, config);
     componentRef.instance.options = config;
-    componentRef.instance.index = this.insertedId;
+    componentRef.instance.index = id;
     componentRef.instance.onClose.subscribe((result) => {
       this.removeDialogComponentFromBody(result.index);
       payload.afterClose.emit(result.result);
     });
-    this.alerts.push(componentRef);
+    this.alerts.set(id, componentRef);
 
-    this.insertedId++;
     return payload;
   }
 
-  private removeDialogComponentFromBody(index: number): void {
-    if (this.alerts[index]) {
-      const domElem = (this.alerts[index].hostView as EmbeddedViewRef<any>)
-        .rootNodes[0] as HTMLElement;
+  private removeDialogComponentFromBody(id: number): void {
+    const ref = this.alerts.get(id);
+    if (!ref) return;
 
-      // قبل از destroy باید hidePopover صدا بزنیم
-      if (domElem.popover === 'manual') {
-        try {
-          domElem.hidePopover();
-        } catch {}
-      }
+    const domElem = (ref.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
 
-      this.appRef.detachView(this.alerts[index].hostView);
-      this.alerts[index].destroy();
+    // قبل از destroy باید hidePopover صدا بزنیم
+    if (domElem.popover === 'manual') {
+      try {
+        domElem.hidePopover();
+      } catch {}
     }
+
+    this.appRef.detachView(ref.hostView);
+    ref.destroy();
+    this.alerts.delete(id);
   }
 
   private appendDialogComponentToBody(
@@ -95,8 +102,8 @@ export class NgxMessageService {
   }
 
   closeAll() {
-    for (let i = 0; i < this.alerts.length; i++) {
-      this.removeDialogComponentFromBody(i);
+    for (const id of [...this.alerts.keys()]) {
+      this.removeDialogComponentFromBody(id);
     }
   }
 }

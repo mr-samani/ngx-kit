@@ -13,7 +13,6 @@ export const DIALOG_OVERLAY_CLASSNAME = 'ngx-ui-overlay';
 export class OverlayService implements OnDestroy {
   private readonly overlayStacks: OverlayInstance[] = [];
 
-  private zIndexCounter = 1000;
   private listenersAttached = false;
   private resizeRafPending = false;
 
@@ -148,11 +147,6 @@ export class OverlayService implements OnDestroy {
     style.overflow = 'visible';
     style.visibility = 'hidden';
 
-    // شمارنده‌ی صعودی مستقل از تعداد فعلی دیالوگ‌های باز؛ در نسخه‌ی قبلی
-    // با استفاده از openDialogs.size محاسبه می‌شد که بعد از بستن دیالوگ‌ها
-    // می‌تونست باعث تکرار zIndex بین دو دیالوگ بشه.
-    style.zIndex = `${++this.zIndexCounter}`;
-
     this.doc.body.appendChild(element);
     return element;
   }
@@ -188,6 +182,20 @@ export class OverlayService implements OnDestroy {
     if (instance.embeddedView && instance.appRef) {
       instance.appRef.detachView(instance.embeddedView);
       instance.embeddedView.destroy();
+    }
+
+    // قبل از remove()، دیالوگ رو با متد استاندارد close() می‌بندیم؛ این کار دو
+    // فایده داره که با remove() ساده به دست نمی‌اومدن:
+    // ۱) فوکوس به‌صورت خودکار به همون المنتی که قبل از باز شدن دیالوگ فوکوس
+    //    داشت برمی‌گرده (رفتار استاندارد close() روی <dialog>) — با remove()
+    //    ساده این اتفاق نمی‌افته و فوکوس معمولاً روی body گم می‌شه.
+    // ۲) رویداد 'close' استاندارد شلیک می‌شه، برای کدی که ممکنه به اون گوش بده.
+    // در try/catch گذاشتیمش چون در محیط تست (jsdom) این متدها mock هستن و ممکنه
+    // رفتار متفاوتی داشته باشن.
+    try {
+      if (instance.element.open) instance.element.close();
+    } catch {
+      /* noop */
     }
 
     instance.element.remove();
@@ -335,8 +343,16 @@ export class OverlayService implements OnDestroy {
       } else {
         left = anchorRect.left;
       }
-    } else {
-      left = isRTL ? anchorRect.left : anchorRect.right; //- dialogRect.width;
+    } else if (alignment === 'end') {
+      // انتهای دیالوگ باید با انتهای anchor یکی باشه؛ با استفاده از پراپرتی
+      // CSS «right» (به‌جای کم‌کردن دستیِ عرض از «left») این کار درست و مستقل
+      // از این‌که عرض دیالوگ چقدره انجام می‌شه (قبلاً این خط باگ داشت و دیالوگ
+      // رو بعد از anchor می‌ذاشت، نه هم‌تراز با لبه‌ی انتهاییِ آن).
+      if (isRTL) {
+        left = anchorRect.left;
+      } else {
+        right = vw - anchorRect.right;
+      }
     }
     if (left !== 'auto') {
       left = Math.min(Math.max(left, margin), vw - dialogRect.width - margin);

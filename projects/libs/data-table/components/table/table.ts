@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   ContentChildren,
+  DestroyRef,
   DOCUMENT,
   effect,
   inject,
@@ -16,6 +17,7 @@ import {
   TemplateRef,
   Type,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TableCell } from '../../directives/table-cell.directive';
 import { ColumnResize } from '../../directives/column-resize.directive';
 import { NGX_TABLE_CONFIG } from '../../tokens/table-config.token';
@@ -96,6 +98,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
 
   protected readonly resolvedMultiSort = computed(() => this.multiSort() ?? this.config.multiSort);
   private readonly directionService = inject(DirectionService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly resolvedDirection = computed(() => this.directionService.direction());
   constructor() {
     effect(() => {
@@ -128,7 +131,10 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
 
   ngAfterContentInit(): void {
     this.syncTemplateMap();
-    this.cellTemplates.changes.subscribe(() => this.syncTemplateMap());
+    // این Observable خودش کامل نمی‌شه (EventEmitter ساده‌ست، نه یه stream که
+    // روی destroy کامپوننت تموم بشه)؛ بدون takeUntilDestroyed، این subscribe
+    // برای همیشه فعال می‌موند و رفرنس کامپوننت رو زنده نگه می‌داشت.
+    this.cellTemplates.changes.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.syncTemplateMap());
   }
 
   private syncTemplateMap(): void {

@@ -80,7 +80,7 @@ export class JalaliAdapter implements IDateAdapter {
       30,
       30,
       30,
-      (year - 1095) % 4 != 0 ? 29 : 30,
+      Jalali.isLeapJalaaliYear(year) ? 30 : 29,
     ];
     return monthLengths[month];
   }
@@ -113,7 +113,7 @@ export class JalaliAdapter implements IDateAdapter {
       30,
       30,
       30,
-      (year - 1095) % 4 != 0 ? 29 : 30,
+      Jalali.isLeapJalaaliYear(year) ? 30 : 29,
     ];
     return monthLengths[month];
   }

@@ -2,7 +2,11 @@ import { CMYK, HSL, HSLA, HSV, HSVA, RGB, RGBA } from '../contracts/color-interf
 
 export function hexToRgb(hex: string): RGBA {
   let h = hex.replace(/^#/, '');
-  if (h.length === 3)
+  // #rgb یا #rgba (فرمت مخفف) — هر کاراکتر دوبار تکرار می‌شه تا به فرم کامل برسه.
+  // قبلاً فقط طول ۳ (بدون آلفا) پشتیبانی می‌شد؛ #rgba (طول ۴) با این‌که یک
+  // فرمت معتبر CSS هست، از اعتبارسنجی رد می‌شد ولی اینجا expand نمی‌شد و در
+  // نهایت به خطای «Invalid hex color» می‌خورد.
+  if (h.length === 3 || h.length === 4)
     h = h
       .split('')
       .map((x) => x + x)
