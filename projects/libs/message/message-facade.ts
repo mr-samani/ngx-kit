@@ -73,3 +73,5 @@ export class MSG {
     });
   }
 }
+
+export class Modal extends MSG {}
