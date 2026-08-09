@@ -37,11 +37,13 @@ type InstanceOf<C> = C extends Type<infer I> ? I : never;
 type UnwrapSignal<S> = S extends () => infer V ? V : never;
 
 export type RendererExtraInputs<C extends Type<any>> = {
-  [K in keyof InstanceOf<C> as K extends 'value' | 'row' | 'field'
-    ? never
-    : InstanceOf<C>[K] extends () => any
-      ? K
-      : never]?: UnwrapSignal<InstanceOf<C>[K]>;
+  [
+    K in keyof InstanceOf<C> as K extends 'value' | 'row' | 'field'
+      ? never
+      : InstanceOf<C>[K] extends () => any
+        ? K
+        : never
+  ]?: UnwrapSignal<InstanceOf<C>[K]>;
 };
 
 // ----------------------------------------------------------------------------
@@ -96,8 +98,7 @@ export type RenderedTableField<T extends object, R extends RendererRegistry> = {
 }[keyof R];
 
 export type TableField<T extends object, R extends RendererRegistry = {}> =
-  | PlainTableField<T>
-  | RenderedTableField<T, R>;
+  PlainTableField<T> | RenderedTableField<T, R>;
 
 /**
  * Identity helper برای تعریف ستون‌های یک جدول با inference و type-check کامل

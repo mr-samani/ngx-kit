@@ -14,7 +14,11 @@ import {
 })
 export class ImageEditorComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/image-editor/image-editor.component.ts', language: 'typescript' },
+    {
+      label: 'TS',
+      path: '/examples/image-editor/image-editor.component.ts',
+      language: 'typescript',
+    },
     { label: 'HTML', path: '/examples/image-editor/image-editor.component.html', language: 'html' },
   ];
 

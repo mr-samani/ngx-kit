@@ -4,7 +4,7 @@ import { GradientStop, GradientType } from '../contracts/GradientStop';
 export function buildGradientFromStops(
   stops: GradientStop[],
   type: GradientType = 'linear',
-  rotation: number | string = 0
+  rotation: number | string = 0,
 ): string {
   if (!stops || stops.length === 0) return '';
 
@@ -21,7 +21,8 @@ export function buildGradientFromStops(
   if (type === 'linear') {
     // rotation can be number (deg) or string like 'to right' or '45deg'
     if (typeof rotation === 'number') prefix = `${rotation}deg, `;
-    else if (typeof rotation === 'string' && rotation.trim().length) prefix = `${rotation.trim()}, `;
+    else if (typeof rotation === 'string' && rotation.trim().length)
+      prefix = `${rotation.trim()}, `;
   } else if (type === 'radial') {
     // keep simple "circle" default: caller may put 'circle' in rotation (or pass separate option if needed)
     prefix = typeof rotation === 'string' && rotation.trim() ? `${rotation.trim()}, ` : 'circle, ';
@@ -117,7 +118,8 @@ export function parseGradient(value: string): {
   }
 
   // --- Regex for color stops
-  const colorStopRegex = /((#([0-9a-fA-F]{3,8}))|(rgba?\([^\)]+\))|(hsla?\([^\)]+\))|([a-zA-Z]+))(\s+([\d.]+%?))?/;
+  const colorStopRegex =
+    /((#([0-9a-fA-F]{3,8}))|(rgba?\([^\)]+\))|(hsla?\([^\)]+\))|([a-zA-Z]+))(\s+([\d.]+%?))?/;
 
   for (let i = colorStopStart; i < parts.length; i++) {
     const stopPart = parts[i].trim();

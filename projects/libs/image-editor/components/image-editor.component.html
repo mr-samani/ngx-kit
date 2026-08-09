@@ -8,8 +8,7 @@
       <div
         class="ngx-ie-stage"
         [style.width.px]="stageSize().width"
-        [style.height.px]="stageSize().height"
-      >
+        [style.height.px]="stageSize().height">
         <img class="ngx-ie-stage-img" [src]="stageImageUrl()" alt="" draggable="false" />
 
         <div
@@ -20,32 +19,27 @@
           [style.height]="cropOverlayStyle().height"
           ngxPointerDrag
           (dragStart)="onMoveDragStart()"
-          (dragMove)="onMoveDragMove($event)"
-        >
+          (dragMove)="onMoveDragMove($event)">
           <span
             class="ngx-ie-handle ngx-ie-handle--nw"
             ngxPointerDrag
             (dragStart)="onResizeDragStart()"
-            (dragMove)="onResizeDragMove('nw', $event)"
-          ></span>
+            (dragMove)="onResizeDragMove('nw', $event)"></span>
           <span
             class="ngx-ie-handle ngx-ie-handle--ne"
             ngxPointerDrag
             (dragStart)="onResizeDragStart()"
-            (dragMove)="onResizeDragMove('ne', $event)"
-          ></span>
+            (dragMove)="onResizeDragMove('ne', $event)"></span>
           <span
             class="ngx-ie-handle ngx-ie-handle--sw"
             ngxPointerDrag
             (dragStart)="onResizeDragStart()"
-            (dragMove)="onResizeDragMove('sw', $event)"
-          ></span>
+            (dragMove)="onResizeDragMove('sw', $event)"></span>
           <span
             class="ngx-ie-handle ngx-ie-handle--se"
             ngxPointerDrag
             (dragStart)="onResizeDragStart()"
-            (dragMove)="onResizeDragMove('se', $event)"
-          ></span>
+            (dragMove)="onResizeDragMove('se', $event)"></span>
         </div>
       </div>
     </div>
@@ -64,53 +58,83 @@
 
       <label class="ngx-ie-field">
         <span>چرخش دقیق ({{ rotation() }}°)</span>
-        <slider [ngModel]="rotation()" (ngModelChange)="rotation.set($event)" [min]="-180" [max]="180"></slider>
+        <slider
+          [ngModel]="rotation()"
+          (ngModelChange)="rotation.set($event)"
+          [min]="-180"
+          [max]="180"></slider>
       </label>
 
       <label class="ngx-ie-field">
         <span>روشنایی ({{ brightness() }}%)</span>
-        <slider [ngModel]="brightness()" (ngModelChange)="brightness.set($event)" [min]="0" [max]="200"></slider>
+        <slider
+          [ngModel]="brightness()"
+          (ngModelChange)="brightness.set($event)"
+          [min]="0"
+          [max]="200"></slider>
       </label>
 
       <label class="ngx-ie-field">
         <span>کنتراست ({{ contrast() }}%)</span>
-        <slider [ngModel]="contrast()" (ngModelChange)="contrast.set($event)" [min]="0" [max]="200"></slider>
+        <slider
+          [ngModel]="contrast()"
+          (ngModelChange)="contrast.set($event)"
+          [min]="0"
+          [max]="200"></slider>
       </label>
 
       <label class="ngx-ie-field">
         <span>اشباع رنگ ({{ saturation() }}%)</span>
-        <slider [ngModel]="saturation()" (ngModelChange)="saturation.set($event)" [min]="0" [max]="200"></slider>
+        <slider
+          [ngModel]="saturation()"
+          (ngModelChange)="saturation.set($event)"
+          [min]="0"
+          [max]="200"></slider>
       </label>
 
       <div class="ngx-ie-field">
         <span>افکت</span>
         <div class="ngx-ie-filter-row">
-          <button type="button" [class.active]="filterPreset() === 'none'" (click)="setFilter('none')">
+          <button
+            type="button"
+            [class.active]="filterPreset() === 'none'"
+            (click)="setFilter('none')">
             هیچ‌کدام
           </button>
-          <button type="button" [class.active]="filterPreset() === 'grayscale'" (click)="setFilter('grayscale')">
+          <button
+            type="button"
+            [class.active]="filterPreset() === 'grayscale'"
+            (click)="setFilter('grayscale')">
             سیاه‌وسفید
           </button>
-          <button type="button" [class.active]="filterPreset() === 'sepia'" (click)="setFilter('sepia')">
+          <button
+            type="button"
+            [class.active]="filterPreset() === 'sepia'"
+            (click)="setFilter('sepia')">
             سپیا
           </button>
-          <button type="button" [class.active]="filterPreset() === 'invert'" (click)="setFilter('invert')">
+          <button
+            type="button"
+            [class.active]="filterPreset() === 'invert'"
+            (click)="setFilter('invert')">
             معکوس
           </button>
-          <button type="button" [class.active]="filterPreset() === 'cartoon'" (click)="setFilter('cartoon')">
+          <button
+            type="button"
+            [class.active]="filterPreset() === 'cartoon'"
+            (click)="setFilter('cartoon')">
             کارتونی
           </button>
         </div>
       </div>
 
       <label class="ngx-ie-field">
-        <span>کیفیت خروجی ({{ (quality() * 100) | number: '1.0-0' }}٪)</span>
+        <span>کیفیت خروجی ({{ quality() * 100 | number: '1.0-0' }}٪)</span>
         <slider
           [ngModel]="quality() * 100"
           (ngModelChange)="quality.set($event / 100)"
           [min]="10"
-          [max]="100"
-        ></slider>
+          [max]="100"></slider>
       </label>
 
       <div class="ngx-ie-row ngx-ie-actions">

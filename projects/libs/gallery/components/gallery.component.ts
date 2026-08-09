@@ -117,7 +117,9 @@ export class NgxGalleryComponent {
   }
 
   private clientXOf(ev: MouseEvent | TouchEvent): number {
-    return 'touches' in ev ? (ev.touches[0]?.clientX ?? ev.changedTouches[0]?.clientX ?? 0) : ev.clientX;
+    return 'touches' in ev
+      ? (ev.touches[0]?.clientX ?? ev.changedTouches[0]?.clientX ?? 0)
+      : ev.clientX;
   }
 
   // ---------- لایت‌باکس ----------

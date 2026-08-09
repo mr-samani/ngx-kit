@@ -8,15 +8,28 @@ import { NgxOverlayService } from './ngx-dialog.service';
 import { Dialog as DialogFacade } from './dialog.facade';
 
 @NgModule({
-  declarations: [NgxDialogComponent, NgxDialogHeaderDirective, NgxDialogFooterDirective, NgxDialogBodyDirective],
+  declarations: [
+    NgxDialogComponent,
+    NgxDialogHeaderDirective,
+    NgxDialogFooterDirective,
+    NgxDialogBodyDirective,
+  ],
   imports: [CommonModule],
-  exports: [NgxDialogComponent, NgxDialogHeaderDirective, NgxDialogFooterDirective, NgxDialogBodyDirective],
+  exports: [
+    NgxDialogComponent,
+    NgxDialogHeaderDirective,
+    NgxDialogFooterDirective,
+    NgxDialogBodyDirective,
+  ],
   providers: [NgxOverlayService],
 })
 export class NgxDialogModule {
   private readonly platformId = inject(PLATFORM_ID);
 
-  constructor(@Optional() @SkipSelf() parentModule: NgxDialogModule | null, service: NgxOverlayService) {
+  constructor(
+    @Optional() @SkipSelf() parentModule: NgxDialogModule | null,
+    service: NgxOverlayService,
+  ) {
     if (parentModule) {
       return;
     }

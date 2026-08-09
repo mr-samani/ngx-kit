@@ -134,7 +134,9 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     // این Observable خودش کامل نمی‌شه (EventEmitter ساده‌ست، نه یه stream که
     // روی destroy کامپوننت تموم بشه)؛ بدون takeUntilDestroyed، این subscribe
     // برای همیشه فعال می‌موند و رفرنس کامپوننت رو زنده نگه می‌داشت.
-    this.cellTemplates.changes.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.syncTemplateMap());
+    this.cellTemplates.changes
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncTemplateMap());
   }
 
   private syncTemplateMap(): void {

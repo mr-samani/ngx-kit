@@ -10,7 +10,11 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { NgxDropzoneFile, NgxDropzoneRejectedFile, NgxDropzoneRejectionReason } from '../contracts/dropzone-file';
+import {
+  NgxDropzoneFile,
+  NgxDropzoneRejectedFile,
+  NgxDropzoneRejectionReason,
+} from '../contracts/dropzone-file';
 import { extractFilesFromDataTransfer, formatBytes, matchesAccept } from '../utils/file-matching';
 
 let uidCounter = 0;

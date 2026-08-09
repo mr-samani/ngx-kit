@@ -1,145 +1,144 @@
 <app-example-showcase title="Date Picker" [files]="sourceFiles">
-<div class="container">
-  <!-- ------------------------ configurations ----------------------------------- -->
-  <div class="row">
-    <select name="locale" [(ngModel)]="locale">
-      @for (item of availableLocals; track $index) {
-        <option [value]="item">{{ item }}</option>
+  <div class="container">
+    <!-- ------------------------ configurations ----------------------------------- -->
+    <div class="row">
+      <select name="locale" [(ngModel)]="locale">
+        @for (item of availableLocals; track $index) {
+          <option [value]="item">{{ item }}</option>
+        }
+      </select>
+
+      <div>
+        Theme:
+        <label for="auto">
+          <input type="radio" name="theme" id="auto" [(ngModel)]="theme" value="auto" />
+          Auto
+        </label>
+        <label for="dark">
+          <input type="radio" name="theme" id="dark" [(ngModel)]="theme" value="dark" />
+          Dark Mode
+        </label>
+        <label for="light">
+          <input type="radio" name="theme" id="light" [(ngModel)]="theme" value="light" />
+          Light Mode
+        </label>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center">
+      <div class="mt-2">Minimum and maximum date:</div>
+      <div class="mx-2">
+        <label>Min</label>
+        <input
+          type="text"
+          class="form-control"
+          ngxInputDatePicker
+          [locale]="locale"
+          displayFormat="yyyy-MM-dd"
+          [(ngModel)]="minDate"
+          [max]="maxDate" />
+        {{ minDate }}
+      </div>
+      <div class="mx-2">
+        <label>Max</label>
+        <input
+          type="text"
+          class="form-control"
+          ngxInputDatePicker
+          [locale]="locale"
+          displayFormat="yyyy-MM-dd"
+          [(ngModel)]="maxDate"
+          [min]="minDate" />
+        {{ maxDate }}
+      </div>
+    </div>
+
+    <div class="">
+      <p>
+        <label>
+          <input
+            type="checkbox"
+            name="today"
+            (change)="updateConfig()"
+            [(ngModel)]="config().todayButton" />
+          Show today button
+        </label>
+      </p>
+      @if (config().todayButton) {
+        <p>
+          <label>Today button text:</label>
+          <input
+            type="text"
+            class="form-control"
+            (change)="updateConfig()"
+            [(ngModel)]="config().todayButtonText" />
+        </p>
       }
-    </select>
-
-    <div>
-      Theme:
-      <label for="auto">
-        <input type="radio" name="theme" id="auto" [(ngModel)]="theme" value="auto" />
-        Auto
-      </label>
-      <label for="dark">
-        <input type="radio" name="theme" id="dark" [(ngModel)]="theme" value="dark" />
-        Dark Mode
-      </label>
-      <label for="light">
-        <input type="radio" name="theme" id="light" [(ngModel)]="theme" value="light" />
-        Light Mode
-      </label>
-    </div>
-  </div>
-  <div class="d-flex flex-wrap align-items-center">
-    <div class="mt-2">Minimum and maximum date:</div>
-    <div class="mx-2">
-      <label>Min</label>
-      <input
-        type="text"
-        class="form-control"
-        ngxInputDatePicker
-        [locale]="locale"
-        displayFormat="yyyy-MM-dd"
-        [(ngModel)]="minDate"
-        [max]="maxDate" />
-      {{ minDate }}
-    </div>
-    <div class="mx-2">
-      <label>Max</label>
-      <input
-        type="text"
-        class="form-control"
-        ngxInputDatePicker
-        [locale]="locale"
-        displayFormat="yyyy-MM-dd"
-        [(ngModel)]="maxDate"
-        [min]="minDate" />
-      {{ maxDate }}
-    </div>
-  </div>
-
-  <div class="">
-    <p>
-      <label>
-        <input
-          type="checkbox"
-          name="today"
-          (change)="updateConfig()"
-          [(ngModel)]="config().todayButton" />
-        Show today button
-      </label>
-    </p>
-    @if (config().todayButton) {
       <p>
-        <label>Today button text:</label>
-        <input
-          type="text"
-          class="form-control"
-          (change)="updateConfig()"
-          [(ngModel)]="config().todayButtonText" />
+        <label>
+          <input
+            type="checkbox"
+            name="clearbtn"
+            (change)="updateConfig()"
+            [(ngModel)]="config().clearButton" />
+          Show clear button
+        </label>
       </p>
-    }
-    <p>
-      <label>
+      @if (config().clearButton) {
+        <p>
+          <label>Clear button text:</label>
+          <input
+            type="text"
+            class="form-control"
+            (change)="updateConfig()"
+            [(ngModel)]="config().clearButtonText" />
+        </p>
+      }
+    </div>
+
+    <h3>Input mode</h3>
+    <form [formGroup]="form">
+      <div class="input-group">
         <input
-          type="checkbox"
-          name="clearbtn"
-          (change)="updateConfig()"
-          [(ngModel)]="config().clearButton" />
-        Show clear button
-      </label>
-    </p>
-    @if (config().clearButton) {
-      <p>
-        <label>Clear button text:</label>
-        <input
-          type="text"
           class="form-control"
-          (change)="updateConfig()"
-          [(ngModel)]="config().clearButtonText" />
-      </p>
-    }
+          formControlName="date"
+          ngxInputDatePicker
+          #inputDate="ngxInputDatePicker"
+          [displayFormat]="'EEEE - d MMMM, yyyy'"
+          [min]="minDate"
+          [max]="maxDate"
+          [locale]="locale"
+          [openOnCLick]="false"
+          [config]="config()"
+          [theme]="theme"
+          #dpInput="ngxInputDatePicker" />
+        <button (click)="dpInput.toggle()" class="input-group-text pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="22">
+            <path
+              d="M64 264C64 241.9 81.91 224 104 224H184C206.1 224 224 241.9 224 264V344C224 366.1 206.1 384 184 384H104C81.91 384 64 366.1 64 344V264zM96 264V344C96 348.4 99.58 352 104 352H184C188.4 352 192 348.4 192 344V264C192 259.6 188.4 256 184 256H104C99.58 256 96 259.6 96 264zM128 64H320V16C320 7.164 327.2 0 336 0C344.8 0 352 7.164 352 16V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H96V16C96 7.164 103.2 0 112 0C120.8 0 128 7.164 128 16V64zM32 448C32 465.7 46.33 480 64 480H384C401.7 480 416 465.7 416 448V192H32V448zM32 128V160H416V128C416 110.3 401.7 96 384 96H64C46.33 96 32 110.3 32 128z" />
+          </svg>
+        </button>
+      </div>
+      @if (form.get('date')?.hasError('invalid')) {
+        <div class="text-danger">invalid date!</div>
+      }
+      @if (form.get('date')?.hasError('required')) {
+        <div class="text-danger">required date!</div>
+      }
+
+      <p>{{ form.get('date')?.value | json }}</p>
+
+      <pre>invalid={{ form.get('date')?.invalid }}=>{{ form.get('date')?.errors | json }}</pre>
+    </form>
+
+    <h3>Inline mode</h3>
+    <ngx-datepicker
+      #inlineDate
+      [config]="config()"
+      [locale]="locale"
+      [min]="minDate"
+      [max]="maxDate"
+      [theme]="theme"></ngx-datepicker>
   </div>
 
-  <h3>Input mode</h3>
-  <form [formGroup]="form">
-    <div class="input-group">
-      <input
-        class="form-control"
-        formControlName="date"
-        ngxInputDatePicker
-        #inputDate="ngxInputDatePicker"
-        [displayFormat]="'EEEE - d MMMM, yyyy'"
-        [min]="minDate"
-        [max]="maxDate"
-        [locale]="locale"
-        [openOnCLick]="false"
-        [config]="config()"
-        [theme]="theme"
-        #dpInput="ngxInputDatePicker" />
-      <button (click)="dpInput.toggle()" class="input-group-text pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="22">
-          <path
-            d="M64 264C64 241.9 81.91 224 104 224H184C206.1 224 224 241.9 224 264V344C224 366.1 206.1 384 184 384H104C81.91 384 64 366.1 64 344V264zM96 264V344C96 348.4 99.58 352 104 352H184C188.4 352 192 348.4 192 344V264C192 259.6 188.4 256 184 256H104C99.58 256 96 259.6 96 264zM128 64H320V16C320 7.164 327.2 0 336 0C344.8 0 352 7.164 352 16V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H96V16C96 7.164 103.2 0 112 0C120.8 0 128 7.164 128 16V64zM32 448C32 465.7 46.33 480 64 480H384C401.7 480 416 465.7 416 448V192H32V448zM32 128V160H416V128C416 110.3 401.7 96 384 96H64C46.33 96 32 110.3 32 128z" />
-        </svg>
-      </button>
-    </div>
-    @if (form.get('date')?.hasError('invalid')) {
-      <div class="text-danger">invalid date!</div>
-    }
-    @if (form.get('date')?.hasError('required')) {
-      <div class="text-danger">required date!</div>
-    }
-
-    <p>{{ form.get('date')?.value | json }}</p>
-
-    <pre>invalid={{ form.get('date')?.invalid }}=>{{ form.get('date')?.errors | json }}</pre>
-  </form>
-
-  <h3>Inline mode</h3>
-  <ngx-datepicker
-    #inlineDate
-    [config]="config()"
-    [locale]="locale"
-    [min]="minDate"
-    [max]="maxDate"
-    [theme]="theme"></ngx-datepicker>
-</div>
-
-<pre>{{ config() | json }}</pre>
-
+  <pre>{{ config() | json }}</pre>
 </app-example-showcase>

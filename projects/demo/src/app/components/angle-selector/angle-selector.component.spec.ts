@@ -1,6 +1,6 @@
 /* tslint:disable:no-unused-variable */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
- import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { AngleSelectorComponent } from './angle-selector.component';
 import { NgxAngleSelectorComponent, NgxInputAngle } from 'ngx-kit/angle-selector';
 

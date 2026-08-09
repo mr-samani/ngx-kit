@@ -65,23 +65,29 @@ export async function extractFilesFromDataTransfer(dataTransfer: DataTransfer): 
 function walkEntry(entry: FileSystemEntry, out: File[]): Promise<void> {
   return new Promise((resolve) => {
     if (entry.isFile) {
-      (entry as FileSystemFileEntry).file((file) => {
-        out.push(file);
-        resolve();
-      }, () => resolve());
+      (entry as FileSystemFileEntry).file(
+        (file) => {
+          out.push(file);
+          resolve();
+        },
+        () => resolve(),
+      );
     } else if (entry.isDirectory) {
       const reader = (entry as FileSystemDirectoryEntry).createReader();
       const readAll: FileSystemEntry[] = [];
       const readBatch = () => {
-        reader.readEntries(async (batch) => {
-          if (!batch.length) {
-            await Promise.all(readAll.map((e) => walkEntry(e, out)));
-            resolve();
-            return;
-          }
-          readAll.push(...batch);
-          readBatch();
-        }, () => resolve());
+        reader.readEntries(
+          async (batch) => {
+            if (!batch.length) {
+              await Promise.all(readAll.map((e) => walkEntry(e, out)));
+              resolve();
+              return;
+            }
+            readAll.push(...batch);
+            readBatch();
+          },
+          () => resolve(),
+        );
       };
       readBatch();
     } else {

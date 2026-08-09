@@ -1,8 +1,21 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SliderComponent } from 'ngx-kit/shared';
-import { NgxCropRect, NgxImageEditorAdjustments, NgxImageEditorResult, NgxImageFilterPreset } from '../contracts/image-editor-types';
+import {
+  NgxCropRect,
+  NgxImageEditorAdjustments,
+  NgxImageEditorResult,
+  NgxImageFilterPreset,
+} from '../contracts/image-editor-types';
 import { NgxPointerDragDelta, NgxPointerDragDirective } from '../directives/pointer-drag.directive';
 import { canvasToBlob, createWorkingCopy, loadImage } from '../utils/image-io';
 import { renderComposite, renderRotated } from '../utils/render-pipeline';

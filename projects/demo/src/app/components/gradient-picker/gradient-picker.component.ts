@@ -14,8 +14,16 @@ import {
 })
 export class GradientPickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/gradient-picker/gradient-picker.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/gradient-picker/gradient-picker.component.html', language: 'html' },
+    {
+      label: 'TS',
+      path: '/examples/gradient-picker/gradient-picker.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: '/examples/gradient-picker/gradient-picker.component.html',
+      language: 'html',
+    },
   ];
 
   //gradient = ' radial-gradient(circle, rgb(230, 218, 218) 0%, rgb(39, 64, 70) 100%)'; // 'linear-gradient(90deg, #2A9FD3 0%, #8B1ACF 100%)';
@@ -24,4 +32,3 @@ export class GradientPickerComponent implements OnInit {
 
   ngOnInit() {}
 }
-

@@ -22,7 +22,11 @@ export function loadImage(source: File | Blob | string): Promise<HTMLImageElemen
 }
 
 /** canvas.toBlob به‌صورت Promise، به‌همراه fallback برای مرورگرهای قدیمی‌تر */
-export function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/jpeg', quality = 0.92): Promise<Blob> {
+export function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  type = 'image/jpeg',
+  quality = 0.92,
+): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {

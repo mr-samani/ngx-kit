@@ -54,7 +54,9 @@ export class NgxSideMenuComponent {
   protected readonly isDragging = computed(() => this.dragRatio() !== null);
 
   protected readonly visualOpen = computed(() => this.dragRatio() ?? (this.open() ? 1 : 0));
-  protected readonly strips = computed(() => Array.from({ length: this.curtainStrips() }, (_, i) => i));
+  protected readonly strips = computed(() =>
+    Array.from({ length: this.curtainStrips() }, (_, i) => i),
+  );
 
   private stopDrag?: () => void;
   private dragStartX = 0;
@@ -134,6 +136,8 @@ export class NgxSideMenuComponent {
   }
 
   private clientXOf(ev: MouseEvent | TouchEvent): number {
-    return 'touches' in ev ? (ev.touches[0]?.clientX ?? ev.changedTouches[0]?.clientX ?? 0) : ev.clientX;
+    return 'touches' in ev
+      ? (ev.touches[0]?.clientX ?? ev.changedTouches[0]?.clientX ?? 0)
+      : ev.clientX;
   }
 }

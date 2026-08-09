@@ -19,15 +19,12 @@ import { DarkModeService } from '../services/dark-mode.service';
     @if (source.isLoading()) {
       <div class="code-viewer-state">در حال بارگذاری سورس…</div>
     } @else if (source.error()) {
-      <div class="code-viewer-state code-viewer-state--error">
-        سورس این فایل در دسترس نیست.
-      </div>
+      <div class="code-viewer-state code-viewer-state--error">سورس این فایل در دسترس نیست.</div>
     } @else {
       <ngx-monaco-editor
         class="code-viewer-editor"
         [options]="editorOptions()"
-        [ngModel]="source.value() ?? ''"
-      />
+        [ngModel]="source.value() ?? ''" />
     }
   `,
   styles: [

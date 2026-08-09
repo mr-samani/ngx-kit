@@ -12,12 +12,26 @@ import {
   templateUrl: './angle-selector.component.html',
   styleUrls: ['./angle-selector.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, NgxInputAngle, NgxAngleSelectorComponent, ExampleShowcaseComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgxInputAngle,
+    NgxAngleSelectorComponent,
+    ExampleShowcaseComponent,
+  ],
 })
 export class AngleSelectorComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/angle-selector/angle-selector.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/angle-selector/angle-selector.component.html', language: 'html' },
+    {
+      label: 'TS',
+      path: '/examples/angle-selector/angle-selector.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: '/examples/angle-selector/angle-selector.component.html',
+      language: 'html',
+    },
   ];
 
   angle = 135;

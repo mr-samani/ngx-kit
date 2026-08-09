@@ -1,23 +1,22 @@
 <app-example-showcase title="Data Table" [files]="sourceFiles">
-<h3>جدول کاربران (Lazy، سورت، ریسایز، رندرر تایپ‌سیف)</h3>
+  <h3>جدول کاربران (Lazy، سورت، ریسایز، رندرر تایپ‌سیف)</h3>
 
-<ngx-table
-  [data]="rows()"
-  [totalRecords]="total()"
-  [fields]="fields"
-  [loading]="loading()"
-  [multiSort]="true"
-  [lazy]="true"
-  (lazyLoad)="onLazyLoad($event)">
-  <!--
+  <ngx-table
+    [data]="rows()"
+    [totalRecords]="total()"
+    [fields]="fields"
+    [loading]="loading()"
+    [multiSort]="true"
+    [lazy]="true"
+    (lazyLoad)="onLazyLoad($event)">
+    <!--
     قالب سفارشی برای ستون userName. row/value اینجا any هستند (محدودیت
     شناخته‌شده‌ی این روش projection پویا)؛ برای type-safety کامل روی row/value،
     از field.cellTemplate با ViewChild استفاده کنید (به README مراجعه کنید).
   -->
-  <ng-template ngxTableCell="userName" let-user let-value="value">
-    <strong>{{ value }}</strong>
-    <small>{{ '@' + user.userName }}</small>
-  </ng-template>
-</ngx-table>
-
+    <ng-template ngxTableCell="userName" let-user let-value="value">
+      <strong>{{ value }}</strong>
+      <small>{{ '@' + user.userName }}</small>
+    </ng-template>
+  </ngx-table>
 </app-example-showcase>

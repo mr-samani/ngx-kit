@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Header } from "./layouts/header/header";
+import { Header } from './layouts/header/header';
 
 @Component({
   selector: 'app-root',

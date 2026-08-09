@@ -21,6 +21,6 @@ export class DateViewDay extends DateModel {
 
 export class DateViewWeek extends DateModel {
   time!: number;
-  weeks: string[]=[];
+  weeks: string[] = [];
   displayTime!: string;
 }

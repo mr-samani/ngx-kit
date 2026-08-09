@@ -1,10 +1,9 @@
 <app-example-showcase title="Gradient Picker" [files]="sourceFiles">
-<input ngxInputGradient [(ngModel)]="gradient" class="form-control" name="input-gradient" />
-<button type="button" (click)="gradient = ''">x</button>
-<p>{{ gradient }}</p>
+  <input ngxInputGradient [(ngModel)]="gradient" class="form-control" name="input-gradient" />
+  <button type="button" (click)="gradient = ''">x</button>
+  <p>{{ gradient }}</p>
 
-<p>inline:</p>
-<ngx-input-gradient [(ngModel)]="gradient" theme="light" name="gradient"></ngx-input-gradient>
-<p>{{ gradient }}</p>
-
+  <p>inline:</p>
+  <ngx-input-gradient [(ngModel)]="gradient" theme="light" name="gradient"></ngx-input-gradient>
+  <p>{{ gradient }}</p>
 </app-example-showcase>

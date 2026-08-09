@@ -10,8 +10,7 @@
       class="showcase-tab"
       [class.active]="activeTab() === 0"
       [attr.aria-selected]="activeTab() === 0"
-      (click)="select(0)"
-    >
+      (click)="select(0)">
       پیش‌نمایش
     </button>
     @for (file of files(); track file.path; let i = $index) {
@@ -21,8 +20,7 @@
         class="showcase-tab"
         [class.active]="activeTab() === i + 1"
         [attr.aria-selected]="activeTab() === i + 1"
-        (click)="select(i + 1)"
-      >
+        (click)="select(i + 1)">
         {{ file.label }}
       </button>
     }

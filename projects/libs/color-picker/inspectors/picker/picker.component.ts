@@ -31,7 +31,7 @@ export class PickerComponent implements OnInit {
     this.baseColor = pureColor.toHexString(false);
     this.alphaBgColor = this.inputColor.toHexString(false);
   }
-  
+
   @Input() useAlphaChannel: boolean = true;
   @Output() colorChange = new EventEmitter<NgxColor | undefined>();
 

@@ -1,11 +1,19 @@
 <app-example-showcase title="Gallery" [files]="sourceFiles">
   <div class="theme-row">
-    <button type="button" [class.active]="theme() === 'grid'" (click)="setTheme('grid')">Grid</button>
-    <button type="button" [class.active]="theme() === 'carousel'" (click)="setTheme('carousel')">Carousel</button>
+    <button type="button" [class.active]="theme() === 'grid'" (click)="setTheme('grid')">
+      Grid
+    </button>
+    <button type="button" [class.active]="theme() === 'carousel'" (click)="setTheme('carousel')">
+      Carousel
+    </button>
     <button type="button" [class.active]="theme() === 'slideshow'" (click)="setTheme('slideshow')">
       Slideshow
     </button>
   </div>
 
-  <ngx-gallery [images]="images" [theme]="theme()" [columns]="3" [autoplay]="theme() === 'slideshow'" />
+  <ngx-gallery
+    [images]="images"
+    [theme]="theme()"
+    [columns]="3"
+    [autoplay]="theme() === 'slideshow'" />
 </app-example-showcase>

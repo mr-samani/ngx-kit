@@ -1,197 +1,196 @@
 <app-example-showcase title="Menu" [files]="sourceFiles">
-<button class="user-nav-btn" [ngxMenu]="userNav">my btn</button>
-<ngx-menu class="user-nav" #userNav="NgxMenu">m y</ngx-menu>
+  <button class="user-nav-btn" [ngxMenu]="userNav">my btn</button>
+  <ngx-menu class="user-nav" #userNav="NgxMenu">m y</ngx-menu>
 
-<section>
-  <h3>List Menu:</h3>
-  <button [ngxMenu]="menu2" class="btn-icon">
-    <i class="fa fa-ellipsis-vertical bold"></i>
-  </button>
-  <ngx-menu #menu2="NgxMenu" class="menu-example-2">
-    <ngx-menu-item>
-      <i class="fa fa-edit"></i>
-      <span>Menu item 1</span>
-    </ngx-menu-item>
-    <ngx-menu-item>Menu item 2</ngx-menu-item>
-    <ngx-menu-item>Menu item 3</ngx-menu-item>
-    <ngx-menu-item>Menu item 4</ngx-menu-item>
-    <ngx-menu-item>Menu item 5</ngx-menu-item>
-    <div ngx-menu-divider></div>
-    <ngx-menu-item class="text-danger">
-      <i class="fa fa-trash"></i>
-      <span>Menu item 6</span>
-    </ngx-menu-item>
-  </ngx-menu>
-</section>
+  <section>
+    <h3>List Menu:</h3>
+    <button [ngxMenu]="menu2" class="btn-icon">
+      <i class="fa fa-ellipsis-vertical bold"></i>
+    </button>
+    <ngx-menu #menu2="NgxMenu" class="menu-example-2">
+      <ngx-menu-item>
+        <i class="fa fa-edit"></i>
+        <span>Menu item 1</span>
+      </ngx-menu-item>
+      <ngx-menu-item>Menu item 2</ngx-menu-item>
+      <ngx-menu-item>Menu item 3</ngx-menu-item>
+      <ngx-menu-item>Menu item 4</ngx-menu-item>
+      <ngx-menu-item>Menu item 5</ngx-menu-item>
+      <div ngx-menu-divider></div>
+      <ngx-menu-item class="text-danger">
+        <i class="fa fa-trash"></i>
+        <span>Menu item 6</span>
+      </ngx-menu-item>
+    </ngx-menu>
+  </section>
 
-<section>
-  <h3>Custom Menu</h3>
-  <button [ngxMenu]="menu1" class="btn-icon">
-    <i class="fa fa-grid bold"></i>
-  </button>
-  <ngx-menu #menu1="NgxMenu" [class]="x() ? 'red-bg' : ''">
-    <p>Content of menu</p>
-    <button (click)="x.update((u) => !u)">xxx</button>
-    {{ x() }}
-    <div class="box-container">
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-link"></i>
-        </span>
-        <span class="title">sample menu</span>
+  <section>
+    <h3>Custom Menu</h3>
+    <button [ngxMenu]="menu1" class="btn-icon">
+      <i class="fa fa-grid bold"></i>
+    </button>
+    <ngx-menu #menu1="NgxMenu" [class]="x() ? 'red-bg' : ''">
+      <p>Content of menu</p>
+      <button (click)="x.update((u) => !u)">xxx</button>
+      {{ x() }}
+      <div class="box-container">
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-link"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-face-sunglasses"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-campground"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-mountain-city"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-icons"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-sun-plant-wilt"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-car-side-bolt"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-cubes"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-gears"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
+        <div class="box" ngx-menu-item>
+          <span class="icon">
+            <i class="fa fa-phone-intercom"></i>
+          </span>
+          <span class="title">sample menu</span>
+        </div>
       </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-face-sunglasses"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-campground"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-mountain-city"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-icons"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-sun-plant-wilt"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-car-side-bolt"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-cubes"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-gears"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
-      <div class="box" ngx-menu-item>
-        <span class="icon">
-          <i class="fa fa-phone-intercom"></i>
-        </span>
-        <span class="title">sample menu</span>
-      </div>
+    </ngx-menu>
+  </section>
+
+  <section>
+    <h3>Context menu</h3>
+
+    <div class="card-context-menu" [ngxContextMenu]="menu3">
+      <p>
+        Right click on this card or click
+        <a [ngxMenu]="menu3">here</a>
+        !
+      </p>
     </div>
-  </ngx-menu>
-</section>
 
-<section>
-  <h3>Context menu</h3>
+    <ngx-menu #menu3="NgxMenu" class="menu-example-2">
+      <ngx-menu-item (click)="action('Cut')">
+        <i class="fa fa-scissors"></i>
+        Cut
+      </ngx-menu-item>
+      <ngx-menu-item (click)="action('Copy')">
+        <i class="fa fa-files"></i>
+        Copy
+      </ngx-menu-item>
+      <ngx-menu-item (click)="action('Paste')">
+        <i class="fa fa-clipboard"></i>
+        Paste
+      </ngx-menu-item>
+      <ngx-menu-item (click)="action('Delete')">
+        <i class="fa fa-trash"></i>
+        Delete
+      </ngx-menu-item>
+    </ngx-menu>
+  </section>
 
-  <div class="card-context-menu" [ngxContextMenu]="menu3">
-    <p>
-      Right click on this card or click
-      <a [ngxMenu]="menu3">here</a>
-      !
-    </p>
-  </div>
+  <section>
+    <h3>Tree Menu</h3>
+    <button matButton [ngxMenu]="animals">Animal index</button>
+    <ngx-menu #animals="NgxMenu">
+      <div ngx-menu-item [ngxMenu]="vertebrates" alignment="end" placement="top">
+        Vertebrates
+        <i class="fa fa-chevron-right"></i>
+      </div>
+      <div ngx-menu-item [ngxMenu]="invertebrates" alignment="end" placement="top">
+        Invertebrates
+        <i class="fa fa-chevron-right"></i>
+      </div>
+    </ngx-menu>
 
-  <ngx-menu #menu3="NgxMenu" class="menu-example-2">
-    <ngx-menu-item (click)="action('Cut')">
-      <i class="fa fa-scissors"></i>
-      Cut
-    </ngx-menu-item>
-    <ngx-menu-item (click)="action('Copy')">
-      <i class="fa fa-files"></i>
-      Copy
-    </ngx-menu-item>
-    <ngx-menu-item (click)="action('Paste')">
-      <i class="fa fa-clipboard"></i>
-      Paste
-    </ngx-menu-item>
-    <ngx-menu-item (click)="action('Delete')">
-      <i class="fa fa-trash"></i>
-      Delete
-    </ngx-menu-item>
-  </ngx-menu>
-</section>
+    <ngx-menu #vertebrates="NgxMenu">
+      <div ngx-menu-item [ngxMenu]="fish" alignment="end" placement="top">
+        Fishes
+        <i class="fa fa-chevron-right"></i>
+      </div>
+      <div ngx-menu-item [ngxMenu]="amphibians" alignment="end" placement="top">
+        Amphibians
+        <i class="fa fa-chevron-right"></i>
+      </div>
+      <div ngx-menu-item [ngxMenu]="reptiles" alignment="end" placement="top">
+        Reptiles
+        <i class="fa fa-chevron-right"></i>
+      </div>
+      <div ngx-menu-item>Birds</div>
+      <div ngx-menu-item>Mammals</div>
+    </ngx-menu>
 
-<section>
-  <h3>Tree Menu</h3>
-  <button matButton [ngxMenu]="animals">Animal index</button>
-  <ngx-menu #animals="NgxMenu">
-    <div ngx-menu-item [ngxMenu]="vertebrates" alignment="end" placement="top">
-      Vertebrates
-      <i class="fa fa-chevron-right"></i>
-    </div>
-    <div ngx-menu-item [ngxMenu]="invertebrates" alignment="end" placement="top">
-      Invertebrates
-      <i class="fa fa-chevron-right"></i>
-    </div>
-  </ngx-menu>
+    <ngx-menu #invertebrates="NgxMenu">
+      <div ngx-menu-item>Insects</div>
+      <div ngx-menu-item>Molluscs</div>
+      <div ngx-menu-item>Crustaceans</div>
+      <div ngx-menu-item>Corals</div>
+      <div ngx-menu-item>Arachnids</div>
+      <div ngx-menu-item>Velvet worms</div>
+      <div ngx-menu-item>Horseshoe crabs</div>
+    </ngx-menu>
 
-  <ngx-menu #vertebrates="NgxMenu">
-    <div ngx-menu-item [ngxMenu]="fish" alignment="end" placement="top">
-      Fishes
-      <i class="fa fa-chevron-right"></i>
-    </div>
-    <div ngx-menu-item [ngxMenu]="amphibians" alignment="end" placement="top">
-      Amphibians
-      <i class="fa fa-chevron-right"></i>
-    </div>
-    <div ngx-menu-item [ngxMenu]="reptiles" alignment="end" placement="top">
-      Reptiles
-      <i class="fa fa-chevron-right"></i>
-    </div>
-    <div ngx-menu-item>Birds</div>
-    <div ngx-menu-item>Mammals</div>
-  </ngx-menu>
+    <ngx-menu #fish="NgxMenu">
+      <div ngx-menu-item>Baikal oilfish</div>
+      <div ngx-menu-item>Bala shark</div>
+      <div ngx-menu-item>Ballan wrasse</div>
+      <div ngx-menu-item>Bamboo shark</div>
+      <div ngx-menu-item>Banded killifish</div>
+    </ngx-menu>
 
-  <ngx-menu #invertebrates="NgxMenu">
-    <div ngx-menu-item>Insects</div>
-    <div ngx-menu-item>Molluscs</div>
-    <div ngx-menu-item>Crustaceans</div>
-    <div ngx-menu-item>Corals</div>
-    <div ngx-menu-item>Arachnids</div>
-    <div ngx-menu-item>Velvet worms</div>
-    <div ngx-menu-item>Horseshoe crabs</div>
-  </ngx-menu>
+    <ngx-menu #amphibians="NgxMenu">
+      <div ngx-menu-item>Sonoran desert toad</div>
+      <div ngx-menu-item>Western toad</div>
+      <div ngx-menu-item>Arroyo toad</div>
+      <div ngx-menu-item>Yosemite toad</div>
+    </ngx-menu>
 
-  <ngx-menu #fish="NgxMenu">
-    <div ngx-menu-item>Baikal oilfish</div>
-    <div ngx-menu-item>Bala shark</div>
-    <div ngx-menu-item>Ballan wrasse</div>
-    <div ngx-menu-item>Bamboo shark</div>
-    <div ngx-menu-item>Banded killifish</div>
-  </ngx-menu>
-
-  <ngx-menu #amphibians="NgxMenu">
-    <div ngx-menu-item>Sonoran desert toad</div>
-    <div ngx-menu-item>Western toad</div>
-    <div ngx-menu-item>Arroyo toad</div>
-    <div ngx-menu-item>Yosemite toad</div>
-  </ngx-menu>
-
-  <ngx-menu #reptiles="NgxMenu">
-    <div ngx-menu-item>Banded Day Gecko</div>
-    <div ngx-menu-item>Banded Gila Monster</div>
-    <div ngx-menu-item>Black Tree Monitor</div>
-    <div ngx-menu-item>Blue Spiny Lizard</div>
-    <div ngx-menu-item disabled>Velociraptor</div>
-  </ngx-menu>
-</section>
-
+    <ngx-menu #reptiles="NgxMenu">
+      <div ngx-menu-item>Banded Day Gecko</div>
+      <div ngx-menu-item>Banded Gila Monster</div>
+      <div ngx-menu-item>Black Tree Monitor</div>
+      <div ngx-menu-item>Blue Spiny Lizard</div>
+      <div ngx-menu-item disabled>Velociraptor</div>
+    </ngx-menu>
+  </section>
 </app-example-showcase>

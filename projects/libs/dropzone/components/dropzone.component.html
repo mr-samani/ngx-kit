@@ -10,8 +10,7 @@
   (dragenter)="onDragEnter($event)"
   (dragover)="onDragOver($event)"
   (dragleave)="onDragLeave($event)"
-  (drop)="onDrop($event)"
->
+  (drop)="onDrop($event)">
   <input
     #fileInput
     type="file"
@@ -20,8 +19,7 @@
     [multiple]="multiple()"
     [disabled]="disabled()"
     (click)="$event.stopPropagation()"
-    (change)="onFileInputChange($event)"
-  />
+    (change)="onFileInputChange($event)" />
 
   <ng-content select="[dropzone-icon]">
     <svg class="ngx-dropzone-icon" viewBox="0 0 24 24" fill="none" width="40" height="40">
@@ -30,8 +28,7 @@
         stroke="currentColor"
         stroke-width="1.6"
         stroke-linecap="round"
-        stroke-linejoin="round"
-      />
+        stroke-linejoin="round" />
     </svg>
   </ng-content>
 
@@ -58,8 +55,7 @@
           type="button"
           class="ngx-dropzone-remove"
           [attr.aria-label]="'حذف ' + item.file.name"
-          (click)="removeFile(item.id)"
-        >
+          (click)="removeFile(item.id)">
           ✕
         </button>
       </li>

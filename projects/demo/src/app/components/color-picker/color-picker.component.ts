@@ -14,7 +14,11 @@ import {
 })
 export class ColorPickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/color-picker/color-picker.component.ts', language: 'typescript' },
+    {
+      label: 'TS',
+      path: '/examples/color-picker/color-picker.component.ts',
+      language: 'typescript',
+    },
     { label: 'HTML', path: '/examples/color-picker/color-picker.component.html', language: 'html' },
   ];
 

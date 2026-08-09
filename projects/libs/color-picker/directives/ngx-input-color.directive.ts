@@ -86,7 +86,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   private isHostInput = false;
   inValid: boolean = false;
   protected _onChange = (value: string) => {};
-  protected _onTouched =  () => {};
+  protected _onTouched = () => {};
   _onValidateChange = () => {};
 
   constructor(
