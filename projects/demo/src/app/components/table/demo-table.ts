@@ -14,6 +14,10 @@ import {
   NgxTable,
   TableCell,
 } from 'ngx-kit/data-table';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 /**
  * همین آبجکت باید عیناً در provideTable({ renderers }) هم استفاده شود (نگاه
@@ -70,10 +74,15 @@ const fields = defineFields<UserDto, typeof renderers>(renderers, [
   standalone: true,
   templateUrl: './demo-table.html',
   styleUrls: ['./demo-table.scss'],
-  imports: [NgxTable, TableCell],
+  imports: [NgxTable, TableCell, ExampleShowcaseComponent],
   providers: [DataService],
 })
 export class DemoTable {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: '/examples/table/demo-table.ts', language: 'typescript' },
+    { label: 'HTML', path: '/examples/table/demo-table.html', language: 'html' },
+  ];
+
   private readonly service = inject(DataService);
 
   protected readonly fields = fields;

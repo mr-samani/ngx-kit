@@ -10,15 +10,24 @@ export class DarkModeService {
   isDarkMode = signal<boolean>(false);
   doc = inject(DOCUMENT);
   constructor() {
-    let d = localStorage.getItem(DARK_MODE_KEY) || '';
-    if (d != '') {
-      if (d == 'true') {
-        this.isDarkMode.set(true);
-      } else if (d == 'false') {
-        this.isDarkMode.set(false);
-      }
-      this.setHtmlDarkMode();
+    // قبلاً localStorage/document مستقیم و بدون چک isBrowser صدا زده می‌شد؛
+    // با این‌که این سرویس از قبل PLATFORM_ID رو تزریق می‌کرد و isBrowser
+    // getter هم داشت (یعنی قصد پشتیبانی از SSR بوده)، همون تو constructor
+    // نادیده گرفته می‌شدن. الان اگه اپ در آینده SSR فعال بشه (که امکانش با
+    // توجه به همین ساختار هست)، دیگه سرور با خطای «localStorage is not
+    // defined» کرش نمی‌کنه.
+    if (!this.isBrowser) return;
+
+    const stored = localStorage.getItem(DARK_MODE_KEY);
+    if (stored === 'true' || stored === 'false') {
+      this.isDarkMode.set(stored === 'true');
+    } else {
+      // قبلاً prefersDarkMode تعریف شده بود ولی هیچ‌جا استفاده نمی‌شد؛ یعنی
+      // بار اولی که کاربر بدون هیچ ترجیح ذخیره‌شده‌ای وارد می‌شد، همیشه
+      // روی حالت روشن می‌افتاد، حتی اگه سیستم/مرورگرش روی دارک بود.
+      this.isDarkMode.set(this.prefersDarkMode);
     }
+    this.setHtmlDarkMode();
   }
 
   get isBrowser(): boolean {

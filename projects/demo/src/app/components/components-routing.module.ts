@@ -60,6 +60,25 @@ const routes: Routes = [
         path: 'table',
         loadComponent: () => import('./table/demo-table').then((c) => c.DemoTable),
       },
+      {
+        path: 'dropzone',
+        loadComponent: () =>
+          import('./dropzone/dropzone.component').then((c) => c.DropzoneComponent),
+      },
+      {
+        path: 'image-editor',
+        loadComponent: () =>
+          import('./image-editor/image-editor.component').then((c) => c.ImageEditorComponent),
+      },
+      {
+        path: 'gallery',
+        loadComponent: () => import('./gallery/gallery.component').then((c) => c.GalleryComponent),
+      },
+      {
+        path: 'side-menu',
+        loadComponent: () =>
+          import('./side-menu/side-menu.component').then((c) => c.SideMenuComponent),
+      },
     ],
   },
 ];

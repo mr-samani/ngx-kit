@@ -8,16 +8,25 @@ import {
   NgxNotifyOptions,
   NgxNotifyPositionType,
 } from 'ngx-kit/notify';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-notify',
   templateUrl: './notify.component.html',
   styleUrls: ['./notify.component.scss'],
   standalone: true,
-  imports: [CommonModule, NgxNotificationComponent, FormsModule],
+  imports: [CommonModule, NgxNotificationComponent, FormsModule, ExampleShowcaseComponent],
   providers: [],
 })
 export class NotifyComponent implements OnInit {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: '/examples/notify/notify.component.ts', language: 'typescript' },
+    { label: 'HTML', path: '/examples/notify/notify.component.html', language: 'html' },
+  ];
+
   message = 'Data saved Successfully!';
   description = '<p style="color:red;">this is a description</p>';
   type: NgxNotifyType = 'info';

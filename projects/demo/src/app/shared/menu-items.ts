@@ -82,6 +82,35 @@ export const MENU_LIST: ICategory[] = [
     ],
   },
   {
+    name: 'Media & Layout',
+    items: [
+      {
+        title: 'Dropzone',
+        description: '',
+        image: '',
+        url: '/components/dropzone',
+      },
+      {
+        title: 'Image Editor',
+        description: '',
+        image: '',
+        url: '/components/image-editor',
+      },
+      {
+        title: 'Gallery',
+        description: '',
+        image: '',
+        url: '/components/gallery',
+      },
+      {
+        title: 'Side Menu',
+        description: '',
+        image: '',
+        url: '/components/side-menu',
+      },
+    ],
+  },
+  {
     name: 'Others',
     items: [
       {

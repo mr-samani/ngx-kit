@@ -1,0 +1,19 @@
+.ie-result {
+  text-align: center;
+
+  img {
+    max-inline-size: 100%;
+    max-block-size: 300px;
+    border-radius: 8px;
+  }
+
+  button {
+    margin-block-start: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: light-dark(#2563eb, #3b82f6);
+    color: #fff;
+    cursor: pointer;
+  }
+}

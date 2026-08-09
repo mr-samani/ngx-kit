@@ -15,6 +15,10 @@ import {
   provideDateAdapters,
 } from 'ngx-kit/date-picker';
 import { JapanesAdapter } from './custom-adapters/japanes-adapter';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-date-picker',
@@ -26,6 +30,7 @@ import { JapanesAdapter } from './custom-adapters/japanes-adapter';
     ReactiveFormsModule,
     NgxInputDatePicker,
     NgxInputDatePickerComponent,
+    ExampleShowcaseComponent,
   ],
   providers: [
     provideDateAdapters({
@@ -35,6 +40,11 @@ import { JapanesAdapter } from './custom-adapters/japanes-adapter';
   ],
 })
 export class DatePickerComponent implements OnInit {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: '/examples/date-picker/date-picker.component.ts', language: 'typescript' },
+    { label: 'HTML', path: '/examples/date-picker/date-picker.component.html', language: 'html' },
+  ];
+
   locale: string = 'fa';
   theme: 'auto' | 'dark' | 'light' = 'auto';
 

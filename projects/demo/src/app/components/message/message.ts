@@ -7,6 +7,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MessageOptions, MessageResult, MSG } from 'ngx-kit/message';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-message',
@@ -18,12 +22,18 @@ import { MessageOptions, MessageResult, MSG } from 'ngx-kit/message';
     MatButtonModule,
     MatSelectModule,
     MatCheckboxModule,
+    ExampleShowcaseComponent,
   ],
   templateUrl: './message.html',
   styleUrl: './message.scss',
   providers: [],
 })
 export class MessageComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: '/examples/message/message.ts', language: 'typescript' },
+    { label: 'HTML', path: '/examples/message/message.html', language: 'html' },
+  ];
+
   options = new MessageOptions();
   result?: MessageResult;
   constructor() {
