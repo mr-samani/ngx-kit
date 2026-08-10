@@ -1,0 +1,54 @@
+<!-- form-field.component.html -->
+<div class="mx-form-field" [class.float]="float()">
+  @if (type() === 'textarea') {
+    <textarea
+      [id]="id()"
+      [rows]="rows()"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      [required]="required()"
+      [disabled]="disabled()"
+      [readonly]="readonly()"
+      [attr.name]="name()"
+      [attr.autocomplete]="autocomplete()"
+      [attr.aria-label]="label()"
+      [class.has-value]="hasValue()"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"></textarea>
+  } @else {
+    <input
+      [id]="id()"
+      [type]="type()"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      [required]="required()"
+      [disabled]="disabled()"
+      [readonly]="readonly()"
+      [attr.name]="name()"
+      [attr.autocomplete]="autocomplete()"
+      [attr.aria-label]="label()"
+      [class.has-value]="hasValue()"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()" />
+  }
+
+  <div class="mx-form-field_before"></div>
+  <label class="mx-form-field_label" [attr.for]="id()">
+    <span>{{ label() }}</span>
+  </label>
+  <div class="mx-form-field_after"></div>
+</div>
+
+@if (hint()) {
+  <div class="mx-form-field_hint">{{ hint() }}</div>
+}
+
+@if (errorMessages().length > 0) {
+  <div class="mx-form-field_error-list" role="alert">
+    @for (msg of errorMessages(); track msg) {
+      <div>{{ msg }}</div>
+    }
+  </div>
+}
