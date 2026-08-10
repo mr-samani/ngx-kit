@@ -1,0 +1,53 @@
+<app-example-showcase title="Drawer Menu" [files]="sourceFiles">
+  <div class="controls">
+    <label>
+      جلوه (effect)
+      <select [ngModel]="effect()" (ngModelChange)="effect.set($event)">
+        @for (e of effects; track e) {
+          <option [value]="e">{{ e }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      رفتار محتوا (contentBehavior)
+      <select [ngModel]="behavior()" (ngModelChange)="behavior.set($event)">
+        @for (b of behaviors; track b) {
+          <option [value]="b">{{ b }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" (click)="open.set(true)">باز کن</button>
+  </div>
+
+  <p class="hint">
+    این پیش‌نمایش به کادر زیر محدود شده (با ترفند perspective/containing-block)؛ در استفاده‌ی واقعی،
+    درور کل صفحه را می‌گیرد. از لبه‌ی چپ/راست کادر هم می‌توانید بکشید.
+  </p>
+
+  <div class="frame">
+    <ngx-drawer-menu
+      [effect]="effect()"
+      [contentBehavior]="behavior()"
+      [(open)]="open"
+      side="start"
+      [width]="220"
+      [respondToViewport]="false">
+      <div drawerContent class="menu-content">
+        <h4>منوی من</h4>
+        <ul>
+          <li>خانه</li>
+          <li>پروفایل</li>
+          <li>تنظیمات</li>
+          <li>خروج</li>
+        </ul>
+      </div>
+
+      <div class="page-content">
+        <p>این محتوای اصلی صفحه است.</p>
+        <p>با تغییر «رفتار محتوا» ببینید چطور واکنش نشان می‌دهد.</p>
+      </div>
+    </ngx-drawer-menu>
+  </div>
+</app-example-showcase>

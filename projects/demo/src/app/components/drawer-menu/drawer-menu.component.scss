@@ -1,0 +1,70 @@
+.controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-block-end: 0.75rem;
+  flex-wrap: wrap;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: light-dark(#374151, #d4d4d8);
+  }
+
+  select {
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid light-dark(#d1d5db, #3f3f46);
+    background: light-dark(#ffffff, #232327);
+    color: inherit;
+  }
+
+  button {
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: light-dark(#2563eb, #3b82f6);
+    color: #fff;
+    cursor: pointer;
+    height: fit-content;
+  }
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: light-dark(#6b7280, #9ca3af);
+  margin-block-end: 0.75rem;
+}
+
+.frame {
+  position: relative;
+  block-size: 360px;
+  border: 1px solid light-dark(#e5e7eb, #33333a);
+  border-radius: 10px;
+  overflow: hidden;
+  background: light-dark(#f9fafb, #16161a);
+}
+
+.menu-content {
+  padding: 1rem;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  li {
+    padding: 0.5rem 0.25rem;
+    border-block-end: 1px solid light-dark(#e5e7eb, #33333a);
+  }
+}
+
+.page-content {
+  padding: 1.25rem;
+}
