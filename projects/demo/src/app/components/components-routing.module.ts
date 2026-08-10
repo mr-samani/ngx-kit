@@ -75,9 +75,9 @@ const routes: Routes = [
         loadComponent: () => import('./gallery/gallery.component').then((c) => c.GalleryComponent),
       },
       {
-        path: 'side-menu',
+        path: 'drawer-menu',
         loadComponent: () =>
-          import('./side-menu/side-menu.component').then((c) => c.SideMenuComponent),
+          import('./drawer-menu/drawer-menu.component').then((c) => c.DrawerMenuComponent),
       },
     ],
   },

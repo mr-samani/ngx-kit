@@ -103,10 +103,10 @@ export const MENU_LIST: ICategory[] = [
         url: '/components/gallery',
       },
       {
-        title: 'Side Menu',
+        title: 'Drawer Menu',
         description: '',
         image: '',
-        url: '/components/side-menu',
+        url: '/components/drawer-menu',
       },
     ],
   },

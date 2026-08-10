@@ -1,19 +1,12 @@
-<app-example-showcase title="Gallery" [files]="sourceFiles">
-  <div class="theme-row">
-    <button type="button" [class.active]="theme() === 'grid'" (click)="setTheme('grid')">
-      Grid
-    </button>
-    <button type="button" [class.active]="theme() === 'carousel'" (click)="setTheme('carousel')">
-      Carousel
-    </button>
-    <button type="button" [class.active]="theme() === 'slideshow'" (click)="setTheme('slideshow')">
-      Slideshow
-    </button>
-  </div>
+<app-example-showcase title="Image Viewer" [files]="sourceFiles">
+  <p class="hint">
+    اسکرول موس = زوم، درگ (وقتی زوم‌شده) = پن، دو انگشتی روی موبایل = پینچ زوم. دکمه‌های نوار ابزار
+    همه قابل‌غیرفعال‌کردن هستن.
+  </p>
 
-  <ngx-gallery
-    [images]="images"
-    [theme]="theme()"
-    [columns]="3"
-    [autoplay]="theme() === 'slideshow'" />
+  <ngx-image-viewer [images]="images" />
+
+  <div class="dialog-row">
+    <button type="button" (click)="openInDialog()">باز کردن در دیالوگ تمام‌صفحه</button>
+  </div>
 </app-example-showcase>
