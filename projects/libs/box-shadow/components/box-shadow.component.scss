@@ -1,13 +1,14 @@
 .ngx-box-shadow-container {
   width: 180px;
   max-width: 100%;
-  border: 1px #bfbfbf solid;
   border-radius: 15px;
   background-color: white;
   overflow: hidden;
-  box-shadow: 0px 0px 20px 0px rgb(0 0 0 / 31%);
   direction: ltr;
   padding: 12px;
+
+  border: 1px #bfbfbf66 solid;
+  box-shadow: 0px 0px 20px 0px rgb(144 144 144 / 31%);
   * {
     box-sizing: border-box;
   }

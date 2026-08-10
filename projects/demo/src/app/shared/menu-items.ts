@@ -34,6 +34,12 @@ export const MENU_LIST: ICategory[] = [
         url: '/components/date-picker',
       },
       {
+        title: 'Time Picker',
+        description: '',
+        image: '',
+        url: '/components/time-picker',
+      },
+      {
         title: 'Calendar',
         description: '',
         image: '',

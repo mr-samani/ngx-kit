@@ -36,6 +36,10 @@ const routes: Routes = [
           import('./date-picker/date-picker.component').then((c) => c.DatePickerComponent),
       },
       {
+        path: 'time-picker',
+        loadComponent: () => import('./time-picker/time-picker').then((c) => c.TimePickerComponent),
+      },
+      {
         path: 'calendar',
         loadComponent: () =>
           import('./calendar/calendar.component').then((c) => c.CalendarComponent),

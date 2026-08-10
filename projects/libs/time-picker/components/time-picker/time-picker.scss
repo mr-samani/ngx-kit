@@ -1,0 +1,204 @@
+:host {
+  --ngx-time-picker-clock-bg: light-dark(#f8f8f8, #181818);
+  --ngx-time-picker-header-bg: #6200ee;
+  --ngx-time-picker-header-fg: #fff;
+  --ngx-clock-bg: light-dark(#e8e8e8, #35363c);
+  display: inline-block;
+}
+
+.ngx-time-picker {
+  width: 270px;
+  max-width: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  direction: ltr;
+  user-select: none;
+  -webkit-user-select: none;
+
+  border: 1px #bfbfbf66 solid;
+  box-shadow: 0px 0px 20px 0px rgb(144 144 144 / 31%);
+}
+
+.ngx-time-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 82px;
+
+  background: var(--ngx-time-picker-header-bg,);
+  color: var(--ngx-time-picker-header-fg);
+}
+
+.ngx-time-picker__value {
+  border: 0;
+  padding: 0;
+
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 48px;
+  line-height: 1;
+
+  font-weight: 400;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.ngx-time-picker__value:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ngx-time-picker__value.active {
+  color: #fff;
+}
+
+.ngx-time-picker__value:disabled {
+  cursor: default;
+}
+
+.ngx-time-picker__separator {
+  margin-inline: 4px;
+
+  font-size: 44px;
+  line-height: 1;
+
+  color: #fff;
+}
+
+.ngx-time-picker__clock-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: var(--ngx-time-picker-clock-bg);
+}
+
+.ngx-time-picker__clock {
+  width: 250px;
+  height: 250px;
+
+  touch-action: none;
+
+  overflow: visible;
+
+  cursor: pointer;
+}
+
+.clock-background {
+  fill: var(--ngx-clock-bg);
+}
+
+.clock-hand {
+  stroke: #1976d2;
+  stroke-width: 2;
+  stroke-linecap: round;
+
+  pointer-events: none;
+}
+
+.clock-center {
+  fill: #1976d2;
+
+  pointer-events: none;
+}
+
+.clock-selected {
+  fill: #1976d2;
+
+  pointer-events: none;
+}
+
+.clock-number {
+  cursor: pointer;
+}
+
+.clock-number circle {
+  fill: transparent;
+
+  transition:
+    fill 120ms ease,
+    transform 120ms ease;
+}
+
+.clock-number text {
+  fill: currentColor;
+
+  font-size: 14px;
+  font-family: Roboto, Arial, sans-serif;
+
+  text-anchor: middle;
+  dominant-baseline: central;
+
+  pointer-events: none;
+
+  transition: fill 120ms ease;
+}
+
+.clock-number:hover circle {
+  fill: rgba(25, 118, 210, 0.12);
+}
+
+.clock-number.selected circle {
+  fill: #1976d2;
+}
+
+.clock-number.selected text {
+  fill: #fff;
+  font-weight: 500;
+}
+
+.clock-number--inner text {
+  font-size: 12px;
+}
+
+.ngx-time-picker--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ngx-time-picker--footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  padding: 5px 10px 20px;
+  background: var(--ngx-time-picker-clock-bg);
+  button {
+    outline: none;
+    background: none;
+    color: inherit;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    box-shadow: none;
+    transition: all 300ms;
+
+    &:not([disabled]):hover {
+      cursor: pointer;
+      background: #816ef175;
+    }
+  }
+}
+
+.ngx-time-picker_format {
+  display: flex;
+  flex-direction: column;
+  margin: 0 15px;
+  gap: 5px;
+  button {
+    all: unset;
+    opacity: 0.4;
+    cursor: pointer;
+    &.active {
+      opacity: 1;
+    }
+  }
+}

@@ -116,13 +116,13 @@
 
 .ngx-msg-modal .close-x {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 4px;
+  left: 4px;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid var(--ngx-msg-panel-border);
-  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  background: none;
   color: var(--ink-2);
   display: flex;
   align-items: center;
@@ -193,7 +193,7 @@
     box-shadow: 0 10px 30px -6px var(--type-shadow, rgba(139, 123, 255, 0.55));
     transform: scale(0);
   }
-  .ngx-msg-overlay.show .icon-disc {
+  &.show .icon-disc {
     animation: discPop 0.6s 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
   @keyframes discPop {
