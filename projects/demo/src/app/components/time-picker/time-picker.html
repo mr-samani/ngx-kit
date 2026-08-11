@@ -2,7 +2,7 @@
   <div class="container">
     <h3>Input mode</h3>
     <form [formGroup]="form">
-      <div class="input-group">
+      <ngx-form-field label="Select Time">
         <input
           class="form-control"
           formControlName="time"
@@ -12,7 +12,8 @@
         <button (click)="dpInput.toggle()" class="input-group-text pointer">
           <i class="fa fa-clock"></i>
         </button>
-      </div>
+      </ngx-form-field>
+
       @if (form.get('time')?.hasError('invalid')) {
         <div class="text-danger">invalid time!</div>
       }

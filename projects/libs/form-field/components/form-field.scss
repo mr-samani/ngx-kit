@@ -110,7 +110,7 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
     line-height: 1;
 
     opacity: 0.72;
-    transform-origin: left center;
+    transform-origin: top left;
 
     transition:
       transform $transition-label,
@@ -183,7 +183,7 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
   & > textarea:focus ~ &_label span,
   & > textarea.has-value ~ &_label span,
   &.float &_label span {
-    transform: translateY(-50%) scale(0.86);
+    transform: translate3d(0%, -50%, 0) scale(90%);
     opacity: 1;
   }
 
@@ -311,66 +311,61 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
   color: var(--mx-field-error-list-color, light-dark(#d60000, #ff4d5a));
 }
 
-// =========================================================
-// RTL
-// =========================================================
+::ng-deep {
+  // =========================================================
+  // RTL
+  // =========================================================
 
-:host([dir='rtl']) {
-  .mx-form-field {
-    &_before {
-      flex: 0 0 $field-side-width;
-      border-right: var(--mx-field-border-width) solid var(--mx-field-border-color);
-      border-left: 0;
-      border-radius: 0 var(--mx-field-radius) var(--mx-field-radius) 0;
-    }
+  [dir='rtl'] {
+    .mx-form-field {
+      &_before {
+        flex: 0 0 $field-side-width;
+        border-right: var(--mx-field-border-width) solid var(--mx-field-border-color);
+        border-left: 0;
+        border-radius: 0 var(--mx-field-radius) var(--mx-field-radius) 0;
+      }
 
-    &_after {
-      border-left: var(--mx-field-border-width) solid var(--mx-field-border-color);
-      border-right: 0;
-      border-radius: var(--mx-field-radius) 0 0 var(--mx-field-radius);
-    }
-
-    &_label span {
-      transform-origin: right center;
-    }
-
-    & > input:focus ~ &_label span,
-    & > input.has-value ~ &_label span,
-    & > textarea:focus ~ &_label span {
-      transform: translateY(-50%) scale(0.86);
+      &_after {
+        border-left: var(--mx-field-border-width) solid var(--mx-field-border-color);
+        border-right: 0;
+        border-radius: var(--mx-field-radius) 0 0 var(--mx-field-radius);
+      }
+      &_label span {
+        transform-origin: right center;
+      }
     }
   }
-}
 
-// =========================================================
-// REDUCED MOTION
-// =========================================================
+  // =========================================================
+  // REDUCED MOTION
+  // =========================================================
 
-@media (prefers-reduced-motion: reduce) {
-  .mx-form-field *,
-  .mx-form-field::after {
-    transition: none !important;
-  }
-}
-
-// =========================================================
-// FORCED COLORS
-// =========================================================
-
-@media (forced-colors: active) {
-  .mx-form-field_before,
-  .mx-form-field_label,
-  .mx-form-field_after {
-    border-color: CanvasText;
+  @media (prefers-reduced-motion: reduce) {
+    .mx-form-field *,
+    .mx-form-field::after {
+      transition: none !important;
+    }
   }
 
-  .mx-form-field:focus-within .mx-form-field_before,
-  .mx-form-field:focus-within .mx-form-field_label,
-  .mx-form-field:focus-within .mx-form-field_after {
-    border-color: Highlight;
-  }
+  // =========================================================
+  // FORCED COLORS
+  // =========================================================
 
-  .mx-form-field_label span {
-    color: CanvasText;
+  @media (forced-colors: active) {
+    .mx-form-field_before,
+    .mx-form-field_label,
+    .mx-form-field_after {
+      border-color: CanvasText;
+    }
+
+    .mx-form-field:focus-within .mx-form-field_before,
+    .mx-form-field:focus-within .mx-form-field_label,
+    .mx-form-field:focus-within .mx-form-field_after {
+      border-color: Highlight;
+    }
+
+    .mx-form-field_label span {
+      color: CanvasText;
+    }
   }
 }
