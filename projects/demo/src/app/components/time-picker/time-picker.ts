@@ -13,6 +13,9 @@ import {
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
 import { NgxFormField } from "ngx-kit/form-field";
+import { NgxInput } from "ngx-kit/form-field/directives/ngx-input.directive";
+import { NgxSuffix } from "ngx-kit/form-field/directives/ngx-suffix.directive";
+import { NgxPrefix } from "ngx-kit/form-field/directives/ngx-prefix.directive";
 
 @Component({
   selector: 'app-time-picker',
@@ -24,7 +27,10 @@ import { NgxFormField } from "ngx-kit/form-field";
     ExampleShowcaseComponent,
     NgxInputTimePicker,
     NgxInputTimePickerComponent,
-    NgxFormField
+    NgxFormField,
+    NgxInput,
+    NgxSuffix,
+    NgxPrefix
 ],
   providers: [],
 })

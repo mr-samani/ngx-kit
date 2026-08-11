@@ -1,54 +1,28 @@
 <!-- form-field.component.html -->
-<div class="mx-form-field" [class.float]="float()">
-  @if (type() === 'textarea') {
-    <textarea
-      [id]="id()"
-      [rows]="rows()"
-      [value]="value()"
-      [placeholder]="placeholder()"
-      [required]="required()"
-      [disabled]="disabled()"
-      [readonly]="readonly()"
-      [attr.name]="name()"
-      [attr.autocomplete]="autocomplete()"
-      [attr.aria-label]="label()"
-      [class.has-value]="hasValue()"
-      (input)="onInput($event)"
-      (focus)="onFocus()"
-      (blur)="onBlur()"></textarea>
-  } @else {
-    <input
-      [id]="id()"
-      [type]="type()"
-      [value]="value()"
-      [placeholder]="placeholder()"
-      [required]="required()"
-      [disabled]="disabled()"
-      [readonly]="readonly()"
-      [attr.name]="name()"
-      [attr.autocomplete]="autocomplete()"
-      [attr.aria-label]="label()"
-      [class.has-value]="hasValue()"
-      (input)="onInput($event)"
-      (focus)="onFocus()"
-      (blur)="onBlur()" />
-  }
 
-  <div class="mx-form-field_before"></div>
-  <label class="mx-form-field_label" [attr.for]="id()">
+<div class="mx-form-field" [class.float]="float()">
+  <div class="mx-form-field_before">
+    <div class="mx-form-field_prefix">
+      <ng-content select="[ngxPrefix],ngx-prefix"></ng-content>
+    </div>
+  </div>
+
+  <ng-content select="[ngxInput],ngx-input"></ng-content>
+  <label class="mx-form-field_label">
     <span>{{ label() }}</span>
   </label>
-  <div class="mx-form-field_after"></div>
+
+  <div class="mx-form-field_after">
+    <div class="mx-form-field_suffix">
+      <ng-content select="[ngxSuffix],ngx-suffix"></ng-content>
+    </div>
+  </div>
 </div>
 
-@if (hint()) {
-  <div class="mx-form-field_hint">{{ hint() }}</div>
-}
+<div class="mx-form-field_hint">
+  <ng-content select="[ngxHint],ngx-hint"></ng-content>
+</div>
 
-@if (errorMessages().length > 0) {
-  <div class="mx-form-field_error-list" role="alert">
-    @for (msg of errorMessages(); track msg) {
-      <div>{{ msg }}</div>
-    }
-  </div>
-}
+<div class="mx-form-field_error-list" role="alert">
+  <ng-content select="[ngxError],ngx-error"></ng-content>
+</div>

@@ -4,13 +4,16 @@
     <form [formGroup]="form">
       <ngx-form-field label="Select Time">
         <input
-          class="form-control"
           formControlName="time"
+          ngxInput
           ngxInputTimePicker
           [openOnCLick]="false"
           #dpInput="ngxInputTimePicker" />
-        <button (click)="dpInput.toggle()" class="input-group-text pointer">
+        <button (click)="dpInput.toggle()" ngxPrefix class="pointer">
           <i class="fa fa-clock"></i>
+        </button>
+        <button (click)="form.get('time')?.reset()" ngxSuffix class="pointer">
+          <i class="fa fa-times"></i>
         </button>
       </ngx-form-field>
 

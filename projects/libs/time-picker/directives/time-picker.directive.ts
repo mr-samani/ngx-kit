@@ -30,7 +30,7 @@ import { NGX_TIME_PICKER_CONFIG } from '../types/config';
   exportAs: 'ngxInputTimePicker',
   host: {
     class: 'ngx-datepicker-input',
-    '[attr.readOnly]': 'true',
+    // '[attr.type]': '"time"',
   },
   providers: [
     {
