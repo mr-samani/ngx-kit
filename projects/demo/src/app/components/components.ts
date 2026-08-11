@@ -10,5 +10,5 @@ import { NgxDrawerMenuComponent } from 'ngx-kit/drawer-menu';
   styleUrl: './components.scss',
 })
 export class Components {
-  protected readonly sidebarOpen = signal(true);
+  protected readonly sidebarOpen = signal(false);
 }

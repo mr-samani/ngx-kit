@@ -7,7 +7,7 @@
 }
 
 .ngx-time-picker {
-  width: 270px;
+  width: 300px;
   max-width: 100%;
   border-radius: 15px;
   overflow: hidden;
@@ -123,10 +123,6 @@
 
 .clock-number circle {
   fill: transparent;
-
-  transition:
-    fill 120ms ease,
-    transform 120ms ease;
 }
 
 .clock-number text {
@@ -147,12 +143,8 @@
   fill: rgba(25, 118, 210, 0.12);
 }
 
-.clock-number.selected circle {
-  fill: #1976d2;
-}
-
 .clock-number.selected text {
-  fill: #fff;
+  fill: #000000;
   font-weight: 500;
 }
 
@@ -169,7 +161,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 5px;
-  padding: 5px 10px 20px;
+  padding: 5px 10px px;
   background: var(--ngx-time-picker-clock-bg);
   button {
     outline: none;

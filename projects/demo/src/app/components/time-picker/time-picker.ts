@@ -35,7 +35,7 @@ export class TimePickerComponent implements OnInit {
   form: FormGroup;
   constructor(fb: FormBuilder) {
     this.form = fb.group({
-      time: ['13:24:30', [Validators.required]],
+      time: [undefined, [Validators.required]],
     });
   }
 

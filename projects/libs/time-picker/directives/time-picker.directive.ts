@@ -54,7 +54,6 @@ export class NgxInputTimePicker implements ControlValueAccessor, Validator {
   protected readonly value = signal<string>('');
 
   readonly format = input<'12' | '24'>(this.config.format);
-  readonly amOrPm = model<'AM' | 'PM'>();
 
   private pickerRef?: OverlayRef<NgxInputTimePickerComponent>;
 
@@ -133,7 +132,6 @@ export class NgxInputTimePicker implements ControlValueAccessor, Validator {
       margin: 2,
       configure: (instance, ref) => {
         instance.writeValue(this.value());
-        instance.amOrPm.set(this.amOrPm());
 
         instance.change.subscribe((c: string | null) => {
           this.value.set(c ?? '');
@@ -165,17 +163,6 @@ export class NgxInputTimePicker implements ControlValueAccessor, Validator {
   }
 
   protected _formatValue() {
-    const s = this.value().split(':');
-    if (this.format() == '12') {
-      if (+s[0] > 12) {
-        s[0] = (+s[0] - 12).toString().padStart(2, '0');
-        this.amOrPm.set('PM');
-      } else {
-        this.amOrPm.set('AM');
-      }
-    }
-    this.value.set(s.join(':') + ' ' + this.amOrPm());
-
     this.renderer.setProperty(this.el.nativeElement, 'value', this.value());
   }
 }

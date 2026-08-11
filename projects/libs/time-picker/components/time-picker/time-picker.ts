@@ -24,7 +24,8 @@ import {
   Validator,
 } from '@angular/forms';
 import type { NgxTimePickerMode } from '../../types/mode';
-import { NGX_TIME_PICKER_CONFIG } from 'ngx-kit/time-picker/types/config';
+import { NGX_TIME_PICKER_CONFIG } from '../../types/config';
+import { normalizeTime } from '../../utils/normalize';
 
 @Component({
   selector: 'ngx-time-picker',
@@ -65,7 +66,6 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
    * 12h or 24h.
    */
   readonly format = input<'12' | '24'>(this.config.format);
-  readonly amOrPm = model<'AM' | 'PM' | undefined>(this.config.format == '12' ? 'AM' : undefined);
 
   /**
    * Minute step.
@@ -109,7 +109,11 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
 
     return hour;
   });
+  readonly isPm = computed(() => {
+    const hour = Number(this.value().split(':')[0]);
 
+    return hour >= 12;
+  });
   readonly displayMinute = computed(() => {
     return this.parsedTime().minute;
   });
@@ -174,25 +178,43 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
     return 86;
   });
 
-  readonly handEnd = computed(() => {
+  readonly hourRadius = computed(() => {
+    if (this.mode() !== 'hour') {
+      return 94;
+    }
+
+    if (this.format() !== '24') {
+      return 94;
+    }
+
+    const hour = this.parsedTime().hour;
+
+    // 00, 13..23 → inner ring
+    if (hour === 0 || hour >= 13) {
+      return 58;
+    }
+
+    // 01..12 → outer ring
+    return 94;
+  });
+  readonly selectedPosition = computed(() => {
     const angle = this.currentAngle();
 
     const radians = ((angle - 90) * Math.PI) / 180;
 
-    const radius = this.handLength();
+    const radius = this.mode() === 'hour' ? this.hourRadius() : 94;
 
     return {
       x: 120 + Math.cos(radians) * radius,
       y: 120 + Math.sin(radians) * radius,
     };
   });
-
-  readonly selectedPosition = computed(() => {
+  readonly handEnd = computed(() => {
     const angle = this.currentAngle();
 
     const radians = ((angle - 90) * Math.PI) / 180;
 
-    const radius = this.mode() === 'hour' ? 82 : 82;
+    const radius = this.mode() === 'hour' ? this.hourRadius() : 94;
 
     return {
       x: 120 + Math.cos(radians) * radius,
@@ -208,17 +230,19 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
   ngOnInit(): void {}
 
   writeValue(value: string): void {
-    if (!value) value = '12:00';
-    const s = value.split(':');
-    if (this.format() == '12') {
-      if (+s[0] > 12) {
-        s[0] = (+s[0] - 12).toString().padStart(2, '0');
-        this.amOrPm.set('PM');
-      } else {
-        this.amOrPm.set('AM');
-      }
+    if (!value) {
+      this.value.set('12:00');
+      return;
     }
-    this.value.set(s.join(':') + ' ' + this.amOrPm());
+
+    const normalized = normalizeTime(value);
+
+    if (normalized === null) {
+      // invalid value
+      return;
+    }
+
+    this.value.set(normalized);
   }
   validate(control: AbstractControl): ValidationErrors | null {
     return null;
@@ -323,16 +347,77 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
 
     const rect = svg.getBoundingClientRect();
 
-    /*
-     * SVG viewBox = 0 0 240 240
-     *
-     * Convert browser coordinates
-     * to SVG coordinates.
-     */
     const x = ((event.clientX - rect.left) / rect.width) * 240;
 
     const y = ((event.clientY - rect.top) / rect.height) * 240;
 
+    if (this.mode() === 'hour') {
+      this.updateHourFromPointer(x, y);
+      return;
+    }
+
+    this.updateMinuteFromPointer(x, y);
+  }
+
+  private updateHourFromPointer(x: number, y: number): void {
+    const dx = x - 120;
+    const dy = y - 120;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    let angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+
+    if (angle < 0) {
+      angle += 360;
+    }
+
+    let hour = Math.round(angle / 30) % 12;
+
+    if (this.format() === '12') {
+      hour = hour === 0 ? 12 : hour;
+
+      this.setTime(hour, this.parsedTime().minute);
+
+      return;
+    }
+
+    /*
+     * 24 hour mode
+     *
+     * Outer ring:
+     * 1 ... 12
+     *
+     * Inner ring:
+     * 13 ... 23, 00
+     */
+    const INNER_RING_THRESHOLD = 76;
+
+    const isInnerRing = distance < INNER_RING_THRESHOLD;
+
+    if (isInnerRing) {
+      /*
+       * Inner ring:
+       *
+       * 12 position -> 00
+       * 1 position  -> 13
+       * 2 position  -> 14
+       * ...
+       * 11 position -> 23
+       */
+      hour = hour === 0 ? 0 : hour + 12;
+    } else {
+      /*
+       * Outer ring:
+       *
+       * 12 position -> 12
+       * 1 ... 11    -> 1 ... 11
+       */
+      hour = hour === 0 ? 12 : hour;
+    }
+
+    this.setTime(hour, this.parsedTime().minute);
+  }
+  private updateMinuteFromPointer(x: number, y: number): void {
     const dx = x - 120;
     const dy = y - 120;
 
@@ -342,46 +427,9 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
       angle += 360;
     }
 
-    if (this.mode() === 'hour') {
-      this.updateHourFromAngle(angle);
-    } else {
-      this.updateMinuteFromAngle(angle);
-    }
-  }
-
-  private updateHourFromAngle(angle: number): void {
-    let hour = Math.round(angle / 30);
-
-    if (hour === 0 || hour === 12) {
-      hour = 12;
-    }
-
-    if (this.format() === '24') {
-      /*
-       * Determine whether pointer is closer
-       * to inner or outer 12-hour ring.
-       *
-       * For a full 24-hour implementation we use
-       * the current half-day when possible.
-       */
-      const currentHour = this.parsedTime().hour;
-
-      const currentIsPm = currentHour >= 12;
-
-      if (hour !== 12) {
-        hour = currentIsPm ? hour + 12 : hour;
-      } else {
-        hour = currentIsPm ? 12 : 0;
-      }
-    }
-
-    this.setTime(hour, this.parsedTime().minute);
-  }
-
-  private updateMinuteFromAngle(angle: number): void {
     let minute = Math.round(angle / 6);
 
-    minute = minute % 60;
+    minute %= 60;
 
     const step = Math.max(1, this.minuteStep());
 
@@ -399,16 +447,6 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
     const m = String(minute).padStart(2, '0');
 
     this.value.set(`${h}:${m}`);
-  }
-
-  isSelectedHour(hour: number): boolean {
-    const current = this.displayHour();
-
-    return current === hour;
-  }
-
-  isSelectedMinute(minute: number): boolean {
-    return this.displayMinute() === minute;
   }
 
   formatHour(hour: number): string {
@@ -463,10 +501,28 @@ export class NgxInputTimePickerComponent implements ControlValueAccessor, Valida
     };
   }
 
-  ok() {
-    if (this.format() == '12') {
-      this.value.update((u) => u + ` ${this.amOrPm()}`);
+  togglePmAm(val: 'AM' | 'PM'): void {
+    const [hour, minute] = this.value().split(':').map(Number);
+
+    let newHour = hour;
+
+    if (val === 'AM') {
+      // 12:xx PM → 00:xx
+      if (hour >= 12) {
+        newHour = hour - 12;
+      }
+    } else {
+      // 00:xx AM → 12:xx PM
+      if (hour < 12) {
+        newHour = hour + 12;
+      }
     }
+
+    const value = `${String(newHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+    this.value.set(value);
+  }
+  ok() {
     this.change.emit(this.value());
     this._onChange(this.value());
   }
