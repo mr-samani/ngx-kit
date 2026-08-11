@@ -1,169 +1,94 @@
-# NgxDialog
+# ngx-kit/dialog
 
-🎉 Open angular component as a dialog(popup) in Angular Framework without Cdk Material
+مودال/دیالوگ روی پایه‌ی `<dialog>` بومیِ مرورگر — بدون overlay دستی، بدون کتابخونه‌ی جانبی.
 
-## 📦Demo
+> ⚠️ اگه نسخه‌ی قبلیِ این README رو دیدید که از `DIALOG_REF` یا `ngx-dialog-header` یا پکیج جدای `ngx-dialog` حرف می‌زد — اون مال یه نسخه‌ی خیلی قدیمی‌تر بوده و با API فعلی هم‌خونی نداره. این نسخه به‌روزه.
 
-[🚀demo](https://mr-samani.web.app/demo/dialog)
+## نصب
 
-## Install
-
-- NPM: npm i @mr-samani/ngx-dialog
-- YARN: yarn add @mr-samani/ngx-dialog
-
-## Usage
-
-Import `NgxDialogModule` to your working module
-
-```
-import { NgxDialogModule } from  'ngx-dialog';
-
-@NgModule({
-  imports: [
-    NgxDialogModule
-  ]
-})
-export class AppModule { }
-
+```bash
+npm install ngx-kit
 ```
 
-## For open dialog
+## راه‌اندازی
 
+```ts
+// app.config.ts
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { NgxDialogModule } from 'ngx-kit/dialog';
+
+export const appConfig: ApplicationConfig = {
+  providers: [importProvidersFrom(NgxDialogModule)],
+};
 ```
-import { Component, OnInit } from '@angular/core';
-import { NgxOverlayService } from 'ngx-dialog';
-import { ModalComponent } from './modal/modal.component';
 
-@Component({
-  selector: 'app-demo',
-  templateUrl: './demo.component.html',
-  styleUrls: ['./demo.component.scss']
-})
-export class DemoComponent implements OnInit {
+## باز کردن یه دیالوگ
 
-  constructor(
-    private ngxDialog: NgxOverlayService
-  ) { }
+با API استاتیک (بدون تزریق دستیِ سرویس):
 
-  ngOnInit(): void {
+```ts
+import { Dialog } from 'ngx-kit/dialog';
+
+const ref = Dialog.open(MyDialogComponent, {
+  data: { userId: 42 },
+  width: '480px',
+  allowCloseOnOutsideClick: true,
+  header: { enable: true, title: 'ویرایش کاربر', showCloseButton: true },
+});
+
+ref.afterClosed.subscribe((result) => console.log('نتیجه:', result));
+```
+
+داخل کامپوننتِ دیالوگ:
+
+```ts
+@Component({ ... })
+export class MyDialogComponent {
+  private ref = inject(NgxDialogRef);
+  data = inject(NGX_DIALOG_DATA); // دیتایی که با config.data پاس داده شده
+
+  save() {
+    this.ref.close({ saved: true });
   }
-
-
-  openDialog() {
-    this.ngxDialog.open(ModalComponent, {
-      data: {
-        a: 123
-      },
-      containerClass: 'my dialog ',
-      allowCloseOnOutsideClick: true,
-      maxWidth: '80%',
-      maxHeight: '80%'
-    }).afterClosed.subscribe((r: any) => {
-      console.log('closed result=', r);
-    });
-  }
-
 }
 ```
 
-## Modal component
+### دایرکتیوهای layout داخل دیالوگ
 
-```
-import { JsonPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { NgxDialogConfig, DIALOG_REF, NgxOverlayService } from 'ngx-dialog';
-
-@Component({
-  selector: 'app-modal',
-  templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.scss']
-})
-export class ModalComponent implements OnInit {
-  data: any;
-  private dialogRef = inject(DIALOG_REF);
-
-  constructor(
-    public config: NgxDialogConfig,
-    private ngxDialog: NgxOverlayService
-  ) {
-    this.data = config.data;
-  }
-
-  ngOnInit(): void {
-  }
-
-  ok() {
-    alert('param=' + new JsonPipe().transform(this.data));
-  }
-
-  cancel() {
-    this.dialogRef.close(this.data);
-  }
-
-
-  openNewDialog() {
-    this.ngxDialog.open(ModalComponent, {
-      data: {
-        a: this.data.a + 1
-      }
-    }).afterClosed.subscribe((r: any) => {
-      console.log('child closed result=', r);
-    });
-  }
-
-}
-```
-
-## Modal html
-
-```
-<div ngx-dialog-header [showCloseButton]="true">
-    header
-</div>
-<div ngx-dialog-body>
-    <p>modal works!</p>
-    {{data|json}}
-</div>
-<div ngx-dialog-footer [align]="'space-between'">
-    <div>
-        <button (click)="ok()" type="button" class="btn btn-primary mx-1">ok</button>
-        <button (click)="cancel()" type="button" class="btn btn-warning mx-1">cancel</button>
-    </div>
-
-    <button (click)="openNewDialog()" type="button" class="btn btn-info mx-1">open New Dialog</button>
+```html
+<div *ngxDialogHeader>عنوانِ سفارشی</div>
+<div *ngxDialogBody>محتوای اصلی</div>
+<div *ngxDialogFooter>
+  <button (click)="save()">ذخیره</button>
 </div>
 ```
 
-## For create draggable dialog:
+## API
 
-you can use NgxDragableResizable library
-[🚀npm](https://www.npmjs.com/package/ngx-dragable-resizable)
-and change dialog header to:
+### `Dialog.open<T>(component, config?)`
 
-```
- <div ngx-dialog-header [showCloseButton]="true" NgxDragableResizable [dragRootElement]="'.ngx-dialog'">
-       header
- </div>
-```
+| فیلدِ `config`                                              | نوع        | پیش‌فرض     | توضیح                                              |
+| ----------------------------------------------------------- | ---------- | ----------- | -------------------------------------------------- |
+| `data`                                                      | `T`        | `{}`        | دیتایی که به کامپوننتِ داخلِ دیالوگ پاس داده می‌شه |
+| `allowCloseOnOutsideClick`                                  | `boolean`  | `false`     | بستن با کلیک روی backdrop                          |
+| `containerClass`                                            | `string`   | `'ngx-kit'` | کلاسِ اضافی روی container                          |
+| `header.enable` / `header.title` / `header.showCloseButton` |            |             | تنظیمات هدرِ پیش‌فرض                               |
+| `footer.enable`                                             | `boolean`  |             | نمایش فوتر پیش‌فرض                                 |
+| `width` / `minWidth` / `maxWidth`                           | `string`   |             | ابعاد افقی                                         |
+| `height` / `minHeight` / `maxHeight`                        | `string`   |             | ابعاد عمودی                                        |
+| `injector`                                                  | `Injector` |             | تزریق‌کننده‌ی سفارشی برای کامپوننتِ داخلی          |
 
-## Dialog config
+### `NgxDialogRef`
 
-| Name                       | Type    | Default | Description                                                |
-| -------------------------- | ------- | ------- | ---------------------------------------------------------- |
-| [data]                     | any     | {}      | Pass data to modal component                               |
-| [allowCloseOnOutsideClick] | boolean | false   | The user can close the modal by clicking outside the modal |
-| [containerClass]           | string  | null    | Css class name                                             |
-| [header]                   | string  | null    | Header config                                              |
-| [footer]                   | string  | null    | Footer config                                              |
-| [width]                    | string  | ""      | Width of dialog                                            |
-| [minWidth]                 | string  | ""      | Minimum width of dialog                                    |
-| [maxWidth]                 | string  | ""      | Maximum width of dialog                                    |
-| [height]                   | string  | ""      | Height of dialog                                           |
-| [minHeight]                | string  | ""      | Minimum height of dialog                                   |
-| [maxHeight]                | string  | ""      | Maximum height of dialog                                   |
+| عضو                            | توضیح                                     |
+| ------------------------------ | ----------------------------------------- |
+| `close(result?)`               | بستن دیالوگ، با ارسال یه نتیجه‌ی اختیاری  |
+| `afterClosed: Observable<any>` | با `result` صدا زده می‌شه بعد از بسته‌شدن |
 
-## Author
+## نکته‌ی SSR
 
-💻Mohammadreza samani | FrontEnd Developer
+`Dialog.open(...)` یه API استاتیک/سراسریه که برای اپ‌های معمولیِ مرورگری کاملاً امنه. اگه از Angular SSR استفاده می‌کنید، این static instance بینِ درخواست‌های هم‌زمانِ سرور مشترکه — به‌جای API استاتیک، مستقیماً `NgxOverlayService` رو تزریق و ازش استفاده کنید (که per-injector/per-request امنه).
 
-[❤️Buy me a coffee 😉](https://www.buymeacoffee.com/mrsamani/ngxdragableresizable)
+## دارک‌مود و RTL
+
+خودکار پشتیبانی می‌شه (`light-dark()` + CSS logical properties).

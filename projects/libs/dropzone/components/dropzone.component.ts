@@ -77,6 +77,10 @@ export class NgxDropzoneComponent implements OnDestroy {
     return parts.join(' · ');
   });
 
+  protected formatSize(bytes: number): string {
+    return formatBytes(bytes);
+  }
+
   ngOnDestroy(): void {
     // همه‌ی object URLهای پیش‌نمایش باید revoke بشن، وگرنه تا وقتی تب باز
     // باشه، بلاب‌های تصویر توی حافظه‌ی مرورگر می‌مونن.

@@ -1,0 +1,93 @@
+:host {
+  display: block;
+}
+
+.preview-stack {
+  position: relative;
+  block-size: 150px;
+  margin-block-end: 0.25rem;
+}
+
+.mini-window {
+  position: absolute;
+  inset-inline-start: 10%;
+  inset-block-start: 8%;
+  inline-size: 78%;
+  block-size: 82%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: light-dark(#ffffff, #1c1c20);
+  border: 1px solid light-dark(#e5e7eb, #303036);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+  transition:
+    transform 320ms cubic-bezier(0.22, 0.9, 0.32, 1),
+    box-shadow 320ms ease,
+    filter 320ms ease;
+}
+
+.mini-window--light:not(.front) {
+  transform: rotate(-9deg) translate(-12%, 8%) scale(0.92);
+  z-index: 1;
+}
+.mini-window--light.front {
+  transform: rotate(-2deg) translate(-2%, 0) scale(1.05);
+  z-index: 2;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.26);
+}
+.mini-window--dark:not(.front) {
+  transform: rotate(9deg) translate(12%, -8%) scale(0.92);
+  z-index: 1;
+}
+.mini-window--dark.front {
+  transform: rotate(2deg) translate(2%, 0) scale(1.05);
+  z-index: 2;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.26);
+}
+
+.mini-window:not(.front) {
+  filter: saturate(0.85) brightness(0.98);
+  opacity: 0.9;
+}
+
+.mini-titlebar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-block-end: 1px solid light-dark(#f0f0f2, #29292f);
+
+  span {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+    background: light-dark(#d1d5db, #3f3f46);
+  }
+}
+
+.mini-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mini-icon {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  margin-block-end: 2px;
+}
+
+.mini-line {
+  block-size: 6px;
+  border-radius: 3px;
+  background: light-dark(#e5e7eb, #303036);
+  inline-size: 90%;
+}
+.mini-line.short {
+  inline-size: 55%;
+}

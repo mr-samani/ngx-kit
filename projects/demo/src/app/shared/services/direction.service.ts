@@ -18,17 +18,20 @@ export class DirectionService {
     // (به‌جای توکن تزریق‌شده‌ی DOCUMENT) بدون هیچ چک SSR صدا زده می‌شدن.
     const stored = this.isBrowser ? (localStorage.getItem('dir') as DirectionType | null) : null;
     const dir: DirectionType = stored === 'rtl' || stored === 'ltr' ? stored : 'ltr';
-    this.setDir(dir);
     this.isRtl.set(dir === 'rtl');
+    let lang = this.isRtl() ? 'fa-IR' : 'en';
+    this.setDir(dir, lang);
   }
   toggleDirection() {
     this.isRtl.update((u) => !u);
     let dir: DirectionType = this.isRtl() ? 'rtl' : 'ltr';
+    let lang = this.isRtl() ? 'fa-IR' : 'en';
     if (this.isBrowser) localStorage.setItem('dir', dir);
-    this.setDir(dir);
+    this.setDir(dir, lang);
   }
 
-  private setDir(dir: DirectionType) {
+  private setDir(dir: DirectionType, lang: string) {
     this.doc.documentElement.setAttribute('dir', dir);
+    this.doc.documentElement.setAttribute('lang', lang);
   }
 }

@@ -1,4 +1,7 @@
-<app-example-showcase title="Gradient Picker" [files]="sourceFiles">
+<app-example-showcase
+  title="Gradient Picker"
+  [files]="sourceFiles"
+  readmePath="/readmes/gradient-picker/README.md">
   <input ngxInputGradient [(ngModel)]="gradient" class="form-control" name="input-gradient" />
   <button type="button" (click)="gradient = ''">x</button>
   <p>{{ gradient }}</p>

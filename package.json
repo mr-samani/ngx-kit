@@ -27,6 +27,7 @@
     "@angular/material": "~22.0.6",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
+    "marked": "^18.0.9",
     "monaco-editor": "^0.55.1",
     "ngx-monaco-editor-v2": "^22.0.4",
     "rxjs": "~7.8.0",

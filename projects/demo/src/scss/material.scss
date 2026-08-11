@@ -2,10 +2,7 @@
 
 html {
   --app-font: axiforma;
-  height: 100%;
-  font-size: 14px;
   color-scheme: light dark;
-
   @include mat.theme(
     (
       color: (
@@ -15,6 +12,10 @@ html {
       ),
       density: (
         scale: -2,
+      ),
+      typography: (
+        brand-family: var(--app-font),
+        plain-family: var(--app-font),
       ),
     )
   );
@@ -50,12 +51,30 @@ html {
   &.light-scheme {
     color-scheme: light;
   }
-
   &[lang='fa-IR'] {
     font-family: iranSans;
     --app-font: iranSans;
   }
+  &[lang='ar'] {
+    font-family: AlKharashi;
+    --app-font: AlKharashi;
+  }
+  font: var(--app-font);
 }
+
+body {
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+
+  --mat-sys-corner-full: 6px;
+  --mat-button-protected-container-height: 38px;
+  --mat-sys-corner-extra-large: 10px;
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+  font: var(--app-font);
+}
+
 .primary-toolbar {
   --mat-toolbar-container-background-color: var(--mat-sys-primary);
   --mat-toolbar-container-text-color: var(--mat-sys-on-primary);

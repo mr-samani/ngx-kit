@@ -43,14 +43,8 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
   --mx-field-label-color: light-dark(#555555, #c7c7c7);
   --mx-field-text-color: light-dark(#1a1a1a, #f5f5f5);
   --mx-field-placeholder-color: light-dark(#888888, #999999);
-  --mx-field-focus-ring: light-dark(
-    rgb(0 127 254 / 12%),
-    rgb(77 163 255 / 18%)
-  );
-  --mx-field-error-ring: light-dark(
-    rgb(214 0 0 / 10%),
-    rgb(255 77 90 / 15%)
-  );
+  --mx-field-focus-ring: light-dark(rgb(0 127 254 / 12%), rgb(77 163 255 / 18%));
+  --mx-field-error-ring: light-dark(rgb(214 0 0 / 10%), rgb(255 77 90 / 15%));
 
   position: relative;
   display: inline-flex;
@@ -74,8 +68,7 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
   &_before,
   &_label,
   &_after {
-    border: var(--mx-field-border-width) solid
-      var(--mx-field-border-color);
+    border: var(--mx-field-border-width) solid var(--mx-field-border-color);
     pointer-events: none;
     transition: border-color $transition-color;
   }
@@ -210,9 +203,7 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
   // HOVER
   // ─────────────────────────────────────────────────────────
 
-  &:hover:not(:has(input:disabled)):not(:has(textarea:disabled)):not(
-      :has(select:disabled)
-    ) {
+  &:hover:not(:has(input:disabled)):not(:has(textarea:disabled)):not(:has(select:disabled)) {
     .mx-form-field_before,
     .mx-form-field_label,
     .mx-form-field_after {
@@ -317,10 +308,7 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
 
 .mx-form-field_error-list {
   font-size: 0.8rem;
-  color: var(
-    --mx-field-error-list-color,
-    light-dark(#d60000, #ff4d5a)
-  );
+  color: var(--mx-field-error-list-color, light-dark(#d60000, #ff4d5a));
 }
 
 // =========================================================
@@ -331,15 +319,13 @@ $transition-label: 150ms cubic-bezier(0.2, 0, 0, 1);
   .mx-form-field {
     &_before {
       flex: 0 0 $field-side-width;
-      border-right: var(--mx-field-border-width) solid
-        var(--mx-field-border-color);
+      border-right: var(--mx-field-border-width) solid var(--mx-field-border-color);
       border-left: 0;
       border-radius: 0 var(--mx-field-radius) var(--mx-field-radius) 0;
     }
 
     &_after {
-      border-left: var(--mx-field-border-width) solid
-        var(--mx-field-border-color);
+      border-left: var(--mx-field-border-width) solid var(--mx-field-border-color);
       border-right: 0;
       border-radius: var(--mx-field-radius) 0 0 var(--mx-field-radius);
     }

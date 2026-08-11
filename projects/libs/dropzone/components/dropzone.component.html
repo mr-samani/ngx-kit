@@ -2,6 +2,7 @@
   class="ngx-dropzone"
   [class.dragging]="isDragging()"
   [class.disabled]="disabled()"
+  [class.has-files]="files().length > 0"
   tabindex="0"
   role="button"
   [attr.aria-disabled]="disabled()"
@@ -21,19 +22,24 @@
     (click)="$event.stopPropagation()"
     (change)="onFileInputChange($event)" />
 
-  <ng-content select="[dropzone-icon]">
-    <svg class="ngx-dropzone-icon" viewBox="0 0 24 24" fill="none" width="40" height="40">
-      <path
-        d="M12 16V4M12 4l-4 4M12 4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
-        stroke="currentColor"
-        stroke-width="1.6"
-        stroke-linecap="round"
-        stroke-linejoin="round" />
-    </svg>
-  </ng-content>
+  <div class="ngx-dropzone-icon-wrap">
+    <ng-content select="[dropzone-icon]">
+      <svg class="ngx-dropzone-icon" viewBox="0 0 24 24" fill="none" width="30" height="30">
+        <path
+          d="M12 16V4M12 4l-4 4M12 4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </ng-content>
+  </div>
 
   <div class="ngx-dropzone-text">
-    <ng-content>فایل‌ها را اینجا رها کنید یا کلیک کنید</ng-content>
+    <ng-content>
+      <strong>فایل‌ها را اینجا رها کنید</strong>
+      <span>یا برای انتخاب کلیک کنید</span>
+    </ng-content>
   </div>
 
   @if (hint()) {
@@ -45,17 +51,23 @@
   <ul class="ngx-dropzone-list">
     @for (item of files(); track item.id) {
       <li class="ngx-dropzone-item">
-        @if (item.previewUrl) {
-          <img class="ngx-dropzone-thumb" [src]="item.previewUrl" [alt]="item.file.name" />
-        } @else {
-          <span class="ngx-dropzone-file-icon">📄</span>
-        }
-        <span class="ngx-dropzone-name" [title]="item.file.name">{{ item.file.name }}</span>
+        <div class="ngx-dropzone-thumb-wrap">
+          @if (item.previewUrl) {
+            <img class="ngx-dropzone-thumb" [src]="item.previewUrl" [alt]="item.file.name" />
+          } @else {
+            <span class="ngx-dropzone-file-icon">📄</span>
+          }
+        </div>
+        <div class="ngx-dropzone-meta">
+          <span class="ngx-dropzone-name" [title]="item.file.name">{{ item.file.name }}</span>
+          <span class="ngx-dropzone-size">{{ formatSize(item.file.size) }}</span>
+        </div>
+        <span class="ngx-dropzone-status" aria-hidden="true">✓</span>
         <button
           type="button"
           class="ngx-dropzone-remove"
           [attr.aria-label]="'حذف ' + item.file.name"
-          (click)="removeFile(item.id)">
+          (click)="removeFile(item.id); $event.stopPropagation()">
           ✕
         </button>
       </li>

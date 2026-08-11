@@ -24,6 +24,17 @@
         {{ file.label }}
       </button>
     }
+    @if (readmePath()) {
+      <button
+        type="button"
+        role="tab"
+        class="showcase-tab"
+        [class.active]="activeTab() === files().length + 1"
+        [attr.aria-selected]="activeTab() === files().length + 1"
+        (click)="select(files().length + 1)">
+        مستندات
+      </button>
+    }
   </div>
 
   <div class="showcase-panel">
@@ -35,6 +46,10 @@
       @if (activeTab() === i + 1) {
         <app-code-viewer class="showcase-code" [path]="file.path" [language]="file.language" />
       }
+    }
+
+    @if (readmePath() && activeTab() === files().length + 1) {
+      <app-readme-viewer class="showcase-readme" [path]="readmePath()!" />
     }
   </div>
 </section>

@@ -1,0 +1,102 @@
+:host {
+  display: block;
+  padding: 1.25rem;
+}
+
+.readme-state {
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: light-dark(#6b7280, #9ca3af);
+}
+.readme-state--error {
+  color: light-dark(#b91c1c, #f87171);
+}
+
+.readme-content {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: light-dark(#1f2937, #e4e4e7);
+
+  ::ng-deep {
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-weight: 700;
+      margin: 1.4em 0 0.6em;
+      line-height: 1.3;
+    }
+    h1 {
+      font-size: 1.4rem;
+      padding-block-end: 0.4rem;
+      border-block-end: 1px solid light-dark(#e5e7eb, #2a2a2f);
+    }
+    h2 {
+      font-size: 1.15rem;
+    }
+    h3 {
+      font-size: 1rem;
+    }
+    p {
+      margin: 0.6em 0;
+    }
+    a {
+      color: light-dark(#2563eb, #60a5fa);
+    }
+    ul,
+    ol {
+      padding-inline-start: 1.4em;
+      margin: 0.6em 0;
+    }
+    li {
+      margin: 0.25em 0;
+    }
+    code {
+      direction: ltr;
+      font-family: 'Fira Code', ui-monospace, monospace;
+      background: light-dark(#f3f4f6, #232327);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+    pre {
+      direction: ltr;
+      background: light-dark(#f3f4f6, #1c1c20);
+      border: 1px solid light-dark(#e5e7eb, #2a2a2f);
+      border-radius: 8px;
+      padding: 0.85em 1em;
+      overflow-x: auto;
+
+      code {
+        background: none;
+        padding: 0;
+      }
+    }
+    blockquote {
+      margin: 0.8em 0;
+      padding-inline-start: 1em;
+      border-inline-start: 3px solid light-dark(#d1d5db, #3f3f46);
+      color: light-dark(#6b7280, #9ca3af);
+    }
+    table {
+      border-collapse: collapse;
+      inline-size: 100%;
+      margin: 0.8em 0;
+      font-size: 0.85em;
+    }
+    th,
+    td {
+      border: 1px solid light-dark(#e5e7eb, #2a2a2f);
+      padding: 0.4em 0.6em;
+      text-align: start;
+    }
+    th {
+      background: light-dark(#f9fafb, #1f1f24);
+    }
+    hr {
+      border: none;
+      border-block-end: 1px solid light-dark(#e5e7eb, #2a2a2f);
+      margin: 1.2em 0;
+    }
+  }
+}

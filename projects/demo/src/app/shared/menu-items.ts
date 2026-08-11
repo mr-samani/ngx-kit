@@ -109,7 +109,7 @@ export const MENU_LIST: ICategory[] = [
         url: '/components/image-editor',
       },
       {
-        title: 'Gallery',
+        title: 'Image Viewer',
         description: '',
         image: '',
         url: '/components/gallery',

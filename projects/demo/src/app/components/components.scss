@@ -1,11 +1,36 @@
 :host {
-  display: grid;
-  padding: 10px;
-  grid-template-columns: 220px 1fr;
+  display: block;
+  min-block-size: calc(100dvh - 58px);
 }
+
+::ng-deep ngx-drawer-menu {
+  display: block;
+  min-block-size: calc(100dvh - 58px);
+}
+
 .content {
-  padding: 0 15px;
-  border-left: 1px rgba(103, 103, 103, 0.342) solid;
-  //header:56px - host:padding-top:10px - host:padding-bottom:10px
-  min-height: calc(100dvh - 56px - 10px - 10px);
+  padding: 1.25rem 1.5rem;
+  min-block-size: calc(100dvh - 58px);
+  box-sizing: border-box;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  appearance: none;
+  border: 1px solid light-dark(#e5e7eb, #33333a);
+  background: light-dark(#ffffff, #1f1f24);
+  color: light-dark(#374151, #d4d4d8);
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-block-end: 1rem;
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
 }

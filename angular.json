@@ -37,9 +37,17 @@
                 "glob": "**/*.{ts,html,scss}",
                 "input": "projects/demo/src/app/components",
                 "output": "/examples/"
+              },
+              {
+                "glob": "**/README.md",
+                "input": "projects/libs",
+                "output": "/readmes/"
               }
             ],
-            "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"]
+            "styles": [
+              "./projects/libs/styles/all.css",
+              "projects/demo/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

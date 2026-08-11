@@ -1,5 +1,4 @@
 import { InjectionToken } from '@angular/core';
-import type { NgxTimePickerMode } from './mode';
 
 export class NgxTimePickerConfig {
   cancelButtonText: string = 'Cancel';

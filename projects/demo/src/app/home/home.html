@@ -1,29 +1,25 @@
-<div class="main-content">
-  @for (cat of list; track $index) {
-    <div class="accordion" [class.open]="cat.open">
-      <div class="accordion-title">
-        <span>{{ cat.name }}</span>
-        <button (click)="cat.open = !cat.open">
-          @if (cat.open) {
-            <i class="fa fa-chevron-up"></i>
-          } @else {
-            <i class="fa fa-chevron-down"></i>
-          }
-        </button>
+<section class="hero">
+  <h1>یه کیت کامل کامپوننت برای Angular 22</h1>
+  <p>
+    سیگنال‌محور، مینیمال، با پشتیبانی کامل از دارک‌مود و RTL — هر بخش entry-point جدای خودشو داره.
+  </p>
+</section>
+
+<div class="category-list">
+  @for (cat of list; track cat.name) {
+    <section class="category">
+      <h2>{{ cat.name }}</h2>
+      <div class="card-grid">
+        @for (item of cat.items; track item.url) {
+          <a class="card" [routerLink]="item.url">
+            <app-preview-card [seed]="item.title" [icon]="iconFor(item.title)" />
+            <h3>{{ item.title }}</h3>
+            @if (item.description) {
+              <p>{{ item.description }}</p>
+            }
+          </a>
+        }
       </div>
-      <div class="accordion-body">
-        <div class="card-container">
-          @for (item of cat.items; track $index) {
-            <div class="card" [routerLink]="item.url">
-              <figure>
-                <img [src]="item.image ?? defaultImage" [alt]="item.title" />
-              </figure>
-              <h3 class="card-title">{{ item.title }}</h3>
-              <p class="card-body">{{ item.description }}</p>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
+    </section>
   }
 </div>
