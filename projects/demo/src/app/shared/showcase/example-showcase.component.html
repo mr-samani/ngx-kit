@@ -49,7 +49,7 @@
     }
 
     @if (readmePath() && activeTab() === files().length + 1) {
-      <app-readme-viewer class="showcase-readme" [path]="readmePath()!" />
+      <app-readme-viewer class="showcase-readme" [src]="readmePath()!" />
     }
   </div>
 </section>

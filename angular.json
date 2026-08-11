@@ -34,6 +34,17 @@
                 "output": "/assets/monaco/"
               },
               {
+                "glob": "**/*",
+                "input": "node_modules/github-markdown-css",
+                "output": "/assets/github-markdown-css/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/highlight.js/styles",
+                "output": "/assets/highlight.js/"
+              },
+
+              {
                 "glob": "**/*.{ts,html,scss}",
                 "input": "projects/demo/src/app/components",
                 "output": "/examples/"
@@ -44,10 +55,8 @@
                 "output": "/readmes/"
               }
             ],
-            "styles": [
-              "./projects/libs/styles/all.css",
-              "projects/demo/src/styles.scss"
-            ]
+            "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"],
+            "scripts": []
           },
           "configurations": {
             "production": {

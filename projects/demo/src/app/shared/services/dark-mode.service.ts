@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { DOCUMENT, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { Subject } from 'rxjs';
 export const DARK_MODE_KEY = 'dark';
 
 @Injectable({
@@ -8,6 +9,7 @@ export const DARK_MODE_KEY = 'dark';
 export class DarkModeService {
   private platformId = inject(PLATFORM_ID);
   isDarkMode = signal<boolean>(false);
+  onChange = new Subject<'light' | 'dark'>();
   doc = inject(DOCUMENT);
   constructor() {
     // قبلاً localStorage/document مستقیم و بدون چک isBrowser صدا زده می‌شد؛
@@ -53,5 +55,6 @@ export class DarkModeService {
       this.doc.documentElement.classList.remove('dark-scheme');
       this.doc.documentElement.classList.add('light-scheme');
     }
+    this.onChange.next(this.isDarkMode() ? 'dark' : 'light');
   }
 }

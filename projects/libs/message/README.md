@@ -10,7 +10,7 @@ npm install ngx-kit
 
 ## راه‌اندازی
 
-```ts
+``` typescript
 // app.config.ts
 import { provideMessage } from 'ngx-kit/message';
 

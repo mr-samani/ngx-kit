@@ -31,13 +31,12 @@ import { DarkModeService } from '../services/dark-mode.service';
     `
       :host {
         display: block;
-        block-size: 100%;
-        min-block-size: 320px;
       }
       .code-viewer-editor {
         display: block;
         block-size: 100%;
-        min-block-size: 320px;
+        min-height: 70dvh;
+        direction: ltr;
       }
       .code-viewer-state {
         padding: 1rem;

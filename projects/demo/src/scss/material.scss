@@ -35,33 +35,33 @@ html {
     )
   );
 
-  &.dark-scheme {
-    color-scheme: dark;
-    @include mat.theme-overrides(
-      (
-        primary: #3aa0ff,
-
-        surface: #181818,
-        on-surface: #d6d6d6,
-        surface-container: #222222,
-      )
-    );
-  }
-
-  &.light-scheme {
-    color-scheme: light;
-  }
-  &[lang='fa-IR'] {
-    font-family: iranSans;
-    --app-font: iranSans;
-  }
-  &[lang='ar'] {
-    font-family: AlKharashi;
-    --app-font: AlKharashi;
-  }
   font: var(--app-font);
 }
+.dark-scheme {
+  color-scheme: dark;
+  @include mat.theme-overrides(
+    (
+      primary: #3aa0ff,
 
+      surface: #181818,
+      on-surface: #d6d6d6,
+      surface-container: #222222,
+    )
+  );
+}
+
+.light-scheme {
+  color-scheme: light;
+}
+
+[lang='ar'] {
+  font-family: AlKharashi;
+  --app-font: AlKharashi;
+}
+[lang='fa-IR'] {
+  font-family: iranSans;
+  --app-font: iranSans;
+}
 body {
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
