@@ -1,0 +1,22 @@
+<app-example-showcase
+  title="Image Editor"
+  [files]="sourceFiles"
+  readmePath="/readmes/image-editor/README.md">
+  @if (!selectedFile() && !result()) {
+    <ngx-dropzone [accept]="'image/*'" [multiple]="false" (filesAdded)="onFilesAdded($event)">
+      یک تصویر برای ویرایش انتخاب کنید
+    </ngx-dropzone>
+  }
+
+  @if (selectedFile(); as file) {
+    <ngx-image-editor [source]="file" (saved)="onSaved($event)" (cancelled)="onCancelled()" />
+  }
+
+  @if (result(); as r) {
+    <div class="ie-result">
+      <img [src]="r.dataUrl" [alt]="'خروجی ویرایش‌شده'" />
+      <p>{{ r.width }}×{{ r.height }}</p>
+      <button type="button" (click)="reset()">تصویر جدید</button>
+    </div>
+  }
+</app-example-showcase>

@@ -1,0 +1,15 @@
+<app-example-showcase
+  title="Image Viewer"
+  [files]="sourceFiles"
+  readmePath="/readmes/gallery/README.md">
+  <p class="hint">
+    اسکرول موس = زوم، درگ (وقتی زوم‌شده) = پن، دو انگشتی روی موبایل = پینچ زوم. دکمه‌های نوار ابزار
+    همه قابل‌غیرفعال‌کردن هستن.
+  </p>
+
+  <ngx-image-viewer [images]="images" />
+
+  <div class="dialog-row">
+    <button type="button" (click)="openInDialog()">باز کردن در دیالوگ تمام‌صفحه</button>
+  </div>
+</app-example-showcase>

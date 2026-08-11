@@ -1,0 +1,70 @@
+<app-example-showcase title="Notify" [files]="sourceFiles" readmePath="/readmes/notify/README.md">
+  <button (click)="showNotify()">Show Notify</button>
+
+  <div class="input-group">
+    <label>Message</label>
+    <input type="text" name="title" [(ngModel)]="message" />
+  </div>
+  <div class="input-group">
+    <label>Description</label>
+    <input type="text" name="title" [(ngModel)]="description" />
+  </div>
+
+  <p>Type:</p>
+  <div class="radio-group">
+    <label>
+      <input type="radio" name="type" [(ngModel)]="type" value="info" />
+      Info
+    </label>
+    <label>
+      <input type="radio" name="type" [(ngModel)]="type" value="success" />
+      Success
+    </label>
+    <label>
+      <input type="radio" name="type" [(ngModel)]="type" value="warning" />
+      Warning
+    </label>
+    <label>
+      <input type="radio" name="type" [(ngModel)]="type" value="error" />
+      Error
+    </label>
+  </div>
+
+  <p>Position:</p>
+  <div class="radio-group">
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="center" />
+      center
+    </label>
+
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="top-left" />
+      top-left
+    </label>
+
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="top-right" />
+      top-right
+    </label>
+
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="bottom-left" />
+      bottom-left
+    </label>
+
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="bottom-right" />
+      bottom-right
+    </label>
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="top-center" />
+      top-center
+    </label>
+    <label>
+      <input type="radio" name="position" [(ngModel)]="options.position" value="bottom-center" />
+      bottom-center
+    </label>
+  </div>
+
+  <ngx-notification [payload]="payload"></ngx-notification>
+</app-example-showcase>

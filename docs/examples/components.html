@@ -1,0 +1,30 @@
+<ngx-drawer-menu
+  side="start"
+  effect="slide"
+  contentBehavior="push"
+  [width]="260"
+  [respondToViewport]="false"
+  [openOnDesktop]="true"
+  [openOnMobile]="false"
+  [mobileBreakpoint]="900"
+  [(open)]="sidebarOpen">
+  <app-side-nav drawerContent></app-side-nav>
+
+  <div class="content">
+    <button
+      type="button"
+      class="mobile-menu-toggle"
+      (click)="sidebarOpen.set(true)"
+      aria-label="باز کردن فهرست کامپوننت‌ها">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+        <path
+          d="M4 6h16M4 12h16M4 18h16"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round" />
+      </svg>
+      <span>فهرست کامپوننت‌ها</span>
+    </button>
+    <router-outlet />
+  </div>
+</ngx-drawer-menu>

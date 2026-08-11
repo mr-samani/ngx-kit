@@ -1,0 +1,156 @@
+<!-- app.component.html -->
+<h1>Input Form Field (Angular 22)</h1>
+
+<div class="container">
+  <!-- =========================================================
+       REQUIRED FIELD
+       ========================================================= -->
+  <section>
+    <h3>Required</h3>
+    <ngx-form-field
+      label="this is a label"
+      [required]="true"
+      [(value)]="requiredField"
+      hint="complete this input"
+      [errorMessages]="['This field is Required!']" />
+  </section>
+
+  <!-- =========================================================
+       WITH VALUE
+       ========================================================= -->
+  <section>
+    <h3>With Value</h3>
+    <ngx-form-field label="this is a label" [(value)]="withValue" />
+  </section>
+
+  <!-- =========================================================
+       LOGIN FORM (AUTO FILL)
+       ========================================================= -->
+  <section>
+    <h3>Login form (Auto fill)</h3>
+    <form (submit)="onLoginSubmit($event)" autocomplete="on">
+      <ngx-form-field
+        label="User Name"
+        name="username"
+        autocomplete="username"
+        [required]="true"
+        [(value)]="username" />
+
+      <ngx-form-field
+        label="Password"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        [required]="true"
+        [(value)]="password" />
+
+      <div class="form-actions">
+        <button mat-raised-button type="submit">submit</button>
+        <button mat-raised-button type="button" (click)="resetForm()">reset</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- =========================================================
+       WITH PLACEHOLDER
+       ========================================================= -->
+  <section>
+    <h3>With placeholder</h3>
+    <ngx-form-field
+      label="this is a label"
+      placeholder="this is a placeholder"
+      [(value)]="withPlaceholder" />
+  </section>
+
+  <!-- =========================================================
+       DISABLED
+       ========================================================= -->
+  <section>
+    <h3>Disabled</h3>
+    <ngx-form-field label="Disabled field" [disabled]="true" [(value)]="disabledField" />
+  </section>
+
+  <!-- =========================================================
+       READONLY
+       ========================================================= -->
+  <section>
+    <h3>Readonly</h3>
+    <ngx-form-field label="Readonly field" [readonly]="true" [(value)]="readonlyField" />
+  </section>
+
+  <!-- =========================================================
+       INVALID (EMAIL)
+       ========================================================= -->
+  <section>
+    <h3>Invalid (email)</h3>
+    <ngx-form-field
+      label="Email"
+      type="email"
+      [(value)]="invalidEmail"
+      [errorMessages]="['Please enter a valid email address']" />
+  </section>
+
+  <!-- =========================================================
+       TEXTAREA 
+       ========================================================= -->
+  <section>
+    <h3>Textarea</h3>
+    <ngx-form-field label="Description" type="textarea" [rows]="4" [(value)]="longText" />
+  </section>
+
+  <!-- =========================================================
+       NUMBER INPUT
+       ========================================================= -->
+  <section>
+    <h3>Number</h3>
+    <ngx-form-field label="Age" type="number" [(value)]="numValue" />
+  </section>
+
+  <!-- =========================================================
+       SEARCH INPUT
+       ========================================================= -->
+  <section>
+    <h3>Search</h3>
+    <ngx-form-field
+      label="Search..."
+      type="search"
+      placeholder="Type to search"
+      [(value)]="searchValue" />
+  </section>
+
+  <!-- =========================================================
+       FULL FORM EXAMPLE
+       ========================================================= -->
+  <section>
+    <h3>Complete Form</h3>
+    <form (submit)="onLoginSubmit($event)">
+      <ngx-form-field
+        label="Full Name"
+        name="fullname"
+        autocomplete="name"
+        [required]="true"
+        [(value)]="fullName" />
+
+      <ngx-form-field
+        label="Email Address"
+        type="email"
+        name="email"
+        autocomplete="email"
+        [(value)]="invalidEmail"
+        hint="We'll never share your email" />
+
+      <ngx-form-field label="Phone" type="tel" name="phone" autocomplete="tel" [(value)]="tel" />
+
+      <ngx-form-field
+        label="Message"
+        type="textarea"
+        [rows]="4"
+        [(value)]="longText"
+        hint="Tell us about your needs" />
+
+      <div class="form-actions">
+        <button type="submit">Send</button>
+      </div>
+    </form>
+  </section>
+</div>

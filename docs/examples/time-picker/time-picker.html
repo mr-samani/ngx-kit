@@ -1,0 +1,29 @@
+<app-example-showcase title="Time Picker" [files]="sourceFiles">
+  <div class="container">
+    <h3>Input mode</h3>
+    <form [formGroup]="form">
+      <div class="input-group">
+        <input
+          class="form-control"
+          formControlName="time"
+          ngxInputTimePicker
+          [openOnCLick]="false"
+          #dpInput="ngxInputTimePicker" />
+        <button (click)="dpInput.toggle()" class="input-group-text pointer">
+          <i class="fa fa-clock"></i>
+        </button>
+      </div>
+      @if (form.get('time')?.hasError('invalid')) {
+        <div class="text-danger">invalid time!</div>
+      }
+      @if (form.get('time')?.hasError('required')) {
+        <div class="text-danger">required time!</div>
+      }
+
+      <p>{{ form.get('time')?.value | json }}</p>
+    </form>
+
+    <h3>Inline mode</h3>
+    <ngx-time-picker format="24"></ngx-time-picker>
+  </div>
+</app-example-showcase>
