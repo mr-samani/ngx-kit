@@ -12,10 +12,7 @@ import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
-import { NgxFormField } from "ngx-kit/form-field";
-import { NgxInput } from "ngx-kit/form-field/directives/ngx-input.directive";
-import { NgxSuffix } from "ngx-kit/form-field/directives/ngx-suffix.directive";
-import { NgxPrefix } from "ngx-kit/form-field/directives/ngx-prefix.directive";
+import { NgxFormField, NgxInput, NgxPrefix, NgxSuffix, NgxHint, NgxError } from 'ngx-kit/form-field';
 
 @Component({
   selector: 'app-time-picker',
@@ -30,7 +27,9 @@ import { NgxPrefix } from "ngx-kit/form-field/directives/ngx-prefix.directive";
     NgxFormField,
     NgxInput,
     NgxSuffix,
-    NgxPrefix
+    NgxPrefix,
+    NgxHint,
+    NgxError
 ],
   providers: [],
 })
