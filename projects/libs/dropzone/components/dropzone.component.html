@@ -37,8 +37,8 @@
 
   <div class="ngx-dropzone-text">
     <ng-content>
-      <strong>فایل‌ها را اینجا رها کنید</strong>
-      <span>یا برای انتخاب کلیک کنید</span>
+      <strong>Drop files here</strong>
+      <span>or click to browse</span>
     </ng-content>
   </div>
 
@@ -66,7 +66,7 @@
         <button
           type="button"
           class="ngx-dropzone-remove"
-          [attr.aria-label]="'حذف ' + item.file.name"
+          [attr.aria-label]="'Remove ' + item.file.name"
           (click)="removeFile(item.id); $event.stopPropagation()">
           ✕
         </button>

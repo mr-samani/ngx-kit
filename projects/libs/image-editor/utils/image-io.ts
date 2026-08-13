@@ -15,7 +15,7 @@ export function loadImage(source: File | Blob | string): Promise<HTMLImageElemen
     };
     img.onerror = () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
-      reject(new Error('بارگذاری تصویر شکست خورد'));
+      reject(new Error('Failed to load image'));
     };
     img.src = url;
   });
@@ -31,7 +31,7 @@ export function canvasToBlob(
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob);
-        else reject(new Error('تبدیل canvas به blob شکست خورد'));
+        else reject(new Error('Failed to convert canvas to blob'));
       },
       type,
       quality,

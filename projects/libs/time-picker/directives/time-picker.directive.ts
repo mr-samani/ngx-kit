@@ -24,13 +24,14 @@ import {
 import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { NgxInputTimePickerComponent } from '../components/time-picker/time-picker';
 import { NGX_TIME_PICKER_CONFIG } from '../types/config';
+import { normalizeTime } from '../utils/normalize';
 
 @Directive({
   selector: '[ngxInputTimePicker]',
   exportAs: 'ngxInputTimePicker',
   host: {
     class: 'ngx-datepicker-input',
-    // '[attr.type]': '"time"',
+    '[attr.readOnly]': 'true',
   },
   providers: [
     {
@@ -159,7 +160,9 @@ export class NgxInputTimePicker implements ControlValueAccessor, Validator {
   }
 
   validate(control: AbstractControl): ValidationErrors | null {
-    return null;
+    const raw = this.value();
+    if (!raw) return null; // empty is handled by Validators.required, not us
+    return normalizeTime(raw) === null ? { invalid: true } : null;
   }
 
   protected _formatValue() {

@@ -1,27 +1,27 @@
 # ngx-kit/shared
 
-ابزارها و سرویس‌های مشترکی که بقیه‌ی بسته‌های `ngx-kit` روشون بنا شدن: مدیریت اورلی/دیالوگ، تشخیص جهت صفحه (RTL/LTR)، تشخیص تنظیمات مرورگر، و چند کامپوننت پایه‌ی قابل‌استفاده‌ی مجدد (اسلایدر، رنج‌اسلایدر، صفحه‌ی اشباع رنگ).
+Shared utilities and services that the rest of the `ngx-kit` packages are built on: overlay/dialog management, page-direction (RTL/LTR) detection, browser-preference detection, and a few reusable base components (slider, range slider, color-saturation panel).
 
-معمولاً مستقیم به این پکیج نیازی ندارید — بقیه‌ی بسته‌ها به‌صورت خودکار بهش وابسته‌ان. ولی اگه دارید یه کامپوننت سفارشی می‌سازید که باید با بقیه‌ی کتابخونه هم‌خونی داشته باشه (دارک‌مود، RTL، درگ‌وپرفورمنس)، از همین ابزارها استفاده کنید.
+You usually won't need this package directly — the other packages depend on it automatically. But if you're building a custom component that should stay consistent with the rest of the library (dark mode, RTL, drag performance), use these same utilities.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-سبک‌های پایه (شامل `color-scheme` که دارک‌مود رو فعال می‌کنه) رو یک‌بار در سراسر اپ ایمپورت کنید:
+Import the base styles (which enable dark mode via `color-scheme`) once, app-wide:
 
 ```scss
 // styles.scss
 @import 'ngx-kit/styles/all.css';
 ```
 
-## سرویس‌ها
+## Services
 
 ### `OverlayService`
 
-موتور اصلی پشتِ همه‌ی چیزهای شناور کتابخونه (منو، دیالوگ، پاپ‌آپ‌های رنگ/گرادیان/زاویه). یک المنت انگولاری رو داخل یک `<dialog>` بومیِ مرورگر (`showModal()`) نمایش می‌ده و نسبت به یک anchor موقعیت‌دهی می‌کنه.
+The engine behind everything floating in the library (menus, dialogs, the color/gradient/angle picker popups). Renders an Angular component inside a native `<dialog>` (`showModal()`) and positions it relative to an anchor.
 
 ```ts
 import { OverlayService } from 'ngx-kit/shared';
@@ -38,20 +38,20 @@ const ref = overlay.open({
   margin: 8,
 });
 
-ref.close(); // OverlayRef.close() آرگومان یا afterClosed نداره؛ برای اون‌جور رفتار (نتیجه‌ی بازگشتی، افترکلوز) از ngx-kit/dialog استفاده کنید که روی همین سرویس بنا شده
+ref.close(); // OverlayRef.close() takes no argument and has no afterClosed; for that (return value, afterClosed) use ngx-kit/dialog, which is built on top of this service
 ```
 
-چیزهایی که به‌صورت خودکار برات مدیریت می‌شه:
+What's handled for you automatically:
 
-- **موقعیت‌دهی هوشمند**: اگه فضای کافی پایین anchor نباشه، خودکار بالا می‌ره (`placement:'auto'`).
-- **بستن با کلیک بیرون**: با تشخیص کلیک روی backdrop، نه با listener سراسری روی document.
-- **پشته‌بندی درست**: چند اورلیِ هم‌زمان (مثلاً یه منوی زیرمنو‌دار) درست کار می‌کنن؛ Escape فقط آخرین (بالاترین) اورلی رو می‌بنده.
-- **بازگشتِ فوکوس**: بعد از بسته‌شدن، فوکوس به همون المنتی که قبلش فوکوس داشت برمی‌گرده (دسترس‌پذیری).
-- **RTL خودکار**: alignment و placement بر اساس جهت واقعیِ صفحه (نه فقط یه فرض ثابت) حساب می‌شن.
+- **Smart positioning**: if there isn't enough room below the anchor, it flips above (`placement: 'auto'`).
+- **Click-outside dismissal**: detected via the backdrop click, not a global `document` listener.
+- **Correct stacking**: multiple simultaneous overlays (e.g. a menu with a submenu) work correctly; Escape only closes the last (topmost) overlay.
+- **Focus restoration**: after closing, focus returns to whatever had focus before the overlay opened (accessibility).
+- **Automatic RTL**: alignment and placement are computed against the page's actual direction (not a fixed assumption).
 
 ### `DirectionService`
 
-یه سیگنال (`isRtl(): boolean`) که با `MutationObserver` روی attribute-ی `dir` عنصر `<html>` گوش می‌ده و به‌محض تغییرش، ری‌اکتیو آپدیت می‌شه — یعنی اگه اپ شما زبان رو runtime عوض کنه، همه‌چیز خودکار هماهنگ می‌مونه.
+A signal (`isRtl(): boolean`) that watches the `<html>` element's `dir` attribute with a `MutationObserver` and updates reactively the moment it changes — so if your app switches languages at runtime, everything stays in sync automatically.
 
 ```ts
 const direction = inject(DirectionService);
@@ -62,14 +62,14 @@ direction.isRtl(); // signal<boolean>
 
 ```ts
 const browser = inject(BrowserService);
-browser.prefersDarkMode; // boolean — یه‌بار در لحظه‌ی ساخت سرویس خونده می‌شه
+browser.prefersDarkMode; // boolean — read once at service construction time
 ```
 
-## ابزارهای Utility
+## Utilities
 
 ### `startDragSession(callbacks)`
 
-جایگزینِ الگوی مشکل‌دارِ `@HostListener('document:mousemove', ...)` که listener رو برای کل عمر کامپوننت روی `document` نگه می‌داره (حتی وقتی دراگی در جریان نیست — یه مشکل واقعیِ پرفورمنس روی صفحاتی با چند نمونه‌ی هم‌زمان). این تابع فقط در طول یک درگِ واقعی، listener اضافه می‌کنه و خودش پاک می‌کنه؛ `touchmove` هم با `{passive:false}` مدیریت می‌شه، پس درگ‌کردن روی موبایل صفحه رو اسکرول نمی‌کنه.
+Replaces the problematic `@HostListener('document:mousemove', ...)` pattern, which keeps a listener attached to `document` for the entire lifetime of the component — even when nothing is being dragged (a real performance issue on pages with many simultaneous instances). This function only adds a listener for the duration of an actual drag and removes it itself; `touchmove` is handled with `{passive: false}`, so dragging on mobile doesn't also scroll the page.
 
 ```ts
 import { startDragSession } from 'ngx-kit/shared';
@@ -80,7 +80,7 @@ function onPointerDown(ev: MouseEvent | TouchEvent) {
   stop?.();
   stop = startDragSession({
     onMove: (ev) => {
-      /* آپدیت موقعیت */
+      /* update position */
     },
     onEnd: () => {
       stop = undefined;
@@ -89,29 +89,29 @@ function onPointerDown(ev: MouseEvent | TouchEvent) {
 }
 ```
 
-> اگه کامپوننت‌تون `OnPush` هست و از `startDragSession` (به‌جای `@HostListener`) استفاده می‌کنید، حتماً داخل `onMove`/`onEnd` خودتون `ChangeDetectorRef.markForCheck()` رو صدا بزنید — برخلاف `@HostListener` که خودکار view رو dirty می‌کنه، `addEventListener` دستی این کار رو نمی‌کنه.
+> If your component is `OnPush` and uses `startDragSession` (instead of `@HostListener`), make sure to call `ChangeDetectorRef.markForCheck()` inside `onMove`/`onEnd` yourself — unlike `@HostListener`, which automatically marks the view dirty, a manual `addEventListener` does not.
 
 ### `getOffsetPosition(event, element)`
 
-موقعیت pointer/touch رو نسبت به گوشه‌ی بالا-چپِ یه المنت مشخص برمی‌گردونه؛ برای پیاده‌سازیِ کامپوننت‌های درگ‌محور (اسلایدر، انتخاب‌گر رنگ و ...) استفاده می‌شه.
+Returns the pointer/touch position relative to an element's top-left corner; used to implement drag-based components (sliders, color pickers, etc.).
 
 ### `mergeConfig(base, override)`
 
-ادغام عمیقِ دو آبجکت کانفیگ (برای الگوی `provideXxx({...})` که همه‌ی کتابخونه ازش استفاده می‌کنه).
+Deep-merges two config objects (for the `provideXxx({...})` pattern used throughout the library).
 
-## کامپوننت‌های پایه
+## Base components
 
-اینا رو مستقیم هم می‌شه استفاده کرد، ولی بیشتر به‌عنوان بلوک‌های سازنده‌ی کامپوننت‌های دیگه (مثل `color-picker`, `box-shadow`) طراحی شدن:
+These can be used directly, but they're mostly designed as building blocks for other components (like `color-picker`, `box-shadow`):
 
-| کامپوننت               | Selector             | توضیح                                                               |
-| ---------------------- | -------------------- | ------------------------------------------------------------------- |
-| `SliderComponent`      | `slider`             | اسلایدر تک‌مقداره، `ControlValueAccessor`، `[min]`/`[max]`/`[step]` |
-| `RangeSliderComponent` | `range-slider`       | اسلایدر بازه‌ای (دو thumb)                                          |
-| `SaturationComponent`  | داخلی (color-picker) | صفحه‌ی دوبعدیِ انتخاب اشباع/روشنایی رنگ                             |
+| Component | Selector | Description |
+| --- | --- | --- |
+| `SliderComponent` | `slider` | Single-value slider, `ControlValueAccessor`, `[min]`/`[max]`/`[step]` |
+| `RangeSliderComponent` | `range-slider` | Range slider (two thumbs) |
+| `SaturationComponent` | internal (color-picker) | 2D saturation/lightness picker panel |
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-هر دو مستقیماً روی `ngx-kit/shared` تکیه دارن:
+Both rely directly on `ngx-kit/shared`:
 
-- **دارک‌مود**: از تابع CSS بومیِ `light-dark()` استفاده می‌شه. برای این‌که کار کنه، باید `color-scheme: light dark` (یا `only light`/`only dark` برای force کردن دستی) روی `:root` ست بشه — این کار با ایمپورت‌کردن `ngx-kit/styles/all.css` خودکار انجام می‌شه. برای force کردن دستیِ تم (مستقل از `prefers-color-scheme` سیستم)، `data-ngx-theme="dark"` یا `"light"` رو روی `<html>`/`<body>` بذارید.
-- **RTL**: با `dir="rtl"` روی `<html>` فعال می‌شه؛ همه‌جای کتابخونه از CSS logical properties (`inset-inline-start` و ...) استفاده شده، پس نیازی به استایل جداگانه نیست.
+- **Dark mode**: uses the native CSS `light-dark()` function. For it to work, `color-scheme: light dark` (or `only light`/`only dark` to force it manually) must be set on `:root` — this happens automatically when you import `ngx-kit/styles/all.css`. To force a theme manually (independent of the OS's `prefers-color-scheme`), set `data-ngx-theme="dark"` or `"light"` on `<html>`/`<body>`.
+- **RTL**: enabled via `dir="rtl"` on `<html>`; the whole library uses CSS logical properties (`inset-inline-start`, etc.), so no separate styling is needed.

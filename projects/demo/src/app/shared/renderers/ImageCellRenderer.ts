@@ -14,7 +14,7 @@ import { CellRendererComponent, TableFieldBase } from 'ngx-kit/data-table';
         loading="lazy"
         (error)="onImageError($event)" />
     } @else {
-      <span class="image-placeholder">بدون تصویر</span>
+      <span class="image-placeholder">No image</span>
     }
   `,
   styles: `
@@ -39,7 +39,7 @@ export class ImageCellRenderer<T extends object> implements CellRendererComponen
   readonly row = input.required<T>();
   readonly field = input.required<TableFieldBase<T>>();
 
-  readonly alt = input('تصویر');
+  readonly alt = input('Image');
 
   // متد public با آرگومان است، پس خودش از استخراج rendererInputs مستثنی
   // می‌شود؛ protected هم شده که این مسئله همیشه صریح و مستند بماند.

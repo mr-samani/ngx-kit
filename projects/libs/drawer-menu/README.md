@@ -1,14 +1,14 @@
 # ngx-kit/drawer-menu
 
-درور منو (side drawer) با ۷ جلوه‌ی بازوبسته‌شدنِ متفاوت (از ساده تا سه‌بعدی/ژله‌ای)، ۳ رفتار برای محتوای صفحه (overlay/push/reveal)، و پیش‌فرضِ باز/بسته‌بودنِ واکنش‌گرا نسبت به اندازه‌ی صفحه.
+A side drawer menu with 7 different opening/closing effects (from simple to 3D/jelly), 3 behaviors for the page content (overlay/push/reveal), and a responsive default open/closed state based on screen size.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده‌ی پایه
+## Basic usage
 
 ```html
 <ngx-drawer-menu
@@ -18,59 +18,60 @@ npm install ngx-kit
   [width]="280"
   [openOnDesktop]="true"
   [openOnMobile]="false"
-  [(open)]="isOpen">
+  [(open)]="isOpen"
+>
   <div drawerContent>
-    <!-- محتوای منو -->
-    <a routerLink="/home">خانه</a>
-    <a routerLink="/settings">تنظیمات</a>
+    <!-- menu content -->
+    <a routerLink="/home">Home</a>
+    <a routerLink="/settings">Settings</a>
   </div>
 
-  <!-- محتوای اصلیِ صفحه (پیش‌فرض، بدون select) -->
+  <!-- main page content (default, no select) -->
   <router-outlet />
 </ngx-drawer-menu>
 ```
 
 ## API
 
-| ورودی                            | نوع                                                                              | پیش‌فرض          | توضیح                                                                                                                    |
-| -------------------------------- | -------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `side`                           | `'start' \| 'end'`                                                               | `'start'`        | منطقی — زیر RTL خودکار برعکس می‌شه                                                                                       |
-| `effect`                         | `'slide' \| 'curtain' \| 'jelly' \| 'pull' \| 'rotate3d' \| 'flip3d' \| 'scale'` | `'slide'`        | جلوه‌ی بازوبسته‌شدنِ خودِ پنل (پایین‌تر توضیح داده شده)                                                                  |
-| `contentBehavior`                | `'overlay' \| 'push' \| 'reveal'`                                                | `'overlay'`      | رفتارِ محتوای اصلیِ صفحه                                                                                                 |
-| `width`                          | `number`                                                                         | `280`            | عرضِ پنل به پیکسل                                                                                                        |
-| `swipeEnabled`                   | `boolean`                                                                        | `true`           | باز کردن با کشیدن از لبه‌ی صفحه                                                                                          |
-| `swipeEdgeSize`                  | `number`                                                                         | `24`             | پهنای ناحیه‌ی نامرئیِ لبه که کشیدن ازش باز می‌کنه                                                                        |
-| `backdropClose`                  | `boolean`                                                                        | `true`           | بستن با کلیک روی بک‌دراپ (یا تیره‌شدنِ محتوا در push/reveal)                                                             |
-| `curtainStrips`                  | `number`                                                                         | `7`              | فقط برای `effect="curtain"`                                                                                              |
-| `open`                           | `boolean` (model، دوطرفه)                                                        | `false`          | با `[(open)]` قابل‌کنترله                                                                                                |
-| `respondToViewport`              | `boolean`                                                                        | `true`           | رد شدن از `mobileBreakpoint` به‌صورت **زنده** (نه فقط بار اول) `open` رو با `openOnDesktop`/`openOnMobile` هماهنگ می‌کنه |
-| `openOnDesktop` / `openOnMobile` | `boolean`                                                                        | `true` / `false` |                                                                                                                          |
-| `mobileBreakpoint`               | `number`                                                                         | `768`            |                                                                                                                          |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `side` | `'start' \| 'end'` | `'start'` | Logical — automatically flips under RTL |
+| `effect` | `'slide' \| 'curtain' \| 'jelly' \| 'pull' \| 'rotate3d' \| 'flip3d' \| 'scale'` | `'slide'` | The panel's own open/close effect (described below) |
+| `contentBehavior` | `'overlay' \| 'push' \| 'reveal'` | `'overlay'` | How the main page content behaves |
+| `width` | `number` | `280` | Panel width in pixels |
+| `swipeEnabled` | `boolean` | `true` | Open by swiping from the screen edge |
+| `swipeEdgeSize` | `number` | `24` | Width of the invisible edge zone that a swipe can start from |
+| `backdropClose` | `boolean` | `true` | Close on backdrop click (or dimming the content in push/reveal) |
+| `curtainStrips` | `number` | `7` | Only for `effect="curtain"` |
+| `open` | `boolean` (model, two-way) | `false` | Controllable via `[(open)]` |
+| `respondToViewport` | `boolean` | `true` | Crossing `mobileBreakpoint` **live** (not just on first load) syncs `open` with `openOnDesktop`/`openOnMobile` |
+| `openOnDesktop` / `openOnMobile` | `boolean` | `true` / `false` | |
+| `mobileBreakpoint` | `number` | `768` | |
 
-### جلوه‌ها (`effect`)
+### Effects (`effect`)
 
-| مقدار      | توضیح                                                                                                            |
-| ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| `slide`    | اسلایدِ ساده‌ی کلاسیک                                                                                            |
-| `curtain`  | چند نوارِ عمودیِ هم‌رنگِ پنل که با تأخیرِ پلکانی جمع می‌شن و محتوا رو نمایان می‌کنن                              |
-| `jelly`    | نوسانِ فنریِ چندمرحله‌ای که فروکش می‌کنه (الهام از افکتِ [Jelly Slide Menu](https://dribbble.com/shots/2307371)) |
-| `pull`     | کشیدگیِ لاستیکیِ تک‌ضربه‌ای (rubber-band)                                                                        |
-| `rotate3d` | چرخشِ سه‌بعدیِ دورِ لولا، مثلِ بازشدنِ یه در                                                                     |
-| `flip3d`   | ورق‌خوردن با عمق روی محورِ Z، مثلِ جلدِ یه کتاب                                                                  |
-| `scale`    | بزرگ‌شدن از مرکز همراه با fade                                                                                   |
+| Value | Description |
+| --- | --- |
+| `slide` | Classic simple slide |
+| `curtain` | Several same-colored vertical strips that collapse with a staggered delay, revealing the content |
+| `jelly` | A multi-stage spring oscillation that settles down (inspired by the [Jelly Slide Menu](https://dribbble.com/shots/2307371) effect) |
+| `pull` | A single rubber-band stretch |
+| `rotate3d` | A 3D rotation around a hinge, like a door opening |
+| `flip3d` | Flips with depth on the Z axis, like a book cover |
+| `scale` | Zooms in from the center with a fade |
 
-### رفتارِ محتوا (`contentBehavior`)
+### Content behavior (`contentBehavior`)
 
-| مقدار     | توضیح                                                                  |
-| --------- | ---------------------------------------------------------------------- |
-| `overlay` | محتوا سرجاش می‌مونه، درور روش شناور می‌شه (با بک‌دراپ)                 |
-| `push`    | محتوا به‌اندازه‌ی عرضِ درور هل داده می‌شه (کنار می‌ره)                 |
-| `reveal`  | محتوا کمی کوچیک/عقب می‌ره، انگار درور از زیرش نمایان می‌شه (افکتِ iOS) |
+| Value | Description |
+| --- | --- |
+| `overlay` | Content stays in place, the drawer floats over it (with a backdrop) |
+| `push` | Content is pushed aside by the drawer's width |
+| `reveal` | Content shrinks/recedes slightly, as if the drawer is revealed behind it (the iOS effect) |
 
-## نکته‌ی معماری: امبد کردن داخلِ یه ناحیه‌ی محدود
+## Architecture note: embedding inside a bounded area
 
-پیش‌فرض، درور کل ارتفاعِ نزدیک‌ترین والدِ positioned رو می‌گیره (برای shell سراسریِ اپ همینو می‌خواید). اگه می‌خواید داخلِ یه کارت/ناحیه‌ی محدود (نه کل صفحه) امبدش کنید، کافیه اون container یه `position: relative` و ارتفاعِ مشخص داشته باشه — درور خودکار به همون باکس محدود می‌مونه (به لطفِ `perspective`ای که برای جلوه‌های سه‌بعدی استفاده می‌کنه و طبقِ اسپکِ CSS، containing-block برای فرزندهای `position:fixed` می‌سازه).
+By default, the drawer takes up the full height of the nearest positioned ancestor (which is what you want for a full app shell). If you want to embed it inside a bounded card/area (not the whole page), just give that container `position: relative` and a defined height — the drawer will automatically confine itself to that box (thanks to the `perspective` it uses for 3D effects, which per the CSS spec creates a containing block for `position:fixed` descendants).
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه؛ محاسباتِ درگ (که برخلافِ CSS logical properties، جهتِ فیزیکیِ واقعی لازم دارن) از `DirectionService` مشترک استفاده می‌کنن، پس با تغییرِ زنده‌ی `dir` هم درست کار می‌کنن.
+Supported automatically; drag math (which, unlike CSS logical properties, needs the real physical direction) uses the shared `DirectionService`, so it works correctly even with a live `dir` change.

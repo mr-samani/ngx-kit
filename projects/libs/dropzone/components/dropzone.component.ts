@@ -73,7 +73,7 @@ export class NgxDropzoneComponent implements OnDestroy {
     const accept = this.accept();
     if (accept) parts.push(accept);
     const max = this.maxFileSize();
-    if (max) parts.push(`حداکثر ${formatBytes(max)}`);
+    if (max) parts.push(`max ${formatBytes(max)}`);
     return parts.join(' · ');
   });
 

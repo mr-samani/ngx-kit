@@ -143,7 +143,7 @@ export class NgxImageEditorComponent {
           this.workingCanvas.set(createWorkingCopy(img));
           this.resetAdjustments();
         })
-        .catch((err) => this.loadError.set(err?.message ?? 'خطا در بارگذاری تصویر'))
+        .catch((err) => this.loadError.set(err?.message ?? 'Failed to load image'))
         .finally(() => this.loading.set(false));
     });
 

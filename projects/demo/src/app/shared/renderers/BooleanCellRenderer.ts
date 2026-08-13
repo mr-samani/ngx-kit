@@ -10,7 +10,7 @@ import { CellRendererComponent, TableFieldBase } from 'ngx-kit/data-table';
       class="boolean-badge"
       [class.boolean-badge--yes]="value()"
       [class.boolean-badge--no]="!value()">
-      {{ value() ? 'بله' : 'خیر' }}
+      {{ value() ? 'Yes' : 'No' }}
     </span>
   `,
   styles: `

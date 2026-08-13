@@ -1,20 +1,20 @@
 # ngx-kit/angle-selector
 
-انتخاب‌گر زاویه (۰ تا ۳۶۰ درجه) با یه دستگیره‌ی قابل‌درگِ دایره‌ای — برای تنظیمِ جهتِ گرادیان، چرخشِ سایه، یا هر مقدارِ زاویه‌ای دیگه.
+An angle picker (0 to 360 degrees) with a draggable circular handle — for setting a gradient's direction, a shadow's rotation, or any other angular value.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده
+## Usage
 
 ```html
 <ngx-input-angle [(ngModel)]="angle"></ngx-input-angle>
 ```
 
-یا روی یه input معمولی:
+Or on a plain input:
 
 ```html
 <input type="number" [ngxInputAngle]="angle" (change)="angle = $event" />
@@ -22,13 +22,13 @@ npm install ngx-kit
 
 ## API
 
-| ورودی                 | نوع                           | پیش‌فرض  | توضیح                      |
-| --------------------- | ----------------------------- | -------- | -------------------------- |
-| `theme`               | `'light' \| 'dark' \| 'auto'` | `'auto'` | تمِ کامپوننت               |
-| `change` _(دایرکتیو)_ | `EventEmitter<number>`        |          | زاویه‌ی جدید (بر حسب درجه) |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Component theme |
+| `change` *(directive)* | `EventEmitter<number>` | | The new angle (in degrees) |
 
-مقدار همیشه یه عددِ بین `0` تا `360` هست.
+The value is always a number between `0` and `360`.
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه. دستگیره با RxJS (`switchMap` + `takeUntil` + `takeUntilDestroyed`) پیاده شده، پس listenerهای درگ فقط دقیقاً حین یه درگِ واقعی فعالن.
+Supported automatically. The handle is implemented with RxJS (`switchMap` + `takeUntil` + `takeUntilDestroyed`), so drag listeners are only ever active during an actual drag.

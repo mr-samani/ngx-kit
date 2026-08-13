@@ -1,14 +1,14 @@
 # ngx-kit/menu
 
-منوی کشویی و منوی راست‌کلیک (context menu)، با موقعیت‌دهیِ هوشمند نسبت به anchor (از `ngx-kit/shared`'s `OverlayService`).
+Dropdown menu and context (right-click) menu, with smart positioning relative to an anchor (via `ngx-kit/shared`'s `OverlayService`).
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده‌ی پایه (منوی کشویی)
+## Basic usage (dropdown menu)
 
 ```ts
 import { NgxMenuModule } from 'ngx-kit/menu';
@@ -17,57 +17,57 @@ import { NgxMenuModule } from 'ngx-kit/menu';
   standalone: true,
   imports: [NgxMenuModule],
   template: `
-    <button [ngxMenu]="userMenu">باز کردن منو</button>
+    <button [ngxMenu]="userMenu">Open menu</button>
 
     <ngx-menu #userMenu="ngxMenu">
-      <ngx-menu-item (click)="editProfile()">ویرایش پروفایل</ngx-menu-item>
-      <ngx-menu-item (click)="logout()">خروج</ngx-menu-item>
+      <ngx-menu-item (click)="editProfile()">Edit profile</ngx-menu-item>
+      <ngx-menu-item (click)="logout()">Sign out</ngx-menu-item>
       <ngx-menu-divider></ngx-menu-divider>
-      <ngx-menu-item [ngxMenu]="subMenu">تنظیمات بیشتر ›</ngx-menu-item>
+      <ngx-menu-item [ngxMenu]="subMenu">More settings ›</ngx-menu-item>
     </ngx-menu>
 
     <ngx-menu #subMenu="ngxMenu">
-      <ngx-menu-item>گزینه‌ی الف</ngx-menu-item>
-      <ngx-menu-item>گزینه‌ی ب</ngx-menu-item>
+      <ngx-menu-item>Option A</ngx-menu-item>
+      <ngx-menu-item>Option B</ngx-menu-item>
     </ngx-menu>
   `,
 })
 export class MyComponent {}
 ```
 
-نکته‌ی مهم: محتوای `<ngx-menu>` تا وقتی از طریق `[ngxMenu]` (یا `[ngxContextMenu]`) trigger نشه رندر نمی‌شه — یعنی `<ngx-menu>` رو نمی‌شه مستقیم و بدون یه trigger، به‌عنوان یه لیستِ همیشه-نمایان (مثل یه سایدبار) استفاده کرد؛ برای اون منظور از یه لیست معمولی با استایل مشابه استفاده کنید.
+Important: `<ngx-menu>`'s content isn't rendered until it's triggered via `[ngxMenu]` (or `[ngxContextMenu]`) — so you can't use `<ngx-menu>` directly, without a trigger, as an always-visible list (like a sidebar). For that, use a regular list styled similarly.
 
-منوی تودرتو (زیرمنو) هم همون‌طور که بالا دیدید، فقط با گذاشتن `[ngxMenu]` روی خودِ `<ngx-menu-item>` کار می‌کنه.
+Nested menus (submenus) work exactly as shown above, just by putting `[ngxMenu]` on the `<ngx-menu-item>` itself.
 
-## منوی راست‌کلیک
+## Right-click (context) menu
 
 ```html
-<div [ngxContextMenu]="rightClickMenu">راست‌کلیک کن روی من</div>
+<div [ngxContextMenu]="rightClickMenu">Right-click me</div>
 
 <ngx-menu #rightClickMenu="ngxMenu">
-  <ngx-menu-item>کپی</ngx-menu-item>
-  <ngx-menu-item>چسباندن</ngx-menu-item>
+  <ngx-menu-item>Copy</ngx-menu-item>
+  <ngx-menu-item>Paste</ngx-menu-item>
 </ngx-menu>
 ```
 
 ## API
 
-### دایرکتیو `[ngxMenu]`
+### `[ngxMenu]` directive
 
-| ورودی       | نوع                           | توضیح                                                                |
-| ----------- | ----------------------------- | -------------------------------------------------------------------- |
-| `ngxMenu`   | `NgxMenu \| TemplateRef`      | رفرنسِ منویی که باید باز بشه                                         |
-| `placement` | `'top' \| 'bottom' \| 'auto'` | جهتِ باز شدن؛ پیش‌فرض `'auto'` (خودکار انتخاب می‌شه اگه فضا کم باشه) |
+| Input | Type | Description |
+| --- | --- | --- |
+| `ngxMenu` | `NgxMenu \| TemplateRef` | Reference to the menu to open |
+| `placement` | `'top' \| 'bottom' \| 'auto'` | Opening direction; defaults to `'auto'` (picked automatically if there isn't enough room) |
 
 ### `<ngx-menu>`
 
-| ورودی   | نوع      | توضیح                   |
-| ------- | -------- | ----------------------- |
-| `class` | `string` | کلاسِ CSS اضافی روی پنل |
+| Input | Type | Description |
+| --- | --- | --- |
+| `class` | `string` | Extra CSS class on the panel |
 
-### شخصی‌سازی ظاهر
+### Styling
 
-از طریق CSS custom properties:
+Via CSS custom properties:
 
 ```css
 ngx-menu {
@@ -80,6 +80,6 @@ ngx-menu {
 }
 ```
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-هر دو خودکار پشتیبانی می‌شن (از طریق `ngx-kit/shared`'s `OverlayService`/`DirectionService` و `light-dark()`)؛ کار اضافه‌ای لازم نیست.
+Both are supported automatically (via `ngx-kit/shared`'s `OverlayService`/`DirectionService` and `light-dark()`); no extra work needed.

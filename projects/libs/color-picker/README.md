@@ -1,25 +1,22 @@
 # ngx-kit/color-picker
 
-انتخاب‌گر رنگ کامل: پیکر بصری (اشباع/فام)، ورودی RGB/HSL/CMYK/HEX، کانال آلفا، و پشتیبانی از EyeDropper API مرورگر برای برداشتن رنگ از هرجای صفحه.
+A complete color picker: a visual picker (saturation/hue), RGB/HSL/CMYK/HEX inputs, an alpha channel, and support for the browser's EyeDropper API to pick a color from anywhere on the screen.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده به‌عنوان کامپوننت
+## Usage as a component
 
 ```html
-<ngx-input-color
-  [(ngModel)]="color"
-  [outputType]="'HEX'"
-  [defaultInspector]="ColorInspector.Picker"></ngx-input-color>
+<ngx-input-color [(ngModel)]="color" [outputType]="'HEX'" [defaultInspector]="ColorInspector.Picker"></ngx-input-color>
 ```
 
-`NgxInputColorComponent` یه `ControlValueAccessor` کامله، پس با `ngModel`، `formControl`، `formControlName` همه کار می‌کنه.
+`NgxInputColorComponent` is a full `ControlValueAccessor`, so it works with `ngModel`, `formControl`, and `formControlName`.
 
-## استفاده به‌عنوان دایرکتیو (روی یه input معمولی)
+## Usage as a directive (on a plain input)
 
 ```html
 <input type="text" [ngxInputColor]="color" (change)="color = $event" [outputType]="'RGB'" />
@@ -29,24 +26,24 @@ npm install ngx-kit
 
 ### `<ngx-input-color>` / `[ngxInputColor]`
 
-| ورودی                                      | نوع                                               | پیش‌فرض  | توضیح                                                       |
-| ------------------------------------------ | ------------------------------------------------- | -------- | ----------------------------------------------------------- |
-| `theme`                                    | `'light' \| 'dark' \| 'auto'`                     | `'auto'` | `'auto'` یعنی از `prefers-color-scheme` مرورگر پیروی می‌کنه |
-| `simpleMode`                               | `boolean`                                         | `false`  | حالت جمع‌وجورتر UI                                          |
-| `outputType`                               | `'HEX' \| 'RGB' \| 'HSL' \| 'HSV' \| 'CMYK'`      | `'HEX'`  | فرمتِ رشته‌ی خروجی                                          |
-| `defaultInspector`                         | `ColorInspector` (`Picker \| RGB \| HSL \| CMYK`) | `Picker` | تبِ پیش‌فرضِ باز                                            |
-| `useAlphaChannel`                          | `boolean`                                         | `true`   | نمایش/عدم‌نمایش کانال شفافیت                                |
-| `setInputBackgroundColor` _(فقط دایرکتیو)_ | `boolean`                                         | `true`   | پس‌زمینه‌ی خودِ input رو به رنگ انتخاب‌شده تنظیم می‌کنه     |
-| `change` _(خروجی، فقط دایرکتیو)_           | `EventEmitter<string>`                            |          | مقدار جدید هر بار که رنگ عوض بشه                            |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | `'auto'` follows the browser's `prefers-color-scheme` |
+| `simpleMode` | `boolean` | `false` | A more compact UI |
+| `outputType` | `'HEX' \| 'RGB' \| 'HSL' \| 'HSV' \| 'CMYK'` | `'HEX'` | Output string format |
+| `defaultInspector` | `ColorInspector` (`Picker \| RGB \| HSL \| CMYK`) | `Picker` | Which tab is open by default |
+| `useAlphaChannel` | `boolean` | `true` | Show/hide the alpha (transparency) channel |
+| `setInputBackgroundColor` *(directive only)* | `boolean` | `true` | Sets the input's own background to the selected color |
+| `change` *(output, directive only)* | `EventEmitter<string>` | | The new value whenever the color changes |
 
-### فرمت‌های ورودی/خروجی
+### Input/output formats
 
-مقدار می‌تونه هر کدوم از این‌ها باشه: `#rrggbb`, `#rrggbbaa` (شامل مخفف ۳ و ۴ کاراکتری با آلفا)، `rgb()`/`rgba()`، `hsl()`/`hsla()`.
+The value can be any of: `#rrggbb`, `#rrggbbaa` (including 3- and 4-character shorthand with alpha), `rgb()`/`rgba()`, `hsl()`/`hsla()`.
 
 ## EyeDropper
 
-اگه مرورگر کاربر از [EyeDropper API](https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper) پشتیبانی کنه (کروم/اج جدید)، دکمه‌ی قطره‌چکان خودکار فعال می‌شه و کاربر می‌تونه رنگ رو از هرجای صفحه (حتی بیرون از مرورگر) بردارد. در مرورگرهایی که پشتیبانی نمی‌کنن، این دکمه مخفی می‌مونه.
+If the user's browser supports the [EyeDropper API](https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper) (recent Chrome/Edge), the eyedropper button is enabled automatically and the user can pick a color from anywhere on the page (even outside the browser). On browsers without support, the button stays hidden.
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.

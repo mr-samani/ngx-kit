@@ -1,14 +1,14 @@
 # ngx-kit/gallery
 
-ویوئرِ حرفه‌ایِ تصویر: یه لیست تصویر می‌گیره، با دکمه‌های ‹ › (مثلِ کاروسل) بین‌شون می‌رید، نوارِ ابزارِ کاملاً قابل‌تنظیم (زوم، چرخش، دانلود، پرینت، تمام‌صفحه)، زوم با اسکرول موس یا پینچِ دوانگشتی، و پن با درگ وقتی زوم‌شده.
+A professional image viewer: takes a list of images, navigates them with ‹ › buttons (like a carousel), has a fully configurable toolbar (zoom, rotate, download, print, fullscreen), zoom via mouse scroll or two-finger pinch, and panning via drag once zoomed in.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده — مستقیم توی صفحه
+## Usage — directly in the page
 
 ```html
 <ngx-image-viewer [images]="images" [toolbar]="{ print: false }" />
@@ -16,12 +16,12 @@ npm install ngx-kit
 
 ```ts
 images: NgxImageViewerItem[] = [
-  { src: '/img/1.jpg', alt: 'تصویر ۱', caption: 'کوه‌های البرز' },
-  { src: '/img/2.jpg', alt: 'تصویر ۲' },
+  { src: '/img/1.jpg', alt: 'Image 1', caption: 'Alborz mountains' },
+  { src: '/img/2.jpg', alt: 'Image 2' },
 ];
 ```
 
-## استفاده — داخلِ یه دیالوگِ تمام‌صفحه
+## Usage — inside a fullscreen dialog
 
 ```ts
 import { NgxImageViewerService } from 'ngx-kit/gallery';
@@ -33,39 +33,39 @@ openGallery() {
 }
 ```
 
-`NgxImageViewerComponent` به هیچ دیالوگی وابسته نیست (فقط یه خروجیِ `closed` داره) — اگه می‌خواید داخلِ دیالوگِ خودتون (مثلاً `ngx-kit/dialog`) بذاریدش، مستقیم از خودِ کامپوننت استفاده کنید؛ سرویس فقط یه میان‌بره.
+`NgxImageViewerComponent` doesn't depend on any dialog (it only has a `closed` output) — if you want to put it inside your own dialog (e.g. `ngx-kit/dialog`), use the component directly; the service is just a convenience shortcut.
 
 ## API
 
 ### `<ngx-image-viewer>`
 
-| ورودی                              | نوع                                 | پیش‌فرض           | توضیح                                        |
-| ---------------------------------- | ----------------------------------- | ----------------- | -------------------------------------------- |
-| `images`                           | `NgxImageViewerItem[]` **(اجباری)** |                   | `{ src, alt?, caption?, downloadFileName? }` |
-| `startIndex`                       | `number`                            | `0`               |                                              |
-| `toolbar`                          | `NgxImageViewerToolbarConfig`       | همه `true`        | هر دکمه جدا فعال/غیرفعال می‌شه (پایین‌تر)    |
-| `minZoom` / `maxZoom` / `zoomStep` | `number`                            | `1` / `6` / `0.4` |                                              |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `images` | `NgxImageViewerItem[]` **(required)** | | `{ src, alt?, caption?, downloadFileName? }` |
+| `startIndex` | `number` | `0` | |
+| `toolbar` | `NgxImageViewerToolbarConfig` | all `true` | Each button can be toggled individually (see below) |
+| `minZoom` / `maxZoom` / `zoomStep` | `number` | `1` / `6` / `0.4` | |
 
-| خروجی         | نوع      | توضیح                                                                                           |
-| ------------- | -------- | ----------------------------------------------------------------------------------------------- |
-| `indexChange` | `number` | تغییرِ تصویرِ فعال                                                                              |
-| `closed`      | `void`   | کاربر دکمه‌ی بستن رو زد یا Esc رو فشرد (خودِ کامپوننت چیزی رو نمی‌بنده؛ تصمیم با مصرف‌کننده‌ست) |
+| Output | Type | Description |
+| --- | --- | --- |
+| `indexChange` | `number` | The active image changed |
+| `closed` | `void` | The user clicked the close button or pressed Esc (the component itself doesn't close anything; that's left to the consumer) |
 
 ### `NgxImageViewerToolbarConfig`
 
-`prevNext`, `counter`, `zoomIn`, `zoomOut`, `resetZoom`, `rotateLeft`, `rotateRight`, `download`, `print`, `fullscreen`, `close` — همه `boolean`، پیش‌فرضِ همه `true` به‌جز `close` (`false`).
+`prevNext`, `counter`, `zoomIn`, `zoomOut`, `resetZoom`, `rotateLeft`, `rotateRight`, `download`, `print`, `fullscreen`, `close` — all `boolean`, all default to `true` except `close` (`false`).
 
-## تعامل‌ها
+## Interactions
 
-| ژست                                    | نتیجه                                                 |
-| -------------------------------------- | ----------------------------------------------------- |
-| اسکرولِ موس                            | زوم، نسبت به همون نقطه‌ی زیرِ cursor (نه مرکزِ تصویر) |
-| پینچِ دوانگشتی (تاچ)                   | زوم                                                   |
-| درگ با موس یا تک‌انگشتی (وقتی زوم‌شده) | پن                                                    |
-| ← / →                                  | تصویرِ قبلی/بعدی                                      |
-| + / -                                  | زوم این/اوت                                           |
-| Esc                                    | امیتِ `closed`                                        |
+| Gesture | Result |
+| --- | --- |
+| Mouse scroll | Zoom, relative to the point under the cursor (not the image center) |
+| Two-finger pinch (touch) | Zoom |
+| Drag with mouse or one finger (when zoomed) | Pan |
+| ← / → | Previous/next image |
+| + / - | Zoom in/out |
+| Esc | Emits `closed` |
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.

@@ -10,7 +10,7 @@ import { CellRendererComponent, TableFieldBase } from 'ngx-kit/data-table';
       @for (role of value(); track role) {
         <span class="role">{{ role }}</span>
       } @empty {
-        <span class="empty">بدون نقش</span>
+        <span class="empty">No roles</span>
       }
     </div>
   `,

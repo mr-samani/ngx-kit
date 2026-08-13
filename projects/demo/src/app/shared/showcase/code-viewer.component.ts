@@ -17,9 +17,9 @@ import { DarkModeService } from '../services/dark-mode.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (source.isLoading()) {
-      <div class="code-viewer-state">در حال بارگذاری سورس…</div>
+      <div class="code-viewer-state">Loading source…</div>
     } @else if (source.error()) {
-      <div class="code-viewer-state code-viewer-state--error">سورس این فایل در دسترس نیست.</div>
+      <div class="code-viewer-state code-viewer-state--error">Source not available for this file.</div>
     } @else {
       <ngx-monaco-editor
         class="code-viewer-editor"

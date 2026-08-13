@@ -11,7 +11,7 @@
       [class.active]="activeTab() === 0"
       [attr.aria-selected]="activeTab() === 0"
       (click)="select(0)">
-      پیش‌نمایش
+      Preview
     </button>
     @for (file of files(); track file.path; let i = $index) {
       <button
@@ -32,7 +32,7 @@
         [class.active]="activeTab() === files().length + 1"
         [attr.aria-selected]="activeTab() === files().length + 1"
         (click)="select(files().length + 1)">
-        مستندات
+        Docs
       </button>
     }
   </div>
