@@ -67,12 +67,15 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   readonly totalRecords = input.required<number>();
   readonly showRecordNumber = input(this.config.showRecordNumber);
   readonly operations = input<TemplateRef<{ $implicit: T }>>();
-  readonly operationWidth = input(60);
-  readonly numWidth = input(60);
+  readonly operationWidth = input(80);
+  readonly numWidth = input(80);
   readonly pageSize = input(this.paginationConfig.defaultPageSize);
+  readonly page = input(1);
+  readonly pageChange = output<number>();
   readonly loading = input(false);
   readonly multiSort = input<boolean | undefined>(undefined);
-  readonly lazy = input(false);
+  readonly lazy = input(this.config.lazy);
+  readonly resizable = input(this.config.resizable);
   /** پیش‌فرض بر اساس ایندکس؛ برای جلوگیری از گم‌شدن state سطرها هنگام سورت،
    *  یک شناسه‌ی یکتا بدهید: [trackBy]="(i, row) => row.id" */
   readonly trackBy = input<(index: number, row: T) => unknown>((index) => index);
@@ -83,7 +86,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   readonly columnResize = output<{ field: string; width: number }>();
 
   // ------------------------------------------------------------ int. state
-  protected readonly page = signal(1);
+  protected readonly pageIndex = signal(1);
   protected readonly pageSizeS = signal(this.paginationConfig.defaultPageSize);
   protected readonly sorts = signal<SortMeta<T>[]>([]);
   protected readonly widths = signal<Record<string, number>>({});
@@ -103,7 +106,9 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   constructor() {
     effect(() => {
       const ps = this.pageSize();
-      if (ps) this.pageSizeS.set(ps);
+      this.pageSizeS.set(ps);
+      const pi = this.page();
+      this.pageIndex.set(pi);
     });
 
     // برای هر ستونِ تازه‌دیده‌شده یک عرض seed کن؛ ستون‌هایی که کاربر دستی
@@ -124,9 +129,10 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   }
 
   ngOnInit(): void {
-    if (this.lazy()) {
-      this.lazyLoad.emit({ first: 0, pageIndex: 1, pageSize: this.pageSizeS(), sorts: [] });
-    }
+    // نیاز به این نیست در لود خود صفحه بندی paginate را صدا میزند
+    // if (this.lazy()) {
+    //   this.lazyLoad.emit({ first: 0, pageIndex: 1, pageSize: this.pageSizeS(), sorts: [] });
+    // }
   }
 
   ngAfterContentInit(): void {
@@ -169,7 +175,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
 
   protected readonly pagedData = computed<readonly T[]>(() => {
     if (this.lazy()) return this.sortedData();
-    const start = (this.page() - 1) * this.pageSizeS();
+    const start = (this.pageIndex() - 1) * this.pageSizeS();
     return this.sortedData().slice(start, start + this.pageSizeS());
   });
 
@@ -185,7 +191,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
 
   /** بدون mutation روی داده‌ی ورودی: شماره‌ی ردیف صرفاً از روی page/pageSize/rowIndex محاسبه می‌شود. */
   protected recordNumber(rowIndex: number): number {
-    return (this.page() - 1) * this.pageSizeS() + rowIndex + 1;
+    return (this.pageIndex() - 1) * this.pageSizeS() + rowIndex + 1;
   }
 
   // -------------------------------------------------------------- سورت
@@ -220,27 +226,32 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     }
 
     this.sorts.set(next);
-    this.page.set(1);
+    this.pageIndex.set(1);
+    this.pageChange.emit(this.pageIndex());
     this.sortChange.emit(next);
     this.emitLazyIfNeeded();
   }
 
   // ------------------------------------------------------------ صفحه‌بندی
   protected onPaginate(event: PageEvent): void {
-    this.page.set(event.page);
+    this.pageIndex.set(event.page);
     this.pageSizeS.set(event.pageSize);
+    this.pageChange.emit(this.pageIndex());
     this.emitLazyIfNeeded();
   }
 
   private emitLazyIfNeeded(): void {
     if (!this.lazy()) return;
-    const pageIndex = this.page();
+    const pageIndex = this.pageIndex();
     const pageSize = this.pageSizeS();
     this.lazyLoad.emit({
       pageIndex,
       pageSize,
       first: (pageIndex - 1) * pageSize,
       sorts: this.sorts(),
+      sorting: this.sorts()
+        ?.map((s) => `${s.field} ${s.direction}`)
+        .join(','),
     });
   }
 
@@ -255,7 +266,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     return field.maxWidth ?? this.config.column.maxWidth;
   }
   protected isResizable(field: TableField<T, any>): boolean {
-    return (field.resizable ?? this.config.resizable) !== false;
+    return (field.resizable ?? this.resizable()) !== false;
   }
   protected onColumnResizing(column: string, width: number): void {
     this.widths.update((w) => ({ ...w, [column]: width }));

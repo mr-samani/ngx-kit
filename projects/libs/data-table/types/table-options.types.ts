@@ -36,4 +36,5 @@ export type ResolvedTableOptions = Required<
   labels: Required<TableLabels>;
   renderers: RendererRegistry;
   formatters: Readonly<Record<string, TableCellFormatter<any>>>;
+  lazy: boolean;
 };

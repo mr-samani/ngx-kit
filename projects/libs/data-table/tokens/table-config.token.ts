@@ -2,7 +2,7 @@ import { InjectionToken } from '@angular/core';
 import { ResolvedTableOptions } from '../types/table-options.types';
 
 export const NGX_TABLE_CONFIG_DEFAULT: ResolvedTableOptions = {
-  showRecordNumber: true,
+  showRecordNumber: false,
   hoverable: true,
   multiSort: true,
   resizable: true,
@@ -16,6 +16,7 @@ export const NGX_TABLE_CONFIG_DEFAULT: ResolvedTableOptions = {
   },
   renderers: {},
   formatters: {},
+  lazy: false,
 };
 
 /** به هر نمونه‌ی ngx-table تزریق می‌شود. با provideTable() مقداردهی کنید. */

@@ -52,10 +52,10 @@ export type RendererExtraInputs<C extends Type<any>> = {
 export type ColumnAlign = 'start' | 'center' | 'end';
 
 export type TableCellFormatter<T extends object = object> = (
-  value: unknown,
+  value: any,
   row: T,
   field: TableFieldBase<T>,
-) => unknown;
+) => any;
 
 export interface CellTemplateContext<T extends object> {
   $implicit: T;
