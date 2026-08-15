@@ -66,6 +66,7 @@
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
+  min-inline-size: 0; // بدون این، ستون‌های flex:1 1 0 (بدون width صریح) هیچ‌وقت واقعاً کوچیک‌تر از عرض طبیعیِ محتواشون نمی‌شن، پس ellipsis/overflow:hidden بی‌اثر می‌مونه و ممکنه از جدول بیرون بزنن
   border-bottom: 1px solid var(--ngx-table-border);
   border-inline-end: 1px solid var(--ngx-table-border);
 

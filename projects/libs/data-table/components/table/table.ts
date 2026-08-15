@@ -111,16 +111,23 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
       this.pageIndex.set(pi);
     });
 
-    // برای هر ستونِ تازه‌دیده‌شده یک عرض seed کن؛ ستون‌هایی که کاربر دستی
-    // ریسایز کرده دیگر هیچ‌وقت دوباره نوشته نمی‌شوند.
+    // برای هر ستونِ تازه‌دیده‌شده که width عددیِ صریح دارد، یک عرض seed کن؛
+    // ستون‌هایی که کاربر دستی ریسایز کرده دیگر هیچ‌وقت دوباره نوشته نمی‌شوند.
+    // مهم: ستون‌هایی که اصلاً width ندارند (یا width رشته‌ای مثل '20%' دارند)
+    // عمداً اینجا seed نمی‌شوند — قبلاً همه‌ی ستون‌ها با یک defaultWidth ثابت
+    // seed می‌شدند که باعث می‌شد جدول با flex:0 0 روی هر ستون هیچ‌وقت واقعاً
+    // 100% عرض رو پر نکنه، حتی وقتی کاربر عمداً یک ستون رو بدون width گذاشته
+    // بود تا فضای باقی‌مونده رو خودش پر کنه.
     effect(() => {
       const cols = this.fields();
       const current = this.widths();
       let changed = false;
       const next = { ...current };
       for (const f of cols) {
-        if (!(f.column in next) && !this.manuallyResized.has(f.column)) {
-          next[f.column] = f.width ?? this.config.column.defaultWidth;
+        if (this.manuallyResized.has(f.column)) continue;
+        if (f.column in next) continue;
+        if (typeof f.width === 'number') {
+          next[f.column] = f.width;
           changed = true;
         }
       }
@@ -258,6 +265,18 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   // -------------------------------------------------------------- ریسایز
   protected columnWidth(column: string): number {
     return this.widths()[column] ?? this.config.column.defaultWidth;
+  }
+  /**
+   * مقدار CSS `flex` واقعیِ این ستون:
+   *  - اگه دستی ریسایز شده یا width عددی داره → `0 0 <px>` (ثابت، بدون رشد/کوچک‌شدن)
+   *  - اگه width رشته‌ای داره (مثلاً '20%') → `0 0 <رشته>` (ثابت، هر واحد CSS معتبری)
+   *  - اگه اصلاً width نداره → `1 1 0` (رشد می‌کنه تا فضای باقی‌مونده‌ی جدول رو پر کنه)
+   */
+  protected columnFlex(field: TableField<T, any>): string {
+    const resized = this.widths()[field.column];
+    if (resized != null) return `0 0 ${resized}px`;
+    if (typeof field.width === 'string') return `0 0 ${field.width}`;
+    return '1 1 0';
   }
   protected columnMin(field: TableField<T, any>): number {
     return field.minWidth ?? this.config.column.minWidth;

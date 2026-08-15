@@ -39,7 +39,7 @@ const fields = defineFields<UserDto, typeof renderers>(renderers, [
     width: 220,
     rendererInputs: { nameField: 'fullName', showName: true }, // ✅ fully type-checked
   },
-  { column: 'userName', title: 'Username', width: 160, sortable: true },
+  { column: 'userName', title: 'Username', sortable: true },
   { column: 'email', title: 'Email', width: 230, sortable: true, formatter: 'emptyDash' },
   { column: 'isActive', title: 'Active', renderer: 'boolean', width: 90, sortable: true },
   { column: 'status', title: 'Status', renderer: 'status', width: 120, sortable: true },
@@ -104,7 +104,7 @@ export class DemoTable {
       .getUsers({
         skipCount: event.first,
         maxResultCount: event.pageSize,
-        sorting: event.sorts.map((s) => `${s.field} ${s.direction}`).join(','),
+        sorting: event.sorts?.map((s) => `${s.field} ${s.direction}`).join(','),
       })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe((result) => {

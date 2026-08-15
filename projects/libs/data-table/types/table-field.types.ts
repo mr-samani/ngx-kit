@@ -69,7 +69,14 @@ export interface CellTemplateContext<T extends object> {
 export interface TableFieldBase<T extends object> {
   column: Extract<keyof T, string>;
   title: string;
-  width?: number;
+  /**
+   * عرضِ این ستون. عدد یعنی پیکسل (`160` = `160px`)؛ رشته یعنی هر مقدار
+   * معتبرِ CSS length برای flex-basis (`'20%'`, `'12rem'`, ...). اگه اصلاً
+   * ندید، این ستون flex می‌شه (`flex: 1 1 0`) و فضای باقی‌مونده‌ی جدول رو پر
+   * می‌کنه — دقیقاً برخلافِ ستون‌هایی که width دارن (که `flex: 0 0 <width>`
+   * می‌گیرن و ثابت می‌مونن).
+   */
+  width?: number | string;
   minWidth?: number;
   maxWidth?: number;
   resizable?: boolean;

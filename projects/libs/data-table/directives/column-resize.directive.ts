@@ -1,4 +1,4 @@
-import { Directive, HostListener, input, output } from '@angular/core';
+import { Directive, ElementRef, HostListener, inject, input, output } from '@angular/core';
 
 /**
  * دستگیره‌ی درگ برای ریسایز ستون. روی لبه‌ی «انتهای منطقی» (inline-end) قرار
@@ -27,6 +27,8 @@ export class ColumnResize {
   readonly resizing = output<number>();
   readonly resizeEnd = output<number>();
 
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+
   private dragging = false;
   private startX = 0;
   private baseWidth = 0;
@@ -37,7 +39,12 @@ export class ColumnResize {
     event.stopPropagation();
     this.dragging = true;
     this.startX = event.clientX;
-    this.baseWidth = this.startWidth();
+    // اندازه‌ی واقعیِ رندرشده‌ی ستون رو می‌گیریم، نه فقط input ورودی — چون
+    // ستون‌هایی که width صریح ندارن (flex:1 1 0، فضای باقی‌مونده رو پر
+    // می‌کنن) هیچ عرض عددیِ از‌پیش‌شناخته‌شده‌ای ندارن؛ تنها منبع درستِ
+    // «عرض فعلی» برای شروع محاسبه‌ی درگ، خودِ DOM هست.
+    const measured = this.elementRef.nativeElement.parentElement?.getBoundingClientRect().width;
+    this.baseWidth = measured && measured > 0 ? measured : this.startWidth();
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
   }
 
