@@ -1,1 +1,0 @@
-import {v,e as be,aK as qd,bI as R}from'./main-5O2UVD2T.js';function w(t){t||(t=v(be));let i=new R(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(qd(i))}export{w};

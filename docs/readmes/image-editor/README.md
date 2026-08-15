@@ -1,14 +1,14 @@
 # ngx-kit/image-editor
 
-ویرایشگر تصویر روی پایه‌ی Canvas خام: کراپ با گوشه‌های قابل‌درگ، چرخش (سریع ۹۰° و آزاد)، روشنایی/کنتراست/اشباع، فیلترهای آماده (سیاه‌وسفید، سپیا، معکوس)، یه فیلترِ **کارتونی واقعی** (Posterize + لبه‌یابی Sobel، دستی پیاده‌سازی‌شده چون معادل بومی نداره)، و فشرده‌سازیِ خروجی با کیفیتِ قابل‌تنظیم.
+An image editor built on raw Canvas: crop with draggable corner handles, rotation (quick 90° and free), brightness/contrast/saturation, built-in filters (grayscale, sepia, invert), a **real cartoon filter** (posterize + Sobel edge detection, hand-implemented since there's no native equivalent), and output compression with adjustable quality.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده
+## Usage
 
 ```html
 <ngx-image-editor [source]="selectedFile" (saved)="onSaved($event)" (cancelled)="onCancelled()" />
@@ -16,29 +16,29 @@ npm install ngx-kit
 
 ```ts
 onSaved(result: NgxImageEditorResult) {
-  // result.blob (برای آپلود)، result.dataUrl (برای پیش‌نمایش فوری)، result.width/height
+  // result.blob (for uploading), result.dataUrl (for an instant preview), result.width/height
 }
 ```
 
 ## API
 
-| ورودی                                | نوع                                           | پیش‌فرض        | توضیح                                         |
-| ------------------------------------ | --------------------------------------------- | -------------- | --------------------------------------------- |
-| `source`                             | `File \| Blob \| string \| null` **(اجباری)** |                | فایل/بلاب/data-URL منبع                       |
-| `aspectRatio`                        | `number`                                      | آزاد           | قفلِ نسبتِ کراپ (مثلاً `1` برای آواتار مربعی) |
-| `outputMaxWidth` / `outputMaxHeight` | `number`                                      | بدون محدودیت   | فشرده‌سازیِ ابعاد در خروجیِ نهایی             |
-| `outputType`                         | `'image/jpeg' \| 'image/png' \| 'image/webp'` | `'image/jpeg'` |                                               |
-| `displayMaxWidth`                    | `number`                                      | `420`          | حداکثر عرضِ نمایشِ ناحیه‌ی کراپ روی صفحه      |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `source` | `File \| Blob \| string \| null` **(required)** | | The source file/blob/data URL |
+| `aspectRatio` | `number` | free | Lock the crop's aspect ratio (e.g. `1` for a square avatar) |
+| `outputMaxWidth` / `outputMaxHeight` | `number` | unlimited | Resize the final output's dimensions |
+| `outputType` | `'image/jpeg' \| 'image/png' \| 'image/webp'` | `'image/jpeg'` | |
+| `displayMaxWidth` | `number` | `420` | Max display width for the crop area on screen |
 
-| خروجی       | نوع                                                         | توضیح |
-| ----------- | ----------------------------------------------------------- | ----- |
-| `saved`     | `NgxImageEditorResult` (`{ blob, dataUrl, width, height }`) |       |
-| `cancelled` | `void`                                                      |       |
+| Output | Type | Description |
+| --- | --- | --- |
+| `saved` | `NgxImageEditorResult` (`{ blob, dataUrl, width, height }`) | |
+| `cancelled` | `void` | |
 
-## معماریِ داخلی (چرا سریعه)
+## Internal architecture (why it's fast)
 
-تمام تعاملِ زنده (چرخوندن، جابه‌جا/ریسایزِ کراپ‌باکس، پیش‌نمایشِ فیلترها حتی کارتونی) روی یه کپیِ کوچیک‌شده از تصویر (حداکثر ۱۲۰۰px) انجام می‌شه — فقط لحظه‌ی `save()`، رندرِ نهایی از روی تصویرِ اصلیِ کامل انجام می‌شه. `brightness`/`contrast`/`saturate`/`grayscale`/`sepia`/`invert` همه با `ctx.filter` بومیِ Canvas 2D پیاده شدن (شتاب‌دهی‌شده توسطِ مرورگر)؛ فقط فیلترِ کارتونی (که معادلِ بومی نداره) با پردازشِ پیکسلی جداگانه انجام می‌شه.
+All live interaction (rotating, moving/resizing the crop box, previewing filters including cartoon) happens on a downscaled copy of the image (max 1200px) — only when you call `save()` is the final render done from the full-resolution original. `brightness`/`contrast`/`saturate`/`grayscale`/`sepia`/`invert` are all implemented with Canvas 2D's native `ctx.filter` (browser-accelerated); only the cartoon filter (which has no native equivalent) is done with separate pixel processing.
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.

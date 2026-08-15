@@ -1,14 +1,14 @@
 # ngx-kit/data-table
 
-جدول داده‌ی سیگنال‌محور با تایپ‌سیفتیِ کامل: تعریف ستون‌ها و رندررهای سفارشی طوری تایپ شدن که TypeScript خودش جلوی ستون‌های نامعتبر یا `rendererInputs` غلط رو می‌گیره. سورت (تک/چندستونه)، صفحه‌بندی، حالت lazy (سمت سرور)، و ریسایز ستون با Pointer Capture.
+A signal-based data table with full type-safety: column and custom renderer definitions are typed so TypeScript itself catches invalid columns or a wrong `rendererInputs`. Single/multi-column sorting, pagination, lazy (server-side) mode, and column resizing via Pointer Capture.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## راه‌اندازی رندررها (اختیاری، ولی توصیه‌شده)
+## Registering renderers (optional, but recommended)
 
 ```ts
 // app.config.ts
@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-## تعریفِ type-safe ستون‌ها
+## Type-safe column definitions
 
 ```ts
 interface Tenant {
@@ -37,15 +37,15 @@ interface Tenant {
 const renderers = defineRenderers({ avatar: AvatarCellRenderer, boolean: BooleanCellRenderer });
 
 const fields = defineFields<Tenant, typeof renderers>(renderers, [
-  { column: 'avatarUrl', title: 'کاربر', renderer: 'avatar', rendererInputs: { showName: true } }, // ✅ تایپ‌چک می‌شه
-  { column: 'name', title: 'نام', sortable: true },
-  { column: 'isActive', title: 'فعال', renderer: 'boolean', align: 'center' },
+  { column: 'avatarUrl', title: 'User', renderer: 'avatar', rendererInputs: { showName: true } }, // ✅ type-checked
+  { column: 'name', title: 'Name', sortable: true },
+  { column: 'isActive', title: 'Active', renderer: 'boolean', align: 'center' },
 ]);
 ```
 
-اگه `column` یه فیلدِ واقعیِ `Tenant` نباشه، یا `renderer` یه کلیدِ واقعیِ رجیستری نباشه، یا `rendererInputs` با ورودی‌های واقعیِ اون رندرر هم‌خونی نداشته باشه — کامپایل خطا می‌ده، نه فقط runtime.
+If `column` isn't a real field of `Tenant`, or `renderer` isn't a real key of the registry, or `rendererInputs` doesn't match that renderer's actual inputs — it's a compile error, not a runtime one.
 
-## استفاده در تمپلیت
+## Usage in a template
 
 ```html
 <ngx-table
@@ -53,18 +53,14 @@ const fields = defineFields<Tenant, typeof renderers>(renderers, [
   [data]="tenants"
   [totalRecords]="tenants.length"
   [pageSize]="20"
-  (sortChange)="onSortChange($event)"></ngx-table>
+  (sortChange)="onSortChange($event)"
+></ngx-table>
 ```
 
-### حالت lazy (صفحه‌بندی/سورت سمت سرور)
+### Lazy mode (server-side pagination/sorting)
 
 ```html
-<ngx-table
-  [fields]="fields"
-  [data]="page"
-  [totalRecords]="total"
-  [lazy]="true"
-  (lazyLoad)="fetchPage($event)"></ngx-table>
+<ngx-table [fields]="fields" [data]="page" [totalRecords]="total" [lazy]="true" (lazyLoad)="fetchPage($event)"></ngx-table>
 ```
 
 ```ts
@@ -76,45 +72,42 @@ fetchPage(ev: LazyLoadEvent<Tenant>) {
 
 ## API
 
-### ورودی‌های `<ngx-table>`
+### `<ngx-table>` inputs
 
-| ورودی              | نوع                               | توضیح                                                         |
-| ------------------ | --------------------------------- | ------------------------------------------------------------- |
-| `fields`           | `TableField<T, R>[]` **(اجباری)** | تعریفِ ستون‌ها (از `defineFields`)                            |
-| `data`             | `readonly T[]` **(اجباری)**       | دیتای صفحه‌ی جاری                                             |
-| `totalRecords`     | `number` **(اجباری)**             | تعداد کل ردیف‌ها (برای صفحه‌بندی)                             |
-| `pageSize`         | `number`                          | پیش‌فرض از `provideTable`                                     |
-| `lazy`             | `boolean`                         | اگه `true`، سورت/صفحه‌بندی رو خودِ اپ مدیریت می‌کنه (نه جدول) |
-| `loading`          | `boolean`                         | نمایش وضعیتِ بارگذاری                                         |
-| `showRecordNumber` | `boolean`                         | نمایش ستونِ شماره‌ی ردیف                                      |
+| Input | Type | Description |
+| --- | --- | --- |
+| `fields` | `TableField<T, R>[]` **(required)** | Column definitions (from `defineFields`) |
+| `data` | `readonly T[]` **(required)** | Current page's data |
+| `totalRecords` | `number` **(required)** | Total row count (for pagination) |
+| `pageSize` | `number` | Defaults from `provideTable` |
+| `lazy` | `boolean` | If `true`, your app manages sorting/pagination (not the table) |
+| `loading` | `boolean` | Shows a loading state |
+| `showRecordNumber` | `boolean` | Shows a row-number column |
 
-### خروجی‌ها
+### Outputs
 
-| خروجی          | نوع                                | توضیح                                                                         |
-| -------------- | ---------------------------------- | ----------------------------------------------------------------------------- |
-| `sortChange`   | `SortMeta<T>[]`                    | تغییرِ سورت (حالت غیر-lazy)                                                   |
-| `lazyLoad`     | `LazyLoadEvent<T>`                 | صفحه/سورتِ جدید (حالت lazy) — شاملِ `pageIndex`, `pageSize`, `first`, `sorts` |
-| `columnResize` | `{ field: string; width: number }` | تغییرِ عرضِ ستون                                                              |
+| Output | Type | Description |
+| --- | --- | --- |
+| `sortChange` | `SortMeta<T>[]` | Sort change (non-lazy mode) |
+| `lazyLoad` | `LazyLoadEvent<T>` | New page/sort (lazy mode) — includes `pageIndex`, `pageSize`, `first`, `sorts` |
+| `columnResize` | `{ field: string; width: number }` | A column's width changed |
 
-### تعریفِ یه رندررِ سفارشی
+### Defining a custom renderer
 
 ```ts
 @Component({
   standalone: true,
   selector: 'app-avatar-cell',
-  template: `
-    <img [src]="value()" />
-    <span *ngIf="showName()">{{ row().name }}</span>
-  `,
+  template: `<img [src]="value()" /><span *ngIf="showName()">{{ row().name }}</span>`,
 })
 export class AvatarCellRenderer implements CellRendererComponent<string, Tenant> {
   value = input.required<string>();
   row = input.required<Tenant>();
   field = input.required<TableFieldBase<Tenant>>();
-  showName = input(false); // این خودکار به rendererInputs اضافه می‌شه
+  showName = input(false); // automatically usable in rendererInputs for this column
 }
 ```
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.

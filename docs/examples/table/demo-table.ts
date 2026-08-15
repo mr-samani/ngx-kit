@@ -20,8 +20,8 @@ import {
 } from '../../shared/showcase/example-showcase.component';
 
 /**
- * همین آبجکت باید عیناً در provideTable({ renderers }) هم استفاده شود (نگاه
- * کنید به app.config.ts) — همان چیزی که کلید اتصال type-safety است.
+ * This exact object must also be used in provideTable({ renderers }) (see
+ * app.config.ts) — that's what wires up the type-safety.
  */
 export const renderers = defineRenderers({
   avatar: AvatarCellRenderer,
@@ -34,39 +34,39 @@ export const renderers = defineRenderers({
 const fields = defineFields<UserDto, typeof renderers>(renderers, [
   {
     column: 'avatarUrl',
-    title: 'کاربر',
+    title: 'User',
     renderer: 'avatar',
     width: 220,
-    rendererInputs: { nameField: 'fullName', showName: true }, // ✅ کاملاً چک‌شده
+    rendererInputs: { nameField: 'fullName', showName: true }, // ✅ fully type-checked
   },
-  { column: 'userName', title: 'نام کاربری', width: 160, sortable: true },
-  { column: 'email', title: 'ایمیل', width: 230, sortable: true, formatter: 'emptyDash' },
-  { column: 'isActive', title: 'فعال', renderer: 'boolean', width: 90, sortable: true },
-  { column: 'status', title: 'وضعیت', renderer: 'status', width: 120, sortable: true },
-  { column: 'roles', title: 'نقش‌ها', renderer: 'roles', width: 240, wrap: true },
+  { column: 'userName', title: 'Username', sortable: true },
+  { column: 'email', title: 'Email', width: 230, sortable: true, formatter: 'emptyDash' },
+  { column: 'isActive', title: 'Active', renderer: 'boolean', width: 90, sortable: true },
+  { column: 'status', title: 'Status', renderer: 'status', width: 120, sortable: true },
+  { column: 'roles', title: 'Roles', renderer: 'roles', width: 240, wrap: true },
   {
     column: 'createdAt',
-    title: 'تاریخ ایجاد',
+    title: 'Created At',
     renderer: 'date',
     width: 170,
     sortable: true,
     rendererInputs: { format: 'yyyy/MM/dd HH:mm' },
   },
 
-  // این خطوط را باز کنید تا خطاهای Compile-time واقعی را ببینید — این‌ها
-  // دقیقاً همان کلاس‌های باگی هستند که در نسخه‌ی قبلی سایلنت fail می‌شدند:
+  // Uncomment these to see real compile-time errors — these are exactly the
+  // kind of buggy definitions that used to fail silently in older versions:
 
   // { column: 'fullNmae', title: 'X' },
-  // ❌ TS2322: 'fullNmae' در UserDto وجود ندارد (تایپو روی fullName)
+  // ❌ TS2322: 'fullNmae' does not exist on UserDto (typo for fullName)
 
   // { column: 'status', title: 'X', renderer: 'sttaus' },
-  // ❌ TS2322: 'sttaus' کلید رجیستری renderers نیست
+  // ❌ TS2322: 'sttaus' is not a key of the renderers registry
 
   // { column: 'isActive', title: 'X', renderer: 'boolean', rendererInputs: { foo: 1 } },
-  // ❌ TS2353: BooleanCellRenderer ورودی اضافه‌ای به‌نام foo ندارد
+  // ❌ TS2353: BooleanCellRenderer has no input named foo
 
   // { column: 'avatarUrl', title: 'X', renderer: 'avatar', rendererInputs: { showName: 'yes' } },
-  // ❌ TS2322: showName باید boolean باشد، نه string
+  // ❌ TS2322: showName must be boolean, not string
 ]);
 
 @Component({
@@ -104,7 +104,7 @@ export class DemoTable {
       .getUsers({
         skipCount: event.first,
         maxResultCount: event.pageSize,
-        sorting: event.sorts.map((s) => `${s.field} ${s.direction}`).join(','),
+        sorting: event.sorts?.map((s) => `${s.field} ${s.direction}`).join(','),
       })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe((result) => {

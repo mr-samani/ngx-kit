@@ -8,13 +8,13 @@
     [maxFiles]="5"
     (filesAdded)="onFilesAdded($event)"
     (filesRejected)="onFilesRejected($event)">
-    تصاویر را اینجا رها کنید (حداکثر ۵ فایل، هرکدام تا ۵ مگابایت)
+    Drop images here (max 5 files, up to 5MB each)
   </ngx-dropzone>
 
   @if (acceptedCount()) {
-    <p>{{ acceptedCount() }} فایل پذیرفته شد.</p>
+    <p>{{ acceptedCount() }} file(s) accepted.</p>
   }
   @if (rejected().length) {
-    <p class="rejected-note">{{ rejected().length }} فایل رد شد (نوع/حجم/تعداد نامعتبر).</p>
+    <p class="rejected-note">{{ rejected().length }} file(s) rejected (invalid type/size/count).</p>
   }
 </app-example-showcase>

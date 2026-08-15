@@ -1,41 +1,41 @@
 # ngx-kit/gradient-picker
 
-انتخاب‌گر گرادیانِ خطی/شعاعی با چند color-stop قابل‌درگ، خروجیِ رشته‌ی CSS آماده‌ی استفاده.
+A linear/radial gradient picker with multiple draggable color stops, outputting a ready-to-use CSS string.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده
+## Usage
 
 ```html
 <ngx-input-gradient [(ngModel)]="gradientCss"></ngx-input-gradient>
 ```
 
-یا به‌عنوان دایرکتیو روی یه input معمولی:
+Or as a directive on a plain input:
 
 ```html
 <input type="text" [ngxInputGradient]="gradientCss" (change)="gradientCss = $event" />
 ```
 
-مقدار خروجی یه رشته‌ی معتبرِ CSS مثل `linear-gradient(90deg, #ff0000 0%, #0000ff 100%)` هست که مستقیم توی `background`/`background-image` قابل‌استفاده‌ست.
+The output is a valid CSS string like `linear-gradient(90deg, #ff0000 0%, #0000ff 100%)`, ready to use directly in `background`/`background-image`.
 
 ## API
 
-| ورودی                             | نوع                           | پیش‌فرض  | توضیح                                                   |
-| --------------------------------- | ----------------------------- | -------- | ------------------------------------------------------- |
-| `theme`                           | `'light' \| 'dark' \| 'auto'` | `'auto'` | تمِ پنل                                                 |
-| `setInputBackground` _(دایرکتیو)_ | `boolean`                     | `true`   | پس‌زمینه‌ی input رو به گرادیانِ انتخاب‌شده تنظیم می‌کنه |
-| `change` _(دایرکتیو)_             | `EventEmitter<string>`        |          | رشته‌ی گرادیانِ جدید                                    |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Panel theme |
+| `setInputBackground` *(directive)* | `boolean` | `true` | Sets the input's background to the selected gradient |
+| `change` *(directive)* | `EventEmitter<string>` | | The new gradient string |
 
-## نکات UI
+## UI notes
 
-- هر color-stop با کلیک روی نوارِ گرادیان اضافه می‌شه و با درگ جابه‌جا می‌شه.
-- برای حذف یه stop، دوبار کلیک روش کنید (یا دکمه‌ی حذف اگه نمایش داده بشه).
-- برای تنظیم رنگِ هر stop، از همون پنلِ `ngx-kit/color-picker` استفاده می‌شه (این پکیج بهش وابسته‌ست).
+- Add a color stop by clicking on the gradient bar; drag to move it.
+- Double-click a stop to remove it (or use the delete button if shown).
+- Each stop's color is edited with the same `ngx-kit/color-picker` panel (this package depends on it).
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.

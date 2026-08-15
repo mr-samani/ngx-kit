@@ -1,16 +1,16 @@
 # ngx-kit/date-picker
 
-انتخاب‌گر تاریخ با پشتیبانی از چهار تقویم: میلادی، جلالی (شمسی)، هجری قمری، و چینی — با یه معماریِ آداپترمحور که اضافه‌کردنِ تقویم‌های دیگه رو هم ممکن می‌کنه. یه کامپوننتِ تقویمِ مستقل (`ngx-calendar`) هم داره که بدون input قابل‌استفاده‌ست.
+A date picker supporting four calendar systems: Gregorian, Jalali (Persian), Hijri (Islamic), and Chinese — built on an adapter-based architecture that also makes it possible to add other calendars. It also ships a standalone calendar component (`ngx-calendar`) usable without any inputs.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## راه‌اندازی
+## Setup
 
-آداپترهای تقویم باید provide بشن (پیش‌فرض هر چهارتاش رو با هم می‌ده؛ اگه فقط بعضی‌هاشون رو لازم دارید، bundle سبک‌تر می‌مونه چون هرکدوم لازی import می‌شن):
+Calendar adapters need to be provided (the default provides all four; if you only need some of them, the bundle stays smaller since each is lazily imported):
 
 ```ts
 // app.config.ts
@@ -21,15 +21,10 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-## استفاده
+## Usage
 
 ```html
-<input
-  type="text"
-  [ngxInputDatePicker]="date"
-  (change)="date = $event"
-  [locale]="'fa'"
-  [displayFormat]="'yyyy/MM/dd'" />
+<input type="text" [ngxInputDatePicker]="date" (change)="date = $event" [locale]="'fa'" [displayFormat]="'yyyy/MM/dd'" />
 ```
 
 ```html
@@ -40,35 +35,35 @@ export const appConfig: ApplicationConfig = {
 
 ### `[ngxInputDatePicker]`
 
-| ورودی              | نوع                                                                     | پیش‌فرض        | توضیح                                                                                  |
-| ------------------ | ----------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------- |
-| `locale`           | `string` (`'en'`, `'fa'`, `'hi'`, `'zh'`, یا هر لوکیلِ سفارشیِ ثبت‌شده) | `'en'`         | تقویمی که استفاده می‌شه                                                                |
-| `theme`            | `'light' \| 'dark' \| 'auto'`                                           | `'auto'`       |                                                                                        |
-| `displayFormat`    | `string`                                                                | `'yyyy/MM/dd'` | فرمتِ نمایشِ متنیِ تاریخ                                                               |
-| `min` / `max`      | `Date`                                                                  |                | محدوده‌ی مجاز                                                                          |
-| `config`           | `NgxDatePickerConfig`                                                   |                | نمایش/متنِ دکمه‌های «امروز»/«پاک کردن»، تمپلیت‌های سفارشیِ آیکون‌ها                    |
-| `change` _(خروجی)_ | `EventEmitter<Date>`                                                    |                | تاریخِ انتخاب‌شده (همیشه یه شیءِ `Date` استاندارد جاوااسکریپت، مستقل از تقویمِ نمایشی) |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `locale` | `string` (`'en'`, `'fa'`, `'hi'`, `'zh'`, or any custom registered locale) | `'en'` | Which calendar to use |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | |
+| `displayFormat` | `string` | `'yyyy/MM/dd'` | Text display format for the date |
+| `min` / `max` | `Date` | | Allowed range |
+| `config` | `NgxDatePickerConfig` | | Show/hide and text for the "today"/"clear" buttons, custom icon templates |
+| `change` *(output)* | `EventEmitter<Date>` | | The selected date (always a standard JavaScript `Date`, regardless of the displayed calendar) |
 
 ### `getLocals()`
 
-لیستِ لوکیل‌های فعلاً ثبت‌شده رو برمی‌گردونه (برای مثال برای پرکردنِ یه `<select>` انتخابِ زبان):
+Returns the list of currently registered locales (e.g. to populate a language `<select>`):
 
 ```ts
 availableLocals = getLocals(); // ['en', 'fa', 'hi', 'zh']
 ```
 
-### افزودن یه تقویمِ سفارشی
+### Adding a custom calendar
 
 ```ts
 provideDateAdapters({ locale: 'ja', useClass: MyJapaneseAdapter });
 ```
 
-`MyJapaneseAdapter` باید اینترفیس `IDateAdapter` رو پیاده کنه.
+`MyJapaneseAdapter` must implement the `IDateAdapter` interface.
 
-## نکته‌ی پرفورمنس
+## Performance note
 
-تقویم‌های هجری و چینی (که جدولی/نجومی‌ان، نه فرمولی مثلِ میلادی/جلالی) نتایجِ محاسبات‌شون رو داخلی cache می‌کنن — چون رندر یه ماهِ تقویم، برای هر خانه‌ی روز جدا محاسبه‌ی تاریخ رو صدا می‌زنه؛ بدون کش، این می‌تونست برای سال‌های دور از امروز چند صد میلی‌ثانیه طول بکشه.
+The Hijri and Chinese calendars (which are table/astronomical-based, unlike the formulaic Gregorian/Jalali ones) cache their computation results internally — since rendering a calendar month calls the date computation separately for every day cell, without caching this could take several hundred milliseconds for years far from today.
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه (تقویمِ جلالی/هجری به‌طور طبیعی هم RTL هستن).
+Supported automatically (the Jalali/Hijri calendars are naturally RTL too).

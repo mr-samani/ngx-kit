@@ -24,20 +24,20 @@ export class GalleryComponent {
   protected readonly images: NgxImageViewerItem[] = [
     {
       src: 'https://picsum.photos/id/1015/1400/900',
-      alt: 'کوه و رودخانه',
-      caption: 'کوه و رودخانه',
+      alt: 'Mountain and river',
+      caption: 'Mountain and river',
     },
     {
       src: 'https://picsum.photos/id/1016/1400/900',
-      alt: 'صخره‌های ساحلی',
-      caption: 'صخره‌های ساحلی',
+      alt: 'Coastal cliffs',
+      caption: 'Coastal cliffs',
     },
     {
       src: 'https://picsum.photos/id/1018/1400/900',
-      alt: 'دریاچه‌ی کوهستانی',
-      caption: 'دریاچه‌ی کوهستانی',
+      alt: 'Mountain lake',
+      caption: 'Mountain lake',
     },
-    { src: 'https://picsum.photos/id/1024/1400/900', alt: 'سگ در طبیعت', caption: 'سگ در طبیعت' },
+    { src: 'https://picsum.photos/id/1024/1400/900', alt: 'Dog in nature', caption: 'Dog in nature' },
   ];
 
   constructor(private readonly viewer: NgxImageViewerService) {}

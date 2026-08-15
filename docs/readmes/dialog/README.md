@@ -1,16 +1,14 @@
 # ngx-kit/dialog
 
-مودال/دیالوگ روی پایه‌ی `<dialog>` بومیِ مرورگر — بدون overlay دستی، بدون کتابخونه‌ی جانبی.
+Modal/dialog built on the browser's native `<dialog>` — no manual overlay, no third-party library.
 
-> ⚠️ اگه نسخه‌ی قبلیِ این README رو دیدید که از `DIALOG_REF` یا `ngx-dialog-header` یا پکیج جدای `ngx-dialog` حرف می‌زد — اون مال یه نسخه‌ی خیلی قدیمی‌تر بوده و با API فعلی هم‌خونی نداره. این نسخه به‌روزه.
-
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## راه‌اندازی
+## Setup
 
 ```ts
 // app.config.ts
@@ -22,9 +20,9 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-## باز کردن یه دیالوگ
+## Opening a dialog
 
-با API استاتیک (بدون تزریق دستیِ سرویس):
+With the static API (no manual service injection needed):
 
 ```ts
 import { Dialog } from 'ngx-kit/dialog';
@@ -33,19 +31,19 @@ const ref = Dialog.open(MyDialogComponent, {
   data: { userId: 42 },
   width: '480px',
   allowCloseOnOutsideClick: true,
-  header: { enable: true, title: 'ویرایش کاربر', showCloseButton: true },
+  header: { enable: true, title: 'Edit user', showCloseButton: true },
 });
 
-ref.afterClosed.subscribe((result) => console.log('نتیجه:', result));
+ref.afterClosed.subscribe((result) => console.log('Result:', result));
 ```
 
-داخل کامپوننتِ دیالوگ:
+Inside the dialog's component:
 
 ```ts
 @Component({ ... })
 export class MyDialogComponent {
   private ref = inject(NgxDialogRef);
-  data = inject(NGX_DIALOG_DATA); // دیتایی که با config.data پاس داده شده
+  data = inject(NGX_DIALOG_DATA); // the data passed via config.data
 
   save() {
     this.ref.close({ saved: true });
@@ -53,13 +51,13 @@ export class MyDialogComponent {
 }
 ```
 
-### دایرکتیوهای layout داخل دیالوگ
+### Layout directives inside a dialog
 
 ```html
-<div *ngxDialogHeader>عنوانِ سفارشی</div>
-<div *ngxDialogBody>محتوای اصلی</div>
+<div *ngxDialogHeader>Custom title</div>
+<div *ngxDialogBody>Main content</div>
 <div *ngxDialogFooter>
-  <button (click)="save()">ذخیره</button>
+  <button (click)="save()">Save</button>
 </div>
 ```
 
@@ -67,28 +65,28 @@ export class MyDialogComponent {
 
 ### `Dialog.open<T>(component, config?)`
 
-| فیلدِ `config`                                              | نوع        | پیش‌فرض     | توضیح                                              |
-| ----------------------------------------------------------- | ---------- | ----------- | -------------------------------------------------- |
-| `data`                                                      | `T`        | `{}`        | دیتایی که به کامپوننتِ داخلِ دیالوگ پاس داده می‌شه |
-| `allowCloseOnOutsideClick`                                  | `boolean`  | `false`     | بستن با کلیک روی backdrop                          |
-| `containerClass`                                            | `string`   | `'ngx-kit'` | کلاسِ اضافی روی container                          |
-| `header.enable` / `header.title` / `header.showCloseButton` |            |             | تنظیمات هدرِ پیش‌فرض                               |
-| `footer.enable`                                             | `boolean`  |             | نمایش فوتر پیش‌فرض                                 |
-| `width` / `minWidth` / `maxWidth`                           | `string`   |             | ابعاد افقی                                         |
-| `height` / `minHeight` / `maxHeight`                        | `string`   |             | ابعاد عمودی                                        |
-| `injector`                                                  | `Injector` |             | تزریق‌کننده‌ی سفارشی برای کامپوننتِ داخلی          |
+| `config` field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `data` | `T` | `{}` | Data passed to the component inside the dialog |
+| `allowCloseOnOutsideClick` | `boolean` | `false` | Close when clicking the backdrop |
+| `containerClass` | `string` | `'ngx-kit'` | Extra class on the container |
+| `header.enable` / `header.title` / `header.showCloseButton` | | | Default header settings |
+| `footer.enable` | `boolean` | | Show the default footer |
+| `width` / `minWidth` / `maxWidth` | `string` | | Horizontal sizing |
+| `height` / `minHeight` / `maxHeight` | `string` | | Vertical sizing |
+| `injector` | `Injector` | | Custom injector for the inner component |
 
 ### `NgxDialogRef`
 
-| عضو                            | توضیح                                     |
-| ------------------------------ | ----------------------------------------- |
-| `close(result?)`               | بستن دیالوگ، با ارسال یه نتیجه‌ی اختیاری  |
-| `afterClosed: Observable<any>` | با `result` صدا زده می‌شه بعد از بسته‌شدن |
+| Member | Description |
+| --- | --- |
+| `close(result?)` | Closes the dialog, optionally passing back a result |
+| `afterClosed: Observable<any>` | Emits `result` after the dialog closes |
 
-## نکته‌ی SSR
+## SSR note
 
-`Dialog.open(...)` یه API استاتیک/سراسریه که برای اپ‌های معمولیِ مرورگری کاملاً امنه. اگه از Angular SSR استفاده می‌کنید، این static instance بینِ درخواست‌های هم‌زمانِ سرور مشترکه — به‌جای API استاتیک، مستقیماً `NgxOverlayService` رو تزریق و ازش استفاده کنید (که per-injector/per-request امنه).
+`Dialog.open(...)` is a static/global API that's perfectly safe for a typical browser app. If you're using Angular SSR, this static instance is shared across concurrent server requests — instead of the static API, inject `NgxOverlayService` directly (which is per-injector/per-request safe).
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه (`light-dark()` + CSS logical properties).
+Supported automatically (`light-dark()` + CSS logical properties).

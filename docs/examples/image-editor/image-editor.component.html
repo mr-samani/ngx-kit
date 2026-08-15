@@ -4,7 +4,7 @@
   readmePath="/readmes/image-editor/README.md">
   @if (!selectedFile() && !result()) {
     <ngx-dropzone [accept]="'image/*'" [multiple]="false" (filesAdded)="onFilesAdded($event)">
-      یک تصویر برای ویرایش انتخاب کنید
+      Select an image to edit
     </ngx-dropzone>
   }
 
@@ -14,9 +14,9 @@
 
   @if (result(); as r) {
     <div class="ie-result">
-      <img [src]="r.dataUrl" [alt]="'خروجی ویرایش‌شده'" />
+      <img [src]="r.dataUrl" [alt]="'Edited output'" />
       <p>{{ r.width }}×{{ r.height }}</p>
-      <button type="button" (click)="reset()">تصویر جدید</button>
+      <button type="button" (click)="reset()">New image</button>
     </div>
   }
 </app-example-showcase>

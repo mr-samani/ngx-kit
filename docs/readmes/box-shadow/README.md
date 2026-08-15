@@ -1,33 +1,33 @@
 # ngx-kit/box-shadow
 
-ابزار بصریِ ساختِ `box-shadow`: جابه‌جاییِ سایه با درگِ ماوس/تاچ روی یه صفحه‌ی دوبعدی، به‌همراه کنترلِ بلور، پخش (spread)، و رنگ.
+A visual `box-shadow` builder: drag the shadow's offset on a 2D pad with mouse/touch, plus controls for blur, spread, and color.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده
+## Usage
 
 ```html
 <ngx-box-shadow [(ngModel)]="shadowCss"></ngx-box-shadow>
 ```
 
-یا روی یه input معمولی:
+Or on a plain input:
 
 ```html
 <input type="text" [ngxInputBoxShadow]="shadowCss" (change)="shadowCss = $event" />
 ```
 
-خروجی یه رشته‌ی معتبرِ CSS مثل `0px 4px 12px 0px rgba(0,0,0,0.25)` هست.
+The output is a valid CSS string like `0px 4px 12px 0px rgba(0,0,0,0.25)`.
 
 ## API
 
-| ورودی                             | نوع       | پیش‌فرض | توضیح                                     |
-| --------------------------------- | --------- | ------- | ----------------------------------------- |
-| `setInputBackground` _(دایرکتیو)_ | `boolean` | `true`  | نمایش رنگِ سایه به‌عنوان پس‌زمینه‌ی input |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `setInputBackground` *(directive)* | `boolean` | `true` | Shows the shadow color as the input's background |
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه. صفحه‌ی درگِ سایه با Pointer Capture پیاده شده (بدون نیاز به listener سراسری روی document)، پس روی موبایل هم روون کار می‌کنه.
+Supported automatically. The shadow-offset pad is implemented with Pointer Capture (no global `document` listener needed), so it works smoothly on mobile too.

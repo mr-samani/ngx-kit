@@ -2,7 +2,7 @@
   title="Data Table"
   [files]="sourceFiles"
   readmePath="/readmes/data-table/README.md">
-  <h3>جدول کاربران (Lazy، سورت، ریسایز، رندرر تایپ‌سیف)</h3>
+  <h3>Users table (lazy loading, sorting, resizable columns, type-safe renderers)</h3>
 
   <ngx-table
     [data]="rows()"
@@ -13,9 +13,10 @@
     [lazy]="true"
     (lazyLoad)="onLazyLoad($event)">
     <!--
-    قالب سفارشی برای ستون userName. row/value اینجا any هستند (محدودیت
-    شناخته‌شده‌ی این روش projection پویا)؛ برای type-safety کامل روی row/value،
-    از field.cellTemplate با ViewChild استفاده کنید (به README مراجعه کنید).
+    Custom template for the userName column. row/value here are typed any
+    (a known limitation of this dynamic-projection approach); for full
+    type-safety on row/value, use field.cellTemplate with ViewChild instead
+    (see the README).
   -->
     <ng-template ngxTableCell="userName" let-user let-value="value">
       <strong>{{ value }}</strong>

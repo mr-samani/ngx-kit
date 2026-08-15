@@ -4,7 +4,7 @@
   readmePath="/readmes/drawer-menu/README.md">
   <div class="controls">
     <label>
-      جلوه (effect)
+      effect
       <select [ngModel]="effect()" (ngModelChange)="effect.set($event)">
         @for (e of effects; track e) {
           <option [value]="e">{{ e }}</option>
@@ -13,7 +13,7 @@
     </label>
 
     <label>
-      رفتار محتوا (contentBehavior)
+      contentBehavior
       <select [ngModel]="behavior()" (ngModelChange)="behavior.set($event)">
         @for (b of behaviors; track b) {
           <option [value]="b">{{ b }}</option>
@@ -21,12 +21,12 @@
       </select>
     </label>
 
-    <button type="button" (click)="open.set(true)">باز کن</button>
+    <button type="button" (click)="open.set(true)">Open</button>
   </div>
 
   <p class="hint">
-    این پیش‌نمایش به کادر زیر محدود شده (با ترفند perspective/containing-block)؛ در استفاده‌ی واقعی،
-    درور کل صفحه را می‌گیرد. از لبه‌ی چپ/راست کادر هم می‌توانید بکشید.
+    This preview is confined to the frame below (via a perspective/containing-block trick); in real
+    usage, the drawer covers the whole page. You can also swipe from the frame's left/right edge.
   </p>
 
   <div class="frame">
@@ -38,18 +38,18 @@
       [width]="220"
       [respondToViewport]="false">
       <div drawerContent class="menu-content">
-        <h4>منوی من</h4>
+        <h4>My Menu</h4>
         <ul>
-          <li>خانه</li>
-          <li>پروفایل</li>
-          <li>تنظیمات</li>
-          <li>خروج</li>
+          <li>Home</li>
+          <li>Profile</li>
+          <li>Settings</li>
+          <li>Sign out</li>
         </ul>
       </div>
 
       <div class="page-content">
-        <p>این محتوای اصلی صفحه است.</p>
-        <p>با تغییر «رفتار محتوا» ببینید چطور واکنش نشان می‌دهد.</p>
+        <p>This is the page's main content.</p>
+        <p>Change "contentBehavior" to see how it reacts.</p>
       </div>
     </ngx-drawer-menu>
   </div>

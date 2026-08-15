@@ -1,70 +1,70 @@
 # ngx-kit/message
 
-دیالوگ‌های alert/confirm (شبیه SweetAlert)، با API استاتیک قابل‌فراخوانی از هرجای اپ.
+Alert/confirm dialogs (SweetAlert-style), with a static API callable from anywhere in the app.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## راه‌اندازی
+## Setup
 
-``` typescript
+```ts
 // app.config.ts
 import { provideMessage } from 'ngx-kit/message';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideMessage({ confirmButtonText: 'باشه' /* پیش‌فرض‌های سراسری */ })],
+  providers: [provideMessage({ confirmButtonText: 'OK' /* global defaults */ })],
 };
 ```
 
-## استفاده
+## Usage
 
 ```ts
 import { MSG } from 'ngx-kit/message';
 
-MSG.success('ذخیره شد!', 'تغییرات با موفقیت ثبت شدن.');
-MSG.error('خطا', 'مشکلی پیش اومد.');
-MSG.warning('هشدار', 'مطمئنید؟');
-MSG.info('اطلاع', 'این یه پیامِ اطلاعاتیه.');
-MSG.question('سؤال', 'ادامه بدیم؟');
-MSG.loading('در حال پردازش…');
+MSG.success('Saved!', 'Your changes were saved successfully.');
+MSG.error('Error', 'Something went wrong.');
+MSG.warning('Warning', 'Are you sure?');
+MSG.info('Heads up', 'This is an informational message.');
+MSG.question('Question', 'Continue?');
+MSG.loading('Processing…');
 
-// کنترلِ کامل روی گزینه‌ها:
+// full control over options:
 const result = MSG.show({
-  title: 'حذف شود؟',
-  text: 'این عمل قابل بازگشت نیست.',
+  title: 'Delete this?',
+  text: 'This action cannot be undone.',
   showCancelButton: true,
   showDenyButton: true,
-  confirmButtonText: 'بله، حذف کن',
+  confirmButtonText: 'Yes, delete it',
 });
 result.afterClose.subscribe((r) => console.log(r));
 ```
 
 ## API
 
-### `MSG` (و alias آن `Modal`)
+### `MSG` (and its alias `Modal`)
 
-| متد                                                               | امضا                       | توضیح           |
-| ----------------------------------------------------------------- | -------------------------- | --------------- |
-| `show(options?)`                                                  | `IMessageOptions`          | کنترلِ کامل     |
-| `info` / `success` / `warning` / `error` / `question` / `loading` | `(title, text?, options?)` | میان‌برهای رایج |
+| Method | Signature | Description |
+| --- | --- | --- |
+| `show(options?)` | `IMessageOptions` | Full control |
+| `info` / `success` / `warning` / `error` / `question` / `loading` | `(title, text?, options?)` | Common shortcuts |
 
-### `IMessageOptions` (مهم‌ترین فیلدها)
+### `IMessageOptions` (key fields)
 
-| فیلد                                                        | نوع           | پیش‌فرض                      | توضیح                                                                                                             |
-| ----------------------------------------------------------- | ------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `title` / `text` / `html`                                   | `string`      |                              | محتوا (`html` سنیتایز نمی‌شه — مسئولیتِ escape با خودتونه)                                                        |
-| `icon`                                                      | `MessageIcon` |                              | آیکونِ نمایشی                                                                                                     |
-| `showConfirmButton` / `showDenyButton` / `showCancelButton` | `boolean`     | `true` / `false` / `false`   |                                                                                                                   |
-| `confirmButtonText` / `denyButtonText` / `cancelButtonText` | `string`      | `'OK'` / `'No'` / `'Cancel'` |                                                                                                                   |
-| `allowOutsideClick` / `allowEscapeKey` / `allowEnterKey`    | `boolean`     | `true`                       | نحوه‌ی بستنِ پیام                                                                                                 |
-| `showCloseButton`                                           | `boolean`     | `false`                      | دکمه‌ی ✕                                                                                                          |
-| `useOverlay`                                                | `boolean`     |                              | برای وقتی که داخل یه دیالوگِ دیگه (مثلاً Angular Material) استفاده می‌شه، لایه‌ی نمایشی رو به بالاترین سطح می‌بره |
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` / `text` / `html` | `string` | | Content (`html` is not sanitized — escaping is your responsibility) |
+| `icon` | `MessageIcon` | | Icon shown |
+| `showConfirmButton` / `showDenyButton` / `showCancelButton` | `boolean` | `true` / `false` / `false` | |
+| `confirmButtonText` / `denyButtonText` / `cancelButtonText` | `string` | `'OK'` / `'No'` / `'Cancel'` | |
+| `allowOutsideClick` / `allowEscapeKey` / `allowEnterKey` | `boolean` | `true` | How the message can be dismissed |
+| `showCloseButton` | `boolean` | `false` | The ✕ button |
+| `useOverlay` | `boolean` | | For when it's used inside another dialog (e.g. Angular Material), raises the display layer to the top |
 
-اگه چند پیام هم‌زمان باز باشن، Escape/Enter فقط روی **آخرین (بالاترین) پیام** اثر می‌کنه، نه همه‌شون.
+If several messages are open at once, Escape/Enter only affect the **last (topmost) message**, not all of them.
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.

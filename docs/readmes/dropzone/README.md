@@ -1,14 +1,14 @@
 # ngx-kit/dropzone
 
-ناحیه‌ی درگ‌اند‌دراپ فایل: اعتبارسنجیِ نوع/حجم/تعداد، پیش‌نمایشِ تصاویر، پیمایشِ بازگشتیِ پوشه‌ها (وقتی کاربر یه پوشه رو درگ کنه)، و کاملاً قابل‌دسترسی با کیبورد.
+A file drag-and-drop area: type/size/count validation, image previews, recursive folder traversal (when a user drags a folder), and full keyboard accessibility.
 
-## نصب
+## Install
 
 ```bash
 npm install ngx-kit
 ```
 
-## استفاده
+## Usage
 
 ```html
 <ngx-dropzone
@@ -17,43 +17,44 @@ npm install ngx-kit
   [maxFileSize]="5 * 1024 * 1024"
   [maxFiles]="10"
   (filesAdded)="onFilesAdded($event)"
-  (filesRejected)="onFilesRejected($event)">
-  فایل‌ها را اینجا رها کنید یا کلیک کنید
+  (filesRejected)="onFilesRejected($event)"
+>
+  Drop files here or click to browse
 </ngx-dropzone>
 ```
 
 ## API
 
-| ورودی          | نوع             | پیش‌فرض      | توضیح                                                                  |
-| -------------- | --------------- | ------------ | ---------------------------------------------------------------------- |
-| `accept`       | `string`        | `''`         | مثل `input[type=file]`: `"image/*"`, `".pdf,.docx"`, یا ترکیبی با کاما |
-| `multiple`     | `boolean`       | `true`       | اجازه‌ی انتخاب چند فایل                                                |
-| `maxFileSize`  | `number` (بایت) | بدون محدودیت | حداکثر حجمِ هر فایل                                                    |
-| `maxFiles`     | `number`        | بدون محدودیت | حداکثر تعدادِ فایل مجاز                                                |
-| `disabled`     | `boolean`       | `false`      |                                                                        |
-| `showFileList` | `boolean`       | `true`       | نمایشِ لیست/پیش‌نمایشِ فایل‌های انتخاب‌شده داخل خودِ کامپوننت          |
+| Input | Type | Default | Description |
+| --- | --- | --- | --- |
+| `accept` | `string` | `''` | Like `input[type=file]`: `"image/*"`, `".pdf,.docx"`, or a comma-separated combination |
+| `multiple` | `boolean` | `true` | Allow selecting multiple files |
+| `maxFileSize` | `number` (bytes) | unlimited | Max size per file |
+| `maxFiles` | `number` | unlimited | Max number of allowed files |
+| `disabled` | `boolean` | `false` | |
+| `showFileList` | `boolean` | `true` | Show the list/preview of selected files inside the component itself |
 
-| خروجی           | نوع                                                     | توضیح                                         |
-| --------------- | ------------------------------------------------------- | --------------------------------------------- |
-| `filesAdded`    | `File[]`                                                | فایل‌های تازه‌پذیرفته‌شده                     |
-| `filesRejected` | `{ file: File; reason: 'type' \| 'size' \| 'count' }[]` | فایل‌های ردشده و دلیلش                        |
-| `filesChange`   | `File[]`                                                | کل لیستِ فعلی، بعد از هر تغییر (اضافه یا حذف) |
+| Output | Type | Description |
+| --- | --- | --- |
+| `filesAdded` | `File[]` | Newly accepted files |
+| `filesRejected` | `{ file: File; reason: 'type' \| 'size' \| 'count' }[]` | Rejected files and why |
+| `filesChange` | `File[]` | The full current list, after every change (add or remove) |
 
-### آیکونِ سفارشی
+### Custom icon
 
 ```html
 <ngx-dropzone>
   <svg dropzone-icon>...</svg>
-  متن دلخواه شما
+  Your own text
 </ngx-dropzone>
 ```
 
-## نکات فنی
+## Technical notes
 
-- شمارنده‌ی enter/leave برای جلوگیری از چشمک‌زدنِ حالتِ «درگ» موقعِ عبور از روی فرزندهای داخلِ ناحیه.
-- درگ‌کردن یه **پوشه** هم پشتیبانی می‌شه (`webkitGetAsEntry` + پیمایشِ بازگشتی) — مرورگرهایی که پشتیبانی نکنن، به گرفتنِ فایل‌های مستقیم fallback می‌کنن.
-- object URLهای پیش‌نمایش موقعِ حذفِ فایل یا destroy شدنِ کامپوننت، خودکار `revokeObjectURL` می‌شن (بدون نشتی حافظه).
+- An enter/leave counter prevents the "dragging" state from flickering as the pointer passes over children inside the drop area.
+- Dropping a **folder** is also supported (`webkitGetAsEntry` + recursive traversal) — browsers without support fall back to grabbing files directly.
+- Preview object URLs are automatically `revokeObjectURL`'d when a file is removed or the component is destroyed (no memory leak).
 
-## دارک‌مود و RTL
+## Dark mode and RTL
 
-خودکار پشتیبانی می‌شه.
+Supported automatically.
