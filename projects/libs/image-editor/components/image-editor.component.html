@@ -1,5 +1,5 @@
 @if (loading()) {
-  <div class="ngx-ie-state">Loading image…</div>
+  <div class="ngx-ie-state">{{ localize().LoadingImage }}</div>
 } @else if (loadError()) {
   <div class="ngx-ie-state ngx-ie-state--error">{{ loadError() }}</div>
 } @else if (stageImageUrl()) {
@@ -57,7 +57,7 @@
       </div>
 
       <label class="ngx-ie-field">
-        <span>Fine rotation ({{ rotation() }}°)</span>
+        <span>{{ localize().Rotation }} ({{ rotation() }}°)</span>
         <slider
           [ngModel]="rotation()"
           (ngModelChange)="rotation.set($event)"
@@ -66,7 +66,7 @@
       </label>
 
       <label class="ngx-ie-field">
-        <span>Brightness ({{ brightness() }}%)</span>
+        <span>{{ localize().Brightness }} ({{ brightness() }}%)</span>
         <slider
           [ngModel]="brightness()"
           (ngModelChange)="brightness.set($event)"
@@ -75,7 +75,7 @@
       </label>
 
       <label class="ngx-ie-field">
-        <span>Contrast ({{ contrast() }}%)</span>
+        <span>{{ localize().Contrast }} ({{ contrast() }}%)</span>
         <slider
           [ngModel]="contrast()"
           (ngModelChange)="contrast.set($event)"
@@ -84,7 +84,7 @@
       </label>
 
       <label class="ngx-ie-field">
-        <span>Saturation ({{ saturation() }}%)</span>
+        <span>{{ localize().Saturation }} ({{ saturation() }}%)</span>
         <slider
           [ngModel]="saturation()"
           (ngModelChange)="saturation.set($event)"
@@ -93,54 +93,47 @@
       </label>
 
       <div class="ngx-ie-field">
-        <span>Filter</span>
+        <span>{{ localize().Filter }}</span>
         <div class="ngx-ie-filter-row">
           <button
             type="button"
             [class.active]="filterPreset() === 'none'"
             (click)="setFilter('none')">
-            None
+            {{ localize().None }}
           </button>
           <button
             type="button"
             [class.active]="filterPreset() === 'grayscale'"
             (click)="setFilter('grayscale')">
-            Grayscale
+            {{ localize().Grayscale }}
           </button>
           <button
             type="button"
             [class.active]="filterPreset() === 'sepia'"
             (click)="setFilter('sepia')">
-            Sepia
+            {{ localize().Sepia }}
           </button>
           <button
             type="button"
             [class.active]="filterPreset() === 'invert'"
             (click)="setFilter('invert')">
-            Invert
+            {{ localize().Invert }}
           </button>
           <button
             type="button"
             [class.active]="filterPreset() === 'cartoon'"
             (click)="setFilter('cartoon')">
-            Cartoon
+            {{ localize().Cartoon }}
           </button>
         </div>
       </div>
 
-      <label class="ngx-ie-field">
-        <span>Output quality ({{ quality() * 100 | number: '1.0-0' }}%)</span>
-        <slider
-          [ngModel]="quality() * 100"
-          (ngModelChange)="quality.set($event / 100)"
-          [min]="10"
-          [max]="100"></slider>
-      </label>
-
       <div class="ngx-ie-row ngx-ie-actions">
-        <button type="button" class="ngx-ie-btn-secondary" (click)="cancel()">Cancel</button>
+        <button type="button" class="ngx-ie-btn-secondary" (click)="cancel()">
+          {{ localize().Cancel }}
+        </button>
         <button type="button" class="ngx-ie-btn-primary" [disabled]="saving()" (click)="save()">
-          {{ saving() ? 'Saving…' : 'Save' }}
+          {{ saving() ? localize().Saving : localize().Save }}
         </button>
       </div>
     </div>

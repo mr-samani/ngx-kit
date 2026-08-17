@@ -24,12 +24,14 @@
   padding: 0.5rem;
   background: light-dark(#f3f4f6, #18181b);
   border-radius: 10px;
+  overflow: hidden;
 }
 
 .ngx-ie-stage {
   position: relative;
   touch-action: none;
   user-select: none;
+  direction: ltr;
 }
 
 .ngx-ie-stage-img {
@@ -38,6 +40,19 @@
   block-size: 100%;
   border-radius: 4px;
   pointer-events: none;
+
+  background: #ffffff;
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0px;
 }
 
 .ngx-ie-crop-box {
@@ -100,6 +115,18 @@
     max-inline-size: 100%;
     max-block-size: 160px;
     display: block;
+    background: #fff;
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 16px 16px;
+    background-position:
+      0 0,
+      0 8px,
+      8px -8px,
+      -8px 0px;
   }
 }
 

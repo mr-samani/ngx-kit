@@ -3,11 +3,11 @@ import {
   Component,
   computed,
   effect,
+  inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SliderComponent } from 'ngx-kit/shared';
 import {
@@ -19,8 +19,8 @@ import {
 import { NgxPointerDragDelta, NgxPointerDragDirective } from '../directives/pointer-drag.directive';
 import { canvasToBlob, createWorkingCopy, loadImage } from '../utils/image-io';
 import { renderComposite, renderRotated } from '../utils/render-pipeline';
-
-type Corner = 'nw' | 'ne' | 'sw' | 'se';
+import { Corner } from '../types/Corner';
+import { NGX_IMAGE_EDITOR_LOCALIZATION, NgxImageEditorLocalization } from '../types/localization';
 
 /**
  * ویرایشگر تصویر: کراپ + چرخش + روشنایی/کنتراست/اشباع + فیلترهای آماده
@@ -36,7 +36,7 @@ type Corner = 'nw' | 'ne' | 'sw' | 'se';
 @Component({
   selector: 'ngx-image-editor',
   standalone: true,
-  imports: [FormsModule, DecimalPipe, SliderComponent, NgxPointerDragDirective],
+  imports: [FormsModule, SliderComponent, NgxPointerDragDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './image-editor.component.html',
   styleUrl: './image-editor.component.scss',
@@ -51,6 +51,10 @@ export class NgxImageEditorComponent {
   outputType = input<'image/jpeg' | 'image/png' | 'image/webp'>('image/jpeg');
   /** حداکثر عرض نمایشِ ناحیه‌ی کراپ روی صفحه (پیکسل) */
   displayMaxWidth = input<number>(420);
+  quality = input(0.92);
+
+  defaultLocalization = inject(NGX_IMAGE_EDITOR_LOCALIZATION);
+  localize = input<NgxImageEditorLocalization>(this.defaultLocalization);
 
   saved = output<NgxImageEditorResult>();
   cancelled = output<void>();
@@ -67,7 +71,6 @@ export class NgxImageEditorComponent {
   protected readonly contrast = signal(100);
   protected readonly saturation = signal(100);
   protected readonly filterPreset = signal<NgxImageFilterPreset>('none');
-  protected readonly quality = signal(0.92);
 
   protected readonly crop = signal<NgxCropRect>({ x: 0, y: 0, width: 0, height: 0 });
 
