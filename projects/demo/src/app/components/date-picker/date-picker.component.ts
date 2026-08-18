@@ -66,7 +66,12 @@ export class DatePickerComponent implements OnInit {
   inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
 
   today = new Date();
-  dateRange = [this.today, this.today.setDate(this.today.getDate() + 10)];
+  dateRange = [
+    this.today,
+    new Date(
+      `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 5}`,
+    ),
+  ];
   constructor(fb: FormBuilder) {
     this.form = fb.group({
       date: ['', [Validators.required]],

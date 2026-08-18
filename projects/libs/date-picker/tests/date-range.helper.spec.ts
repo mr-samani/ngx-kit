@@ -29,8 +29,6 @@ describe('date-range helpers', () => {
   });
 
   it('creates a hover preview from the selected start', () => {
-    expect(
-      isDateInPreviewRange(d('2026-08-15'), d('2026-08-10'), d('2026-08-20')),
-    ).toBe(true);
+    expect(isDateInPreviewRange(d('2026-08-15'), d('2026-08-10'), d('2026-08-20'))).toBe(true);
   });
 });
