@@ -97,7 +97,7 @@ export class ReadmeViewerComponent {
     try {
       let content = this.markdown();
 
-      const source = this.src();
+      const source = document.baseURI + this.src();
 
       if (source) {
         const response = await fetch(source);

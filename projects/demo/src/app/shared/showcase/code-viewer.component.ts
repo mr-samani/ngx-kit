@@ -19,7 +19,9 @@ import { DarkModeService } from '../services/dark-mode.service';
     @if (source.isLoading()) {
       <div class="code-viewer-state">Loading source…</div>
     } @else if (source.error()) {
-      <div class="code-viewer-state code-viewer-state--error">Source not available for this file.</div>
+      <div class="code-viewer-state code-viewer-state--error">
+        Source not available for this file.
+      </div>
     } @else {
       <ngx-monaco-editor
         class="code-viewer-editor"
@@ -56,7 +58,7 @@ export class CodeViewerComponent {
 
   private readonly darkMode = inject(DarkModeService);
 
-  protected readonly source = httpResource.text(() => this.path());
+  protected readonly source = httpResource.text(() => document.baseURI + this.path());
 
   protected readonly editorOptions = computed(() => ({
     theme: this.darkMode.isDarkMode() ? 'vs-dark' : 'vs',
