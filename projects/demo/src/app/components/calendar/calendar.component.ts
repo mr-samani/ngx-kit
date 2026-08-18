@@ -17,8 +17,8 @@ import {
 })
 export class CalendarComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/calendar/calendar.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/calendar/calendar.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/calendar/calendar.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/calendar/calendar.component.html', language: 'html' },
   ];
 
   locale: string = 'fa';

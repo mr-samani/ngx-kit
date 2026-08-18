@@ -41,8 +41,8 @@ import {
 })
 export class DatePickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/date-picker/date-picker.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/date-picker/date-picker.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/date-picker/date-picker.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/date-picker/date-picker.component.html', language: 'html' },
   ];
 
   locale: string = 'fa';

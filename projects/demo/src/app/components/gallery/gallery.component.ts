@@ -17,8 +17,8 @@ import {
 })
 export class GalleryComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/gallery/gallery.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/gallery/gallery.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/gallery/gallery.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/gallery/gallery.component.html', language: 'html' },
   ];
 
   protected readonly images: NgxImageViewerItem[] = [
