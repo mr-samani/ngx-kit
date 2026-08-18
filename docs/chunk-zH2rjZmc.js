@@ -1,1 +1,0 @@
-import {v,e as be,aK as qd,bO as R}from'./main-GAKOENL3.js';function w(t){t||(t=v(be));let i=new R(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(qd(i))}export{w};

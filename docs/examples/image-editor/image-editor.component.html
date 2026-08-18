@@ -9,7 +9,12 @@
   }
 
   @if (selectedFile(); as file) {
-    <ngx-image-editor [source]="file" (saved)="onSaved($event)" (cancelled)="onCancelled()" />
+    <ngx-image-editor
+      [source]="file"
+      [quality]="100"
+      [displayMaxWidth]="1200"
+      (saved)="onSaved($event)"
+      (cancelled)="onCancelled()" />
   }
 
   @if (result(); as r) {
