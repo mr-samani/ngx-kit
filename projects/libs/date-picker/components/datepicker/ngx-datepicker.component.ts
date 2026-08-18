@@ -1,22 +1,10 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  forwardRef,
-  inject,
-  input,
-  Input,
-  OnInit,
-  Output,
-  signal,
-} from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../../adapters/calendar-date';
 import { CommonModule } from '@angular/common';
-import { BrowserService } from 'ngx-kit/shared';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -46,25 +34,11 @@ import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
       multi: true,
     },
   ],
-  host: {
-    '[class.dark]': 'theme=="dark"',
-  },
 })
 export class NgxInputDatePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
-  protected readonly browserService = inject(BrowserService);
-
-  theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
-  @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
-    if (!val || val == 'auto') {
-      this.theme = this.browserService.prefersDarkMode ? 'dark' : 'light';
-    } else {
-      this.theme = val;
-    }
-  }
-
   config = new NgxDatePickerConfig();
   @Input('config') set setConfig(val: NgxDatePickerConfig) {
     this.config = { ...new NgxDatePickerConfig(), ...val };
@@ -98,8 +72,6 @@ export class NgxInputDatePickerComponent
   @Input() view: DatePickerView = 'day';
 
   @Output() change = new EventEmitter<Date | null>();
-
-  wrapperWidth = 40 * 7 + 20;
 
   selected?: CalendarDate;
 

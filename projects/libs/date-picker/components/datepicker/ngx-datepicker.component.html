@@ -1,14 +1,42 @@
-<div
-  class="wrapper"
-  #datepickerWrapper
-  [style.width.px]="wrapperWidth"
-  (click)="stopPagination($event)">
+<div class="wrapper" #datepickerWrapper (click)="stopPagination($event)">
   <div class="header">
+    <svg
+      class="calendar-icon"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M16 2V6M8 2V6"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round" />
+      <path
+        d="M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round" />
+      <path
+        d="M3 10H21"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round" />
+      <path
+        d="M11.9955 14H12.0045M11.9955 18H12.0045M15.991 14H16M8 14H8.00897M8 18H8.00897"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round" />
+    </svg>
     {{ calendarHeader }}
   </div>
   <div class="sub-header">
     <div class="icons">
-      <span id="prev" class="material-symbols-rounded" (click)="previous()">
+      <span id="prev" (click)="previous()">
         <ng-template
           [ngTemplateOutlet]="
             config.previousButtonTemplate || defaultPreviousBTNTemplate
@@ -28,7 +56,7 @@
       </span>
     </span>
     <div class="icons">
-      <span id="next" class="material-symbols-rounded" (click)="next()">
+      <span id="next" (click)="next()">
         <ng-template
           [ngTemplateOutlet]="config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
       </span>
@@ -102,7 +130,7 @@
 <ng-template #defaultPreviousBTNTemplate>
   <svg width="15px" height="40px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
     <path
-      class="fa-secondary"
+      fill="currentColor"
       d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z" />
   </svg>
 </ng-template>
@@ -110,7 +138,7 @@
 <ng-template #defaultNextBTNTemplate>
   <svg width="15px" height="40px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
     <path
-      class="fa-secondary"
+      fill="currentColor"
       d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z" />
   </svg>
 </ng-template>
@@ -118,7 +146,7 @@
 <ng-template #defaultCaretDownIcon>
   <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
     <path
-      class="fa-secondary"
+      fill="currentColor"
       d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
   </svg>
 </ng-template>
