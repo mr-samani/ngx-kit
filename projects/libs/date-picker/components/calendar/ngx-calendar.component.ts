@@ -4,7 +4,6 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
-  inject,
   Input,
   OnInit,
   Output,
@@ -20,28 +19,14 @@ import { compareDate, deserialize, sameDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
 import { MsEventViewer } from '../../models/events';
-import { BrowserService } from 'ngx-kit/shared';
 @Component({
   selector: 'ngx-calendar',
   templateUrl: './ngx-calendar.component.html',
   styleUrls: ['./ngx-calendar.component.scss'],
   imports: [CommonModule],
   providers: [DateAdapterRegistry],
-  host: {
-    '[class.dark]': 'theme=="dark"',
-  },
 })
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, AfterViewInit {
-  protected readonly browserService = inject(BrowserService);
-
-  theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
-  @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
-    if (!val || val == 'auto') {
-      this.theme = this.browserService.prefersDarkMode ? 'dark' : 'light';
-    } else {
-      this.theme = val;
-    }
-  }
   _config = new NgxDatePickerConfig();
   @Input() set config(val: NgxDatePickerConfig) {
     this._config = { ...new NgxDatePickerConfig(), ...val };
@@ -200,6 +185,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
   }
 
   next() {
+    debugger;
     if (this.view === 'month' || this.view == 'event') {
       this.currMonth++;
     } else if (this.view == 'day' || this.view == 'week') {

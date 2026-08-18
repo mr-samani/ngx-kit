@@ -11,6 +11,8 @@ import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
+import type { ISelectedEvent } from 'ngx-kit/date-picker/models/selected-event';
+import { MSG } from 'ngx-kit/message';
 
 @Component({
   selector: 'app-calendar',
@@ -27,8 +29,6 @@ export class CalendarComponent implements OnInit {
   ];
 
   locale: string = 'fa';
-  theme: 'auto' | 'dark' | 'light' = 'auto';
-
   availableLocals = getLocals();
 
   today = new Date();
@@ -36,7 +36,7 @@ export class CalendarComponent implements OnInit {
     {
       start: this.today,
       end: new Date(
-        `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 15}`,
+        `${this.today.getFullYear()}-${this.today.getMonth() + 2}-${this.today.getDate() + 3}`,
       ),
       color: '#23ef78',
       title: 'this is today',
@@ -48,12 +48,38 @@ export class CalendarComponent implements OnInit {
         `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 5}`,
       ),
       color: '#ef8923',
-      title: 'this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title ',
+      title:
+        'this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title ',
       allDay: true,
+    },
+    {
+      start: this.today,
+      end: new Date(
+        `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 4}`,
+      ),
+      color: '#4f23ef',
+      title: 'my events',
+      allDay: true,
+    },
+    {
+      start: this.today,
+      title: 'today 1',
+    },
+    {
+      start: this.today,
+      title: 'today 2',
+    },
+    {
+      start: this.today,
+      title: 'today 3',
     },
   ];
 
   ngOnInit(): void {
-    console.log(this.myEvents);
+    console.log('myEvents', this.myEvents);
+  }
+
+  onSelectEvent(ev: ISelectedEvent) {
+    MSG.fire({ title: ev.event.title ?? '', text: ev.date.toISOString() });
   }
 }

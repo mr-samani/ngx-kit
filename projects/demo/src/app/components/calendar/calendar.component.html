@@ -8,22 +8,9 @@
         <option [value]="item">{{ item }}</option>
       }
     </select>
-
-    <div>
-      Theme:
-      <label for="auto">
-        <input type="radio" name="theme" id="auto" [(ngModel)]="theme" value="auto" />
-        Auto
-      </label>
-      <label for="dark">
-        <input type="radio" name="theme" id="dark" [(ngModel)]="theme" value="dark" />
-        Dark Mode
-      </label>
-      <label for="light">
-        <input type="radio" name="theme" id="light" [(ngModel)]="theme" value="light" />
-        Light Mode
-      </label>
-    </div>
   </div>
-  <ngx-calendar [locale]="locale" [theme]="theme" [events]="myEvents"></ngx-calendar>
+  <ngx-calendar
+    [locale]="locale"
+    [events]="myEvents"
+    (selectEvent)="onSelectEvent($event)"></ngx-calendar>
 </app-example-showcase>
