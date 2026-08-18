@@ -1,3 +1,17 @@
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-ngx-theme=light],
+[data-ngx-theme=light] {
+  color-scheme: only light;
+}
+
+:root[data-ngx-theme=dark],
+[data-ngx-theme=dark] {
+  color-scheme: only dark;
+}
+
 dialog.ngx-ui-overlay::backdrop {
   background: transparent;
 }
@@ -20,6 +34,19 @@ dialog.ngx-ui-overlay::backdrop {
     opacity: 0;
   }
 }
+dialog.ngx-image-viewer-dialog {
+  border: none;
+  padding: 1rem;
+  max-inline-size: 96vw;
+  max-block-size: 96vh;
+  inline-size: min(900px, 96vw);
+  background: light-dark(#ffffff, #1c1c20);
+  border-radius: 12px;
+}
+dialog.ngx-image-viewer-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.75);
+}
+
 /* ---------- confetti (success only) ---------- */
 .confetti {
   position: absolute;

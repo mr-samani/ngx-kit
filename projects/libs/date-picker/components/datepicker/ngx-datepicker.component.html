@@ -86,12 +86,12 @@
     </pre> -->
     <div class="calendar-footer">
       @if (config.clearButton) {
-        <button class="today dtp-btn" (click)="clear()">
+        <button (click)="clear()">
           {{ config.clearButtonText }}
         </button>
       }
       @if (config.todayButton) {
-        <button class="today dtp-btn" (click)="gotoToday()">
+        <button (click)="gotoToday()">
           {{ config.todayButtonText }}
         </button>
       }

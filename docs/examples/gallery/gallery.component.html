@@ -1,0 +1,15 @@
+<app-example-showcase
+  title="Image Viewer"
+  [files]="sourceFiles"
+  readmePath="/readmes/gallery/README.md">
+  <p class="hint">
+    Mouse scroll = zoom, drag (when zoomed) = pan, two-finger touch = pinch zoom. Every toolbar
+    button can be disabled individually.
+  </p>
+
+  <ngx-image-viewer [images]="images" />
+
+  <div class="dialog-row">
+    <button type="button" (click)="openInDialog()">Open in fullscreen dialog</button>
+  </div>
+</app-example-showcase>

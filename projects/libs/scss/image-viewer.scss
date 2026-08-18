@@ -1,0 +1,16 @@
+// این استایل global لازمه چون NgxImageViewerService یه <dialog> واقعی رو
+// مستقیم با document.createElement می‌سازه (نه از طریق تمپلیت یه کامپوننت
+// انگیولار)، پس هیچ‌وقت زیر style encapsulation قرار نمی‌گیره.
+dialog.ngx-image-viewer-dialog {
+  border: none;
+  padding: 1rem;
+  max-inline-size: 96vw;
+  max-block-size: 96vh;
+  inline-size: min(900px, 96vw);
+  background: light-dark(#ffffff, #1c1c20);
+  border-radius: 12px;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.75);
+  }
+}

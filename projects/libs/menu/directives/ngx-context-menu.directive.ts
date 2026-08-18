@@ -11,17 +11,23 @@ export class NgxContextMenu implements OnDestroy {
 
   private containerRef?: OverlayRef<NgxMenuPanel>;
 
+  // باید همون رفرنس تابعی که به addEventListener داده می‌شه رو نگه داریم و به
+  // removeEventListener هم بدیم؛ قبلاً هر بار یک آرو فانکشن جدید ساخته می‌شد
+  // که removeEventListener اصلاً نمی‌تونست تشخیص بده مال همون listener قبلیه،
+  // پس listener هیچ‌وقت واقعاً حذف نمی‌شد (نشتی حافظه‌ی کامل directive + المنت).
+  private readonly boundOnClick = (ev: PointerEvent) => this.onClick(ev);
+
   constructor(
     private el: ElementRef<HTMLElement>,
     private appRef: ApplicationRef,
     private overlayService: OverlayService,
   ) {
-    el.nativeElement.addEventListener('contextmenu', (ev) => this.onClick(ev));
+    el.nativeElement.addEventListener('contextmenu', this.boundOnClick);
   }
 
   ngOnDestroy(): void {
     this.destroyContainer();
-    this.el.nativeElement.removeEventListener('contextmenu', (ev) => this.onClick(ev));
+    this.el.nativeElement.removeEventListener('contextmenu', this.boundOnClick);
   }
 
   onClick(ev: PointerEvent) {

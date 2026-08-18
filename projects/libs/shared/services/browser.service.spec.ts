@@ -6,7 +6,7 @@ import { BrowserService } from './browser.service';
 describe('Service: Browser', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [BrowserService]
+      providers: [BrowserService],
     });
   });
 

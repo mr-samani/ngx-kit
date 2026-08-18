@@ -1,0 +1,77 @@
+<div
+  class="ngx-drawer-root"
+  [class]="'behavior-' + contentBehavior()"
+  [style.perspective.px]="1200">
+  @if (swipeEnabled() && !open()) {
+    <div
+      class="ngx-drawer-edge-zone"
+      [class.edge-start]="side() === 'start'"
+      [class.edge-end]="side() === 'end'"
+      [style.--ngx-drawer-edge-size]="swipeEdgeSize() + 'px'"
+      (mousedown)="onEdgeDragStart($event)"
+      (touchstart)="onEdgeDragStart($event)"></div>
+  }
+
+  @if (visualOpen() > 0 && contentBehavior() === 'overlay') {
+    <div
+      class="ngx-drawer-backdrop"
+      [style.opacity]="visualOpen()"
+      [class.no-transition]="isDragging()"
+      (click)="closeFromBackdrop()"></div>
+  }
+
+  <div
+    class="ngx-drawer-main"
+    [class.no-transition]="isDragging()"
+    [style.--ngx-drawer-width]="width() + 'px'"
+    [style.--ngx-drawer-open]="visualOpen()"
+    [style.--ngx-drawer-dir]="pushDirSign()">
+    <ng-content></ng-content>
+
+    @if (visualOpen() > 0 && contentBehavior() !== 'overlay') {
+      <div
+        class="ngx-drawer-main-dim"
+        [style.opacity]="visualOpen() * 0.35"
+        (click)="closeFromBackdrop()"></div>
+    }
+  </div>
+
+  <aside
+    class="ngx-drawer-panel"
+    [class]="'effect-' + effect()"
+    [class.side-start]="side() === 'start'"
+    [class.side-end]="side() === 'end'"
+    [class.no-transition]="isDragging()"
+    [class.is-open]="open()"
+    [class.playing]="playEffectClass()"
+    [style.--ngx-drawer-width]="width() + 'px'"
+    [style.--ngx-drawer-open]="visualOpen()"
+    role="dialog"
+    aria-modal="true">
+    <div
+      class="ngx-drawer-drag-handle"
+      [class.edge-start]="side() === 'start'"
+      [class.edge-end]="side() === 'end'"
+      (mousedown)="onPanelDragStart($event)"
+      (touchstart)="onPanelDragStart($event)"></div>
+
+    <div class="ngx-drawer-content">
+      <ng-content select="[drawerContent]"></ng-content>
+    </div>
+
+    @if (effect() === 'curtain') {
+      <div
+        class="ngx-drawer-curtain"
+        [class.open]="open()"
+        [class.revealed]="visualOpen() >= 1 && !isDragging()">
+        @for (i of strips(); track i) {
+          <div
+            class="ngx-drawer-strip"
+            [class.side-start]="side() === 'start'"
+            [class.side-end]="side() === 'end'"
+            [style.transition-delay]="stripDelay(i)"></div>
+        }
+      </div>
+    }
+  </aside>
+</div>

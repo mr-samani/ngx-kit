@@ -14,5 +14,6 @@ export interface PageState {
 
 /** هر بار سرور باید صفحه‌ی جدید را (در حالت lazy) واکشی کند، امیت می‌شود. */
 export interface LazyLoadEvent<T> extends PageState {
-  sorts: SortMeta<T>[];
+  sorts?: SortMeta<T>[];
+  sorting?: string;
 }

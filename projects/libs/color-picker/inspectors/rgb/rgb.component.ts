@@ -32,7 +32,7 @@ export class RgbComponent implements OnInit {
     this.alpha = rgba.a ?? 1;
     this.updateRgbSliderColor(rgba as any);
   }
-  
+
   @Input() useAlphaChannel: boolean = true;
   @Output() colorChange = new EventEmitter<NgxColor | undefined>();
   constructor() {}

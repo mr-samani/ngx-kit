@@ -2,7 +2,11 @@ import { CMYK, HSL, HSLA, HSV, HSVA, RGB, RGBA } from '../contracts/color-interf
 
 export function hexToRgb(hex: string): RGBA {
   let h = hex.replace(/^#/, '');
-  if (h.length === 3)
+  // #rgb یا #rgba (فرمت مخفف) — هر کاراکتر دوبار تکرار می‌شه تا به فرم کامل برسه.
+  // قبلاً فقط طول ۳ (بدون آلفا) پشتیبانی می‌شد؛ #rgba (طول ۴) با این‌که یک
+  // فرمت معتبر CSS هست، از اعتبارسنجی رد می‌شد ولی اینجا expand نمی‌شد و در
+  // نهایت به خطای «Invalid hex color» می‌خورد.
+  if (h.length === 3 || h.length === 4)
     h = h
       .split('')
       .map((x) => x + x)
@@ -161,7 +165,11 @@ export function pad2(c: string): string {
  * *Assumes:* r, g, b in [0, 255] or [0, 1]
  * *Returns:* { r, g, b } in [0, 255]
  */
-export function rgbToRgb(r: number | string, g: number | string, b: number | string): Numberify<RGB> {
+export function rgbToRgb(
+  r: number | string,
+  g: number | string,
+  b: number | string,
+): Numberify<RGB> {
   return {
     r: bound01(r, 255) * 255,
     g: bound01(g, 255) * 255,
@@ -216,7 +224,12 @@ export function rgbToHsl(r: number, g: number, b: number): Numberify<HSL> {
  * *Assumes:* h in [0, 360], s and l in [0, 100]
  * *Returns:* { r, g, b } in [0, 255]
  */
-export function hslToRgba(h: number | string, s: number | string, l: number | string, a: number = 1): RGBA {
+export function hslToRgba(
+  h: number | string,
+  s: number | string,
+  l: number | string,
+  a: number = 1,
+): RGBA {
   h = +h;
   s = +s;
   l = +l;
@@ -301,7 +314,11 @@ export function rgbToHsv(r: number, g: number, b: number): Numberify<HSV> {
  * *Assumes:* h in [0, 360], s and v in [0, 100]
  * *Returns:* { r, g, b } in [0, 255]
  */
-export function hsvToRgb(h: number | string, s: number | string, v: number | string): Numberify<RGB> {
+export function hsvToRgb(
+  h: number | string,
+  s: number | string,
+  v: number | string,
+): Numberify<RGB> {
   h = +h;
   s = +s;
   v = +v;
@@ -366,7 +383,7 @@ export function rgbaToHex(
   b: number,
   a: number = 1,
   allowAlpha: boolean = true,
-  allow3Char: boolean = false
+  allow3Char: boolean = false,
 ): string {
   const toHex = (n: number) => n.toString(16).padStart(2, '0');
 
@@ -378,7 +395,10 @@ export function rgbaToHex(
   // Try compressing to #rgb or #rgba if allowed and all characters are duplicated
   if (allow3Char && (!allowAlpha || aHex === 'ff')) {
     const canShorten =
-      rHex[0] === rHex[1] && gHex[0] === gHex[1] && bHex[0] === bHex[1] && (!allowAlpha || aHex[0] === aHex[1]);
+      rHex[0] === rHex[1] &&
+      gHex[0] === gHex[1] &&
+      bHex[0] === bHex[1] &&
+      (!allowAlpha || aHex[0] === aHex[1]);
 
     if (canShorten) {
       return '#' + rHex[0] + gHex[0] + bHex[0] + (allowAlpha && aHex !== 'ff' ? aHex[0] : '');

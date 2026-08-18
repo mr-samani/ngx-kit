@@ -1,17 +1,21 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   Output,
   ViewChild,
   forwardRef,
+  inject,
   type OnInit,
 } from '@angular/core';
 import { getOffsetPosition } from '../utils/get-offset-position';
+import { startDragSession } from '../utils/drag-session';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -43,7 +47,7 @@ import {
     },
   ],
 })
-export class SliderComponent implements OnInit, ControlValueAccessor, Validator {
+export class SliderComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   @Input() step = 1;
   @Input() min = 0;
   @Input() max = 100;
@@ -57,13 +61,19 @@ export class SliderComponent implements OnInit, ControlValueAccessor, Validator 
   myControl = new FormControl<number | null>(null);
   isDisabled = false;
   protected _onChange = (value: any) => {};
-  protected _onTouched =  () => {};
-  protected _validatorOnChange =  () => {};
+  protected _onTouched = () => {};
+  protected _validatorOnChange = () => {};
   private sliderRect?: DOMRect;
   private thumbRect?: DOMRect;
+  private stopDrag?: () => void;
+  private readonly cd = inject(ChangeDetectorRef);
   constructor() {}
   ngOnInit(): void {
     this.myControl.setValidators([Validators.min(this.min), Validators.max(this.max)]);
+  }
+
+  ngOnDestroy(): void {
+    this.stopDrag?.();
   }
 
   private updateRects() {
@@ -111,13 +121,15 @@ export class SliderComponent implements OnInit, ControlValueAccessor, Validator 
     this.isDragging = true;
     this.updateRects();
     this.updatePosition(ev);
-  }
-
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
-  onDrag(ev: MouseEvent | TouchEvent) {
-    if (!this.isDragging) return;
-    this.updatePosition(ev);
+    this.stopDrag?.();
+    this.stopDrag = startDragSession({
+      onMove: (moveEv) => this.updatePosition(moveEv),
+      onEnd: () => {
+        this.isDragging = false;
+        this.stopDrag = undefined;
+        this.cd.markForCheck();
+      },
+    });
   }
 
   @HostListener('window:resize')
@@ -140,23 +152,22 @@ export class SliderComponent implements OnInit, ControlValueAccessor, Validator 
       this.x = position.x;
     }
     this.setValueByPosition(thumbRec, sliderRec);
+    // OnPush + addEventListener دستی (به‌جای HostListener) یعنی خودمون باید
+    // view رو dirty کنیم، وگرنه thumb حین درگ روی صفحه آپدیت نمی‌شه.
+    this.cd.markForCheck();
   }
 
   setValueByPosition(thumbRec: DOMRect, sliderRec: DOMRect) {
     const percentage = this.x / (sliderRec.width - thumbRec.width);
     let newValue = this.min + percentage * (this.max - this.min);
     const stepDecimalPlaces = (this.step.toString().split('.')[1] || '').length;
-    newValue = parseFloat((Math.round(newValue / this.step) * this.step).toFixed(stepDecimalPlaces));
+    newValue = parseFloat(
+      (Math.round(newValue / this.step) * this.step).toFixed(stepDecimalPlaces),
+    );
     let value = Math.min(Math.max(newValue, this.min), this.max);
     if (this.myControl.value !== value) {
       this.valueChanged(value);
     }
-  }
-
-  @HostListener('document:mouseup', ['$event'])
-  @HostListener('document:touchend', ['$event'])
-  onDragEnd(ev: MouseEvent | TouchEvent) {
-    this.isDragging = false;
   }
 
   valueChanged(value: number) {

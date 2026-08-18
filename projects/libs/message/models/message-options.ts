@@ -1,7 +1,6 @@
 import { MessageIcon } from './MessageIcon';
 import { IMessageOptions } from './message-options.interface';
 
-
 export class MessageOptions implements IMessageOptions {
   public constructor(private config?: IMessageOptions) {
     //config = { ...(new MessageOptions()), ...config };

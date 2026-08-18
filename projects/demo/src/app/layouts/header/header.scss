@@ -1,6 +1,105 @@
-.dir-btn {
-  font-size: 14px;
+.app-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding-inline: 1.25rem;
+  block-size: 58px;
+  background: light-dark(rgba(255, 255, 255, 0.75), rgba(18, 18, 20, 0.7));
+  backdrop-filter: blur(10px);
+  border-block-end: 1px solid light-dark(#e5e7eb, #2a2a2f);
 }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #6366f1, #2563eb);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.brand-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: light-dark(#1f2937, #f4f4f5);
+
+  b {
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #2563eb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.25rem;
+
+  a {
+    text-decoration: none;
+    color: light-dark(#4b5563, #a1a1aa);
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    transition:
+      background-color 150ms ease,
+      color 150ms ease;
+
+    &:hover {
+      background: light-dark(#f3f4f6, #232327);
+      color: light-dark(#1f2937, #f4f4f5);
+    }
+    &.active {
+      background: light-dark(#eef2ff, #1e2a4a);
+      color: light-dark(#4338ca, #93c5fd);
+      font-weight: 600;
+    }
+  }
+}
+
 .spacer {
   flex: auto;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: light-dark(#4b5563, #a1a1aa);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+
+  &:hover {
+    background: light-dark(#f3f4f6, #232327);
+    color: light-dark(#1f2937, #f4f4f5);
+  }
+}
+
+.dir-label {
+  font-size: 0.7rem;
+  font-weight: 700;
 }

@@ -1,0 +1,27 @@
+<div class="preview-stack">
+  <div class="mini-window mini-window--light" data-ngx-theme="light" [class.front]="!isPageDark()">
+    <div class="mini-titlebar">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="mini-body">
+      <div class="mini-icon" [style.background]="gradient()">{{ icon() }}</div>
+      <div class="mini-line"></div>
+      <div class="mini-line short"></div>
+    </div>
+  </div>
+
+  <div class="mini-window mini-window--dark" data-ngx-theme="dark" [class.front]="isPageDark()">
+    <div class="mini-titlebar">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="mini-body">
+      <div class="mini-icon" [style.background]="gradient()">{{ icon() }}</div>
+      <div class="mini-line"></div>
+      <div class="mini-line short"></div>
+    </div>
+  </div>
+</div>

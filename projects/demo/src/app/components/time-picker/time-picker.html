@@ -1,0 +1,35 @@
+<app-example-showcase title="Time Picker" [files]="sourceFiles" readmePath="/readmes/time-picker/README.md">
+  <div class="container">
+    <h3>Input mode</h3>
+    <form [formGroup]="form">
+      <ngx-form-field label="Select Time">
+        <input
+          formControlName="time"
+          ngxInput
+          ngxInputTimePicker
+          [openOnCLick]="false"
+          #dpInput="ngxInputTimePicker" />
+        <button (click)="dpInput.toggle()" ngxPrefix class="pointer">
+          <i class="fa fa-clock"></i>
+        </button>
+        <button (click)="form.get('time')?.reset()" ngxSuffix class="pointer">
+          <i class="fa fa-times"></i>
+        </button>
+
+        <ngx-hint>Click on clock icon</ngx-hint>
+
+      @if (form.get('time')?.hasError('invalid')) {
+          <ngx-error>invalid time!</ngx-error>
+      }
+      @if (form.get('time')?.hasError('required')) {
+          <ngx-error>required time!</ngx-error>
+      }
+      </ngx-form-field>
+
+      <p>{{ form.get('time')?.value | json }}</p>
+    </form>
+
+    <h3>Inline mode</h3>
+    <ngx-time-picker format="24"></ngx-time-picker>
+  </div>
+</app-example-showcase>

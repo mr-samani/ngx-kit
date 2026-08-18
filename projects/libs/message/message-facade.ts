@@ -62,6 +62,8 @@ export class MSG {
       title,
       text,
       ...options,
+      showConfirmButton: true,
+      showCancelButton: true,
     });
   }
   static loading(title: string, text?: string, options?: IMessageOptions) {
@@ -70,6 +72,11 @@ export class MSG {
       title,
       text,
       ...options,
+      showConfirmButton: false,
+      showCancelButton: false,
+      showDenyButton: false,
     });
   }
 }
+
+export class Modal extends MSG {}

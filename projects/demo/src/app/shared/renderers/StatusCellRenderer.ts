@@ -50,10 +50,10 @@ export class StatusCellRenderer<T extends object> implements CellRendererCompone
 
   protected readonly label = computed(() => {
     const labels: Record<UserStatus, string> = {
-      active: 'فعال',
-      inactive: 'غیرفعال',
-      blocked: 'مسدود',
-      pending: 'در انتظار',
+      active: 'Active',
+      inactive: 'Inactive',
+      blocked: 'Blocked',
+      pending: 'Pending',
     };
     return labels[this.value()] ?? this.value();
   });

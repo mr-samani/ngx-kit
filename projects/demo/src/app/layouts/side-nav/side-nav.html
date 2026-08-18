@@ -1,14 +1,17 @@
-<nav>
-  <ul>
-    @for (cat of list; track $index) {
-      <li>
-        <span>{{ cat.name }}</span>
-      </li>
-      @for (item of cat.items; track $index) {
-        <li>
-          <a [routerLink]="item.url" routerLinkActive="active">{{ item.title }}</a>
-        </li>
-      }
-    }
-  </ul>
+<nav class="side-nav">
+  @for (cat of list; track $index) {
+    <div class="nav-group">
+      <span class="nav-group-title">{{ cat.name }}</span>
+      <ul>
+        @for (item of cat.items; track $index) {
+          <li>
+            <a [routerLink]="item.url" routerLinkActive="active">
+              <span class="dot"></span>
+              {{ item.title }}
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  }
 </nav>

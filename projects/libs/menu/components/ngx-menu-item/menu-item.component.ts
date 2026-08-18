@@ -18,7 +18,7 @@ import { NgxMenu } from '../../directives/ngx-menu.directive';
       transition: all 300ms;
       &:hover {
         cursor: pointer;
-        background-color: var(--ngx-menu-item-padding, #9bc6ff68);
+        background-color: var(--ngx-menu-item-hover-bg, #9bc6ff68);
       }
     }
   `,

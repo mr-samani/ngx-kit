@@ -1,0 +1,27 @@
+<app-example-showcase
+  title="Image Editor"
+  [files]="sourceFiles"
+  readmePath="/readmes/image-editor/README.md">
+  @if (!selectedFile() && !result()) {
+    <ngx-dropzone [accept]="'image/*'" [multiple]="false" (filesAdded)="onFilesAdded($event)">
+      Select an image to edit
+    </ngx-dropzone>
+  }
+
+  @if (selectedFile(); as file) {
+    <ngx-image-editor
+      [source]="file"
+      [quality]="100"
+      [displayMaxWidth]="1200"
+      (saved)="onSaved($event)"
+      (cancelled)="onCancelled()" />
+  }
+
+  @if (result(); as r) {
+    <div class="ie-result">
+      <img [src]="r.dataUrl" [alt]="'Edited output'" />
+      <p>{{ r.width }}×{{ r.height }}</p>
+      <button type="button" (click)="reset()">New image</button>
+    </div>
+  }
+</app-example-showcase>

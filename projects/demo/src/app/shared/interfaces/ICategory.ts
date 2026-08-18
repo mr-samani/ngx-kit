@@ -1,7 +1,7 @@
-import { IComponent } from "./IComponent";
+import { IComponent } from './IComponent';
 
 export interface ICategory {
-    open?: boolean;
-    name: string;
-    items: IComponent[];
+  open?: boolean;
+  name: string;
+  items: IComponent[];
 }

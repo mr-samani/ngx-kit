@@ -1,0 +1,8 @@
+@font-face {
+  font-family: 'iranSans';
+  src:
+    url('farsiNum/iransans-regular.eot') format('embedded-opentype'),
+    url('farsiNum/iransans-regular.ttf') format('truetype'),
+    url('farsiNum/iransans-regular.woff') format('woff'),
+    url('farsiNum/iransans-regular.woff2') format('woff2');
+}
