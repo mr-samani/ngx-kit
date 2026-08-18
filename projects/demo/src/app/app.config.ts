@@ -1,10 +1,12 @@
-import { ApplicationConfig, inject, Injectable } from '@angular/core';
+import { ApplicationConfig, Injectable } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
 import { routes } from './app.routes';
 import { provideNotify } from 'ngx-kit/notify';
-import { NGX_MESSAGE_CONFIGS, provideMessage } from 'ngx-kit/message';
-import { providePagination, provideTable } from 'ngx-kit/data-table';
+import { provideMessage } from 'ngx-kit/message';
+import { provideTable } from 'ngx-kit/data-table';
 import { AvatarCellRenderer } from './shared/renderers/AvatarCellRenderer';
 import { BooleanCellRenderer } from './shared/renderers/BooleanCellRenderer';
 import { DateCellRenderer } from './shared/renderers/DateCellRenderer';
@@ -15,6 +17,10 @@ import { StatusCellRenderer } from './shared/renderers/StatusCellRenderer';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
+    provideHttpClient(),
+    provideMonacoEditor({
+      baseUrl: 'assets/monaco/min/vs',
+    }),
     provideNotify({ timeout: 5000, dismissible: true, position: 'bottom-center' }),
     provideMessage(),
     // providePagination(),

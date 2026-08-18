@@ -18,6 +18,7 @@ import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/toke
 import { ICONS } from '../models/icons';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { makeConfetti } from 'ngx-kit/shared';
+import { NgxMessageService } from '../services/message.service';
 
 @Component({
   selector: 'ngx-message',
@@ -41,6 +42,7 @@ export class NgxMessageComponent implements OnInit, AfterViewInit {
 
   protected sanitizer = inject(DomSanitizer);
   protected doc = inject(DOCUMENT);
+  private readonly messageService = inject(NgxMessageService);
 
   private readonly _onClose = new Subject<{ index: number; result: MessageResult<any> }>();
   public onClose = this._onClose.asObservable();
@@ -57,15 +59,29 @@ export class NgxMessageComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * وقتی چند تا پیام هم‌زمان باز باشن، هرکدوم listener خودشو روی document
+   * داشت — پس یه فشردن Escape/Enter، رویداد رو به *همه‌شون* هم‌زمان می‌فرستاد،
+   * نه فقط آخرین پیامی که باز شده (رفتار طبیعیِ یه استکِ مودال باید این باشه
+   * که فقط بالاترین لایه به کیبورد واکنش نشون بده). این چک همون چیزیه که
+   * OverlayService با getLastDialog() برای اورلی‌ها انجام می‌ده.
+   */
+  private isTopmost(): boolean {
+    const ids = [...this.messageService.alerts.keys()];
+    if (!ids.length) return true;
+    return this.index === Math.max(...ids);
+  }
+
   @HostListener('document:keydown.escape', ['$event'])
   onScapeKey(event: Event) {
-    if (this.options.allowEscapeKey) {
+    if (this.options.allowEscapeKey && this.isTopmost()) {
       this.onCancel();
     }
   }
 
   @HostListener('document:keydown.enter', ['$event'])
   onEnterKey(event: Event) {
+    if (!this.isTopmost()) return;
     event.stopPropagation();
     event.preventDefault();
     if (this.options.allowEnterKey) {

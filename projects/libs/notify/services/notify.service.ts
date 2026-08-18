@@ -158,7 +158,7 @@ export class NgxNotifyService {
     setTimeout(() => {
       const item = this.visible.find((x) => x.payload.id === id);
       if (item) {
-        this.appRef.attachView(item.ref.hostView);
+        this.appRef.detachView(item.ref.hostView);
         item.ref.destroy();
       }
       this.visible = this.visible.filter((v) => v.payload.id !== id);

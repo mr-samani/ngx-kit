@@ -24,7 +24,7 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { parseBoxShadowToPx, stringifyBoxShadow } from '../utils/box-shadow';
-import { IPosition, getOffsetPosition } from 'ngx-kit/shared';
+import { IPosition, getOffsetPosition, startDragSession } from 'ngx-kit/shared';
 import { NgxInputColor } from 'ngx-kit/color-picker';
 import { BrowserService } from 'ngx-kit/shared';
 
@@ -34,7 +34,11 @@ import { BrowserService } from 'ngx-kit/shared';
   styleUrls: ['./box-shadow.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NgxBoxShadowComponent), multi: true },
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NgxBoxShadowComponent),
+      multi: true,
+    },
     {
       provide: NG_VALIDATORS,
       multi: true,
@@ -46,7 +50,9 @@ import { BrowserService } from 'ngx-kit/shared';
     '[class.dark]': 'theme=="dark"',
   },
 })
-export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, ControlValueAccessor, Validator {
+export class NgxBoxShadowComponent
+  implements OnInit, AfterViewInit, OnDestroy, ControlValueAccessor, Validator
+{
   theme: 'light' | 'dark' | 'auto' = 'light';
   @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
     if (!val || val == 'auto') {
@@ -75,8 +81,9 @@ export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, 
   padRect?: DOMRect;
   thumbRect?: DOMRect;
   protected _onChange = (value: string) => {};
-  protected _onTouched =  () => {};
+  protected _onTouched = () => {};
   _onValidateChange = () => {};
+  private stopDrag?: () => void;
 
   @ViewChild('pad', { static: true }) pad!: ElementRef<HTMLDivElement>;
   @ViewChild('thumb', { static: true }) thumb!: ElementRef<HTMLDivElement>;
@@ -89,7 +96,9 @@ export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, 
   ngAfterViewInit(): void {
     this.updateRects();
   }
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.stopDrag?.();
+  }
   registerOnChange(fn: any): void {
     this._onChange = fn;
   }
@@ -127,6 +136,15 @@ export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, 
     this.isDragging = true;
     this.updatePosition(ev);
     this.updateRects();
+    this.stopDrag?.();
+    this.stopDrag = startDragSession({
+      onMove: (moveEv) => this.updatePosition(moveEv),
+      onEnd: () => {
+        this.isDragging = false;
+        this.stopDrag = undefined;
+        this.cd.markForCheck();
+      },
+    });
   }
   private updateRects() {
     this.padRect = this.pad.nativeElement.getBoundingClientRect();
@@ -144,13 +162,6 @@ export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, 
   @HostListener('window:resize')
   onResize() {
     this.writeValue(this.value);
-  }
-
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
-  onDrag(ev: MouseEvent | TouchEvent) {
-    if (!this.isDragging) return;
-    this.updatePosition(ev);
   }
 
   private updatePosition(ev: MouseEvent | TouchEvent) {
@@ -181,12 +192,7 @@ export class NgxBoxShadowComponent implements OnInit, AfterViewInit, OnDestroy, 
     };
 
     this.setValueByPosition(thumbRec, padRec);
-  }
-
-  @HostListener('document:mouseup', ['$event'])
-  @HostListener('document:touchend', ['$event'])
-  onDragEnd(ev: MouseEvent | TouchEvent) {
-    this.isDragging = false;
+    this.cd.markForCheck();
   }
 
   setValueByPosition(thumbRec: DOMRect, padRec: DOMRect) {

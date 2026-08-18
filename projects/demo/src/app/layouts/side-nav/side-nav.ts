@@ -10,6 +10,5 @@ import { MENU_LIST } from '@demo/shared/menu-items';
   styleUrl: './side-nav.scss',
 })
 export class SideNav {
-    list: ICategory[] = MENU_LIST;
-  
+  list: ICategory[] = MENU_LIST;
 }

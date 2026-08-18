@@ -104,7 +104,6 @@ describe('NgxColor: convert color and revert', () => {
     expect(() => new NgxColor('notacolor')).toThrow();
   });
 
-
   it('should handle css name color', () => {
     const c = new NgxColor('blanchedalmond');
     expect(c.toHexString()).toBe('#ffebcd');

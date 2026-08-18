@@ -1,0 +1,452 @@
+// =========================================================
+// NGX FORM FIELD
+// Material-like behavior with the custom 3-segment border
+// =========================================================
+
+$field-height: 44px;
+$field-radius: 6px;
+$field-border-width: 1px;
+$field-side-width: 40px;
+
+ngx-form-field {
+  --mx-field-height: #{$field-height};
+  --mx-field-radius: #{$field-radius};
+  --mx-field-border-width: #{$field-border-width};
+  --mx-field-side-width: #{$field-side-width};
+
+  --mx-field-border-color: light-dark(#737373, #8f8f8f);
+
+  --mx-field-hover-color: light-dark(#3f3f3f, #d0d0d0);
+
+  --mx-field-active-color: light-dark(#007ffe, #4da3ff);
+
+  --mx-field-invalid-color: light-dark(#d60000, #ff4d5a);
+
+  --mx-field-disabled-color: light-dark(#bdbdbd, #555);
+
+  --mx-field-label-color: light-dark(#555, #c7c7c7);
+
+  --mx-field-text-color: light-dark(#1a1a1a, #f5f5f5);
+
+  --mx-field-placeholder-color: light-dark(#888, #999);
+
+  --mx-field-hint-color: light-dark(#007bd4, #03a9f4);
+
+  --mx-field-focus-ring: light-dark(rgb(0 127 254 / 12%), rgb(77 163 255 / 18%));
+  display: inline-flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+
+  font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+// =========================================================
+// FIELD
+// =========================================================
+
+.mx-form-field {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+
+  width: 100%;
+  min-width: 220px;
+  height: var(--mx-field-height);
+
+  color: var(--mx-field-text-color);
+
+  isolation: isolate;
+}
+
+// =========================================================
+// BORDER SEGMENTS
+// =========================================================
+
+.mx-form-field__before,
+.mx-form-field__label,
+.mx-form-field__after {
+  flex: 1 1 auto;
+  border: var(--mx-field-border-width) solid var(--mx-field-border-color);
+  pointer-events: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.mx-form-field__before {
+  display: flex;
+  flex: 0 0 var(--mx-field-side-width);
+  min-width: 0;
+
+  border-inline-end: 0;
+  border-radius: var(--mx-field-radius) 0 0 var(--mx-field-radius);
+}
+
+.mx-form-field__after {
+  display: flex;
+  justify-content: flex-end;
+  min-width: var(--mx-field-side-width);
+
+  border-inline-start: 0;
+  border-radius: 0 var(--mx-field-radius) var(--mx-field-radius) 0;
+}
+
+// =========================================================
+// PREFIX / SUFFIX
+// =========================================================
+
+.mx-form-field__prefix,
+.mx-form-field__suffix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  height: 100%;
+
+  pointer-events: auto;
+  button {
+    background: none;
+    border: none;
+  }
+}
+
+.mx-form-field__prefix {
+  padding-inline-start: 8px;
+}
+
+.mx-form-field__suffix {
+  padding-inline-end: 8px;
+}
+
+.mx-form-field__prefix:empty,
+.mx-form-field__suffix:empty {
+  display: none;
+}
+
+.mx-form-field__prefix ::ng-deep > *,
+.mx-form-field__suffix ::ng-deep > * {
+  max-width: 100%;
+}
+
+// =========================================================
+// LABEL NOTCH
+// =========================================================
+
+.mx-form-field__label {
+  position: relative;
+
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+
+  min-width: 0;
+  max-width: 70%;
+
+  border-inline: 0;
+
+  color: var(--mx-field-label-color);
+
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.mx-form-field__label span {
+  display: block;
+  opacity: 0.72;
+  transform-origin: center;
+  transform: translateY(0) scale(1);
+
+  transition:
+    transform 150ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 150ms ease,
+    color 150ms ease;
+}
+
+// =========================================================
+// INPUT / TEXTAREA / SELECT
+// =========================================================
+
+.mx-form-field > input,
+.mx-form-field > textarea,
+.mx-form-field > select {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  margin: 0;
+  padding: 0 16px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--mx-field-text-color);
+
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+
+  text-align: start;
+
+  caret-color: var(--mx-field-active-color);
+}
+
+.mx-form-field > textarea {
+  min-height: 100%;
+  resize: vertical;
+}
+
+.mx-form-field > select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.mx-form-field > input:disabled,
+.mx-form-field > textarea:disabled,
+.mx-form-field > select:disabled {
+  cursor: not-allowed;
+}
+
+.mx-form-field > input::placeholder,
+.mx-form-field > textarea::placeholder {
+  color: var(--mx-field-placeholder-color);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.mx-form-field > input:focus::placeholder,
+.mx-form-field > textarea:focus::placeholder {
+  opacity: 0.75;
+}
+
+// =========================================================
+// FLOATING LABEL
+// =========================================================
+//
+// The component owns "has-value" so this does not depend on
+// placeholder-shown. This is important for inputs without a
+// placeholder and for textarea/select.
+//
+// =========================================================
+
+.mx-form-field:has(> input.has-value),
+.mx-form-field:has(> textarea.has-value),
+.mx-form-field:has(> select.has-value),
+.mx-form-field.mx-form-field--float,
+.mx-form-field:focus-within {
+  .mx-form-field__label span {
+    transform: translateY(-100%) scale(0.86);
+    opacity: 1;
+  }
+
+  .mx-form-field__label {
+    border-top-width: 0;
+  }
+}
+
+// =========================================================
+// NOTCH / TRANSPARENT BACKGROUND
+// =========================================================
+
+.mx-form-field:has(> input.has-value),
+.mx-form-field:has(> textarea.has-value),
+.mx-form-field:has(> select.has-value),
+.mx-form-field.mx-form-field--float,
+.mx-form-field:focus-within {
+  .mx-form-field__label::before,
+  .mx-form-field__label::after {
+    width: 0;
+  }
+}
+
+// =========================================================
+// HOVER
+// =========================================================
+
+.mx-form-field:hover:not(:has(> input:disabled)):not(:has(> textarea:disabled)):not(
+    :has(> select:disabled)
+  ) {
+  .mx-form-field__before,
+  .mx-form-field__label,
+  .mx-form-field__after {
+    border-color: var(--mx-field-hover-color);
+  }
+}
+
+// =========================================================
+// FOCUS
+// =========================================================
+
+.mx-form-field:focus-within {
+  .mx-form-field__before,
+  .mx-form-field__label,
+  .mx-form-field__after {
+    border-color: var(--mx-field-active-color);
+  }
+
+  .mx-form-field__label span {
+    color: var(--mx-field-active-color);
+  }
+}
+
+// =========================================================
+// INVALID
+// =========================================================
+
+.mx-form-field.mx-form-field--invalid,
+.mx-form-field:has(> input.ng-invalid),
+.mx-form-field:has(> textarea.ng-invalid),
+.mx-form-field:has(> select.ng-invalid) {
+  .mx-form-field__before,
+  .mx-form-field__label,
+  .mx-form-field__after {
+    border-color: var(--mx-field-invalid-color);
+  }
+
+  .mx-form-field__label span {
+    color: var(--mx-field-invalid-color);
+  }
+}
+
+.mx-form-field.mx-form-field--invalid:focus-within::after,
+.mx-form-field:has(> input.ng-invalid:focus)::after,
+.mx-form-field:has(> textarea.ng-invalid:focus)::after,
+.mx-form-field:has(> select.ng-invalid:focus)::after {
+  border-color: color-mix(in srgb, var(--mx-field-invalid-color) 20%, transparent);
+}
+
+// Do not show native invalid styling before interaction.
+.mx-form-field > input:user-invalid,
+.mx-form-field > textarea:user-invalid,
+.mx-form-field > select:user-invalid {
+  color: var(--mx-field-text-color);
+}
+
+// =========================================================
+// DISABLED
+// =========================================================
+
+.mx-form-field.mx-form-field--disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+
+  .mx-form-field__before,
+  .mx-form-field__label,
+  .mx-form-field__after {
+    border-color: var(--mx-field-disabled-color);
+  }
+}
+
+// =========================================================
+// READONLY
+// =========================================================
+
+.mx-form-field.mx-form-field--readonly {
+  .mx-form-field__label {
+    color: var(--mx-field-label-color);
+  }
+
+  > input,
+  > textarea {
+    cursor: default;
+  }
+}
+
+// =========================================================
+// AUTOFILL
+// =========================================================
+
+.mx-form-field input:-webkit-autofill,
+.mx-form-field input:-webkit-autofill:hover,
+.mx-form-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--mx-field-text-color);
+  caret-color: var(--mx-field-text-color);
+
+  transition: background-color 99999s ease-in-out 0s;
+}
+
+// =========================================================
+// HINT / ERROR
+// =========================================================
+
+.mx-form-field__hint,
+.mx-form-field__error-list {
+  display: block;
+
+  margin-top: 5px;
+  padding-inline: 2px;
+
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.mx-form-field__hint {
+  color: var(--mx-field-hint-color);
+}
+
+.mx-form-field__error-list {
+  color: var(--mx-field-invalid-color);
+}
+
+// =========================================================
+// RTL
+// =========================================================
+
+[dir='rtl'] .mx-form-field__before {
+  border-inline-start: var(--mx-field-border-width) solid var(--mx-field-border-color);
+  border-inline-end: 0;
+
+  border-radius: 0 var(--mx-field-radius) var(--mx-field-radius) 0;
+}
+
+[dir='rtl'] .mx-form-field__after {
+  border-inline-end: var(--mx-field-border-width) solid var(--mx-field-border-color);
+  border-inline-start: 0;
+
+  border-radius: var(--mx-field-radius) 0 0 var(--mx-field-radius);
+}
+
+[dir='rtl'] .mx-form-field__label span {
+  transform-origin: center;
+}
+
+// =========================================================
+// REDUCED MOTION
+// =========================================================
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-form-field *,
+  .mx-form-field::after {
+    transition: none !important;
+  }
+}
+
+// =========================================================
+// FORCED COLORS
+// =========================================================
+
+@media (forced-colors: active) {
+  .mx-form-field__before,
+  .mx-form-field__label,
+  .mx-form-field__after {
+    border-color: CanvasText;
+  }
+
+  .mx-form-field:focus-within .mx-form-field__before,
+  .mx-form-field:focus-within .mx-form-field__label,
+  .mx-form-field:focus-within .mx-form-field__after {
+    border-color: Highlight;
+  }
+
+  .mx-form-field__label span {
+    color: CanvasText;
+  }
+}

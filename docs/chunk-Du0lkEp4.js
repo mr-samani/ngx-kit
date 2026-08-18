@@ -1,0 +1,1 @@
+import {y,f as we,aK as Hd,bO as A}from'./main-YOERXOBP.js';function w(t){t||(t=y(we));let i=new A(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(Hd(i))}export{w};

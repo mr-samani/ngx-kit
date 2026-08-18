@@ -1,0 +1,141 @@
+<div
+  class="ngx-dropzone"
+  [class.dragging]="isDragging()"
+  [class.disabled]="disabled()"
+  [class.has-files]="files().length > 0"
+  tabindex="0"
+  role="button"
+  [attr.aria-disabled]="disabled()"
+  (click)="onBrowseClick()"
+  (keydown)="onKeydown($event)"
+  (dragenter)="onDragEnter($event)"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)">
+  <input
+    #fileInput
+    type="file"
+    class="ngx-dropzone-input"
+    [accept]="accept()"
+    [multiple]="multiple()"
+    [disabled]="disabled()"
+    (click)="$event.stopPropagation()"
+    (change)="onFileInputChange($event)" />
+
+  <div class="ngx-dropzone-icon-wrap">
+    <ng-content select="[dropzone-icon]">
+      <svg class="ngx-dropzone-icon" viewBox="0 0 24 24" fill="none" width="30" height="30">
+        <path
+          d="M12 16V4M12 4l-4 4M12 4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </ng-content>
+  </div>
+
+  <div class="ngx-dropzone-text">
+    <ng-content>
+      <strong>Drop files here</strong>
+      <span>or click to browse</span>
+    </ng-content>
+  </div>
+
+  @if (hint()) {
+    <div class="ngx-dropzone-hint">{{ hint() }}</div>
+  }
+</div>
+
+@if (!autoUpload() && uploadMode() === 'all' && pendingCount() > 0) {
+  <div class="ngx-dropzone-actions">
+    <button
+      type="button"
+      class="ngx-dropzone-upload-all"
+      [disabled]="disabled() || !hasUploadConfiguration()"
+      (click)="uploadAll(); $event.stopPropagation()">
+      Upload all
+      <span>{{ pendingCount() }}</span>
+    </button>
+  </div>
+}
+
+@if (showFileList() && files().length) {
+  <ul class="ngx-dropzone-list">
+    @for (item of files(); track item.id) {
+      <li class="ngx-dropzone-item" [class.is-uploading]="item.status === 'uploading'">
+        <div class="ngx-dropzone-thumb-wrap">
+          @if (item.previewUrl) {
+            <img class="ngx-dropzone-thumb" [src]="item.previewUrl" [alt]="item.file.name" />
+          } @else {
+            <span class="ngx-dropzone-file-icon">📄</span>
+          }
+        </div>
+
+        <div class="ngx-dropzone-meta">
+          <span class="ngx-dropzone-name" [title]="item.file.name">{{ item.file.name }}</span>
+          <span class="ngx-dropzone-size">{{ formatSize(item.file.size) }}</span>
+
+          @if (item.status === 'uploading' || item.status === 'uploaded') {
+            <div
+              class="ngx-dropzone-progress"
+              role="progressbar"
+              [attr.aria-valuenow]="item.progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-label]="'Upload progress for ' + item.file.name">
+              <span class="ngx-dropzone-progress-bar" [style.width.%]="item.progress"></span>
+            </div>
+            <span class="ngx-dropzone-progress-text">{{ item.progress }}%</span>
+          }
+
+          @if (item.status === 'error') {
+            <span class="ngx-dropzone-error">Upload failed</span>
+          }
+        </div>
+
+        <div class="ngx-dropzone-row-actions">
+          @if (!autoUpload() && uploadMode() === 'single' && isPending(item)) {
+            <button
+              type="button"
+              class="ngx-dropzone-upload"
+              [disabled]="disabled() || !hasUploadConfiguration()"
+              [attr.aria-label]="'Upload ' + item.file.name"
+              (click)="uploadSingle(item.id); $event.stopPropagation()">
+              Upload
+            </button>
+          }
+
+          @if (item.status === 'error') {
+            <button
+              type="button"
+              class="ngx-dropzone-retry"
+              [disabled]="disabled() || !hasUploadConfiguration()"
+              [attr.aria-label]="'Retry upload for ' + item.file.name"
+              (click)="retryUpload(item.id); $event.stopPropagation()">
+              Retry
+            </button>
+          }
+
+          @if (item.status === 'uploaded') {
+            <span class="ngx-dropzone-status success" aria-label="Uploaded">✓</span>
+          } @else if (item.status === 'uploading') {
+            <span class="ngx-dropzone-status uploading" aria-label="Uploading"></span>
+          } @else if (item.status === 'error') {
+            <span class="ngx-dropzone-status error" aria-label="Upload failed">!</span>
+          } @else {
+            <span class="ngx-dropzone-status pending" aria-label="Pending">•</span>
+          }
+
+          <button
+            type="button"
+            class="ngx-dropzone-remove"
+            [attr.aria-label]="'Remove ' + item.file.name"
+            (click)="removeFile(item.id); $event.stopPropagation()">
+            ✕
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+}

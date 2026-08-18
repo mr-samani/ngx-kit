@@ -1,0 +1,95 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ngx-markdown-preview {
+  box-sizing: border-box;
+
+  padding: 32px;
+}
+
+.ngx-markdown-loading {
+  padding: 32px;
+  text-align: center;
+  color: #656d76;
+}
+
+.ngx-markdown-error {
+  margin: 16px 0;
+  padding: 16px;
+
+  border: 1px solid #ff818266;
+  border-radius: 6px;
+
+  background: #ffebe9;
+  color: #cf222e;
+}
+
+::ng-deep {
+  /*
+ * Code block
+ */
+
+  .ngx-markdown-preview {
+    .ngx-markdown-code {
+      position: relative;
+      margin: 16px 0;
+      overflow: hidden;
+      border: 1px solid #d0d7de54;
+      border-radius: 6px;
+      direction: ltr;
+    }
+
+    .ngx-markdown-code__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 36px;
+      padding: 0 12px;
+      border-bottom: 1px solid #d0d7de54;
+      color: light-dark(#cfcfcf, #626365);
+    }
+
+    .ngx-markdown-code__language {
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .ngx-markdown-code__copy {
+      border: 0;
+      border-radius: 6px;
+      padding: 4px 8px;
+      background: transparent;
+      font-size: 12px;
+      cursor: pointer;
+      &:hover {
+        background: #eaeef297;
+        color: #1f2328;
+      }
+    }
+
+    pre {
+      margin: 0 !important;
+      padding: 16px !important;
+
+      overflow-x: auto;
+
+      background: transparent !important;
+    }
+
+    pre code {
+      display: block;
+
+      padding: 0 !important;
+
+      background: transparent !important;
+
+      font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  }
+}

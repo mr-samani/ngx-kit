@@ -1,0 +1,21 @@
+section {
+  min-height: 50dvh;
+  padding: 15px;
+  width: calc(100% / 3);
+
+  font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ─────────────────────────────────────────────────────────
+// Form actions
+// ─────────────────────────────────────────────────────────
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}

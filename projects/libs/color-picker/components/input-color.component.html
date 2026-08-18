@@ -1,4 +1,7 @@
-<div class="ngx-input-color-picker" (click)="stopPropagation($event)" [class.simple-mode]="simpleMode">
+<div
+  class="ngx-input-color-picker"
+  (click)="stopPropagation($event)"
+  [class.simple-mode]="simpleMode">
   @if (!simpleMode) {
     <div
       class="ngx-color-preview"
@@ -51,10 +54,16 @@
           [useAlphaChannel]="useAlphaChannel"></app-picker>
       }
       @case (ColorInspector.HSL) {
-        <app-hsl [color]="color" (colorChange)="initColor($event)" [useAlphaChannel]="useAlphaChannel"></app-hsl>
+        <app-hsl
+          [color]="color"
+          (colorChange)="initColor($event)"
+          [useAlphaChannel]="useAlphaChannel"></app-hsl>
       }
       @case (ColorInspector.RGB) {
-        <app-rgb [color]="color" (colorChange)="initColor($event)" [useAlphaChannel]="useAlphaChannel"></app-rgb>
+        <app-rgb
+          [color]="color"
+          (colorChange)="initColor($event)"
+          [useAlphaChannel]="useAlphaChannel"></app-rgb>
       }
       @case (ColorInspector.CMYK) {
         <app-cmyk [color]="color" (colorChange)="initColor($event)"></app-cmyk>

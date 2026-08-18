@@ -1,0 +1,60 @@
+<div class="ngx-iv-stage" #stage [class.zoomed]="isZoomed()">
+  @if (toolbarConfig().close) {
+    <button type="button" class="ngx-iv-close" (click)="close()" aria-label="Close">✕</button>
+  }
+
+  @if (activeImage(); as img) {
+    <img
+      class="ngx-iv-image"
+      [class.grab]="isZoomed()"
+      [src]="img.src"
+      [alt]="img.alt || ''"
+      draggable="false"
+      [style.transform]="stageTransform()"
+      (mousedown)="onPanPointerDown($event)" />
+  }
+
+  @if (toolbarConfig().prevNext && images().length > 1) {
+    <button type="button" class="ngx-iv-nav ngx-iv-nav--prev" (click)="prev()" aria-label="Previous">
+      ‹
+    </button>
+    <button type="button" class="ngx-iv-nav ngx-iv-nav--next" (click)="next()" aria-label="Next">
+      ›
+    </button>
+  }
+
+  @if (toolbarConfig().counter && images().length > 1) {
+    <div class="ngx-iv-counter">{{ activeIndex() + 1 }} / {{ images().length }}</div>
+  }
+</div>
+
+@if (activeImage()?.caption) {
+  <div class="ngx-iv-caption">{{ activeImage()?.caption }}</div>
+}
+
+<div class="ngx-iv-toolbar">
+  @if (toolbarConfig().zoomOut) {
+    <button type="button" (click)="zoomOut()" title="Zoom out">－</button>
+  }
+  @if (toolbarConfig().zoomIn) {
+    <button type="button" (click)="zoomIn()" title="Zoom in">＋</button>
+  }
+  @if (toolbarConfig().resetZoom) {
+    <button type="button" (click)="resetView()" title="Reset zoom">⤢</button>
+  }
+  @if (toolbarConfig().rotateLeft) {
+    <button type="button" (click)="rotateLeft()" title="Rotate left">⟲</button>
+  }
+  @if (toolbarConfig().rotateRight) {
+    <button type="button" (click)="rotateRight()" title="Rotate right">⟳</button>
+  }
+  @if (toolbarConfig().download) {
+    <button type="button" (click)="download()" title="Download">⭳</button>
+  }
+  @if (toolbarConfig().print) {
+    <button type="button" (click)="print()" title="Print">🖶</button>
+  }
+  @if (toolbarConfig().fullscreen) {
+    <button type="button" (click)="toggleFullscreen()" title="Fullscreen">⛶</button>
+  }
+</div>

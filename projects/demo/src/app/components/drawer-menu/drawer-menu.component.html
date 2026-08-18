@@ -1,0 +1,56 @@
+<app-example-showcase
+  title="Drawer Menu"
+  [files]="sourceFiles"
+  readmePath="/readmes/drawer-menu/README.md">
+  <div class="controls">
+    <label>
+      effect
+      <select [ngModel]="effect()" (ngModelChange)="effect.set($event)">
+        @for (e of effects; track e) {
+          <option [value]="e">{{ e }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      contentBehavior
+      <select [ngModel]="behavior()" (ngModelChange)="behavior.set($event)">
+        @for (b of behaviors; track b) {
+          <option [value]="b">{{ b }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" (click)="open.set(true)">Open</button>
+  </div>
+
+  <p class="hint">
+    This preview is confined to the frame below (via a perspective/containing-block trick); in real
+    usage, the drawer covers the whole page. You can also swipe from the frame's left/right edge.
+  </p>
+
+  <div class="frame">
+    <ngx-drawer-menu
+      [effect]="effect()"
+      [contentBehavior]="behavior()"
+      [(open)]="open"
+      side="start"
+      [width]="220"
+      [respondToViewport]="false">
+      <div drawerContent class="menu-content">
+        <h4>My Menu</h4>
+        <ul>
+          <li>Home</li>
+          <li>Profile</li>
+          <li>Settings</li>
+          <li>Sign out</li>
+        </ul>
+      </div>
+
+      <div class="page-content">
+        <p>This is the page's main content.</p>
+        <p>Change "contentBehavior" to see how it reacts.</p>
+      </div>
+    </ngx-drawer-menu>
+  </div>
+</app-example-showcase>

@@ -1,0 +1,123 @@
+<div class="ngx-time-picker" [class.ngx-time-picker--disabled]="disabled()">
+  <!-- Header -->
+  <div class="ngx-time-picker__header">
+    <button
+      type="button"
+      class="ngx-time-picker__value"
+      [class.active]="mode() === 'hour'"
+      [disabled]="disabled()"
+      (click)="setMode('hour')">
+      {{ formatHour(displayHour()) }}
+    </button>
+
+    <span class="ngx-time-picker__separator">:</span>
+
+    <button
+      type="button"
+      class="ngx-time-picker__value"
+      [class.active]="mode() === 'minute'"
+      [disabled]="disabled()"
+      (click)="setMode('minute')">
+      {{ formatMinute(displayMinute()) }}
+    </button>
+
+    @if (format() == '12') {
+      <div class="ngx-time-picker_format">
+        <button [class.active]="!isPm()" (click)="togglePmAm('AM')">
+          {{ config.amText }}
+        </button>
+        <button [class.active]="isPm()" (click)="togglePmAm('PM')">
+          {{ config.pmText }}
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Clock -->
+  <div class="ngx-time-picker__clock-wrapper">
+    <svg
+      #clock
+      class="ngx-time-picker__clock"
+      viewBox="0 0 240 240"
+      xmlns="http://www.w3.org/2000/svg"
+      (pointerdown)="startPointer($event)"
+      (pointermove)="movePointer($event)"
+      (pointerup)="endPointer($event)"
+      (pointercancel)="endPointer($event)">
+      <!-- Background -->
+      <circle class="clock-background" cx="120" cy="120" r="112" />
+
+      <!-- Selected hand line -->
+      <line class="clock-hand" x1="120" y1="120" [attr.x2]="handEnd().x" [attr.y2]="handEnd().y" />
+
+      <!-- Selected circle -->
+      <circle
+        class="clock-selected"
+        [attr.cx]="selectedPosition().x"
+        [attr.cy]="selectedPosition().y"
+        r="18" />
+
+      <!-- Center -->
+      <circle class="clock-center" cx="120" cy="120" r="5" />
+
+      <!-- HOURS -->
+      @if (mode() === 'hour') {
+        @for (hour of hourNumbers(); track hour) {
+          @if (format() === '24' && (hour >= 13 || hour == 0)) {
+            <g class="clock-number clock-number--inner" (click)="selectHour(hour)">
+              <circle
+                [attr.cx]="hourPosition(hour - 12, true).x"
+                [attr.cy]="hourPosition(hour - 12, true).y"
+                r="16" />
+
+              <text
+                [attr.x]="hourPosition(hour - 12, true).x"
+                [attr.y]="hourPosition(hour - 12, true).y">
+                {{ hour == 0 ? '00' : hour }}
+              </text>
+            </g>
+          } @else {
+            <g
+              class="clock-number"
+              [class.selected]="displayHour() == hour"
+              (click)="selectHour(hour)">
+              <circle [attr.cx]="hourPosition(hour).x" [attr.cy]="hourPosition(hour).y" r="18" />
+
+              <text [attr.x]="hourPosition(hour).x" [attr.y]="hourPosition(hour).y">
+                {{ hour }}
+              </text>
+            </g>
+          }
+        }
+      }
+
+      <!-- MINUTES -->
+      @if (mode() === 'minute') {
+        @for (minute of minuteNumbers(); track minute) {
+          <g
+            class="clock-number"
+            [class.selected]="displayMinute() == minute"
+            (click)="selectMinute(minute)">
+            <circle
+              [attr.cx]="minutePosition(minute).x"
+              [attr.cy]="minutePosition(minute).y"
+              r="18" />
+
+            <text [attr.x]="minutePosition(minute).x" [attr.y]="minutePosition(minute).y">
+              {{ formatMinute(minute) }}
+            </text>
+          </g>
+        }
+      }
+    </svg>
+  </div>
+  <div class="ngx-time-picker--footer">
+    <button (click)="close()">
+      {{ config.cancelButtonText }}
+    </button>
+
+    <button (click)="ok()">
+      {{ config.confirmButtonText }}
+    </button>
+  </div>
+</div>

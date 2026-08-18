@@ -1,0 +1,37 @@
+<div
+  class="mx-form-field"
+  [class.mx-form-field--float]="float()"
+  [class.mx-form-field--disabled]="disabled()"
+  [class.mx-form-field--readonly]="readonly()"
+  [class.mx-form-field--invalid]="invalid()"
+  [class.mx-form-field--required]="required()">
+  <div class="mx-form-field__before">
+    <div class="mx-form-field__prefix">
+      <ng-content select="[ngxPrefix],ngx-prefix"></ng-content>
+    </div>
+  </div>
+
+  <ng-content select="[ngxInput],ngx-input"></ng-content>
+
+  <span class="mx-form-field__label">
+    <span [aria-label]="label()">{{ label() }}</span>
+  </span>
+
+  <div class="mx-form-field__after">
+    <div class="mx-form-field__suffix">
+      <ng-content select="[ngxSuffix],ngx-suffix"></ng-content>
+    </div>
+  </div>
+</div>
+
+@if (hintVisible()) {
+  <div class="mx-form-field__hint">
+    <ng-content select="[ngxHint],ngx-hint"></ng-content>
+  </div>
+}
+
+@if (errorVisible()) {
+  <div class="mx-form-field__error-list" role="alert">
+    <ng-content select="[ngxError],ngx-error"></ng-content>
+  </div>
+}

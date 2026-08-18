@@ -120,7 +120,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     }
   }
   override renderCalendar(view: CalendarView) {
-   // console.log('_events', this._events);
+    // console.log('_events', this._events);
     super.renderCalendar(view, undefined, this._events, () => {});
   }
 

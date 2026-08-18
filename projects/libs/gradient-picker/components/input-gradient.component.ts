@@ -21,7 +21,12 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { GradientStop, GradientType } from '../contracts/GradientStop';
-import { buildGradientFromStops, generateRandomColor, isValidGradient, parseGradient } from '../utils/build-gradient';
+import {
+  buildGradientFromStops,
+  generateRandomColor,
+  isValidGradient,
+  parseGradient,
+} from '../utils/build-gradient';
 import { DefaultGradients } from '../contracts/default-gradients';
 import { BrowserService, RangeSliderComponent } from 'ngx-kit/shared';
 import { NgxInputColor } from 'ngx-kit/color-picker';
@@ -34,7 +39,11 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./input-gradient.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => NgxInputGradientComponent), multi: true },
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NgxInputGradientComponent),
+      multi: true,
+    },
     {
       provide: NG_VALIDATORS,
       multi: true,
@@ -46,7 +55,9 @@ import { CommonModule } from '@angular/common';
   },
   imports: [CommonModule, FormsModule, RangeSliderComponent, NgxInputColor, NgxInputAngle],
 })
-export class NgxInputGradientComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
+export class NgxInputGradientComponent
+  implements OnInit, OnDestroy, ControlValueAccessor, Validator
+{
   browserService = inject(BrowserService);
   theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
   @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
@@ -69,7 +80,7 @@ export class NgxInputGradientComponent implements OnInit, OnDestroy, ControlValu
 
   isDisabled = false;
   protected _onChange = (value: string) => {};
-  protected _onTouched =  () => {};
+  protected _onTouched = () => {};
   _onValidateChange = () => {};
 
   @ViewChild('rangeSlider', { static: true }) rangeSlider?: RangeSliderComponent;

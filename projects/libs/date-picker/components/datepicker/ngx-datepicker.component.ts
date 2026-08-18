@@ -29,7 +29,7 @@ import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
 
 @Component({
-  selector: 'ngx-datepicker',
+  selector: 'ngx-date-picker',
   templateUrl: './ngx-datepicker.component.html',
   styleUrls: ['./ngx-datepicker.component.scss'],
   imports: [CommonModule],

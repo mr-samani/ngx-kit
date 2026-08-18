@@ -34,10 +34,22 @@ export const MENU_LIST: ICategory[] = [
         url: '/components/date-picker',
       },
       {
+        title: 'Time Picker',
+        description: '',
+        image: '',
+        url: '/components/time-picker',
+      },
+      {
         title: 'Calendar',
         description: '',
         image: '',
         url: '/components/calendar',
+      },
+      {
+        title: 'form-field',
+        description: '',
+        image: '',
+        url: '/components/form-field',
       },
     ],
   },
@@ -78,6 +90,35 @@ export const MENU_LIST: ICategory[] = [
         description: '',
         image: '',
         url: '/components/table',
+      },
+    ],
+  },
+  {
+    name: 'Media & Layout',
+    items: [
+      {
+        title: 'Dropzone',
+        description: '',
+        image: '',
+        url: '/components/dropzone',
+      },
+      {
+        title: 'Image Editor',
+        description: '',
+        image: '',
+        url: '/components/image-editor',
+      },
+      {
+        title: 'Image Viewer',
+        description: '',
+        image: '',
+        url: '/components/gallery',
+      },
+      {
+        title: 'Drawer Menu',
+        description: '',
+        image: '',
+        url: '/components/drawer-menu',
       },
     ],
   },

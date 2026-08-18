@@ -1,5 +1,14 @@
-
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, forwardRef } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+  forwardRef,
+} from '@angular/core';
 import { getOffsetPosition } from '../utils/get-offset-position';
 import {
   NG_VALUE_ACCESSOR,
@@ -9,6 +18,7 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { IPosition } from '../contracts/IPosition';
+import { startDragSession } from '../utils/drag-session';
 
 @Component({
   selector: 'saturation',
@@ -24,7 +34,7 @@ import { IPosition } from '../contracts/IPosition';
     },
   ],
 })
-export class SaturationComponent implements ControlValueAccessor {
+export class SaturationComponent implements ControlValueAccessor, OnDestroy {
   @Input() width?: number;
   @Input() height?: number;
   @Input() color = 'red';
@@ -41,13 +51,22 @@ export class SaturationComponent implements ControlValueAccessor {
   myControl = new FormControl<IPosition | null>(null);
   isDisabled = false;
   protected _onChange = (value: any) => {};
-  protected _onTouched =  () => {};
-  protected _validatorOnChange =  () => {};
+  protected _onTouched = () => {};
+  protected _validatorOnChange = () => {};
 
   private saturationRect?: DOMRect;
   private thumbRect?: DOMRect;
+  private stopDrag?: () => void;
 
   constructor() {}
+
+  ngOnDestroy(): void {
+    // اگه کامپوننت درست وسط یه درگ نابود بشه (مثلاً پیکر بسته بشه)، باید
+    // listenerهای document رو دستی پاک کنیم؛ برخلاف @HostListener که
+    // انگیولار خودش موقع destroy پاکش می‌کرد، این‌جا چون addEventListener
+    // دستیه، خودمون مسئول پاک‌سازی‌شیم.
+    this.stopDrag?.();
+  }
 
   private updateRects() {
     this.saturationRect = this.saturation.nativeElement.getBoundingClientRect();
@@ -61,8 +80,12 @@ export class SaturationComponent implements ControlValueAccessor {
     this.updateRects();
     const saturationRec = this.saturationRect!;
     const thumbRec = this.thumbRect!;
-    this.x = ((value.x - this.min.x) * (saturationRec.width - thumbRec.width / 2)) / (this.max.x - this.min.x);
-    this.y = ((value.y - this.min.y) * (saturationRec.height - thumbRec.height / 2)) / (this.max.y - this.min.y);
+    this.x =
+      ((value.x - this.min.x) * (saturationRec.width - thumbRec.width / 2)) /
+      (this.max.x - this.min.x);
+    this.y =
+      ((value.y - this.min.y) * (saturationRec.height - thumbRec.height / 2)) /
+      (this.max.y - this.min.y);
     if (val !== value) {
       this.valueChanged(value);
     }
@@ -92,18 +115,19 @@ export class SaturationComponent implements ControlValueAccessor {
     this.isDragging = true;
     this.updateRects();
     this.updatePosition(ev);
+    this.stopDrag?.();
+    this.stopDrag = startDragSession({
+      onMove: (moveEv) => this.updatePosition(moveEv),
+      onEnd: () => {
+        this.isDragging = false;
+        this.stopDrag = undefined;
+      },
+    });
   }
 
   @HostListener('window:resize')
   onResize() {
     this.writeValue(this.myControl.value);
-  }
-
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
-  onDrag(ev: MouseEvent | TouchEvent) {
-    if (!this.isDragging) return;
-    this.updatePosition(ev);
   }
 
   private updatePosition(ev: MouseEvent | TouchEvent) {
@@ -132,12 +156,6 @@ export class SaturationComponent implements ControlValueAccessor {
     this.setValueByPosition(thumbRec, saturationRec);
   }
 
-  @HostListener('document:mouseup', ['$event'])
-  @HostListener('document:touchend', ['$event'])
-  onDragEnd(ev: MouseEvent | TouchEvent) {
-    this.isDragging = false;
-  }
-
   setValueByPosition(thumbRec: DOMRect, saturationRec: DOMRect) {
     const percentageX = this.x / (saturationRec.width - thumbRec.width);
     let newValueX = this.min.x + percentageX * (this.max.x - this.min.x);
@@ -149,7 +167,11 @@ export class SaturationComponent implements ControlValueAccessor {
     newValueY = Math.round(newValueY / this.step) * this.step;
     let valueY = Math.min(Math.max(newValueY, this.min.y), this.max.y);
     const newValue = { x: valueX, y: valueY };
-    if (!this.myControl.value || this.myControl.value.x !== valueX || this.myControl.value.y !== valueY) {
+    if (
+      !this.myControl.value ||
+      this.myControl.value.x !== valueX ||
+      this.myControl.value.y !== valueY
+    ) {
       this.valueChanged(newValue);
     }
   }

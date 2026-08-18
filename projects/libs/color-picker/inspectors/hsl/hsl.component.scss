@@ -4,7 +4,9 @@
   justify-content: space-between;
   input {
     transition: box-shadow 0.1s;
-    box-shadow: inset hsl(250, 3%, 85%) 0 0 0 1px, inset white 0 0 0 100px;
+    box-shadow:
+      inset hsl(250, 3%, 85%) 0 0 0 1px,
+      inset white 0 0 0 100px;
     border: none;
     width: 48px;
     color: hsl(250, 3%, 0%);

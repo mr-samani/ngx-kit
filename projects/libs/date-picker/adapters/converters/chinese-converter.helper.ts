@@ -138,7 +138,19 @@ export namespace ChineseConverter {
    * برای همین، اگر یک قدم هیچ پیشرفتی نداشت (anchor عوض نشد)،
    * قدم را بزرگ‌تر می‌کنیم تا از روی ماه کبیسه‌ی احتمالی بپرد.
    */
+  // نتیجه‌ی firstDayOfMonth فقط تابعی از (year, month) هست، پس کش‌کردنش
+  // امنه. دلیل اهمیتش دقیقاً مثل نسخه‌ی هجریه: renderCalendar برای هر
+  // سلولِ روزِ گرید ماه یک‌بار adapter.getDate() صدا می‌زنه که به
+  // toGregorian() → firstDayOfMonth() ختم می‌شه؛ بدون کش، این جست‌وجوی
+  // نسبتاً سنگین (که با وجود ماه‌های کبیسه می‌تونه چند برابر هجری هم سنگین‌تر
+  // باشه) به ازای هر رندر ماه، ده‌ها بار برای همون (year, month) تکرار می‌شد.
+  const firstDayOfMonthCache = new Map<string, Date>();
+
   export function firstDayOfMonth(year: number, month: number): Date {
+    const cacheKey = `${year}-${month}`;
+    const cached = firstDayOfMonthCache.get(cacheKey);
+    if (cached) return new Date(cached);
+
     let anchorDate = firstOfMonthAtOrBefore(new Date());
     let c = parse(anchorDate);
 
@@ -164,6 +176,7 @@ export namespace ChineseConverter {
       c = parse(anchorDate);
       guard++;
     }
+    firstDayOfMonthCache.set(cacheKey, anchorDate);
     return anchorDate;
   }
 
@@ -183,7 +196,13 @@ export namespace ChineseConverter {
    * `Date.getDate()` میلادی، چون آن مقدار به اشتباه طول ماه را
    * بر اساس تقویم میلادی محاسبه می‌کرد.
    */
+  const daysInMonthCache = new Map<string, number>();
+
   export function daysInMonth(year: number, month: number): number {
+    const cacheKey = `${year}-${month}`;
+    const cached = daysInMonthCache.get(cacheKey);
+    if (cached !== undefined) return cached;
+
     const first = firstDayOfMonth(year, month);
 
     for (let i = 1; i <= 31; i++) {
@@ -193,7 +212,9 @@ export namespace ChineseConverter {
       if (c.year !== year || c.month !== month || c.isLeapMonth) {
         const last = new Date(test);
         last.setDate(last.getDate() - 1);
-        return parse(last).day;
+        const result = parse(last).day;
+        daysInMonthCache.set(cacheKey, result);
+        return result;
       }
     }
     return 29; // fallback ایمن

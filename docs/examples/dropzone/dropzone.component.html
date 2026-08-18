@@ -1,0 +1,21 @@
+<app-example-showcase
+  title="Dropzone"
+  [files]="sourceFiles"
+  readmePath="/readmes/dropzone/README.md">
+  <ngx-dropzone
+    [accept]="'image/*'"
+    [maxFileSize]="5 * 1024 * 1024"
+    [maxFiles]="5"
+    (filesAdded)="onFilesAdded($event)"
+    (filesRejected)="onFilesRejected($event)"
+    [uploadUrl]="'http://localhost:2924/components/dropzone'">
+    Drop images here (max 5 files, up to 5MB each)
+  </ngx-dropzone>
+
+  @if (acceptedCount()) {
+    <p>{{ acceptedCount() }} file(s) accepted.</p>
+  }
+  @if (rejected().length) {
+    <p class="rejected-note">{{ rejected().length }} file(s) rejected (invalid type/size/count).</p>
+  }
+</app-example-showcase>

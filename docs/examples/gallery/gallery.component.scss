@@ -1,0 +1,19 @@
+.hint {
+  font-size: 0.8rem;
+  color: light-dark(#6b7280, #9ca3af);
+  margin-block-end: 0.75rem;
+}
+
+.dialog-row {
+  margin-block-start: 1rem;
+  text-align: center;
+
+  button {
+    padding: 0.5rem 1.1rem;
+    border-radius: 6px;
+    border: none;
+    background: light-dark(#2563eb, #3b82f6);
+    color: #fff;
+    cursor: pointer;
+  }
+}

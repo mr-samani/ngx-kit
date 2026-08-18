@@ -15,11 +15,20 @@ import { CellRendererComponent, TableFieldBase } from 'ngx-kit/data-table';
     }
   `,
   styles: `
-    .date-value { direction: ltr; display: inline-block; white-space: nowrap; }
-    .empty-value { opacity: 0.5; }
+    .date-value {
+      direction: ltr;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .empty-value {
+      opacity: 0.5;
+    }
   `,
 })
-export class DateCellRenderer<T extends object> implements CellRendererComponent<string | Date | null, T> {
+export class DateCellRenderer<T extends object> implements CellRendererComponent<
+  string | Date | null,
+  T
+> {
   readonly value = input.required<string | Date | null>();
   readonly row = input.required<T>();
   readonly field = input.required<TableFieldBase<T>>();

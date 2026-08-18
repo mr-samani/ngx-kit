@@ -32,7 +32,12 @@ export class NgxColor {
     }
     if (typeof input === 'object') {
       if ('r' in input && 'g' in input && 'b' in input) {
-        this._rgb = { r: +input.r, g: +input.g, b: +input.b, a: (input as any).a !== undefined ? +input.a : 1 };
+        this._rgb = {
+          r: +input.r,
+          g: +input.g,
+          b: +input.b,
+          a: (input as any).a !== undefined ? +input.a : 1,
+        };
         return;
       }
       if ('h' in input && 's' in input && 'l' in input) {

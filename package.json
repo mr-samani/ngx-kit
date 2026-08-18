@@ -13,7 +13,8 @@
     "test:demo": "ng test demo --ui",
     "test:coverage": "ng test --coverage",
     "test:ci": "ng test --coverage --reporter=junit --outputFile=./coverage/junit.xml",
-    "*ngTo@": "ng g @angular/core:control-flow"
+    "*ngTo@": "ng g @angular/core:control-flow",
+    "format": "prettier --write ./projects"
   },
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -26,6 +27,11 @@
     "@angular/material": "~22.0.6",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
+    "github-markdown-css": "^5.9.0",
+    "highlight.js": "^11.11.2",
+    "marked": "^18.0.9",
+    "monaco-editor": "^0.55.1",
+    "ngx-monaco-editor-v2": "^22.0.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

@@ -1,7 +1,4 @@
-export function getOffsetPosition(
-  evt: MouseEvent | TouchEvent,
-  parent: HTMLElement
-) {
+export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent: HTMLElement) {
   let position = {
     x: 0,
     y: 0,

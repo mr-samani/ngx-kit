@@ -7,12 +7,14 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   Output,
   ViewChild,
   forwardRef,
   type OnInit,
 } from '@angular/core';
 import { getOffsetPosition } from '../utils/get-offset-position';
+import { startDragSession } from '../utils/drag-session';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -54,7 +56,7 @@ export class ValueModel {
     },
   ],
 })
-export class RangeSliderComponent implements OnInit, ControlValueAccessor, Validator {
+export class RangeSliderComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   /**
    * The step value for the slider
    */
@@ -97,13 +99,17 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
   values: ValueModel[] = [];
   isDisabled = false;
   protected _onChange = (value: IValue[]) => {};
-  protected _onTouched =  () => {};
-  protected _validatorOnChange =  () => {};
+  protected _onTouched = () => {};
+  protected _validatorOnChange = () => {};
   private sliderRect?: DOMRect;
   private thumbRect?: DOMRect;
+  private stopDrag?: () => void;
 
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
   ngOnInit(): void {}
+  ngOnDestroy(): void {
+    this.stopDrag?.();
+  }
 
   private generateId(): string {
     let id = 'ngx-thumb-' + Math.random().toString(36).substring(2, 9);
@@ -158,13 +164,6 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
       this.thumbRect = this.thumb.nativeElement.getBoundingClientRect();
     }
   }
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
-  onDrag(ev: MouseEvent | TouchEvent) {
-    if (!this.isDragging) return;
-    this.updateThumbPosition(ev);
-  }
-
   @HostListener('window:resize')
   onResize() {
     this.writeValue(this.values);
@@ -177,6 +176,16 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
     this.updateRects();
     this.updateThumbPosition(ev);
     this.selectedIndexChange.emit(this.selectedIndex);
+
+    this.stopDrag?.();
+    this.stopDrag = startDragSession({
+      onMove: (moveEv) => this.updateThumbPosition(moveEv),
+      onEnd: () => {
+        this.isDragging = false;
+        this.stopDrag = undefined;
+        this.changeDetectorRef.markForCheck();
+      },
+    });
   }
 
   addnewRangeOnSliderClick(event: MouseEvent | TouchEvent) {
@@ -211,6 +220,7 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
       thumb.x = position.x;
     }
     this.setValueByPosition(thumb, thumbRec, sliderRec);
+    this.changeDetectorRef.markForCheck();
   }
 
   updateAllThumbPositions() {
@@ -220,7 +230,8 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
       const sliderRec = this.sliderRect!;
       const thumbRec = this.thumbRect!;
       for (let item of this.values) {
-        item.x = ((item.value - this.min) * (sliderRec.width - thumbRec.width)) / (this.max - this.min);
+        item.x =
+          ((item.value - this.min) * (sliderRec.width - thumbRec.width)) / (this.max - this.min);
       }
       this.changeDetectorRef.detectChanges();
     });
@@ -229,19 +240,14 @@ export class RangeSliderComponent implements OnInit, ControlValueAccessor, Valid
     const percentage = (thumb.x ?? 0) / (sliderRec.width - thumbRec.width);
     let newValue = this.min + percentage * (this.max - this.min);
     const stepDecimalPlaces = (this.step.toString().split('.')[1] || '').length;
-    newValue = parseFloat((Math.round(newValue / this.step) * this.step).toFixed(stepDecimalPlaces));
+    newValue = parseFloat(
+      (Math.round(newValue / this.step) * this.step).toFixed(stepDecimalPlaces),
+    );
     let value = Math.min(Math.max(newValue, this.min), this.max);
     if (thumb.value !== value) {
       thumb.value = value;
       this.valueChanged();
     }
-  }
-
-  @HostListener('document:mouseup', ['$event'])
-  @HostListener('document:touchend', ['$event'])
-  onDragEnd(ev: MouseEvent | TouchEvent) {
-    this.isDragging = false;
-    // this.selectedIndex = undefined;
   }
 
   valueChanged() {

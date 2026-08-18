@@ -37,11 +37,13 @@ type InstanceOf<C> = C extends Type<infer I> ? I : never;
 type UnwrapSignal<S> = S extends () => infer V ? V : never;
 
 export type RendererExtraInputs<C extends Type<any>> = {
-  [K in keyof InstanceOf<C> as K extends 'value' | 'row' | 'field'
-    ? never
-    : InstanceOf<C>[K] extends () => any
-      ? K
-      : never]?: UnwrapSignal<InstanceOf<C>[K]>;
+  [
+    K in keyof InstanceOf<C> as K extends 'value' | 'row' | 'field'
+      ? never
+      : InstanceOf<C>[K] extends () => any
+        ? K
+        : never
+  ]?: UnwrapSignal<InstanceOf<C>[K]>;
 };
 
 // ----------------------------------------------------------------------------
@@ -50,10 +52,10 @@ export type RendererExtraInputs<C extends Type<any>> = {
 export type ColumnAlign = 'start' | 'center' | 'end';
 
 export type TableCellFormatter<T extends object = object> = (
-  value: unknown,
+  value: any,
   row: T,
   field: TableFieldBase<T>,
-) => unknown;
+) => any;
 
 export interface CellTemplateContext<T extends object> {
   $implicit: T;
@@ -67,7 +69,14 @@ export interface CellTemplateContext<T extends object> {
 export interface TableFieldBase<T extends object> {
   column: Extract<keyof T, string>;
   title: string;
-  width?: number;
+  /**
+   * عرضِ این ستون. عدد یعنی پیکسل (`160` = `160px`)؛ رشته یعنی هر مقدار
+   * معتبرِ CSS length برای flex-basis (`'20%'`, `'12rem'`, ...). اگه اصلاً
+   * ندید، این ستون flex می‌شه (`flex: 1 1 0`) و فضای باقی‌مونده‌ی جدول رو پر
+   * می‌کنه — دقیقاً برخلافِ ستون‌هایی که width دارن (که `flex: 0 0 <width>`
+   * می‌گیرن و ثابت می‌مونن).
+   */
+  width?: number | string;
   minWidth?: number;
   maxWidth?: number;
   resizable?: boolean;
@@ -96,8 +105,7 @@ export type RenderedTableField<T extends object, R extends RendererRegistry> = {
 }[keyof R];
 
 export type TableField<T extends object, R extends RendererRegistry = {}> =
-  | PlainTableField<T>
-  | RenderedTableField<T, R>;
+  PlainTableField<T> | RenderedTableField<T, R>;
 
 /**
  * Identity helper برای تعریف ستون‌های یک جدول با inference و type-check کامل
