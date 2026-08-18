@@ -7,7 +7,8 @@
     [maxFileSize]="5 * 1024 * 1024"
     [maxFiles]="5"
     (filesAdded)="onFilesAdded($event)"
-    (filesRejected)="onFilesRejected($event)">
+    (filesRejected)="onFilesRejected($event)"
+    [uploadUrl]="'http://localhost:2924/components/dropzone'">
     Drop images here (max 5 files, up to 5MB each)
   </ngx-dropzone>
 
