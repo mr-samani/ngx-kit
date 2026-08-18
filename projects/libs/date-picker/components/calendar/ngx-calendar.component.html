@@ -1,71 +1,73 @@
 <div class="wrapper" #datepickerWrapper>
   <div class="header">
     <div class="nxt-prv-buttons">
-      <button id="prev" class="previous dtp-btn" (click)="previous()" title="Previous">
+      <button
+        type="button"
+        id="prev"
+        class="previous dtp-btn"
+        (click)="previous()"
+        title="Previous">
         <ng-template
           [ngTemplateOutlet]="
             _config.previousButtonTemplate || defaultPreviousBTNTemplate
           "></ng-template>
       </button>
       @if (_config.todayButton) {
-        <button class="today dtp-btn" (click)="gotoToday()">
+        <button type="button" class="today dtp-btn" (click)="gotoToday()">
           {{ _config.todayButtonText }}
         </button>
       }
-      <button id="next" class="next dtp-btn" (click)="next()" title="Next">
+      <button type="button" id="next" class="next dtp-btn" (click)="next()" title="Next">
         <ng-template
           [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
       </button>
     </div>
+
     <div class="current-date">
-      <span>
-        {{ currYear }}
-      </span>
-      <span>
-        {{ displayMonth }}
-      </span>
+      <span>{{ currYear }}</span>
+      <span>{{ displayMonth }}</span>
     </div>
+
     <div class="view-mode">
-      {{ view }}
       <button
+        type="button"
         class="dayview dtp-btn"
         (click)="changeView('day')"
-        [class.active]="view == 'day'"
-        title="Month View">
+        [class.active]="view == 'day'">
         Month
       </button>
       <button
+        type="button"
         class="dayview dtp-btn"
         (click)="changeView('week')"
-        [class.active]="view == 'week'"
-        title="Week View">
+        [class.active]="view == 'week'">
         Week
       </button>
       <button
+        type="button"
         class="dayview dtp-btn"
         (click)="changeView('day')"
-        [class.active]="view == 'day'"
-        title="Day View">
+        [class.active]="view == 'day'">
         Day
       </button>
       <button
+        type="button"
         class="dayview dtp-btn"
         (click)="changeView('event')"
-        [class.active]="view == 'event'"
-        title="Day View">
+        [class.active]="view == 'event'">
         Event
       </button>
     </div>
   </div>
+
   <div class="calendar" #calendarWrapper>
     @if (view === 'day') {
       <ul class="weeks">
         @for (w of weeks; track $index) {
-          <li>
-            {{ w }}
-          </li>
+          <li>{{ w }}</li>
         }
       </ul>
+
       <ul class="days" [style.minHeight.px]="minHeight">
         @for (item of viewDays; track $index) {
           <li
@@ -73,17 +75,26 @@
             [class.today]="item.isToday"
             [class.selected]="item.selected"
             (click)="selectDay($event, item)">
-            <div>{{ item.day }}</div>
-            @if (item.events) {
+            <div class="day-number">{{ item.day }}</div>
+
+            @if (item.events?.length) {
               <div class="ms-day-events">
-                @for (event of item.events; track $index) {
-                  <a
-                    tabindex="0"
+                @for (event of item.events; track event.id ?? $index) {
+                  <button
+                    type="button"
                     class="ms-day-event"
-                    [title]="event.title"
-                    (click)="onclickEvent(item, event)">
-                    {{ event.title }}
-                  </a>
+                    [class.continues-before]="event.continuesBefore"
+                    [class.continues-after]="event.continuesAfter"
+                    [class.event-start]="event.isStart"
+                    [class.event-end]="event.isEnd"
+                    [ngClass]="event.className"
+                    [style.background]="event.backgroundColor || event.color || null"
+                    [style.borderColor]="event.borderColor || event.color || null"
+                    [style.color]="event.textColor || null"
+                    [title]="event.title || ''"
+                    (click)="onclickEvent($event, item, event)">
+                    <span>{{ event.title || 'Untitled event' }}</span>
+                  </button>
                 }
               </div>
             }
@@ -101,7 +112,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (item of viewWeeks; track $index; let i = $index) {
+          @for (item of viewWeeks; track $index) {
             <tr>
               <td [title]="item.displayTime">{{ item.time % 1 == 0 ? item.time : '' }}</td>
               @for (w of item.weeks; track $index) {
@@ -112,31 +123,51 @@
         </tbody>
       </table>
     } @else if (view == 'event') {
-      not implemented
+      <div class="event-list">
+        @if (eventViewItems.length) {
+          @for (item of eventViewItems; track item.event.id ?? $index) {
+            <button
+              type="button"
+              class="event-list-item"
+              (click)="
+                onclickEvent($event, { date: item.start, day: 0, active: true }, item.event)
+              ">
+              <span
+                class="event-dot"
+                [style.background]="item.event.backgroundColor || item.event.color || null"></span>
+              <span class="event-copy">
+                <strong>{{ item.event.title || 'Untitled event' }}</strong>
+                <small>
+                  {{ formatEventDate(item.start)
+                  }}{{
+                    item.end.getTime() !== item.start.getTime()
+                      ? ' – ' + formatEventDate(item.end)
+                      : ''
+                  }}
+                </small>
+              </span>
+            </button>
+          }
+        } @else {
+          <div class="empty-events">No events for this month.</div>
+        }
+      </div>
     }
   </div>
 </div>
 
 <ng-template #defaultPreviousBTNTemplate>
-  <svg width="15px" height="30px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+  <svg width="15px" height="30px" viewBox="0 0 320 512">
     <path
-      class="fa-secondary"
+      fill="currentColor"
       d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z" />
   </svg>
 </ng-template>
 
 <ng-template #defaultNextBTNTemplate>
-  <svg width="15px" height="30px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+  <svg width="15px" height="30px" viewBox="0 0 320 512">
     <path
-      class="fa-secondary"
+      fill="currentColor"
       d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z" />
-  </svg>
-</ng-template>
-
-<ng-template #defaultCaretDownIcon>
-  <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-    <path
-      class="fa-secondary"
-      d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
   </svg>
 </ng-template>

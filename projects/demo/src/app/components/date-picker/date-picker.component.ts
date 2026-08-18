@@ -12,6 +12,7 @@ import {
   NgxDatePickerConfig,
   NgxInputDatePicker,
   NgxInputDatePickerComponent,
+  NgxInputDateRangePicker,
   provideDateAdapters,
 } from 'ngx-kit/date-picker';
 import { JapanesAdapter } from './custom-adapters/japanes-adapter';
@@ -30,6 +31,7 @@ import {
     ReactiveFormsModule,
     NgxInputDatePicker,
     NgxInputDatePickerComponent,
+    NgxInputDateRangePicker,
     ExampleShowcaseComponent,
   ],
   providers: [
@@ -55,16 +57,22 @@ export class DatePickerComponent implements OnInit {
     clearButton: true,
     clearButtonText: 'Clear',
     todayButtonText: 'Today',
+    rangeStartPlaceholder: 'Start date',
+    rangeEndPlaceholder: 'End date',
   });
 
   form: FormGroup;
   inlineDate = viewChild<NgxInputDatePicker>('inlineDate');
   inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
+
+  today = new Date();
+  dateRange = [this.today, this.today.setDate(this.today.getDate() + 10)];
   constructor(fb: FormBuilder) {
     this.form = fb.group({
       date: ['', [Validators.required]],
     });
     // console.log('availableLocals', this.availableLocals);
+    console.log('dateRange', this.dateRange);
   }
 
   ngOnInit(): void {}

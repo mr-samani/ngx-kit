@@ -9,7 +9,6 @@ import {
   OnInit,
   Output,
   viewChild,
-  ViewChild,
 } from '@angular/core';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
@@ -17,9 +16,10 @@ import { MsEvents } from '../../models/events';
 import { CalendarView } from '../../models/view';
 import { ISelectedEvent } from '../../models/selected-event';
 import { CommonModule } from '@angular/common';
-import { deserialize, sameDate } from '../../helpers/date.helper';
+import { compareDate, deserialize, sameDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
+import { MsEventViewer } from '../../models/events';
 import { BrowserService } from 'ngx-kit/shared';
 @Component({
   selector: 'ngx-calendar',
@@ -69,9 +69,13 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
 
   @Input() view: CalendarView = 'day';
   _events: MsEvents[] = [];
+  eventViewItems: { event: MsEventViewer; start: Date; end: Date }[] = [];
+
   @Input() set events(val: MsEvents[]) {
-    if (val && Array.isArray(val)) {
-      this._events = val;
+    this._events = Array.isArray(val) ? val : [];
+    // Keep the calendar reactive when events are loaded asynchronously.
+    if (this.currYear !== undefined && this.currMonth !== undefined) {
+      this.renderCalendar(this.view);
     }
   }
 
@@ -120,8 +124,45 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     }
   }
   override renderCalendar(view: CalendarView) {
-    // console.log('_events', this._events);
-    super.renderCalendar(view, undefined, this._events, () => {});
+    super.renderCalendar(view, undefined, this._events, () => {
+      if (view === 'event') {
+        this.renderEventView();
+      }
+    });
+  }
+
+  private renderEventView() {
+    const monthStart = this.adapter.getDate({
+      locale: this._locale,
+      year: this.currYear,
+      month: this.currMonth,
+      day: 1,
+    });
+    const monthEnd = this.adapter.getDate({
+      locale: this._locale,
+      year: this.currYear,
+      month: this.currMonth,
+      day: this.adapter.lastDateofMonth(this.currYear, this.currMonth),
+    });
+
+    this.eventViewItems = this._events
+      .map((event) => {
+        const start = event.start instanceof Date ? event.start : new Date(event.start as any);
+        const end = event.end
+          ? event.end instanceof Date
+            ? event.end
+            : new Date(event.end as any)
+          : start;
+        return { event: event as MsEventViewer, start, end };
+      })
+      .filter(
+        ({ start, end }) => compareDate(end, monthStart) >= 0 && compareDate(start, monthEnd) <= 0,
+      )
+      .sort((a, b) => compareDate(a.start, b.start));
+  }
+
+  formatEventDate(date: Date): string {
+    return this.adapter.formatDate(this.adapter.toLocale(date), 'd MMMM, yyyy') ?? '';
   }
 
   changeView(v: CalendarView) {
@@ -188,10 +229,11 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     this.renderCalendar(this.view);
   }
 
-  onclickEvent(item: DateViewDay, event: MsEvents) {
+  onclickEvent(ev: Event, item: DateViewDay, event: MsEvents) {
+    ev.stopPropagation();
     this.selectEvent.emit({
       date: item.date!,
-      event: event,
+      event,
     });
   }
 }

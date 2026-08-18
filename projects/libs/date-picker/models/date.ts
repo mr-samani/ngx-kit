@@ -1,4 +1,4 @@
-import { MsEvents } from './events';
+import { MsEventViewer } from './events';
 
 export class DateModel<InputDate = Date> {
   date?: InputDate;
@@ -6,9 +6,11 @@ export class DateModel<InputDate = Date> {
   isToday?: boolean;
   selected?: boolean;
 }
+
 export class DateViewYear extends DateModel {
   year!: number;
 }
+
 export class DateViewMonth extends DateModel {
   month!: number;
   displayMonth!: string;
@@ -16,7 +18,14 @@ export class DateViewMonth extends DateModel {
 
 export class DateViewDay extends DateModel {
   day!: number;
-  events?: MsEvents[];
+  events?: MsEventViewer[];
+  /** Date is inside the committed range. */
+  inRange?: boolean;
+  /** Range start/end markers. */
+  rangeStart?: boolean;
+  rangeEnd?: boolean;
+  /** Date is inside the current hover preview. */
+  inRangePreview?: boolean;
 }
 
 export class DateViewWeek extends DateModel {

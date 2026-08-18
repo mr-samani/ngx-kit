@@ -116,6 +116,17 @@
       <pre>invalid={{ form.get('date')?.invalid }}=>{{ form.get('date')?.errors | json }}</pre>
     </form>
 
+    <h3>Input Date Range</h3>
+    <div class="input-group">
+      <input
+        class="form-control"
+        [(ngModel)]="dateRange"
+        ngxInputDateRangePicker
+        #inputDateRange="ngxInputDateRangePicker"
+        [locale]="locale"
+        [config]="config()" />
+    </div>
+
     <h3>Inline mode</h3>
     <ngx-date-picker
       #inlineDate
