@@ -682,7 +682,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   private monthPointerDelta(ev: PointerEvent): { days: number } | null {
     if (!this.interaction || this.view !== 'month') return null;
-    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.days');
+    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.month-grid');
     if (!root) return null;
     const rect = root.getBoundingClientRect();
     const cellWidth = rect.width / MONTH_COLUMN_COUNT;

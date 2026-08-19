@@ -110,7 +110,7 @@
 
                     @if (event.isStart) {
                       <span
-                        class="resize-handle resize-start"
+                        class="resize-handle resize-handle-h resize-start"
                         title="Resize start"
                         (pointerdown)="
                           startMonthEventInteraction($event, event, 'resize-start')
@@ -118,7 +118,7 @@
                     }
                     @if (event.isEnd) {
                       <span
-                        class="resize-handle resize-end"
+                        class="resize-handle resize-handle-h resize-end"
                         title="Resize end"
                         (pointerdown)="
                           startMonthEventInteraction($event, event, 'resize-end')
@@ -217,12 +217,14 @@
               <span>{{ event.title || 'Untitled event' }}</span>
               @if (event.isStart) {
                 <span
-                  class="resize-handle resize-start"
+                  class="resize-handle resize-handle-h resize-start"
+                  title="Resize start"
                   (pointerdown)="startTimedEventInteraction($event, event, 'resize-start')"></span>
               }
               @if (event.isEnd) {
                 <span
-                  class="resize-handle resize-end"
+                  class="resize-handle resize-handle-h resize-end"
+                  title="Resize end"
                   (pointerdown)="startTimedEventInteraction($event, event, 'resize-end')"></span>
               }
             </button>
@@ -274,12 +276,14 @@
               }
               @if (event.isStart) {
                 <span
-                  class="resize-handle resize-start"
+                  class="resize-handle resize-handle-v resize-start"
+                  title="Resize start"
                   (pointerdown)="startTimedEventInteraction($event, event, 'resize-start')"></span>
               }
               @if (event.isEnd) {
                 <span
-                  class="resize-handle resize-end"
+                  class="resize-handle resize-handle-v resize-end"
+                  title="Resize end"
                   (pointerdown)="startTimedEventInteraction($event, event, 'resize-end')"></span>
               }
             </button>
