@@ -4,7 +4,7 @@
   <div class="ngx-ie-state ngx-ie-state--error">{{ loadError() }}</div>
 } @else if (stageImageUrl()) {
   <div class="ngx-ie-layout">
-    <div class="ngx-ie-stage-wrap" #stageWrap [style.height.px]="panelSize()">
+    <div class="ngx-ie-stage-wrap" #stageWrap>
       <div
         class="ngx-ie-stage"
         [style.width.px]="stageSize().width"
@@ -58,43 +58,76 @@
         </div>
 
         <label class="ngx-ie-field">
-          <span>{{ localize().Rotation }} ({{ rotation() }}°)</span>
           <slider
             [ngModel]="rotation()"
             (ngModelChange)="rotation.set($event)"
             [min]="-180"
-            [max]="180"></slider>
+            [max]="180">
+            <span>{{ localize().Rotation }} ({{ rotation() }}°)</span>
+          </slider>
+
+          <button
+            type="button"
+            (click)="rotation.set(0)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
         </label>
 
         <label class="ngx-ie-field">
-          <span>{{ localize().Brightness }} ({{ brightness() }}%)</span>
           <slider
             [ngModel]="brightness()"
             (ngModelChange)="brightness.set($event)"
             [min]="0"
-            [max]="200"></slider>
+            [max]="200">
+            <span>{{ localize().Brightness }} ({{ brightness() }}%)</span>
+          </slider>
+          <button
+            type="button"
+            (click)="brightness.set(100)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
         </label>
 
         <label class="ngx-ie-field">
-          <span>{{ localize().Contrast }} ({{ contrast() }}%)</span>
           <slider
             [ngModel]="contrast()"
             (ngModelChange)="contrast.set($event)"
             [min]="0"
-            [max]="200"></slider>
+            [max]="200">
+            <span>{{ localize().Contrast }} ({{ contrast() }}%)</span>
+          </slider>
+          <button
+            type="button"
+            (click)="contrast.set(100)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
         </label>
 
         <label class="ngx-ie-field">
-          <span>{{ localize().Saturation }} ({{ saturation() }}%)</span>
           <slider
             [ngModel]="saturation()"
             (ngModelChange)="saturation.set($event)"
             [min]="0"
-            [max]="200"></slider>
+            [max]="200">
+            <span>{{ localize().Saturation }} ({{ saturation() }}%)</span>
+          </slider>
+          <button
+            type="button"
+            (click)="saturation.set(100)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
         </label>
 
         @if (filters().length) {
-          <div class="ngx-ie-field">
+          <div>
             <span>{{ localize().Filter }}</span>
             <div class="ngx-ie-filter-row">
               @for (f of filters(); track f) {

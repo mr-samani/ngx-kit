@@ -22,5 +22,6 @@ export class NgxImageEditorLocalization {
   Cancel = 'Cancel';
   Save = 'Save';
   Saving = 'Saving…';
+  Reset = 'Reset';
 }
 export const DEFAULT_NGX_IMAGE_EDITOR_LOCALIZATION = new NgxImageEditorLocalization();

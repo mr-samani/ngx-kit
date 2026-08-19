@@ -62,13 +62,7 @@ export class NgxImageEditorComponent {
   outputMaxWidth = input<number | undefined>(undefined);
   outputMaxHeight = input<number | undefined>(undefined);
   outputType = input<'image/jpeg' | 'image/png' | 'image/webp'>('image/jpeg');
-  /**
-   * ارتفاعِ ناحیه‌ی نمایش تصویر (به پیکسل). عرض همیشه ۱۰۰٪ عرضِ محل
-   * قرارگیریِ کامپوننته و از این ورودی قابل‌تنظیم نیست — تصویر با یک
-   * مقیاسِ «contain» واقعی (بر اساس هر دو بعد) داخل همین باکس جا می‌شه، پس
-   * تصاویرِ خیلی بزرگ همیشه کامل و کوچک‌شده دیده می‌شن، نه با سایزِ واقعی‌شون.
-   */
-  panelSize = input<number>(420);
+
   /**
    * کدوم فیلترها نشون داده بشن (و به چه ترتیبی). اگه ندید، هر ۵ تا نشون داده
    * می‌شن. آرایه‌ی خالی یعنی کلِ بخشِ فیلتر مخفی بشه.
@@ -124,6 +118,10 @@ export class NgxImageEditorComponent {
     const wc = this.workingCanvas();
     if (!wc) return null;
     return renderRotated(wc, wc.width, wc.height, this.rotation());
+  });
+
+  protected readonly panelSize = computed(() => {
+    return this.stageWrapEl()?.nativeElement.getBoundingClientRect().height ?? 0;
   });
 
   /**
