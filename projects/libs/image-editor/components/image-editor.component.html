@@ -57,7 +57,7 @@
           <button type="button" (click)="rotateBy(90)" title="Rotate 90° right">⟳ 90</button>
         </div>
 
-        <label class="ngx-ie-field">
+        <div class="ngx-ie-field">
           <slider
             [ngModel]="rotation()"
             (ngModelChange)="rotation.set($event)"
@@ -73,9 +73,9 @@
             [title]="localize().Reset">
             x
           </button>
-        </label>
+        </div>
 
-        <label class="ngx-ie-field">
+        <div class="ngx-ie-field">
           <slider
             [ngModel]="brightness()"
             (ngModelChange)="brightness.set($event)"
@@ -90,9 +90,9 @@
             [title]="localize().Reset">
             x
           </button>
-        </label>
+        </div>
 
-        <label class="ngx-ie-field">
+        <div class="ngx-ie-field">
           <slider
             [ngModel]="contrast()"
             (ngModelChange)="contrast.set($event)"
@@ -107,9 +107,9 @@
             [title]="localize().Reset">
             x
           </button>
-        </label>
+        </div>
 
-        <label class="ngx-ie-field">
+        <div class="ngx-ie-field">
           <slider
             [ngModel]="saturation()"
             (ngModelChange)="saturation.set($event)"
@@ -124,7 +124,7 @@
             [title]="localize().Reset">
             x
           </button>
-        </label>
+        </div>
 
         @if (filters().length) {
           <div>
