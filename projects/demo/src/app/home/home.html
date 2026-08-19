@@ -10,14 +10,21 @@
   </p>
 </section>
 
-<div class="category-list">
+<div class="category-list" [class.is-dark-mode]="isDarkMode()">
   @for (cat of list; track cat.name) {
     <section class="category">
       <h2>{{ cat.name }}</h2>
       <div class="card-grid">
         @for (item of cat.items; track item.url) {
           <a class="card" [routerLink]="item.url">
-            <app-preview-card [seed]="item.title" [icon]="iconFor(item.title)" />
+            @if (item.imageDark || item.imageLight) {
+              <div class="preview-img-container">
+                <img class="dark" [src]="item.imageDark" [alt]="item.title + ' dark'" />
+                <img class="light" [src]="item.imageLight" [alt]="item.title + ' light'" />
+              </div>
+            } @else {
+              <app-preview-card [seed]="item.title" [icon]="iconFor(item.title)" />
+            }
             <h3>{{ item.title }}</h3>
             @if (item.description) {
               <p>{{ item.description }}</p>
