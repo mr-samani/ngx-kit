@@ -5,6 +5,7 @@ import { CalendarDate } from '../calendar-date';
 
 export class GregorianAdapter implements IDateAdapter {
   startOfWeek = 0;
+  weekStartDay = 0;
   get longMonths() {
     return [
       'January',
@@ -123,13 +124,28 @@ export class GregorianAdapter implements IDateAdapter {
     // return new Date(date).toLocaleDateString('en-US', option);
     return genFormatDate(date, format, this.longMonths, this.longDays);
   }
+  getStartOfWeek(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const delta = (d.getDay() - this.weekStartDay + 7) % 7;
+    d.setDate(d.getDate() - delta);
+    return d;
+  }
+
+  getEndOfWeek(date: Date): Date {
+    const d = this.getStartOfWeek(date);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
   getStartOf(date: Date | null, t: DatePickerView) {
     if (!date) {
       return date;
     }
     switch (t) {
       case 'year':
-        return new Date(date.getFullYear(), 1, 1);
+        return new Date(date.getFullYear(), 0, 1);
       case 'month':
         return new Date(date.getFullYear(), date.getMonth(), 1);
       case 'day':

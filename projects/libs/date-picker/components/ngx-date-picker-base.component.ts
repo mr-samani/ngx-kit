@@ -100,10 +100,9 @@ export abstract class NgxDatePickerBase {
     }
   }
 
-  renderWeek() {
+  renderWeek(anchorDate?: Date) {
     this.viewWeeks = [];
-
-    for (let t = 0; t <= 24; t += 0.5) {
+    for (let t = 0; t < 24; t += 0.5) {
       this.viewWeeks.push({
         time: t,
         displayTime: convertNumberToTime(t),
@@ -112,6 +111,38 @@ export abstract class NgxDatePickerBase {
         selected: false,
       });
     }
+  }
+
+  /** Returns the seven real dates belonging to the locale's week. */
+  getWeekDates(anchor: Date): Date[] {
+    const start = this.adapter.getStartOfWeek(anchor);
+    return Array.from({ length: 7 }, (_, index) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + index);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    });
+  }
+
+  getEventsForDate(date: Date, events?: MsEvents[]): MsEventViewer[] {
+    return this.getEvents(date, events);
+  }
+
+  protected normalizeEvent(event: MsEvents): { event: MsEvents; start: Date; end: Date } {
+    const start =
+      event.start instanceof Date ? new Date(event.start) : new Date(event.start as any);
+    const rawEnd = event.end
+      ? event.end instanceof Date
+        ? new Date(event.end)
+        : new Date(event.end as any)
+      : new Date(start);
+
+    if (Number.isNaN(start.getTime())) return { event, start: new Date(NaN), end: new Date(NaN) };
+
+    // Day-calendar events use an inclusive end date. For timed events, the actual
+    // end instant is respected. An omitted end means a one-day event.
+    const end = Number.isNaN(rawEnd.getTime()) ? new Date(start) : rawEnd;
+    return { event, start, end: end < start ? new Date(start) : end };
   }
 
   /**

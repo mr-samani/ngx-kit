@@ -2,6 +2,13 @@ import { CalendarDate, IDateAdapter } from 'ngx-kit/date-picker';
 import { DatePickerView } from 'ngx-kit/date-picker/models/view';
 
 export class JapanesAdapter implements IDateAdapter {
+  weekStartDay: number = 1;
+  getStartOfWeek(date: Date): Date {
+    throw new Error('Method not implemented.');
+  }
+  getEndOfWeek(date: Date): Date {
+    throw new Error('Method not implemented.');
+  }
   get longMonths(): string[] {
     throw new Error('Method not implemented.');
   }

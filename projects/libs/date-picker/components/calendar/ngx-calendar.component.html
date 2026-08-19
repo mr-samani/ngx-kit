@@ -1,60 +1,54 @@
-<div class="wrapper" #datepickerWrapper>
+<div class="wrapper">
   <div class="header">
     <div class="nxt-prv-buttons">
-      <button
-        type="button"
-        id="prev"
-        class="previous dtp-btn"
-        (click)="previous()"
-        title="Previous">
+      <button type="button" class="previous dtp-btn" (click)="previous()" title="Previous">
         <ng-template
           [ngTemplateOutlet]="
             _config.previousButtonTemplate || defaultPreviousBTNTemplate
           "></ng-template>
       </button>
+
       @if (_config.todayButton) {
         <button type="button" class="today dtp-btn" (click)="gotoToday()">
           {{ localize().today }}
         </button>
       }
-      <button type="button" id="next" class="next dtp-btn" (click)="next()" title="Next">
+
+      <button type="button" class="next dtp-btn" (click)="next()" title="Next">
         <ng-template
           [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
       </button>
     </div>
 
-    <div class="current-date">
-      <span>{{ currYear }}</span>
-      <span>{{ displayMonth }}</span>
-    </div>
+    <div class="current-date" aria-live="polite">{{ headerText }}</div>
 
     <div class="view-mode">
       <button
         type="button"
-        class="dayview dtp-btn"
+        class="dtp-btn"
         (click)="changeView('month')"
-        [class.active]="view == 'month'">
+        [class.active]="view === 'month'">
         {{ localize().month }}
       </button>
       <button
         type="button"
-        class="dayview dtp-btn"
+        class="dtp-btn"
         (click)="changeView('week')"
-        [class.active]="view == 'week'">
+        [class.active]="view === 'week'">
         {{ localize().week }}
       </button>
       <button
         type="button"
-        class="dayview dtp-btn"
+        class="dtp-btn"
         (click)="changeView('day')"
-        [class.active]="view == 'day'">
+        [class.active]="view === 'day'">
         {{ localize().day }}
       </button>
       <button
         type="button"
-        class="dayview dtp-btn"
+        class="dtp-btn"
         (click)="changeView('event')"
-        [class.active]="view == 'event'">
+        [class.active]="view === 'event'">
         {{ localize().event }}
       </button>
     </div>
@@ -70,7 +64,7 @@
         </ul>
 
         <ul class="days" [style.minHeight.px]="minHeight">
-          @for (item of viewDays; track $index) {
+          @for (item of viewDays; track item.date?.getTime() ?? $index) {
             <li
               [class.de-active]="!item.active"
               [class.today]="item.isToday"
@@ -80,7 +74,7 @@
 
               @if (item.events?.length) {
                 <div class="ms-day-events">
-                  @for (event of item.events; track event.id ?? $index) {
+                  @for (event of item.events; track event.id ?? event.title ?? $index) {
                     <button
                       type="button"
                       class="ms-day-event"
@@ -94,7 +88,7 @@
                       [style.color]="event.textColor || null"
                       [title]="event.title || ''"
                       (click)="onclickEvent($event, item, event)">
-                      <span>{{ event.title || 'Untitled event' }}</span>
+                      {{ event.title || 'Untitled event' }}
                     </button>
                   }
                 </div>
@@ -103,35 +97,19 @@
           }
         </ul>
       }
+
       @case ('week') {
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              @for (w of weeks; track $index) {
-                <th>{{ w }}</th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of viewWeeks; track $index) {
-              <tr>
-                <td [title]="item.displayTime">{{ item.time % 1 == 0 ? item.time : '' }}</td>
-                @for (w of item.weeks; track $index) {
-                  <td></td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
+        <ng-container [ngTemplateOutlet]="timedCalendar"></ng-container>
       }
+
       @case ('day') {
-        not implements!
+        <ng-container [ngTemplateOutlet]="timedCalendar"></ng-container>
       }
+
       @case ('event') {
         <div class="event-list">
           @if (eventViewItems.length) {
-            @for (item of eventViewItems; track item.event.id ?? $index) {
+            @for (item of eventViewItems; track item.event.id ?? item.start.getTime()) {
               <button
                 type="button"
                 class="event-list-item"
@@ -146,12 +124,10 @@
                 <span class="event-copy">
                   <strong>{{ item.event.title || 'Untitled event' }}</strong>
                   <small>
-                    {{ formatEventDate(item.start)
-                    }}{{
-                      item.end.getTime() !== item.start.getTime()
-                        ? ' – ' + formatEventDate(item.end)
-                        : ''
-                    }}
+                    {{ formatEventDate(item.start) }}
+                    @if (item.end.getTime() !== item.start.getTime()) {
+                      – {{ formatEventDate(item.end) }}
+                    }
                   </small>
                 </span>
               </button>
@@ -164,6 +140,98 @@
     }
   </div>
 </div>
+
+<ng-template #timedCalendar>
+  <div class="timed-calendar">
+    <div
+      class="timed-header"
+      [style.gridTemplateColumns]="'64px repeat(' + weekDays.length + ', minmax(0, 1fr))'">
+      <div class="corner"></div>
+      @for (day of weekDays; track day.date.getTime(); let i = $index) {
+        <button
+          type="button"
+          class="day-header"
+          [class.today]="day.isToday"
+          (click)="selectDay($event, { date: day.date, day: 0, active: true })">
+          <span>{{ day.label }}</span>
+          <strong>{{ day.dayNumber }}</strong>
+        </button>
+      }
+    </div>
+
+    <div
+      class="all-day-row"
+      [style.gridTemplateColumns]="'64px repeat(' + weekDays.length + ', minmax(0, 1fr))'">
+      <div class="all-day-label">All day</div>
+      @for (day of weekDays; track day.date.getTime(); let i = $index) {
+        <div class="all-day-cell">
+          @for (event of allDayByColumn[i]; track event.id ?? event.title ?? $index) {
+            <button
+              type="button"
+              class="timed-event all-day-event"
+              [class.continues-before]="event.continuesBefore"
+              [class.continues-after]="event.continuesAfter"
+              [ngClass]="event.className"
+              [style.background]="event.backgroundColor || event.color || null"
+              [style.borderColor]="event.borderColor || event.color || null"
+              [style.color]="event.textColor || null"
+              [title]="event.title || ''"
+              (click)="onTimedEventClick($event, event, day.date)">
+              {{ event.title || 'Untitled event' }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div
+      class="time-grid"
+      [style.gridTemplateColumns]="'64px repeat(' + weekDays.length + ', minmax(0, 1fr))'">
+      <div class="time-axis">
+        @for (minutes of timeSlots; track minutes) {
+          <div class="time-label" [style.top.px]="(minutes / 60) * hourHeight">
+            @if (minutes % 60 === 0) {
+              {{ formatTime(minutes) }}
+            }
+          </div>
+        }
+      </div>
+
+      @for (day of weekDays; track day.date.getTime(); let i = $index) {
+        <div class="day-column">
+          @for (minutes of timeSlots; track minutes) {
+            <div class="time-slot" [class.hour]="minutes % 60 === 0"></div>
+          }
+
+          @for (event of day.events; track event.id ?? event.title ?? event.start.getTime()) {
+            <button
+              type="button"
+              class="timed-event"
+              [class.continues-before]="event.continuesBefore"
+              [class.continues-after]="event.continuesAfter"
+              [ngClass]="event.className"
+              [style.top.px]="event.top"
+              [style.height.px]="event.height"
+              [style.insetInlineStart.%]="event.column * (100 / event.columnCount)"
+              [style.width.%]="100 / event.columnCount - 1"
+              [style.background]="event.backgroundColor || event.color || null"
+              [style.borderColor]="event.borderColor || event.color || null"
+              [style.color]="event.textColor || null"
+              [title]="event.title || ''"
+              (click)="onTimedEventClick($event, event, day.date)">
+              <strong>{{ event.title || 'Untitled event' }}</strong>
+              @if (event.height >= 42) {
+                <small>
+                  {{ formatTime(event.start.getHours() * 60 + event.start.getMinutes()) }}
+                </small>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</ng-template>
 
 <ng-template #defaultPreviousBTNTemplate>
   <svg width="15px" height="30px" viewBox="0 0 320 512">
