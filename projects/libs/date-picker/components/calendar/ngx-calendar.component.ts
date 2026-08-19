@@ -4,6 +4,8 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  inject,
+  input,
   Input,
   OnInit,
   Output,
@@ -17,8 +19,9 @@ import { ISelectedEvent } from '../../models/selected-event';
 import { CommonModule } from '@angular/common';
 import { compareDate, deserialize, sameDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
-import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
+import { DateViewDay } from '../../models/date';
 import { MsEventViewer } from '../../models/events';
+import { NGX_CALENDAR_LOCALIZATION, NgxCalendarLocalization } from '../../tokens/localization';
 @Component({
   selector: 'ngx-calendar',
   templateUrl: './ngx-calendar.component.html',
@@ -27,6 +30,8 @@ import { MsEventViewer } from '../../models/events';
   providers: [DateAdapterRegistry],
 })
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, AfterViewInit {
+  defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
+  localize = input<NgxCalendarLocalization>(this.defaultLocalization);
   _config = new NgxDatePickerConfig();
   @Input() set config(val: NgxDatePickerConfig) {
     this._config = { ...new NgxDatePickerConfig(), ...val };
@@ -52,7 +57,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     }
   }
 
-  @Input() view: CalendarView = 'day';
+  @Input() view: CalendarView = 'month';
   _events: MsEvents[] = [];
   eventViewItems: { event: MsEventViewer; start: Date; end: Date }[] = [];
 
@@ -167,20 +172,6 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, A
     ev.stopPropagation();
     if (item.active) {
       this.dateChange.emit(item);
-    }
-  }
-  selectMonth(ev: Event, item: DateViewMonth) {
-    ev.stopPropagation();
-    if (item.active) {
-      this.currMonth = item.month;
-      this.changeView('day');
-    }
-  }
-  selectYear(ev: Event, item: DateViewYear) {
-    ev.stopPropagation();
-    if (item.active) {
-      this.currYear = item.year;
-      this.changeView('month');
     }
   }
 

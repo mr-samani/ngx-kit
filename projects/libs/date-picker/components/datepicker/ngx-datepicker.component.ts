@@ -1,4 +1,13 @@
-import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  forwardRef,
+  inject,
+  input,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
@@ -15,6 +24,7 @@ import {
 } from '@angular/forms';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
+import { NGX_CALENDAR_LOCALIZATION, type NgxCalendarLocalization } from '../../tokens/localization';
 
 @Component({
   selector: 'ngx-date-picker',
@@ -39,6 +49,8 @@ export class NgxInputDatePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
+  defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
+  localize = input<NgxCalendarLocalization>(this.defaultLocalization);
   config = new NgxDatePickerConfig();
   @Input('config') set setConfig(val: NgxDatePickerConfig) {
     this.config = { ...new NgxDatePickerConfig(), ...val };
@@ -104,7 +116,7 @@ export class NgxInputDatePickerComponent
       let l = this.adapter.toLocale(this.selected.date);
       this.currYear = l.year;
       this.currMonth = l.month ?? 1;
-      this.renderCalendar(this.view);
+      this.renderِDatePicker(this.view);
     }
   }
   writeValue(value: any): void {
@@ -151,8 +163,8 @@ export class NgxInputDatePickerComponent
     this.isDisabled = disabled;
   }
 
-  override renderCalendar(view: 'year' | 'month' | 'day') {
-    super.renderCalendar(view, this.selected, [], () => {
+  override renderِDatePicker(view: DatePickerView) {
+    super.renderِDatePicker(view, this.selected, [], () => {
       let d = this.selected?.date;
       this.calendarHeader =
         (d && this.adapter.formatDate(this.adapter.toLocale(d), 'EEEE - d MMMM, yyyy')) ?? '';
@@ -170,7 +182,7 @@ export class NgxInputDatePickerComponent
 
   changeView(v: DatePickerView) {
     this.view = v;
-    this.renderCalendar(this.view);
+    this.renderِDatePicker(this.view);
   }
 
   next() {
@@ -187,7 +199,7 @@ export class NgxInputDatePickerComponent
       this.currMonth = date.getMonth();
     }
 
-    this.renderCalendar(this.view);
+    this.renderِDatePicker(this.view);
   }
 
   previous() {
@@ -204,7 +216,7 @@ export class NgxInputDatePickerComponent
       this.currMonth = date.getMonth();
     }
 
-    this.renderCalendar(this.view);
+    this.renderِDatePicker(this.view);
   }
 
   selectDay(ev: Event, item: DateViewDay) {

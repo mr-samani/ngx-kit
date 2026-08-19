@@ -50,16 +50,6 @@
           Show today button
         </label>
       </p>
-      @if (config().todayButton) {
-        <p>
-          <label>Today button text:</label>
-          <input
-            type="text"
-            class="form-control"
-            (change)="updateConfig()"
-            [(ngModel)]="config().todayButtonText" />
-        </p>
-      }
       <p>
         <label>
           <input
@@ -70,16 +60,6 @@
           Show clear button
         </label>
       </p>
-      @if (config().clearButton) {
-        <p>
-          <label>Clear button text:</label>
-          <input
-            type="text"
-            class="form-control"
-            (change)="updateConfig()"
-            [(ngModel)]="config().clearButtonText" />
-        </p>
-      }
     </div>
 
     <h3>Input mode</h3>

@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  forwardRef,
+  inject,
+  input,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -17,10 +26,11 @@ import {
   normalizeDateRange,
 } from '../../helpers/date-range.helper';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
-import { CalendarView, DatePickerView } from '../../models/view';
+import { DatePickerView } from '../../models/view';
 import { NgxDateRange } from '../../models/range';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
+import { NGX_CALENDAR_LOCALIZATION, NgxCalendarLocalization } from '../../tokens/localization';
 
 @Component({
   selector: 'ngx-date-range-picker',
@@ -46,6 +56,8 @@ export class NgxDateRangePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
+  defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
+  localize = input<NgxCalendarLocalization>(this.defaultLocalization);
   config = new NgxDatePickerConfig();
 
   @Input() set locale(value: string) {
@@ -59,7 +71,7 @@ export class NgxDateRangePickerComponent
     if (!sameDate(next, this.minDate)) {
       this.minDate = next;
       this._validatorOnChange();
-      this.renderCalendar(this.view);
+      this.renderِDatePicker(this.view);
     }
   }
 
@@ -68,11 +80,11 @@ export class NgxDateRangePickerComponent
     if (!sameDate(next, this.maxDate)) {
       this.maxDate = next;
       this._validatorOnChange();
-      this.renderCalendar(this.view);
+      this.renderِDatePicker(this.view);
     }
   }
 
-  @Input() view: 'year' | 'month' | 'day' = 'day';
+  @Input() view: DatePickerView = 'day';
 
   @Output() rangeChange = new EventEmitter<NgxDateRange<Date>>();
   @Output() change = new EventEmitter<NgxDateRange<Date>>();
@@ -142,8 +154,8 @@ export class NgxDateRangePickerComponent
     return null;
   }
 
-  override renderCalendar(view: CalendarView | DatePickerView) {
-    super.renderCalendar(view, undefined, [], () => {
+  override renderِDatePicker(view: DatePickerView) {
+    super.renderِDatePicker(view, undefined, [], () => {
       this.applyRangeState();
       const start = this.range.start;
       const end = this.range.end;
@@ -170,12 +182,12 @@ export class NgxDateRangePickerComponent
     const locale = this.adapter.toLocale(anchor);
     this.currYear = locale.year;
     this.currMonth = locale.month ?? 0;
-    this.renderCalendar(this.view);
+    this.renderِDatePicker(this.view);
   }
 
-  changeView(view: 'year' | 'month' | 'day') {
+  changeView(view: DatePickerView) {
     this.view = view;
-    this.renderCalendar(view);
+    this.renderِDatePicker(view);
   }
 
   gotoToday() {
@@ -206,7 +218,7 @@ export class NgxDateRangePickerComponent
       this.currMonth = date.getMonth();
     }
 
-    this.renderCalendar(this.view);
+    this.renderِDatePicker(this.view);
   }
 
   previous() {
@@ -223,7 +235,7 @@ export class NgxDateRangePickerComponent
       this.currMonth = date.getMonth();
     }
 
-    this.renderCalendar(this.view);
+    this.renderِDatePicker(this.view);
   }
   selectDay(event: Event, item: DateViewDay) {
     event.stopPropagation();

@@ -91,10 +91,10 @@
 
     <div class="calendar-footer">
       @if (config.clearButton) {
-        <button type="button" (click)="clear()">{{ config.clearButtonText }}</button>
+        <button type="button" (click)="clear()">{{ localize().clear }}</button>
       }
       @if (config.todayButton) {
-        <button type="button" (click)="gotoToday()">{{ config.todayButtonText }}</button>
+        <button type="button" (click)="gotoToday()">{{ localize().today }}</button>
       }
     </div>
   </div>

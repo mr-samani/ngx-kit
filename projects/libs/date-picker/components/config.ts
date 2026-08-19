@@ -7,10 +7,4 @@ export class NgxDatePickerConfig {
 
   todayButton = true;
   clearButton = true;
-  clearButtonText = 'Clear';
-  todayButtonText = 'Today';
-
-  /** Range picker labels. */
-  rangeStartPlaceholder = 'Start date';
-  rangeEndPlaceholder = 'End date';
 }

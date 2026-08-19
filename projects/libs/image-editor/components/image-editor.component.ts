@@ -22,7 +22,7 @@ import { NgxPointerDragDelta, NgxPointerDragDirective } from '../directives/poin
 import { canvasToBlob, createWorkingCopy, loadImage } from '../utils/image-io';
 import { renderComposite, renderRotated } from '../utils/render-pipeline';
 import { Corner } from '../types/corner';
-import { NGX_IMAGE_EDITOR_LOCALIZATION, NgxImageEditorLocalization } from '../types/localization';
+import { NGX_IMAGE_EDITOR_LOCALIZATION, NgxImageEditorLocalization } from '../tokens/localization';
 
 const ALL_FILTERS: NgxImageFilterPreset[] = ['none', 'grayscale', 'sepia', 'invert', 'cartoon'];
 

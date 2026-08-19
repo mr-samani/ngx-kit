@@ -29,7 +29,29 @@ export abstract class NgxDatePickerBase {
   maxDate: Date | null = null;
 
   renderCalendar(
-    view: CalendarView | DatePickerView,
+    view: CalendarView,
+    selected?: CalendarDate,
+    events?: MsEvents[],
+    callback?: Function,
+  ) {
+    switch (view) {
+      case 'month':
+        this.renderDay(selected, events);
+        break;
+      case 'week':
+        this.renderWeek();
+        break;
+      case 'day':
+        this.renderWeek();
+        break;
+    }
+
+    this.displayMonth = this.months[this.currMonth] ?? '';
+
+    if (callback) callback();
+  }
+  renderِDatePicker(
+    view: DatePickerView,
     selected?: CalendarDate,
     events?: MsEvents[],
     callback?: Function,
@@ -43,9 +65,6 @@ export abstract class NgxDatePickerBase {
         break;
       case 'year':
         this.renderYear();
-        break;
-      case 'week':
-        this.renderWeek();
         break;
     }
 

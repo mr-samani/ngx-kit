@@ -55,10 +55,6 @@ export class DatePickerComponent implements OnInit {
   config = signal<NgxDatePickerConfig>({
     todayButton: true,
     clearButton: true,
-    clearButtonText: 'Clear',
-    todayButtonText: 'Today',
-    rangeStartPlaceholder: 'Start date',
-    rangeEndPlaceholder: 'End date',
   });
 
   form: FormGroup;

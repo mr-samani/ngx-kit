@@ -14,7 +14,7 @@
       </button>
       @if (_config.todayButton) {
         <button type="button" class="today dtp-btn" (click)="gotoToday()">
-          {{ _config.todayButtonText }}
+          {{ localize().today }}
         </button>
       }
       <button type="button" id="next" class="next dtp-btn" (click)="next()" title="Next">
@@ -32,126 +32,135 @@
       <button
         type="button"
         class="dayview dtp-btn"
-        (click)="changeView('day')"
-        [class.active]="view == 'day'">
-        Month
+        (click)="changeView('month')"
+        [class.active]="view == 'month'">
+        {{ localize().month }}
       </button>
       <button
         type="button"
         class="dayview dtp-btn"
         (click)="changeView('week')"
         [class.active]="view == 'week'">
-        Week
+        {{ localize().week }}
       </button>
       <button
         type="button"
         class="dayview dtp-btn"
         (click)="changeView('day')"
         [class.active]="view == 'day'">
-        Day
+        {{ localize().day }}
       </button>
       <button
         type="button"
         class="dayview dtp-btn"
         (click)="changeView('event')"
         [class.active]="view == 'event'">
-        Event
+        {{ localize().event }}
       </button>
     </div>
   </div>
 
   <div class="calendar" #calendarWrapper>
-    @if (view === 'day') {
-      <ul class="weeks">
-        @for (w of weeks; track $index) {
-          <li>{{ w }}</li>
-        }
-      </ul>
+    @switch (view) {
+      @case ('month') {
+        <ul class="weeks">
+          @for (w of weeks; track $index) {
+            <li>{{ w }}</li>
+          }
+        </ul>
 
-      <ul class="days" [style.minHeight.px]="minHeight">
-        @for (item of viewDays; track $index) {
-          <li
-            [class.de-active]="!item.active"
-            [class.today]="item.isToday"
-            [class.selected]="item.selected"
-            (click)="selectDay($event, item)">
-            <div class="day-number">{{ item.day }}</div>
+        <ul class="days" [style.minHeight.px]="minHeight">
+          @for (item of viewDays; track $index) {
+            <li
+              [class.de-active]="!item.active"
+              [class.today]="item.isToday"
+              [class.selected]="item.selected"
+              (click)="selectDay($event, item)">
+              <div class="day-number">{{ item.day }}</div>
 
-            @if (item.events?.length) {
-              <div class="ms-day-events">
-                @for (event of item.events; track event.id ?? $index) {
-                  <button
-                    type="button"
-                    class="ms-day-event"
-                    [class.continues-before]="event.continuesBefore"
-                    [class.continues-after]="event.continuesAfter"
-                    [class.event-start]="event.isStart"
-                    [class.event-end]="event.isEnd"
-                    [ngClass]="event.className"
-                    [style.background]="event.backgroundColor || event.color || null"
-                    [style.borderColor]="event.borderColor || event.color || null"
-                    [style.color]="event.textColor || null"
-                    [title]="event.title || ''"
-                    (click)="onclickEvent($event, item, event)">
-                    <span>{{ event.title || 'Untitled event' }}</span>
-                  </button>
-                }
-              </div>
-            }
-          </li>
-        }
-      </ul>
-    } @else if (view == 'week' || view == 'month') {
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            @for (w of weeks; track $index) {
-              <th>{{ w }}</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of viewWeeks; track $index) {
+              @if (item.events?.length) {
+                <div class="ms-day-events">
+                  @for (event of item.events; track event.id ?? $index) {
+                    <button
+                      type="button"
+                      class="ms-day-event"
+                      [class.continues-before]="event.continuesBefore"
+                      [class.continues-after]="event.continuesAfter"
+                      [class.event-start]="event.isStart"
+                      [class.event-end]="event.isEnd"
+                      [ngClass]="event.className"
+                      [style.background]="event.backgroundColor || event.color || null"
+                      [style.borderColor]="event.borderColor || event.color || null"
+                      [style.color]="event.textColor || null"
+                      [title]="event.title || ''"
+                      (click)="onclickEvent($event, item, event)">
+                      <span>{{ event.title || 'Untitled event' }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+      @case ('week') {
+        <table>
+          <thead>
             <tr>
-              <td [title]="item.displayTime">{{ item.time % 1 == 0 ? item.time : '' }}</td>
-              @for (w of item.weeks; track $index) {
-                <td></td>
+              <th></th>
+              @for (w of weeks; track $index) {
+                <th>{{ w }}</th>
               }
             </tr>
+          </thead>
+          <tbody>
+            @for (item of viewWeeks; track $index) {
+              <tr>
+                <td [title]="item.displayTime">{{ item.time % 1 == 0 ? item.time : '' }}</td>
+                @for (w of item.weeks; track $index) {
+                  <td></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @case ('day') {
+        not implements!
+      }
+      @case ('event') {
+        <div class="event-list">
+          @if (eventViewItems.length) {
+            @for (item of eventViewItems; track item.event.id ?? $index) {
+              <button
+                type="button"
+                class="event-list-item"
+                (click)="
+                  onclickEvent($event, { date: item.start, day: 0, active: true }, item.event)
+                ">
+                <span
+                  class="event-dot"
+                  [style.background]="
+                    item.event.backgroundColor || item.event.color || null
+                  "></span>
+                <span class="event-copy">
+                  <strong>{{ item.event.title || 'Untitled event' }}</strong>
+                  <small>
+                    {{ formatEventDate(item.start)
+                    }}{{
+                      item.end.getTime() !== item.start.getTime()
+                        ? ' – ' + formatEventDate(item.end)
+                        : ''
+                    }}
+                  </small>
+                </span>
+              </button>
+            }
+          } @else {
+            <div class="empty-events">No events for this month.</div>
           }
-        </tbody>
-      </table>
-    } @else if (view == 'event') {
-      <div class="event-list">
-        @if (eventViewItems.length) {
-          @for (item of eventViewItems; track item.event.id ?? $index) {
-            <button
-              type="button"
-              class="event-list-item"
-              (click)="
-                onclickEvent($event, { date: item.start, day: 0, active: true }, item.event)
-              ">
-              <span
-                class="event-dot"
-                [style.background]="item.event.backgroundColor || item.event.color || null"></span>
-              <span class="event-copy">
-                <strong>{{ item.event.title || 'Untitled event' }}</strong>
-                <small>
-                  {{ formatEventDate(item.start)
-                  }}{{
-                    item.end.getTime() !== item.start.getTime()
-                      ? ' – ' + formatEventDate(item.end)
-                      : ''
-                  }}
-                </small>
-              </span>
-            </button>
-          }
-        } @else {
-          <div class="empty-events">No events for this month.</div>
-        }
-      </div>
+        </div>
+      }
     }
   </div>
 </div>
