@@ -1,12 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   inject,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SliderComponent } from 'ngx-kit/shared';
@@ -19,8 +21,10 @@ import {
 import { NgxPointerDragDelta, NgxPointerDragDirective } from '../directives/pointer-drag.directive';
 import { canvasToBlob, createWorkingCopy, loadImage } from '../utils/image-io';
 import { renderComposite, renderRotated } from '../utils/render-pipeline';
-import { Corner } from '../types/Corner';
+import { Corner } from '../types/corner';
 import { NGX_IMAGE_EDITOR_LOCALIZATION, NgxImageEditorLocalization } from '../types/localization';
+
+const ALL_FILTERS: NgxImageFilterPreset[] = ['none', 'grayscale', 'sepia', 'invert', 'cartoon'];
 
 /**
  * ویرایشگر تصویر: کراپ + چرخش + روشنایی/کنتراست/اشباع + فیلترهای آماده
@@ -32,6 +36,15 @@ import { NGX_IMAGE_EDITOR_LOCALIZATION, NgxImageEditorLocalization } from '../ty
  * (createWorkingCopy)، نه روی تصویر اصلی که ممکنه چند مگاپیکسل باشه — وگرنه
  * درگ‌کردن اسلایدرها/گوشه‌های کراپ رو کاربر حس تاخیر می‌کرد. فقط لحظه‌ی
  * save()، رندر نهایی از روی تصویر اصلیِ کامل انجام می‌شه.
+ *
+ * اندازه‌ی صحنه (stage) با panelSize کنترل می‌شه: عرض همیشه ۱۰۰٪ عرضِ
+ * والدِ کامپوننته (با ResizeObserver اندازه‌گیری می‌شه، پس با تغییر سایز
+ * صفحه/layout هم زنده هماهنگ می‌مونه)، ارتفاع دقیقاً همون چیزیه که کاربر با
+ * panelSize می‌ده. تصویر همیشه با یک مقیاسِ «contain» واقعی (هم بر اساس
+ * عرض، هم بر اساس ارتفاع — هرکدوم تنگ‌تره) جا داده می‌شه، پس کلِ تصویر
+ * همیشه در محدوده‌ی همین باکس دیده می‌شه، صرف‌نظر از اندازه‌ی واقعیِ فایل.
+ * سقفِ مقیاس هم ۱ هست، یعنی تصاویر کوچیک بزرگ‌نمایی نمی‌شن (که باعثِ محو
+ * شدن‌شون می‌شد).
  */
 @Component({
   selector: 'ngx-image-editor',
@@ -49,8 +62,18 @@ export class NgxImageEditorComponent {
   outputMaxWidth = input<number | undefined>(undefined);
   outputMaxHeight = input<number | undefined>(undefined);
   outputType = input<'image/jpeg' | 'image/png' | 'image/webp'>('image/jpeg');
-  /** حداکثر عرض نمایشِ ناحیه‌ی کراپ روی صفحه (پیکسل) */
-  displayMaxWidth = input<number>(420);
+  /**
+   * ارتفاعِ ناحیه‌ی نمایش تصویر (به پیکسل). عرض همیشه ۱۰۰٪ عرضِ محل
+   * قرارگیریِ کامپوننته و از این ورودی قابل‌تنظیم نیست — تصویر با یک
+   * مقیاسِ «contain» واقعی (بر اساس هر دو بعد) داخل همین باکس جا می‌شه، پس
+   * تصاویرِ خیلی بزرگ همیشه کامل و کوچک‌شده دیده می‌شن، نه با سایزِ واقعی‌شون.
+   */
+  panelSize = input<number>(420);
+  /**
+   * کدوم فیلترها نشون داده بشن (و به چه ترتیبی). اگه ندید، هر ۵ تا نشون داده
+   * می‌شن. آرایه‌ی خالی یعنی کلِ بخشِ فیلتر مخفی بشه.
+   */
+  filters = input<NgxImageFilterPreset[]>(ALL_FILTERS);
   quality = input(0.92);
 
   defaultLocalization = inject(NGX_IMAGE_EDITOR_LOCALIZATION);
@@ -65,6 +88,9 @@ export class NgxImageEditorComponent {
 
   private readonly originalImage = signal<HTMLImageElement | null>(null);
   private readonly workingCanvas = signal<HTMLCanvasElement | null>(null);
+  private readonly stageWrapEl = viewChild<ElementRef<HTMLElement>>('stageWrap');
+  /** عرضِ واقعیِ رندرشده‌ی کانتینر؛ چون عرض همیشه ۱۰۰٪ (fluid) هست، باید زنده اندازه‌گیری بشه */
+  private readonly containerWidth = signal(0);
 
   protected readonly rotation = signal(0);
   protected readonly brightness = signal(100);
@@ -82,6 +108,17 @@ export class NgxImageEditorComponent {
     filter: this.filterPreset(),
   }));
 
+  protected readonly filterLabels = computed<Record<NgxImageFilterPreset, string>>(() => {
+    const t = this.localize();
+    return {
+      none: t.None,
+      grayscale: t.Grayscale,
+      sepia: t.Sepia,
+      invert: t.Invert,
+      cartoon: t.Cartoon,
+    };
+  });
+
   /** تصویرِ (کوچیک‌شده‌یِ) چرخیده — پایه‌ی نمایش صحنه‌ی کراپ */
   protected readonly rotatedWorkingCanvas = computed(() => {
     const wc = this.workingCanvas();
@@ -89,10 +126,16 @@ export class NgxImageEditorComponent {
     return renderRotated(wc, wc.width, wc.height, this.rotation());
   });
 
+  /**
+   * مقیاسِ «contain» واقعی: کوچیک‌ترینِ نسبتِ عرض و ارتفاع (هرکدوم تنگ‌تره)
+   * تعیین‌کننده‌ست، و سقفش هم ۱ هست تا تصاویر کوچیک بزرگ‌نمایی نشن.
+   */
   protected readonly displayScale = computed(() => {
     const rc = this.rotatedWorkingCanvas();
-    if (!rc) return 1;
-    return Math.min(1, this.displayMaxWidth() / rc.width);
+    const containerW = this.containerWidth();
+    const panelH = this.panelSize();
+    if (!rc || rc.width <= 0 || rc.height <= 0 || containerW <= 0 || panelH <= 0) return 1;
+    return Math.min(containerW / rc.width, panelH / rc.height, 1);
   });
 
   protected readonly stageImageUrl = computed(() => {
@@ -157,6 +200,30 @@ export class NgxImageEditorComponent {
         this.crop.set({ x: 0, y: 0, width: rc.width, height: rc.height });
       }
     });
+
+    // اگه فیلترِ فعلاً انتخاب‌شده دیگه توی لیستِ مجازِ filters() نباشه (مثلاً
+    // مصرف‌کننده cartoon رو غیرفعال کرده درحالی‌که کاربر روش بود)، برو روی
+    // اولین فیلترِ مجاز؛ اگه لیست خالی باشه (کلاً فیلتر مخفیه)، روی none بمون.
+    effect(() => {
+      const allowed = this.filters();
+      if (allowed.length && !allowed.includes(this.filterPreset())) {
+        this.filterPreset.set(allowed[0]);
+      }
+    });
+
+    // اندازه‌گیریِ زنده‌ی عرضِ واقعیِ کانتینر — چون عرض همیشه ۱۰۰٪ (fluid)ه،
+    // فقط با ResizeObserver می‌شه فهمید الان چند پیکسله (نه یه عددِ ثابتِ ورودی).
+    effect((onCleanup) => {
+      const el = this.stageWrapEl()?.nativeElement;
+      if (!el) return;
+      this.containerWidth.set(el.getBoundingClientRect().width);
+      const ro = new ResizeObserver((entries) => {
+        const width = entries[0]?.contentRect.width;
+        if (width != null) this.containerWidth.set(width);
+      });
+      ro.observe(el);
+      onCleanup(() => ro.disconnect());
+    });
   }
 
   private resetAdjustments(): void {
@@ -164,7 +231,7 @@ export class NgxImageEditorComponent {
     this.brightness.set(100);
     this.contrast.set(100);
     this.saturation.set(100);
-    this.filterPreset.set('none');
+    this.filterPreset.set(this.filters()[0] ?? 'none');
   }
 
   protected rotateBy(delta: number): void {

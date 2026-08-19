@@ -13,18 +13,20 @@
 
 .ngx-ie-layout {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 1.25rem;
 }
 
 .ngx-ie-stage-wrap {
+  /* عرض: همیشه ۱۰۰٪ والد (fluid); ارتفاع: از panelSize input (bound روی element) */
+  width: 100%;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 0.5rem;
   background: light-dark(#f3f4f6, #18181b);
   border-radius: 10px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .ngx-ie-stage {
@@ -100,6 +102,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.ngx-ie-panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
 }
 
 .ngx-ie-preview {
