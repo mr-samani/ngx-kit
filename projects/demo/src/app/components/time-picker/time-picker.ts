@@ -35,8 +35,8 @@ import { NgxFormField, NgxInput, NgxPrefix, NgxSuffix, NgxHint, NgxError } from 
 })
 export class TimePickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/time-picker/time-picker.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/time-picker/time-picker.html', language: 'html' },
+    { label: 'TS', path: 'examples/time-picker/time-picker.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/time-picker/time-picker.html', language: 'html' },
   ];
 
   form: FormGroup;

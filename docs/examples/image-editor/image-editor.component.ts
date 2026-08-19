@@ -16,10 +16,10 @@ export class ImageEditorComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
-      path: '/examples/image-editor/image-editor.component.ts',
+      path: 'examples/image-editor/image-editor.component.ts',
       language: 'typescript',
     },
-    { label: 'HTML', path: '/examples/image-editor/image-editor.component.html', language: 'html' },
+    { label: 'HTML', path: 'examples/image-editor/image-editor.component.html', language: 'html' },
   ];
 
   protected readonly selectedFile = signal<File | null>(null);

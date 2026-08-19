@@ -54,8 +54,8 @@
 
 .ngx-msg-modal {
   position: relative;
-  width: 100%;
-  max-width: 400px;
+  min-width: 400px;
+  max-width: 80dvw;
   background-color: var(--ngx-msg-panel-bg);
   color: var(--ngx-msg-panel-fg);
   border: 1px solid var(--ngx-msg-panel-border);
@@ -278,6 +278,8 @@
   margin: 0 0 26px;
   opacity: 0;
   transform: translateY(8px);
+  overflow: auto;
+  max-height: 70dvh;
 }
 .ngx-msg-overlay.show .ngx-msg-modal h2 {
   animation: textIn 0.5s 0.3s ease forwards;

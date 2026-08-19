@@ -6,7 +6,13 @@ export interface IDateAdapter {
   get narrowDays(): string[];
   get shortDays(): string[];
   get longDays(): string[];
+  /** Display index used by existing month-grid APIs. */
   startOfWeek: number;
+  /** Native JavaScript weekday (0=Sunday ... 6=Saturday) where a week starts. */
+  weekStartDay: number;
+  /** Returns the real Gregorian Date at the start/end of the locale week. */
+  getStartOfWeek(date: Date): Date;
+  getEndOfWeek(date: Date): Date;
 
   /** convert js date to locale */
   toLocale(date: Date): CalendarDate;

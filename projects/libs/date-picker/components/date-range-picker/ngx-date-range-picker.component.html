@@ -1,0 +1,117 @@
+<div class="wrapper" (click)="stopPagination($event)">
+  <div class="header">
+    <div class="calendar-icon" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M16 2V6M8 2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        <path
+          d="M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 17.7712 21 14V12C21 8.22876 19.8284 5.17157 19.8284 5.17157C4 4 13 4 13 4Z"
+          stroke="currentColor"
+          stroke-width="1.5" />
+        <path d="M3 10H21" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </div>
+    <div class="header-copy">
+      <div class="header-title">Date range</div>
+      <div class="header-value">{{ calendarHeader }}</div>
+    </div>
+  </div>
+
+  <div class="sub-header">
+    <button type="button" class="nav-button" id="prev" (click)="previous()" aria-label="Previous">
+      <ng-template
+        [ngTemplateOutlet]="
+          config.previousButtonTemplate || defaultPreviousBTNTemplate
+        "></ng-template>
+    </button>
+
+    <button type="button" class="current-date" (click)="changeView('month')">
+      <span>{{ displayMonth }}</span>
+      <span>{{ currYear }}</span>
+    </button>
+
+    <button type="button" class="nav-button" id="next" (click)="next()" aria-label="Next">
+      <ng-template
+        [ngTemplateOutlet]="config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
+    </button>
+  </div>
+
+  <div class="calendar">
+    @if (view === 'day') {
+      <ul class="weeks">
+        @for (w of weekDays; track $index) {
+          <li [title]="w.name">{{ w.min }}</li>
+        }
+      </ul>
+
+      <ul class="days">
+        @for (item of viewDays; track $index) {
+          <li
+            [class.de-active]="!item.active"
+            [class.today]="item.isToday"
+            [class.in-range]="item.inRange"
+            [class.in-range-preview]="item.inRangePreview"
+            [class.range-start]="item.rangeStart"
+            [class.range-end]="item.rangeEnd"
+            [class.range-single]="item.rangeStart && item.rangeEnd"
+            (mouseenter)="onDayEnter(item)"
+            (mouseleave)="onDayLeave()"
+            (click)="selectDay($event, item)"
+            [attr.aria-selected]="
+              item.rangeStart || item.rangeEnd || item.inRange || item.inRangePreview
+            ">
+            <span class="day-number">{{ item.day }}</span>
+          </li>
+        }
+      </ul>
+    } @else if (view === 'month') {
+      <ul class="months">
+        @for (item of viewMonths; track $index; let i = $index) {
+          <li
+            [class.de-active]="!item.active"
+            [class.today]="item.isToday"
+            [class.selected]="item.selected"
+            (click)="selectMonth($event, item)">
+            {{ i + 1 }}.{{ item.displayMonth }}
+          </li>
+        }
+      </ul>
+    } @else {
+      <ul class="years">
+        @for (item of viewYears; track $index) {
+          <li
+            [class.de-active]="!item.active"
+            [class.today]="item.isToday"
+            [class.selected]="item.selected"
+            (click)="selectYear($event, item)">
+            {{ item.year }}
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="calendar-footer">
+      @if (config.clearButton) {
+        <button type="button" (click)="clear()">{{ localize().clear }}</button>
+      }
+      @if (config.todayButton) {
+        <button type="button" (click)="gotoToday()">{{ localize().today }}</button>
+      }
+    </div>
+  </div>
+</div>
+
+<ng-template #defaultPreviousBTNTemplate>
+  <svg width="14" height="28" viewBox="0 0 320 512">
+    <path
+      fill="currentColor"
+      d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z" />
+  </svg>
+</ng-template>
+
+<ng-template #defaultNextBTNTemplate>
+  <svg width="14" height="28" viewBox="0 0 320 512">
+    <path
+      fill="currentColor"
+      d="M96 480c-8.188 0-16.38-3.125-22.62-9.375L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z" />
+  </svg>
+</ng-template>

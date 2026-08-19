@@ -16,12 +16,12 @@ export class GradientPickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
-      path: '/examples/gradient-picker/gradient-picker.component.ts',
+      path: 'examples/gradient-picker/gradient-picker.component.ts',
       language: 'typescript',
     },
     {
       label: 'HTML',
-      path: '/examples/gradient-picker/gradient-picker.component.html',
+      path: 'examples/gradient-picker/gradient-picker.component.html',
       language: 'html',
     },
   ];

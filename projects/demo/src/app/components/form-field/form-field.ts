@@ -11,8 +11,8 @@ import { MatAnchor } from '@angular/material/button';
 })
 export class FormFieldComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/form-field/form-field.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/form-field/form-field.html', language: 'html' },
+    { label: 'TS', path: 'examples/form-field/form-field.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/form-field/form-field.html', language: 'html' },
   ];
 
   // ─────────────────────────────────────────────────────────

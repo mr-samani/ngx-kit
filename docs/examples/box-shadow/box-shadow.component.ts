@@ -14,8 +14,8 @@ import {
 })
 export class BoxShadowComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/box-shadow/box-shadow.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/box-shadow/box-shadow.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/box-shadow/box-shadow.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/box-shadow/box-shadow.component.html', language: 'html' },
   ];
 
   boxShadow = '50px 150px 10px 0px red';

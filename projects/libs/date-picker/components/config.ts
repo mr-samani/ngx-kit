@@ -7,6 +7,4 @@ export class NgxDatePickerConfig {
 
   todayButton = true;
   clearButton = true;
-  clearButtonText = 'Clear';
-  todayButtonText = 'Today';
 }

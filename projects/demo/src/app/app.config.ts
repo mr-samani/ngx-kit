@@ -73,7 +73,6 @@ export const appConfig: ApplicationConfig = {
     //   useFactory: async () => {
     //     const l = inject(FakeLocalizer);
     //     const k = await l.get('dddddddddddd');
-    //     debugger;
     //     return {
     //       confirmButtonText: k,
     //     };

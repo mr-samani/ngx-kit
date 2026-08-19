@@ -13,6 +13,7 @@ import { IDateAdapter } from '../IAdapter';
 export class ChineseAdapter implements IDateAdapter {
   /** یکشنبه = 0 */
   startOfWeek = 0;
+  weekStartDay = 0;
 
   get longMonths(): string[] {
     return [
@@ -112,6 +113,21 @@ export class ChineseAdapter implements IDateAdapter {
     }
 
     return new Intl.DateTimeFormat('zh-CN-u-ca-chinese', options).format(jsDate);
+  }
+
+  getStartOfWeek(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const delta = (d.getDay() - this.weekStartDay + 7) % 7;
+    d.setDate(d.getDate() - delta);
+    return d;
+  }
+
+  getEndOfWeek(date: Date): Date {
+    const d = this.getStartOfWeek(date);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
   }
 
   getStartOf(date: Date | null, t: DatePickerView): Date | null {

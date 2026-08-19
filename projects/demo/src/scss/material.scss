@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
 
 html {
-  --app-font: axiforma;
+  --app-font: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
   color-scheme: light dark;
   @include mat.theme(
     (
@@ -72,7 +72,7 @@ body {
   // Reset the user agent margin.
   margin: 0;
   height: 100%;
-  font: var(--app-font);
+  font-family: var(--app-font);
 }
 
 .primary-toolbar {

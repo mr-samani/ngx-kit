@@ -5,7 +5,7 @@ import { ReadmeViewerComponent } from './readme-viewer.component';
 export interface ExampleSourceFile {
   /** برچسبی که روی تب نشون داده می‌شه، مثلاً «TS» یا «HTML» */
   label: string;
-  /** آدرس فایل، مثلاً /examples/dialog/dialog.ts */
+  /** آدرس فایل، مثلاً examples/dialog/dialog.ts */
   path: string;
   language: 'typescript' | 'html' | 'scss';
 }
@@ -32,7 +32,7 @@ export interface ExampleSourceFile {
 export class ExampleShowcaseComponent {
   title = input<string>('');
   files = input.required<ExampleSourceFile[]>();
-  /** آدرس README.md لایبرری (مثلاً /readmes/dialog/README.md)؛ اگه ندی، تب مستندات نشون داده نمی‌شه */
+  /** آدرس README.md لایبرری (مثلاً readmes/dialog/README.md)؛ اگه ندی، تب مستندات نشون داده نمی‌شه */
   readmePath = input<string | undefined>(undefined);
 
   /** 0 = پیش‌نمایش، ۱ به بعد = ایندکس فایل + ۱، آخری (اگه readmePath باشه) = مستندات */

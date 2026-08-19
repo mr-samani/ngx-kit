@@ -18,8 +18,8 @@ import {
 })
 export class DrawerMenuComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/drawer-menu/drawer-menu.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/drawer-menu/drawer-menu.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/drawer-menu/drawer-menu.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/drawer-menu/drawer-menu.component.html', language: 'html' },
   ];
 
   protected readonly effects: NgxDrawerEffect[] = [

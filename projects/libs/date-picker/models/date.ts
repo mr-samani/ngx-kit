@@ -1,4 +1,4 @@
-import { MsEvents } from './events';
+import { MsEventViewer } from './events';
 
 export class DateModel<InputDate = Date> {
   date?: InputDate;
@@ -6,9 +6,11 @@ export class DateModel<InputDate = Date> {
   isToday?: boolean;
   selected?: boolean;
 }
+
 export class DateViewYear extends DateModel {
   year!: number;
 }
+
 export class DateViewMonth extends DateModel {
   month!: number;
   displayMonth!: string;
@@ -16,11 +18,46 @@ export class DateViewMonth extends DateModel {
 
 export class DateViewDay extends DateModel {
   day!: number;
-  events?: MsEvents[];
+  events?: MsEventViewer[];
+  inRange?: boolean;
+  rangeStart?: boolean;
+  rangeEnd?: boolean;
+  inRangePreview?: boolean;
 }
 
 export class DateViewWeek extends DateModel {
   time!: number;
   weeks: string[] = [];
   displayTime!: string;
+}
+
+export interface CalendarMonthEventSegment extends MsEventViewer {
+  start: Date;
+  end: Date;
+  row: number;
+  startColumn: number;
+  endColumn: number;
+  lane: number;
+  continuesBefore: boolean;
+  continuesAfter: boolean;
+  isStart: boolean;
+  isEnd: boolean;
+}
+
+export interface CalendarDayColumn {
+  date: Date;
+  label: string;
+  dayNumber: string;
+  isToday: boolean;
+  events: CalendarTimedEvent[];
+}
+
+export interface CalendarTimedEvent extends MsEventViewer {
+  start: Date;
+  end: Date;
+  top: number;
+  height: number;
+  allDay: boolean;
+  column: number;
+  columnCount: number;
 }

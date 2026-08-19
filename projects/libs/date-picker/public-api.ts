@@ -9,3 +9,11 @@ export * from './adapters/IAdapter';
 export * from './adapters/consts';
 
 export * from './provide-date-adapters';
+
+export * from './models/range';
+export * from './models/events';
+export * from './models/date';
+export * from './helpers/date-range.helper';
+export * from './components/date-range-picker/ngx-date-range-picker.component';
+export * from './directives/ngx-date-range-picker.directive';
+export * from './models/calendar-event-interaction';

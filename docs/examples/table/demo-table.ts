@@ -79,8 +79,8 @@ const fields = defineFields<UserDto, typeof renderers>(renderers, [
 })
 export class DemoTable {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/table/demo-table.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/table/demo-table.html', language: 'html' },
+    { label: 'TS', path: 'examples/table/demo-table.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/table/demo-table.html', language: 'html' },
   ];
 
   private readonly service = inject(DataService);

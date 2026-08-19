@@ -13,8 +13,8 @@ import {
 })
 export class DropzoneComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/dropzone/dropzone.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/dropzone/dropzone.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/dropzone/dropzone.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/dropzone/dropzone.component.html', language: 'html' },
   ];
 
   protected readonly acceptedCount = signal(0);

@@ -30,8 +30,8 @@ import {
 })
 export class MessageComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/message/message.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/message/message.html', language: 'html' },
+    { label: 'TS', path: 'examples/message/message.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/message/message.html', language: 'html' },
   ];
 
   options = new MessageOptions();

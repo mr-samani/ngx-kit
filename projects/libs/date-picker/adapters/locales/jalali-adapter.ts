@@ -7,6 +7,7 @@ import { CalendarDate } from '../calendar-date';
 export class JalaliAdapter implements IDateAdapter {
   // shanbeh
   startOfWeek = 1;
+  weekStartDay = 6;
 
   dariMonth = false;
 
@@ -50,7 +51,7 @@ export class JalaliAdapter implements IDateAdapter {
       minutes: date.getMinutes(),
       seconds: date.getSeconds(),
       milliseconds: date.getMilliseconds(),
-      dayOfWeek: date.getDay() + this.startOfWeek,
+      dayOfWeek: (date.getDay() + this.startOfWeek) % 7,
     };
   }
   today() {
@@ -169,6 +170,21 @@ export class JalaliAdapter implements IDateAdapter {
     return genFormatDate(date, format, this.longMonths, this.longDays);
   }
   // _______________________________________________________________________________________
+
+  getStartOfWeek(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const delta = (d.getDay() - this.weekStartDay + 7) % 7;
+    d.setDate(d.getDate() - delta);
+    return d;
+  }
+
+  getEndOfWeek(date: Date): Date {
+    const d = this.getStartOfWeek(date);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
 
   getStartOf(date: Date | null, t: DatePickerView) {
     if (!date) {

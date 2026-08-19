@@ -4,7 +4,7 @@
   <div class="ngx-ie-state ngx-ie-state--error">{{ loadError() }}</div>
 } @else if (stageImageUrl()) {
   <div class="ngx-ie-layout">
-    <div class="ngx-ie-stage-wrap">
+    <div class="ngx-ie-stage-wrap" #stageWrap>
       <div
         class="ngx-ie-stage"
         [style.width.px]="stageSize().width"
@@ -44,97 +44,109 @@
       </div>
     </div>
 
-    <div class="ngx-ie-panel">
-      <div class="ngx-ie-preview">
-        @if (previewUrl(); as url) {
-          <img [src]="url" alt="Preview" />
-        }
-      </div>
+    <div class="ngx-ie-panel-row">
+      <div class="ngx-ie-panel">
+        <div class="ngx-ie-preview">
+          @if (previewUrl(); as url) {
+            <img [src]="url" alt="Preview" />
+          }
+        </div>
 
-      <div class="ngx-ie-row ngx-ie-rotate-row">
-        <button type="button" (click)="rotateBy(-90)" title="Rotate 90° left">⟲ 90</button>
-        <button type="button" (click)="rotateBy(90)" title="Rotate 90° right">⟳ 90</button>
-      </div>
+        <div class="ngx-ie-row ngx-ie-rotate-row">
+          <button type="button" (click)="rotateBy(-90)" title="Rotate 90° left">⟲ 90</button>
+          <button type="button" (click)="rotateBy(90)" title="Rotate 90° right">⟳ 90</button>
+        </div>
 
-      <label class="ngx-ie-field">
-        <span>{{ localize().Rotation }} ({{ rotation() }}°)</span>
-        <slider
-          [ngModel]="rotation()"
-          (ngModelChange)="rotation.set($event)"
-          [min]="-180"
-          [max]="180"></slider>
-      </label>
+        <div class="ngx-ie-field">
+          <slider
+            [ngModel]="rotation()"
+            (ngModelChange)="rotation.set($event)"
+            [min]="-180"
+            [max]="180">
+            <span>{{ localize().Rotation }} ({{ rotation() }}°)</span>
+          </slider>
 
-      <label class="ngx-ie-field">
-        <span>{{ localize().Brightness }} ({{ brightness() }}%)</span>
-        <slider
-          [ngModel]="brightness()"
-          (ngModelChange)="brightness.set($event)"
-          [min]="0"
-          [max]="200"></slider>
-      </label>
-
-      <label class="ngx-ie-field">
-        <span>{{ localize().Contrast }} ({{ contrast() }}%)</span>
-        <slider
-          [ngModel]="contrast()"
-          (ngModelChange)="contrast.set($event)"
-          [min]="0"
-          [max]="200"></slider>
-      </label>
-
-      <label class="ngx-ie-field">
-        <span>{{ localize().Saturation }} ({{ saturation() }}%)</span>
-        <slider
-          [ngModel]="saturation()"
-          (ngModelChange)="saturation.set($event)"
-          [min]="0"
-          [max]="200"></slider>
-      </label>
-
-      <div class="ngx-ie-field">
-        <span>{{ localize().Filter }}</span>
-        <div class="ngx-ie-filter-row">
           <button
             type="button"
-            [class.active]="filterPreset() === 'none'"
-            (click)="setFilter('none')">
-            {{ localize().None }}
-          </button>
-          <button
-            type="button"
-            [class.active]="filterPreset() === 'grayscale'"
-            (click)="setFilter('grayscale')">
-            {{ localize().Grayscale }}
-          </button>
-          <button
-            type="button"
-            [class.active]="filterPreset() === 'sepia'"
-            (click)="setFilter('sepia')">
-            {{ localize().Sepia }}
-          </button>
-          <button
-            type="button"
-            [class.active]="filterPreset() === 'invert'"
-            (click)="setFilter('invert')">
-            {{ localize().Invert }}
-          </button>
-          <button
-            type="button"
-            [class.active]="filterPreset() === 'cartoon'"
-            (click)="setFilter('cartoon')">
-            {{ localize().Cartoon }}
+            (click)="rotation.set(0)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
           </button>
         </div>
-      </div>
 
-      <div class="ngx-ie-row ngx-ie-actions">
-        <button type="button" class="ngx-ie-btn-secondary" (click)="cancel()">
-          {{ localize().Cancel }}
-        </button>
-        <button type="button" class="ngx-ie-btn-primary" [disabled]="saving()" (click)="save()">
-          {{ saving() ? localize().Saving : localize().Save }}
-        </button>
+        <div class="ngx-ie-field">
+          <slider
+            [ngModel]="brightness()"
+            (ngModelChange)="brightness.set($event)"
+            [min]="0"
+            [max]="200">
+            <span>{{ localize().Brightness }} ({{ brightness() }}%)</span>
+          </slider>
+          <button
+            type="button"
+            (click)="brightness.set(100)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
+        </div>
+
+        <div class="ngx-ie-field">
+          <slider
+            [ngModel]="contrast()"
+            (ngModelChange)="contrast.set($event)"
+            [min]="0"
+            [max]="200">
+            <span>{{ localize().Contrast }} ({{ contrast() }}%)</span>
+          </slider>
+          <button
+            type="button"
+            (click)="contrast.set(100)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
+        </div>
+
+        <div class="ngx-ie-field">
+          <slider
+            [ngModel]="saturation()"
+            (ngModelChange)="saturation.set($event)"
+            [min]="0"
+            [max]="200">
+            <span>{{ localize().Saturation }} ({{ saturation() }}%)</span>
+          </slider>
+          <button
+            type="button"
+            (click)="saturation.set(100)"
+            class="ngx-ie-btn-secondary"
+            [title]="localize().Reset">
+            x
+          </button>
+        </div>
+
+        @if (filters().length) {
+          <div>
+            <span>{{ localize().Filter }}</span>
+            <div class="ngx-ie-filter-row">
+              @for (f of filters(); track f) {
+                <button type="button" [class.active]="filterPreset() === f" (click)="setFilter(f)">
+                  {{ filterLabels()[f] }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="ngx-ie-row ngx-ie-actions">
+          <button type="button" class="ngx-ie-btn-secondary" (click)="cancel()">
+            {{ localize().Cancel }}
+          </button>
+          <button type="button" class="ngx-ie-btn-primary" [disabled]="saving()" (click)="save()">
+            {{ saving() ? localize().Saving : localize().Save }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

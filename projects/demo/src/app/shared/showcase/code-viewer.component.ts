@@ -52,7 +52,7 @@ import { DarkModeService } from '../services/dark-mode.service';
   ],
 })
 export class CodeViewerComponent {
-  /** آدرس فایل سورس (نسبی، مثلاً /examples/dialog/dialog.ts) */
+  /** آدرس فایل سورس (نسبی، مثلاً examples/dialog/dialog.ts) */
   path = input.required<string>();
   language = input<'typescript' | 'html' | 'scss'>('typescript');
 

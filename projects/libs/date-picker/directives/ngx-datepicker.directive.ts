@@ -52,7 +52,6 @@ import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   protected readonly dateAdapterRegistry = inject(DateAdapterRegistry);
 
-  @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
   openOnCLick = input<boolean>(true);
 
   @Output() change = new EventEmitter<Date>();
@@ -180,7 +179,6 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
         instance.locale = this._locale;
         instance.minDate = this.min;
         instance.maxDate = this.max;
-        instance.setTheme = this.theme;
         instance.updateConfig(this.config);
         instance.writeValue(this.value);
 

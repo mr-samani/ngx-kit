@@ -15,8 +15,8 @@ import {
 })
 export class MenuComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/menu/menu.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/menu/menu.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/menu/menu.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/menu/menu.component.html', language: 'html' },
   ];
 
   x = signal(false);

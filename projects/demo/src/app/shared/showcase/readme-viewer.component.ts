@@ -15,7 +15,7 @@ import { DarkModeService } from '../services/dark-mode.service';
 import { MarkdownThemeLoader } from './markdown-theme-loader';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 /**
- * README.md واقعیِ خودِ لایبرری رو (که با یه asset glob تحت /readmes/...
+ * README.md واقعیِ خودِ لایبرری رو (که با یه asset glob تحت readmes/...
  * سرو می‌شه — دقیقاً همون فایلیه که توی پوشه‌ی لایبرریه، کپی‌ی جدایی نیست)
  * fetch می‌کنه و با marked به HTML تبدیل می‌کنه. از httpResource (سیگنال‌
  * محور، همون الگویی که برای CodeViewerComponent استفاده شده) برای فچ استفاده
