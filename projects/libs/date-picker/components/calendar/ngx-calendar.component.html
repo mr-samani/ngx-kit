@@ -1,4 +1,4 @@
-<div class="wrapper">
+<div class="wrapper" [class.is-interacting]="!!interaction">
   <div class="header">
     <div class="nxt-prv-buttons">
       <button type="button" class="previous dtp-btn" (click)="previous()" title="Previous">
@@ -7,13 +7,11 @@
             _config.previousButtonTemplate || defaultPreviousBTNTemplate
           "></ng-template>
       </button>
-
       @if (_config.todayButton) {
         <button type="button" class="today dtp-btn" (click)="gotoToday()">
           {{ localize().today }}
         </button>
       }
-
       <button type="button" class="next dtp-btn" (click)="next()" title="Next">
         <ng-template
           [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
@@ -63,39 +61,75 @@
           }
         </ul>
 
-        <ul class="days" [style.minHeight.px]="minHeight">
-          @for (item of viewDays; track item.date?.getTime() ?? $index) {
-            <li
-              [class.de-active]="!item.active"
-              [class.today]="item.isToday"
-              [class.selected]="item.selected"
-              (click)="selectDay($event, item)">
-              <div class="day-number">{{ item.day }}</div>
-
-              @if (item.events?.length) {
-                <div class="ms-day-events">
-                  @for (event of item.events; track event.id ?? event.title ?? $index) {
-                    <button
-                      type="button"
-                      class="ms-day-event"
-                      [class.continues-before]="event.continuesBefore"
-                      [class.continues-after]="event.continuesAfter"
-                      [class.event-start]="event.isStart"
-                      [class.event-end]="event.isEnd"
-                      [ngClass]="event.className"
-                      [style.background]="event.backgroundColor || event.color || null"
-                      [style.borderColor]="event.borderColor || event.color || null"
-                      [style.color]="event.textColor || null"
-                      [title]="event.title || ''"
-                      (click)="onclickEvent($event, item, event)">
-                      {{ event.title || 'Untitled event' }}
-                    </button>
-                  }
-                </div>
+        <div class="month-grid" [style.minHeight.px]="minHeight">
+          @for (row of monthEventRows; track $index; let rowIndex = $index) {
+            <div class="month-row">
+              @for (
+                item of viewDays.slice(rowIndex * 7, rowIndex * 7 + 7);
+                track item.date?.getTime() ?? $index
+              ) {
+                <button
+                  type="button"
+                  class="month-day"
+                  [class.de-active]="!item.active"
+                  [class.today]="item.isToday"
+                  [class.selected]="item.selected"
+                  (click)="selectDay($event, item)">
+                  <span class="day-number">{{ item.day }}</span>
+                </button>
               }
-            </li>
+
+              <div class="month-event-layer" aria-live="polite">
+                @for (event of row; track event.id ?? event.start.getTime() ?? $index) {
+                  <button
+                    type="button"
+                    class="month-event"
+                    [class.continues-before]="event.continuesBefore"
+                    [class.continues-after]="event.continuesAfter"
+                    [class.event-start]="event.isStart"
+                    [class.event-end]="event.isEnd"
+                    [class.is-dragging]="
+                      interaction?.source === event ||
+                      (interaction?.source?.id != null && interaction?.source?.id === event.id)
+                    "
+                    [style.gridColumn]="event.startColumn + 1 + ' / ' + (event.endColumn + 2)"
+                    [style.gridRow]="event.lane + 1"
+                    [style.background]="event.backgroundColor || event.color || null"
+                    [style.borderColor]="event.borderColor || event.color || null"
+                    [style.color]="event.textColor || null"
+                    [title]="event.title || ''"
+                    (pointerdown)="startMonthEventInteraction($event, event)"
+                    (click)="
+                      onclickEvent($event, { date: event.start, day: 0, active: true }, event)
+                    ">
+                    @if (event.isStart) {
+                      <span class="event-title">{{ event.title || 'Untitled event' }}</span>
+                    } @else {
+                      <span class="event-title continuation-title">{{ event.title || '' }}</span>
+                    }
+
+                    @if (event.isStart) {
+                      <span
+                        class="resize-handle resize-start"
+                        title="Resize start"
+                        (pointerdown)="
+                          startMonthEventInteraction($event, event, 'resize-start')
+                        "></span>
+                    }
+                    @if (event.isEnd) {
+                      <span
+                        class="resize-handle resize-end"
+                        title="Resize end"
+                        (pointerdown)="
+                          startMonthEventInteraction($event, event, 'resize-end')
+                        "></span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
           }
-        </ul>
+        </div>
       }
 
       @case ('week') {
@@ -147,7 +181,7 @@
       class="timed-header"
       [style.gridTemplateColumns]="'64px repeat(' + weekDays.length + ', minmax(0, 1fr))'">
       <div class="corner"></div>
-      @for (day of weekDays; track day.date.getTime(); let i = $index) {
+      @for (day of weekDays; track day.date.getTime()) {
         <button
           type="button"
           class="day-header"
@@ -165,19 +199,32 @@
       <div class="all-day-label">All day</div>
       @for (day of weekDays; track day.date.getTime(); let i = $index) {
         <div class="all-day-cell">
-          @for (event of allDayByColumn[i]; track event.id ?? event.title ?? $index) {
+          @for (
+            event of allDayByColumn[i];
+            track event.id ?? event.title ?? event.start.getTime()
+          ) {
             <button
               type="button"
               class="timed-event all-day-event"
               [class.continues-before]="event.continuesBefore"
               [class.continues-after]="event.continuesAfter"
-              [ngClass]="event.className"
               [style.background]="event.backgroundColor || event.color || null"
               [style.borderColor]="event.borderColor || event.color || null"
               [style.color]="event.textColor || null"
               [title]="event.title || ''"
+              (pointerdown)="startTimedEventInteraction($event, event)"
               (click)="onTimedEventClick($event, event, day.date)">
-              {{ event.title || 'Untitled event' }}
+              <span>{{ event.title || 'Untitled event' }}</span>
+              @if (event.isStart) {
+                <span
+                  class="resize-handle resize-start"
+                  (pointerdown)="startTimedEventInteraction($event, event, 'resize-start')"></span>
+              }
+              @if (event.isEnd) {
+                <span
+                  class="resize-handle resize-end"
+                  (pointerdown)="startTimedEventInteraction($event, event, 'resize-end')"></span>
+              }
             </button>
           }
         </div>
@@ -197,7 +244,7 @@
         }
       </div>
 
-      @for (day of weekDays; track day.date.getTime(); let i = $index) {
+      @for (day of weekDays; track day.date.getTime()) {
         <div class="day-column">
           @for (minutes of timeSlots; track minutes) {
             <div class="time-slot" [class.hour]="minutes % 60 === 0"></div>
@@ -209,7 +256,6 @@
               class="timed-event"
               [class.continues-before]="event.continuesBefore"
               [class.continues-after]="event.continuesAfter"
-              [ngClass]="event.className"
               [style.top.px]="event.top"
               [style.height.px]="event.height"
               [style.insetInlineStart.%]="event.column * (100 / event.columnCount)"
@@ -218,12 +264,23 @@
               [style.borderColor]="event.borderColor || event.color || null"
               [style.color]="event.textColor || null"
               [title]="event.title || ''"
+              (pointerdown)="startTimedEventInteraction($event, event)"
               (click)="onTimedEventClick($event, event, day.date)">
               <strong>{{ event.title || 'Untitled event' }}</strong>
               @if (event.height >= 42) {
                 <small>
                   {{ formatTime(event.start.getHours() * 60 + event.start.getMinutes()) }}
                 </small>
+              }
+              @if (event.isStart) {
+                <span
+                  class="resize-handle resize-start"
+                  (pointerdown)="startTimedEventInteraction($event, event, 'resize-start')"></span>
+              }
+              @if (event.isEnd) {
+                <span
+                  class="resize-handle resize-end"
+                  (pointerdown)="startTimedEventInteraction($event, event, 'resize-end')"></span>
               }
             </button>
           }

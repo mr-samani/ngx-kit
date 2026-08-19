@@ -15,15 +15,49 @@ import { CommonModule } from '@angular/common';
 import { NgxDatePickerConfig } from '../config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 import { MsEvents, MsEventViewer } from '../../models/events';
-import { CalendarDayColumn, CalendarTimedEvent, DateViewDay } from '../../models/date';
+import {
+  CalendarDayColumn,
+  CalendarMonthEventSegment,
+  CalendarTimedEvent,
+  DateViewDay,
+} from '../../models/date';
 import { CalendarView } from '../../models/view';
 import { ISelectedEvent } from '../../models/selected-event';
+import {
+  CalendarEventChange,
+  CalendarEventInteractionType,
+} from '../../models/calendar-event-interaction';
 import { deserialize, sameDate, compareDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { NGX_CALENDAR_LOCALIZATION, NgxCalendarLocalization } from '../../tokens/localization';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_HEIGHT = 64;
+const HALF_HOUR_HEIGHT = HOUR_HEIGHT / 2;
+const MIN_EVENT_MINUTES = 30;
+const MONTH_ROW_COUNT = 6;
+const MONTH_COLUMN_COUNT = 7;
+
+interface NormalizedCalendarEvent {
+  source: MsEvents;
+  start: Date;
+  end: Date;
+}
+
+interface EventInteractionState {
+  type: CalendarEventInteractionType;
+  source: MsEvents;
+  previousEvent: MsEvents;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  originColumn: number;
+  originRow: number;
+  preview: MsEvents;
+  deltaDays: number;
+  deltaMinutes: number;
+  active: boolean;
+  surface: 'month' | 'timed' | 'all-day';
+}
 
 @Component({
   selector: 'ngx-calendar',
@@ -78,14 +112,16 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   @Output() dateChange = new EventEmitter<DateViewDay>();
   @Output() selectEvent = new EventEmitter<ISelectedEvent>();
+  @Output() eventChange = new EventEmitter<CalendarEventChange>();
+  @Output() eventsChange = new EventEmitter<MsEvents[]>();
 
   selected?: Date;
   anchorDate!: Date;
 
-  // Month/event view
   eventViewItems: { event: MsEventViewer; start: Date; end: Date }[] = [];
+  monthEventSegments: CalendarMonthEventSegment[] = [];
+  monthEventRows: CalendarMonthEventSegment[][] = Array.from({ length: MONTH_ROW_COUNT }, () => []);
 
-  // Week/day timed view
   weekDays: CalendarDayColumn[] = [];
   allDayByColumn: CalendarTimedEvent[][] = [];
   timeSlots = Array.from({ length: 48 }, (_, i) => i * 30);
@@ -93,6 +129,8 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   readonly timeColumnWidth = 64;
 
   calendarWrapper = viewChild<ElementRef<HTMLElement>>('calendarWrapper');
+
+  protected interaction: EventInteractionState | null = null;
 
   constructor() {
     super();
@@ -113,6 +151,24 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     this.calcCellSize();
   }
 
+  @HostListener('document:pointermove', ['$event'])
+  onDocumentPointerMove(event: PointerEvent) {
+    if (!this.interaction || event.pointerId !== this.interaction.pointerId) return;
+    this.updateEventInteraction(event);
+  }
+
+  @HostListener('document:pointerup', ['$event'])
+  onDocumentPointerUp(event: PointerEvent) {
+    if (!this.interaction || event.pointerId !== this.interaction.pointerId) return;
+    this.finishEventInteraction(event, false);
+  }
+
+  @HostListener('document:pointercancel', ['$event'])
+  onDocumentPointerCancel(event: PointerEvent) {
+    if (!this.interaction || event.pointerId !== this.interaction.pointerId) return;
+    this.finishEventInteraction(event, true);
+  }
+
   calcCellSize() {
     const fullWidth = this.calendarWrapper()?.nativeElement?.clientWidth ?? 0;
     this.minHeight = fullWidth > this.defaultHeight ? this.defaultHeight : Math.max(fullWidth, 320);
@@ -126,7 +182,8 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
     switch (view) {
       case 'month':
-        super.renderCalendar('month', undefined, this._events);
+        super.renderCalendar('month', undefined, this.renderEvents);
+        this.buildMonthEventSegments();
         break;
       case 'week':
       case 'day':
@@ -141,6 +198,10 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     queueMicrotask(() => this.calcCellSize());
   }
 
+  private get renderEvents(): MsEvents[] {
+    return this._events;
+  }
+
   private syncAnchorToLocale() {
     const localeDate = this.adapter.toLocale(this.anchorDate);
     this.currYear = localeDate.year;
@@ -151,7 +212,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   private renderTimedView() {
     const dates = this.getWeekDates(this.anchorDate);
-    const visibleDates = this.view === 'day' ? [new Date(this.anchorDate)] : dates;
+    const visibleDates = this.view === 'day' ? [new Date(this.startOfDay(this.anchorDate))] : dates;
 
     this.weekDays = visibleDates.map((date, column) => ({
       date,
@@ -174,6 +235,11 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     }));
   }
 
+  /**
+   * Builds a collision layout per overlap cluster. Each cluster gets its own
+   * column count, which prevents a short 09:00 event from being unnecessarily
+   * squeezed because another event overlaps at 15:00.
+   */
   private buildTimedEventsForDay(
     date: Date,
     column: number,
@@ -182,107 +248,221 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     const dayStart = this.startOfDay(date);
     const dayEnd = this.endOfDay(date);
 
-    const candidates = this._events
-      .map((event) => {
-        const n = this.normalizeEvent(event);
-        return { ...n, source: event };
-      })
+    const candidates = this.normalizedEvents()
       .filter(
-        ({ start, end }) =>
+        ({ start, end, source }) =>
+          !source.allDay &&
           !Number.isNaN(start.getTime()) &&
-          compareDate(end, dayStart) >= 0 &&
-          compareDate(start, dayEnd) <= 0,
+          end.getTime() >= dayStart.getTime() &&
+          start.getTime() <= dayEnd.getTime(),
       )
-      .map(({ event, start, end }) => {
+      .map(({ source, start, end }) => {
         const segmentStart = new Date(Math.max(start.getTime(), dayStart.getTime()));
         const segmentEnd = new Date(Math.min(end.getTime(), dayEnd.getTime()));
-        const startsBefore = compareDate(start, dayStart) < 0;
-        const startsAfter = compareDate(start, dayStart) > 0;
-        const endsAfter = compareDate(end, dayEnd) > 0;
-        const allDay = !!event.allDay;
-
         return {
-          ...event,
+          ...source,
           start,
           end,
           segmentStart,
           segmentEnd,
-          allDay,
-          continuesBefore: startsBefore,
-          continuesAfter: endsAfter,
-          isStart: !startsBefore,
-          isEnd: !endsAfter,
+          allDay: false,
+          continuesBefore: start.getTime() < dayStart.getTime(),
+          continuesAfter: end.getTime() > dayEnd.getTime(),
+          isStart: start.getTime() >= dayStart.getTime() && start.getTime() <= dayEnd.getTime(),
+          isEnd: end.getTime() >= dayStart.getTime() && end.getTime() <= dayEnd.getTime(),
           column,
           columnCount,
-        };
-      });
+        } as CalendarTimedEvent & { segmentStart: Date; segmentEnd: Date };
+      })
+      .sort(
+        (a, b) =>
+          a.segmentStart.getTime() - b.segmentStart.getTime() ||
+          b.segmentEnd.getTime() - a.segmentEnd.getTime(),
+      );
 
-    // All-day events are rendered in the all-day lane, not over the hour grid.
-    const timed = candidates.filter((e) => !e.allDay);
+    type Positioned = CalendarTimedEvent & { segmentStart: Date; segmentEnd: Date; lane: number };
+    const result: Positioned[] = [];
+    let cluster: Positioned[] = [];
+    let clusterLanes: Positioned[][] = [];
+    let clusterEnd = -Infinity;
 
-    // A compact overlap layout: events that intersect share columns rather than
-    // painting over each other. This is the same core idea used by calendar UIs.
-    const lanes: CalendarTimedEvent[][] = [];
-    const result: CalendarTimedEvent[] = [];
+    const flushCluster = () => {
+      if (!cluster.length) return;
+      const laneCount = clusterLanes.length;
+      for (const item of cluster) {
+        item.columnCount = laneCount;
+      }
+      result.push(...cluster);
+      cluster = [];
+      clusterLanes = [];
+      clusterEnd = -Infinity;
+    };
 
-    for (const e of timed.sort((a, b) => a.segmentStart.getTime() - b.segmentStart.getTime())) {
-      let lane = lanes.findIndex((items) => {
+    for (const e of candidates) {
+      const start = e.segmentStart.getTime();
+      if (cluster.length && start > clusterEnd) flushCluster();
+
+      let lane = clusterLanes.findIndex((items) => {
         const last = items[items.length - 1];
-        return last.end.getTime() <= e.segmentStart.getTime();
+        return last.segmentEnd.getTime() <= start;
       });
       if (lane < 0) {
-        lane = lanes.length;
-        lanes.push([]);
+        lane = clusterLanes.length;
+        clusterLanes.push([]);
       }
-      lanes[lane].push(e as any);
+
+      const positioned = { ...e, lane, column: lane } as Positioned;
+      clusterLanes[lane].push(positioned);
+      cluster.push(positioned);
+      clusterEnd = Math.max(clusterEnd, e.segmentEnd.getTime());
 
       const startMinutes = e.segmentStart.getHours() * 60 + e.segmentStart.getMinutes();
       const endMinutes = e.segmentEnd.getHours() * 60 + e.segmentEnd.getMinutes();
-      const effectiveEnd = Math.max(endMinutes, startMinutes + 30);
-
-      result.push({
-        ...(e as any),
-        top: (startMinutes / 60) * HOUR_HEIGHT,
-        height: Math.max(((effectiveEnd - startMinutes) / 60) * HOUR_HEIGHT, 28),
-        column: lane,
-        columnCount: 1,
-      });
+      const effectiveEnd = Math.max(endMinutes, startMinutes + MIN_EVENT_MINUTES);
+      positioned.top = (startMinutes / 60) * HOUR_HEIGHT;
+      positioned.height = Math.max(((effectiveEnd - startMinutes) / 60) * HOUR_HEIGHT, 28);
     }
+    flushCluster();
 
-    const laneCount = Math.max(lanes.length, 1);
-    return result.map((e) => ({
-      ...e,
-      column: e.column,
-      columnCount: laneCount,
-    }));
+    return result
+      .concat(cluster)
+      .map(({ lane, segmentStart, segmentEnd, ...event }) => event as CalendarTimedEvent);
   }
 
   private buildAllDayEventsForDay(date: Date, column: number): CalendarTimedEvent[] {
     const dayStart = this.startOfDay(date);
     const dayEnd = this.endOfDay(date);
-    const result: CalendarTimedEvent[] = [];
 
-    for (const event of this._events) {
-      const n = this.normalizeEvent(event);
-      if (!event.allDay || Number.isNaN(n.start.getTime())) continue;
-      if (compareDate(n.end, dayStart) < 0 || compareDate(n.start, dayEnd) > 0) continue;
-
-      result.push({
-        ...event,
-        start: n.start,
-        end: n.end,
+    return this.normalizedEvents()
+      .filter(
+        ({ source, start, end }) =>
+          !!source.allDay &&
+          !Number.isNaN(start.getTime()) &&
+          end.getTime() >= dayStart.getTime() &&
+          start.getTime() <= dayEnd.getTime(),
+      )
+      .map(({ source, start, end }) => ({
+        ...source,
+        start,
+        end,
         top: 0,
         height: 24,
         allDay: true,
         column,
         columnCount: 1,
-        continuesBefore: compareDate(n.start, dayStart) < 0,
-        continuesAfter: compareDate(n.end, dayEnd) > 0,
-        isStart: compareDate(n.start, dayStart) === 0,
-        isEnd: compareDate(n.end, dayEnd) === 0,
-      });
+        continuesBefore: start.getTime() < dayStart.getTime(),
+        continuesAfter: end.getTime() > dayEnd.getTime(),
+        isStart: start.getTime() >= dayStart.getTime() && start.getTime() <= dayEnd.getTime(),
+        isEnd: end.getTime() >= dayStart.getTime() && end.getTime() <= dayEnd.getTime(),
+      }));
+  }
+
+  /** Creates FullCalendar-style horizontal segments for the six visible month rows. */
+  private buildMonthEventSegments() {
+    const visibleDays = this.viewDays;
+    if (!visibleDays.length) {
+      this.monthEventSegments = [];
+      this.monthEventRows = Array.from({ length: MONTH_ROW_COUNT }, () => []);
+      return;
     }
-    return result;
+
+    const gridStart = this.startOfDay(visibleDays[0].date!);
+    const gridEnd = this.endOfDay(visibleDays[visibleDays.length - 1].date!);
+    const segments: CalendarMonthEventSegment[] = [];
+
+    for (const { source, start, end } of this.normalizedEvents()) {
+      if (
+        Number.isNaN(start.getTime()) ||
+        end.getTime() < gridStart.getTime() ||
+        start.getTime() > gridEnd.getTime()
+      )
+        continue;
+
+      const clippedStart = new Date(Math.max(start.getTime(), gridStart.getTime()));
+      const clippedEnd = new Date(Math.min(end.getTime(), gridEnd.getTime()));
+      const firstIndex = this.dayIndexInMonthGrid(clippedStart, gridStart);
+      const lastIndex = this.dayIndexInMonthGrid(clippedEnd, gridStart);
+
+      for (
+        let index = Math.max(0, firstIndex);
+        index <= Math.min(visibleDays.length - 1, lastIndex);
+      ) {
+        const row = Math.floor(index / MONTH_COLUMN_COUNT);
+        const rowEndIndex = Math.min((row + 1) * MONTH_COLUMN_COUNT - 1, lastIndex);
+        const startColumn = index % MONTH_COLUMN_COUNT;
+        const endColumn = rowEndIndex % MONTH_COLUMN_COUNT;
+        const segmentStart = new Date(visibleDays[index].date!);
+        const segmentEnd = this.endOfDay(visibleDays[rowEndIndex].date!);
+
+        segments.push({
+          ...source,
+          start,
+          end,
+          row,
+          startColumn,
+          endColumn,
+          continuesBefore: start.getTime() < segmentStart.getTime(),
+          continuesAfter: end.getTime() > segmentEnd.getTime(),
+          isStart:
+            start.getTime() >= segmentStart.getTime() && start.getTime() <= segmentEnd.getTime(),
+          isEnd: end.getTime() >= segmentStart.getTime() && end.getTime() <= segmentEnd.getTime(),
+          lane: 0,
+        });
+
+        index = rowEndIndex + 1;
+      }
+    }
+
+    // Stable ordering makes the same events keep the same visual lane while navigating.
+    segments.sort(
+      (a, b) =>
+        a.row - b.row ||
+        a.startColumn - b.startColumn ||
+        a.start.getTime() - b.start.getTime() ||
+        String(a.title ?? '').localeCompare(String(b.title ?? '')),
+    );
+
+    // Assign lanes independently inside every week row.
+    const lanesByRow = new Map<number, CalendarMonthEventSegment[][]>();
+    for (const segment of segments) {
+      const lanes = lanesByRow.get(segment.row) ?? [];
+      let lane = lanes.findIndex((items) =>
+        items.every((item) => item.endColumn < segment.startColumn),
+      );
+      if (lane < 0) {
+        lane = lanes.length;
+        lanes.push([]);
+      }
+      (segment as CalendarMonthEventSegment & { lane: number }).lane = lane;
+      lanes[lane].push(segment);
+      lanesByRow.set(segment.row, lanes);
+    }
+
+    this.monthEventSegments = segments;
+    this.monthEventRows = Array.from({ length: MONTH_ROW_COUNT }, () => []);
+    for (const segment of segments) this.monthEventRows[segment.row].push(segment);
+  }
+
+  private dayIndexInMonthGrid(date: Date, gridStart: Date): number {
+    const a = this.startOfDay(date);
+    const b = this.startOfDay(gridStart);
+    const aUtc = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    const bUtc = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+    return Math.round((aUtc - bUtc) / 86_400_000);
+  }
+
+  private normalizedEvents(): NormalizedCalendarEvent[] {
+    return this.renderEventSources().map((source) => {
+      const normalized = this.normalizeEvent(source);
+      return { source, start: normalized.start, end: normalized.end };
+    });
+  }
+
+  private renderEventSources(): MsEvents[] {
+    if (!this.interaction?.active) return this._events;
+    return this._events.map((event) =>
+      this.sameEvent(event, this.interaction!.source) ? this.interaction!.preview : event,
+    );
   }
 
   private renderEventView() {
@@ -299,7 +479,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
       day: this.adapter.lastDateofMonth(this.currYear, this.currMonth),
     });
 
-    this.eventViewItems = this._events
+    this.eventViewItems = this.renderEventSources()
       .map((event) => {
         const n = this.normalizeEvent(event);
         return { event: event as MsEventViewer, start: n.start, end: n.end };
@@ -328,8 +508,6 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   formatDateRange(start: Date, end: Date): string {
     const s = this.adapter.toLocale(start);
     const e = this.adapter.toLocale(end);
-
-    // Keep a compact but unambiguous range. If the year is the same, show it once.
     const startText = this.adapter.formatDate(s, 'd MMMM') ?? '';
     const endText = this.adapter.formatDate(e, 'd MMMM') ?? '';
     return s.year === e.year
@@ -346,11 +524,13 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   changeView(v: CalendarView) {
+    this.cancelEventInteraction();
     this.view = v;
     this.renderCalendar(v);
   }
 
   gotoToday() {
+    this.cancelEventInteraction();
     this.anchorDate = this.adapter.getDate(this.adapter.today());
     this.selected = new Date(this.anchorDate);
     this.syncAnchorToLocale();
@@ -363,20 +543,19 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
       this.selected = item.date;
       this.anchorDate = new Date(item.date!);
       this.dateChange.emit(item);
+      this.renderCalendar(this.view);
     }
   }
 
   next() {
     this.navigate(1);
   }
-
   previous() {
     this.navigate(-1);
   }
 
   private navigate(direction: 1 | -1) {
     const d = new Date(this.anchorDate);
-
     if (this.view === 'month' || this.view === 'event') {
       const locale = this.adapter.toLocale(d);
       this.anchorDate = this.adapter.getDate({
@@ -385,14 +564,10 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
         month: locale.month! + direction,
         day: 1,
       });
-    } else if (this.view === 'week') {
-      d.setDate(d.getDate() + direction * 7);
-      this.anchorDate = d;
     } else {
-      d.setDate(d.getDate() + direction);
+      d.setDate(d.getDate() + direction * (this.view === 'week' ? 7 : 1));
       this.anchorDate = d;
     }
-
     this.syncAnchorToLocale();
     this.renderCalendar(this.view);
   }
@@ -404,7 +579,241 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   onTimedEventClick(ev: Event, event: MsEvents, date: Date) {
     ev.stopPropagation();
+    if (this.interaction?.active) return;
     this.selectEvent.emit({ date, event });
+  }
+
+  startMonthEventInteraction(
+    ev: PointerEvent,
+    segment: CalendarMonthEventSegment,
+    type: CalendarEventInteractionType = 'move',
+  ) {
+    if (ev.button !== 0) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.beginInteraction(ev, segment, type, 'month');
+  }
+
+  startTimedEventInteraction(
+    ev: PointerEvent,
+    event: CalendarTimedEvent,
+    type: CalendarEventInteractionType = 'move',
+  ) {
+    if (ev.button !== 0) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.beginInteraction(ev, event, type, event.allDay ? 'all-day' : 'timed');
+  }
+
+  private beginInteraction(
+    ev: PointerEvent,
+    event: MsEvents,
+    type: CalendarEventInteractionType,
+    _surface: 'month' | 'timed' | 'all-day',
+  ) {
+    const source = this._events.find((candidate) => this.sameEvent(candidate, event));
+    if (!source) return;
+    this.interaction = {
+      type,
+      source,
+      previousEvent: { ...source },
+      pointerId: ev.pointerId,
+      startX: ev.clientX,
+      startY: ev.clientY,
+      originColumn: 0,
+      originRow: 0,
+      preview: { ...source },
+      deltaDays: 0,
+      deltaMinutes: 0,
+      active: true,
+      surface: _surface,
+    };
+  }
+
+  private updateEventInteraction(ev: PointerEvent) {
+    const state = this.interaction;
+    if (!state) return;
+
+    const monthMetrics = state.surface === 'month' ? this.monthPointerDelta(ev) : null;
+    const timedMetrics = state.surface === 'timed' ? this.timedPointerDelta(ev) : null;
+    const allDayMetrics = state.surface === 'all-day' ? this.allDayPointerDelta(ev) : null;
+    let deltaDays = monthMetrics?.days ?? timedMetrics?.days ?? allDayMetrics?.days ?? 0;
+    let deltaMinutes = timedMetrics?.minutes ?? 0;
+
+    const preview = this.applyEventDelta(state.source, state.type, deltaDays, deltaMinutes);
+    if (!this.isWithinBounds(preview)) return;
+
+    state.preview = preview;
+    state.deltaDays = deltaDays;
+    state.deltaMinutes = deltaMinutes;
+    this.renderCalendar(this.view);
+  }
+
+  private finishEventInteraction(ev: PointerEvent, cancelled: boolean) {
+    const state = this.interaction;
+    if (!state) return;
+    if (!cancelled) this.updateEventInteraction(ev);
+
+    const changed = !this.sameEventValue(state.source, state.preview);
+    this.interaction = null;
+
+    if (!cancelled && changed) {
+      const updated = this._events.map((event) =>
+        this.sameEvent(event, state.source) ? state.preview : event,
+      );
+      this._events = updated;
+      this.eventChange.emit({
+        event: state.preview,
+        previousEvent: state.previousEvent,
+        interaction: state.type,
+        deltaDays: state.deltaDays,
+        deltaMinutes: state.deltaMinutes,
+      });
+      this.eventsChange.emit(updated);
+    }
+
+    this.renderCalendar(this.view);
+  }
+
+  private cancelEventInteraction() {
+    if (!this.interaction) return;
+    this.interaction = null;
+  }
+
+  private monthPointerDelta(ev: PointerEvent): { days: number } | null {
+    if (!this.interaction || this.view !== 'month') return null;
+    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.days');
+    if (!root) return null;
+    const rect = root.getBoundingClientRect();
+    const cellWidth = rect.width / MONTH_COLUMN_COUNT;
+    const cellHeight = rect.height / MONTH_ROW_COUNT;
+    const startColumn = Math.max(
+      0,
+      Math.min(
+        MONTH_COLUMN_COUNT - 1,
+        Math.floor((this.interaction.startX - rect.left) / cellWidth),
+      ),
+    );
+    const currentColumn = Math.max(
+      0,
+      Math.min(MONTH_COLUMN_COUNT - 1, Math.floor((ev.clientX - rect.left) / cellWidth)),
+    );
+    const startRow = Math.max(
+      0,
+      Math.min(MONTH_ROW_COUNT - 1, Math.floor((this.interaction.startY - rect.top) / cellHeight)),
+    );
+    const currentRow = Math.max(
+      0,
+      Math.min(MONTH_ROW_COUNT - 1, Math.floor((ev.clientY - rect.top) / cellHeight)),
+    );
+    return { days: (currentRow - startRow) * 7 + (currentColumn - startColumn) };
+  }
+
+  private allDayPointerDelta(ev: PointerEvent): { days: number } | null {
+    if (!this.interaction || this.view === 'month' || this.view === 'event') return null;
+    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.all-day-row');
+    if (!root) return null;
+    const columns = Array.from(root.querySelectorAll('.all-day-cell')) as HTMLElement[];
+    if (!columns.length) return null;
+    const indexAt = (x: number) => {
+      const index = columns.findIndex((column) => {
+        const rect = column.getBoundingClientRect();
+        return x >= rect.left && x <= rect.right;
+      });
+      return index < 0 ? 0 : index;
+    };
+    return { days: indexAt(ev.clientX) - indexAt(this.interaction.startX) };
+  }
+
+  private timedPointerDelta(ev: PointerEvent): { days: number; minutes: number } | null {
+    if (!this.interaction || (this.view !== 'day' && this.view !== 'week')) return null;
+    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.time-grid');
+    if (!root) return null;
+    const columns = Array.from(root.querySelectorAll('.day-column')) as HTMLElement[];
+    if (!columns.length) return null;
+
+    const startColumn = this.columnAtPoint(
+      columns,
+      this.interaction.startX,
+      this.interaction.startY,
+    );
+    const currentColumn = this.columnAtPoint(columns, ev.clientX, ev.clientY);
+    const startIndex = startColumn ?? 0;
+    const currentIndex = currentColumn ?? startIndex;
+    const rect = (columns[currentIndex] ?? columns[0]).getBoundingClientRect();
+    const startRect = (columns[startIndex] ?? columns[0]).getBoundingClientRect();
+    const startMinute = this.snapMinutes(
+      ((this.interaction.startY - startRect.top) / HALF_HOUR_HEIGHT) * 30,
+    );
+    const currentMinute = this.snapMinutes(((ev.clientY - rect.top) / HALF_HOUR_HEIGHT) * 30);
+    return { days: currentIndex - startIndex, minutes: currentMinute - startMinute };
+  }
+
+  private columnAtPoint(columns: HTMLElement[], x: number, y: number): number | null {
+    const index = columns.findIndex((column) => {
+      const rect = column.getBoundingClientRect();
+      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+    });
+    return index < 0 ? null : index;
+  }
+
+  private snapMinutes(minutes: number): number {
+    return Math.max(0, Math.min(24 * 60, Math.round(minutes / 30) * 30));
+  }
+
+  private applyEventDelta(
+    source: MsEvents,
+    type: CalendarEventInteractionType,
+    deltaDays: number,
+    deltaMinutes: number,
+  ): MsEvents {
+    const normalized = this.normalizeEvent(source);
+    let start = new Date(normalized.start);
+    let end = new Date(normalized.end);
+
+    if (type === 'move') {
+      start = this.addMinutes(this.addDays(start, deltaDays), deltaMinutes);
+      end = this.addMinutes(this.addDays(end, deltaDays), deltaMinutes);
+    } else if (type === 'resize-start') {
+      start = this.addMinutes(this.addDays(start, deltaDays), deltaMinutes);
+      if (start.getTime() > end.getTime() - MIN_EVENT_MINUTES * 60_000) {
+        start = new Date(end.getTime() - MIN_EVENT_MINUTES * 60_000);
+      }
+    } else {
+      end = this.addMinutes(this.addDays(end, deltaDays), deltaMinutes);
+      if (end.getTime() < start.getTime() + MIN_EVENT_MINUTES * 60_000) {
+        end = new Date(start.getTime() + MIN_EVENT_MINUTES * 60_000);
+      }
+    }
+
+    return { ...source, start, end };
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  private addMinutes(date: Date, minutes: number): Date {
+    return new Date(date.getTime() + minutes * 60_000);
+  }
+
+  private isWithinBounds(event: MsEvents): boolean {
+    const n = this.normalizeEvent(event);
+    if (this.minDate && compareDate(n.start, this.minDate) < 0) return false;
+    if (this.maxDate && compareDate(n.end, this.maxDate) > 0) return false;
+    return true;
+  }
+
+  private sameEvent(a: MsEvents, b: MsEvents): boolean {
+    return a.id != null && b.id != null ? a.id === b.id : a === b;
+  }
+
+  private sameEventValue(a: MsEvents, b: MsEvents): boolean {
+    const aa = this.normalizeEvent(a);
+    const bb = this.normalizeEvent(b);
+    return aa.start.getTime() === bb.start.getTime() && aa.end.getTime() === bb.end.getTime();
   }
 
   private startOfDay(date: Date): Date {

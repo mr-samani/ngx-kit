@@ -31,6 +31,19 @@ export class DateViewWeek extends DateModel {
   displayTime!: string;
 }
 
+export interface CalendarMonthEventSegment extends MsEventViewer {
+  start: Date;
+  end: Date;
+  row: number;
+  startColumn: number;
+  endColumn: number;
+  lane: number;
+  continuesBefore: boolean;
+  continuesAfter: boolean;
+  isStart: boolean;
+  isEnd: boolean;
+}
+
 export interface CalendarDayColumn {
   date: Date;
   label: string;

@@ -133,8 +133,18 @@ describe('NgxCalendarComponent calendar navigation and views', () => {
 
   it('keeps overlapping events visible instead of painting them over one another', () => {
     fixture.componentRef.setInput('events', [
-      { id: 1, title: 'A', start: new Date('2026-08-19T09:00:00'), end: new Date('2026-08-19T11:00:00') },
-      { id: 2, title: 'B', start: new Date('2026-08-19T10:00:00'), end: new Date('2026-08-19T12:00:00') },
+      {
+        id: 1,
+        title: 'A',
+        start: new Date('2026-08-19T09:00:00'),
+        end: new Date('2026-08-19T11:00:00'),
+      },
+      {
+        id: 2,
+        title: 'B',
+        start: new Date('2026-08-19T10:00:00'),
+        end: new Date('2026-08-19T12:00:00'),
+      },
     ]);
 
     component.anchorDate = d('2026-08-19');
@@ -143,5 +153,108 @@ describe('NgxCalendarComponent calendar navigation and views', () => {
     expect(component.weekDays[0].events).toHaveLength(2);
     expect(component.weekDays[0].events[0].columnCount).toBeGreaterThan(1);
     expect(component.weekDays[0].events[1].columnCount).toBeGreaterThan(1);
+  });
+});
+
+describe('NgxCalendarComponent event layout and interaction', () => {
+  let fixture: ComponentFixture<NgxCalendarComponent>;
+  let component: NgxCalendarComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [NgxCalendarComponent],
+      providers: [...provideDateAdapters()],
+    }).compileComponents();
+    fixture = TestBed.createComponent(NgxCalendarComponent);
+    component = fixture.componentInstance;
+    fixture.componentRef.setInput('locale', 'en');
+    fixture.componentRef.setInput('events', []);
+    fixture.detectChanges();
+  });
+
+  it('places a multi-day month event into horizontal segments', () => {
+    fixture.componentRef.setInput('events', [
+      {
+        id: 'multi',
+        title: 'Conference',
+        start: new Date('2026-08-19T09:00:00'),
+        end: new Date('2026-08-23T18:00:00'),
+      },
+    ]);
+    component.anchorDate = d('2026-08-19');
+    component.changeView('month');
+
+    expect(component.monthEventSegments.length).toBe(2);
+    expect(component.monthEventSegments[0].continuesAfter).toBe(true);
+    expect(component.monthEventSegments[1].continuesBefore).toBe(true);
+    expect(component.monthEventSegments[0].startColumn).toBe(3);
+    expect(component.monthEventSegments[0].endColumn).toBe(6);
+    expect(component.monthEventSegments[1].startColumn).toBe(0);
+    expect(component.monthEventSegments[1].endColumn).toBe(0);
+  });
+
+  it('assigns overlap lanes only inside an overlap cluster', () => {
+    fixture.componentRef.setInput('events', [
+      { id: 1, start: new Date('2026-08-19T09:00:00'), end: new Date('2026-08-19T10:00:00') },
+      { id: 2, start: new Date('2026-08-19T09:30:00'), end: new Date('2026-08-19T10:30:00') },
+      { id: 3, start: new Date('2026-08-19T15:00:00'), end: new Date('2026-08-19T16:00:00') },
+    ]);
+    component.anchorDate = d('2026-08-19');
+    component.changeView('day');
+
+    const events = component.weekDays[0].events;
+    expect(events[0].columnCount).toBe(2);
+    expect(events[1].columnCount).toBe(2);
+    expect(events[2].columnCount).toBe(1);
+  });
+
+  it('moves a timed event by snapped days and time', () => {
+    const event = {
+      id: 'move',
+      start: new Date('2026-08-19T09:00:00'),
+      end: new Date('2026-08-19T10:00:00'),
+    };
+    fixture.componentRef.setInput('events', [event]);
+    component.anchorDate = d('2026-08-19');
+    component.changeView('day');
+
+    const output: any[] = [];
+    component.eventChange.subscribe((change) => output.push(change));
+    component.startTimedEventInteraction(
+      new PointerEvent('pointerdown', { button: 0, pointerId: 1, clientX: 10, clientY: 9 * 32 }),
+      component.weekDays[0].events[0],
+    );
+    component['updateEventInteraction'](
+      new PointerEvent('pointermove', { pointerId: 1, clientX: 10, clientY: 10 * 32 }),
+    );
+    component['finishEventInteraction'](new PointerEvent('pointerup', { pointerId: 1 }), false);
+
+    expect(output[0].event.start.getHours()).toBe(10);
+    expect(output[0].event.end.getHours()).toBe(11);
+  });
+
+  it('resizes the event without allowing a negative duration', () => {
+    const event = {
+      id: 'resize',
+      start: new Date('2026-08-19T09:00:00'),
+      end: new Date('2026-08-19T10:00:00'),
+    };
+    fixture.componentRef.setInput('events', [event]);
+    component.anchorDate = d('2026-08-19');
+    component.changeView('day');
+    const target = component.weekDays[0].events[0];
+    component.startTimedEventInteraction(
+      new PointerEvent('pointerdown', { button: 0, pointerId: 2, clientX: 10, clientY: 10 * 32 }),
+      target,
+      'resize-end',
+    );
+    component['updateEventInteraction'](
+      new PointerEvent('pointermove', { pointerId: 2, clientX: 10, clientY: 8 * 32 }),
+    );
+    component['finishEventInteraction'](new PointerEvent('pointerup', { pointerId: 2 }), false);
+
+    expect(component.events[0].end?.getTime()).toBe(
+      component.events[0].start.getTime() + 30 * 60_000,
+    );
   });
 });
