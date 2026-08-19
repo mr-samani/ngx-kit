@@ -1,7 +1,7 @@
 <app-example-showcase
   title="Date Picker"
   [files]="sourceFiles"
-  readmePath="/readmes/date-picker/README.md">
+  readmePath="readmes/date-picker/README.md">
   <div class="container">
     <!-- ------------------------ configurations ----------------------------------- -->
     <div class="row">
@@ -50,16 +50,6 @@
           Show today button
         </label>
       </p>
-      @if (config().todayButton) {
-        <p>
-          <label>Today button text:</label>
-          <input
-            type="text"
-            class="form-control"
-            (change)="updateConfig()"
-            [(ngModel)]="config().todayButtonText" />
-        </p>
-      }
       <p>
         <label>
           <input
@@ -70,16 +60,6 @@
           Show clear button
         </label>
       </p>
-      @if (config().clearButton) {
-        <p>
-          <label>Clear button text:</label>
-          <input
-            type="text"
-            class="form-control"
-            (change)="updateConfig()"
-            [(ngModel)]="config().clearButtonText" />
-        </p>
-      }
     </div>
 
     <h3>Input mode</h3>
@@ -115,6 +95,17 @@
 
       <pre>invalid={{ form.get('date')?.invalid }}=>{{ form.get('date')?.errors | json }}</pre>
     </form>
+
+    <h3>Input Date Range</h3>
+    <div class="input-group">
+      <input
+        class="form-control"
+        [(ngModel)]="dateRange"
+        ngxInputDateRangePicker
+        #inputDateRange="ngxInputDateRangePicker"
+        [locale]="locale"
+        [config]="config()" />
+    </div>
 
     <h3>Inline mode</h3>
     <ngx-date-picker

@@ -14,11 +14,11 @@ import {
 })
 export class DialogDemo {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/dialog/dialog.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/dialog/dialog.html', language: 'html' },
+    { label: 'TS', path: 'examples/dialog/dialog.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/dialog/dialog.html', language: 'html' },
     {
       label: 'my-costom-dialog.ts',
-      path: '/examples/dialog/my-costom-dialog/my-costom-dialog.ts',
+      path: 'examples/dialog/my-costom-dialog/my-costom-dialog.ts',
       language: 'typescript',
     },
   ];

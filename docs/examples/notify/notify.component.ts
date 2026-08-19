@@ -23,8 +23,8 @@ import {
 })
 export class NotifyComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/notify/notify.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/notify/notify.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/notify/notify.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/notify/notify.component.html', language: 'html' },
   ];
 
   message = 'Data saved Successfully!';

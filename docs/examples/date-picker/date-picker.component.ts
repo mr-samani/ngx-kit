@@ -12,6 +12,7 @@ import {
   NgxDatePickerConfig,
   NgxInputDatePicker,
   NgxInputDatePickerComponent,
+  NgxInputDateRangePicker,
   provideDateAdapters,
 } from 'ngx-kit/date-picker';
 import { JapanesAdapter } from './custom-adapters/japanes-adapter';
@@ -30,6 +31,7 @@ import {
     ReactiveFormsModule,
     NgxInputDatePicker,
     NgxInputDatePickerComponent,
+    NgxInputDateRangePicker,
     ExampleShowcaseComponent,
   ],
   providers: [
@@ -41,8 +43,8 @@ import {
 })
 export class DatePickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: '/examples/date-picker/date-picker.component.ts', language: 'typescript' },
-    { label: 'HTML', path: '/examples/date-picker/date-picker.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/date-picker/date-picker.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/date-picker/date-picker.component.html', language: 'html' },
   ];
 
   locale: string = 'fa';
@@ -53,18 +55,25 @@ export class DatePickerComponent implements OnInit {
   config = signal<NgxDatePickerConfig>({
     todayButton: true,
     clearButton: true,
-    clearButtonText: 'Clear',
-    todayButtonText: 'Today',
   });
 
   form: FormGroup;
   inlineDate = viewChild<NgxInputDatePicker>('inlineDate');
   inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
+
+  today = new Date();
+  dateRange = [
+    this.today,
+    new Date(
+      `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 5}`,
+    ),
+  ];
   constructor(fb: FormBuilder) {
     this.form = fb.group({
       date: ['', [Validators.required]],
     });
     // console.log('availableLocals', this.availableLocals);
+    console.log('dateRange', this.dateRange);
   }
 
   ngOnInit(): void {}

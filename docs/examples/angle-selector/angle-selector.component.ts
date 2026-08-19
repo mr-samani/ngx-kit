@@ -24,12 +24,12 @@ export class AngleSelectorComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
-      path: '/examples/angle-selector/angle-selector.component.ts',
+      path: 'examples/angle-selector/angle-selector.component.ts',
       language: 'typescript',
     },
     {
       label: 'HTML',
-      path: '/examples/angle-selector/angle-selector.component.html',
+      path: 'examples/angle-selector/angle-selector.component.html',
       language: 'html',
     },
   ];
