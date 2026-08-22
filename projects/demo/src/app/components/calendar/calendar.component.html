@@ -12,5 +12,7 @@
   <ngx-calendar
     [locale]="locale"
     [events]="myEvents"
-    (selectEvent)="onSelectEvent($event)"></ngx-calendar>
+    [resizeAndMovable]="true"
+    (selectEvent)="onSelectEvent($event)"
+    (eventChange)="onEventChange($event)"></ngx-calendar>
 </app-example-showcase>
