@@ -3,11 +3,15 @@
   [class.is-open]="isActuallyOpen()"
   [class.is-dragging]="isDragging()"
   [class.is-pinned]="pinned()"
+  [class.is-docked]="isDocked()"
+  [class.is-overlay]="usesOverlay()"
   [class.side-start]="side() === 'start'"
   [class.side-end]="side() === 'end'"
-  [class.mode-overlay]="mode() === 'overlay'"
-  [class.mode-push]="mode() === 'push'"
-  [class.mode-reveal]="mode() === 'reveal'"
+  [class.physical-left]="isPhysicalLeft()"
+  [class.physical-right]="!isPhysicalLeft()"
+  [class.mode-overlay]="effectiveMode() === 'overlay'"
+  [class.mode-push]="effectiveMode() === 'push'"
+  [class.mode-reveal]="effectiveMode() === 'reveal'"
   [class.effect-slide]="effect() === 'slide'"
   [class.effect-spring]="effect() === 'spring'"
   [class.effect-fabric]="effect() === 'fabric'"
@@ -33,7 +37,7 @@
       aria-hidden="true"></div>
   }
 
-  @if (isActuallyOpen() && mode() === 'overlay') {
+  @if (isActuallyOpen() && usesOverlay()) {
     <button
       class="ngx-drawer-backdrop"
       type="button"
@@ -44,15 +48,6 @@
 
   <main class="ngx-drawer-main">
     <ng-content></ng-content>
-
-    @if (isActuallyOpen() && mode() !== 'overlay') {
-      <button
-        class="ngx-drawer-main-dim"
-        type="button"
-        tabindex="-1"
-        aria-label="Close navigation"
-        (pointerdown)="onBackdropPointerDown($event)"></button>
-    }
   </main>
 
   <aside
@@ -68,14 +63,17 @@
       <div class="ngx-fabric-edge"></div>
     </div>
 
-    <div
-      class="ngx-drawer-grip"
-      [class.grip-start]="side() === 'start'"
-      [class.grip-end]="side() === 'end'"
-      (pointerdown)="onPanelPointerDown($event)"
-      aria-hidden="true">
-      <span></span>
-    </div>
+    <!-- Full-height drag affordance at the physical edge of the panel. -->
+    @if (swipeEnabled() && !pinned()) {
+      <div
+        class="ngx-drawer-drag-handle"
+        [class.handle-left]="isPhysicalLeft()"
+        [class.handle-right]="!isPhysicalLeft()"
+        (pointerdown)="onPanelPointerDown($event)"
+        aria-hidden="true">
+        <span></span>
+      </div>
+    }
 
     <div class="ngx-drawer-inner">
       <div class="ngx-drawer-content">

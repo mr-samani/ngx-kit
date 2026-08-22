@@ -14,6 +14,7 @@ import { DirectionService } from 'ngx-kit/shared';
 import {
   NgxDrawerEffect,
   NgxDrawerMode,
+  NgxDrawerResponsiveBehavior,
   NgxDrawerResponsiveConfig,
   NgxDrawerSide,
 } from '../contracts/drawer-menu-types';
@@ -32,6 +33,11 @@ import {
 export class NgxDrawerMenuComponent {
   readonly side = input<NgxDrawerSide>('start');
   readonly mode = input<NgxDrawerMode>('overlay');
+  /** When responsive mode is active, desktop/mobile can use different layout behavior. */
+  readonly desktopBehavior = input<NgxDrawerResponsiveBehavior>('dock');
+  readonly mobileBehavior = input<NgxDrawerResponsiveBehavior>('overlay');
+  private readonly responsiveDesktopBehavior = signal<NgxDrawerResponsiveBehavior | null>(null);
+  private readonly responsiveMobileBehavior = signal<NgxDrawerResponsiveBehavior | null>(null);
   readonly effect = input<NgxDrawerEffect>('fabric');
 
   readonly width = input<number>(300);
@@ -75,6 +81,19 @@ export class NgxDrawerMenuComponent {
 
   protected readonly dragProgress = signal<number | null>(null);
   protected readonly dragVelocity = signal<number>(0);
+  protected readonly isMobile = signal<boolean>(false);
+  protected readonly effectiveBehavior = computed<NgxDrawerResponsiveBehavior>(() => {
+    if (!this.respondToViewport() || this.responsive().mode === 'off') {
+      return this.mode() === 'push' ? 'dock' : 'overlay';
+    }
+    return this.isMobile()
+      ? (this.responsiveMobileBehavior() ?? this.mobileBehavior())
+      : (this.responsiveDesktopBehavior() ?? this.desktopBehavior());
+  });
+  protected readonly isDocked = computed(() =>
+    this.respondToViewport() ? this.effectiveBehavior() === 'dock' : this.mode() === 'push',
+  );
+  protected readonly usesOverlay = computed(() => !this.isDocked());
   protected readonly isDragging = computed(() => this.dragProgress() !== null);
   protected readonly progress = computed(() => this.dragProgress() ?? (this.open() ? 1 : 0));
   protected readonly isActuallyOpen = computed(() => this.progress() > 0.001);
@@ -89,6 +108,10 @@ export class NgxDrawerMenuComponent {
   });
 
   protected readonly physicalSign = computed(() => (this.isPhysicalLeft() ? 1 : -1));
+  protected readonly effectiveMode = computed<NgxDrawerMode>(() => {
+    if (!this.respondToViewport() || this.responsive().mode === 'off') return this.mode();
+    return this.effectiveBehavior() === 'dock' ? 'push' : 'overlay';
+  });
   protected readonly duration = computed(() => `${this.transitionMs()}ms`);
 
   private readonly directionService = inject(DirectionService);
@@ -109,7 +132,7 @@ export class NgxDrawerMenuComponent {
 
   constructor() {
     effect((onCleanup) => {
-      const locked = this.open() && this.mode() === 'overlay';
+      const locked = this.open() && this.effectiveMode() === 'overlay';
       if (!locked) return;
 
       const body = this.document.body;
@@ -124,6 +147,10 @@ export class NgxDrawerMenuComponent {
       const breakpoint = config.breakpoint ?? this.mobileBreakpoint();
       const desktopOpen = config.desktopOpen ?? this.openOnDesktop();
       const mobileOpen = config.mobileOpen ?? this.openOnMobile();
+      const desktopBehavior = config.desktopBehavior ?? this.desktopBehavior();
+      const mobileBehavior = config.mobileBehavior ?? this.mobileBehavior();
+      this.responsiveDesktopBehavior.set(desktopBehavior);
+      this.responsiveMobileBehavior.set(mobileBehavior);
 
       this.setupViewportSync(
         enabled,
@@ -167,7 +194,7 @@ export class NgxDrawerMenuComponent {
   }
 
   protected onBackdropPointerDown(event: PointerEvent): void {
-    if (!this.backdropClose() || this.pinned()) return;
+    if (!this.backdropClose() || this.pinned() || this.effectiveMode() !== 'overlay') return;
     event.preventDefault();
     this.closeDrawer();
   }
@@ -281,11 +308,15 @@ export class NgxDrawerMenuComponent {
     respectPinned: boolean,
   ): void {
     this.disposeViewportSync();
-    if (!enabled || typeof window === 'undefined') return;
+    if (!enabled || typeof window === 'undefined') {
+      this.isMobile.set(false);
+      return;
+    }
 
     this.mediaQuery = window.matchMedia(`(max-width: ${Math.max(0, breakpoint - 0.02)}px)`);
 
     const apply = (isMobile: boolean) => {
+      this.isMobile.set(isMobile);
       if (respectPinned && this.pinned()) return;
 
       const next = isMobile ? mobileOpen : desktopOpen;

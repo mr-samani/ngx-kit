@@ -1,6 +1,5 @@
 :host {
   display: block;
-  position: relative;
   min-block-size: 100%;
   --ngx-ease: cubic-bezier(0.22, 0.9, 0.28, 1);
   --ngx-spring: cubic-bezier(0.17, 0.88, 0.32, 1.24);
@@ -10,52 +9,119 @@
   position: relative;
   min-block-size: 100%;
   isolation: isolate;
-  perspective: 1400px;
-  overflow: clip;
   color: light-dark(#101114, #f5f7fb);
   --progress: var(--ngx-progress, 0);
   --closed-offset: var(--ngx-closed-translate, 0px);
 }
 
+/* =========================
+   CLOSED / EDGE GESTURE
+   ========================= */
 .ngx-drawer-edge-zone {
   position: fixed;
   inset-block: 0;
-  inline-size: max(var(--ngx-edge-size, 34px), env(safe-area-inset-left));
+  inline-size: max(
+    var(--ngx-edge-size, 34px),
+    env(safe-area-inset-left),
+    env(safe-area-inset-right)
+  );
   z-index: 1600;
   touch-action: none;
   cursor: ew-resize;
-
-  &.edge-start {
-    inset-inline-start: 0;
-  }
-  &.edge-end {
-    inset-inline-end: 0;
-  }
+}
+.ngx-drawer-edge-zone.edge-start {
+  inset-inline-start: 0;
+}
+.ngx-drawer-edge-zone.edge-end {
+  inset-inline-end: 0;
 }
 
-.ngx-drawer-backdrop,
-.ngx-drawer-main-dim {
-  appearance: none;
-  border: 0;
-  padding: 0;
-  background: #000;
-  cursor: default;
+/* =========================
+   TRUE DESKTOP DOCKED SIDEBAR
+   The panel participates in layout; it is NOT an overlay.
+   ========================= */
+.ngx-drawer.is-docked {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-inline-size: 0;
+  overflow: clip;
+}
+
+.ngx-drawer.is-docked.physical-left {
+  grid-template-columns: calc(var(--progress) * min(var(--ngx-width), var(--ngx-max-width))) minmax(
+      0,
+      1fr
+    );
+}
+.ngx-drawer.is-docked.physical-right {
+  grid-template-columns: minmax(0, 1fr) calc(
+      var(--progress) * min(var(--ngx-width), var(--ngx-max-width))
+    );
+}
+
+.ngx-drawer.is-docked .ngx-drawer-main {
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 100%;
+  grid-row: 1;
+  transition:
+    min-inline-size var(--ngx-duration) var(--ngx-ease),
+    transform var(--ngx-duration) var(--ngx-ease);
+}
+.ngx-drawer.is-docked.physical-left .ngx-drawer-main {
+  grid-column: 2;
+}
+.ngx-drawer.is-docked.physical-right .ngx-drawer-main {
+  grid-column: 1;
+}
+
+/* The desktop drawer is an actual sidebar slot. */
+.ngx-drawer.is-docked .ngx-drawer-panel {
+  position: relative;
+  inset: auto !important;
+  grid-row: 1;
+  inline-size: auto;
+  min-inline-size: 0;
+  max-inline-size: none;
+  block-size: 100%;
+  overflow: hidden;
+  z-index: 2;
+  transform: none !important;
+  box-shadow: none;
+  border-radius: 0;
+}
+.ngx-drawer.is-docked.physical-left .ngx-drawer-panel {
+  grid-column: 1;
+}
+.ngx-drawer.is-docked.physical-right .ngx-drawer-panel {
+  grid-column: 2;
+}
+
+/* =========================
+   OVERLAY MODE
+   ========================= */
+.ngx-drawer.is-overlay {
+  min-block-size: 100%;
+  overflow: clip;
 }
 
 .ngx-drawer-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1450;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: #000;
+  cursor: default;
   opacity: calc(var(--progress) * var(--ngx-backdrop-opacity));
   transition: opacity var(--ngx-duration) var(--ngx-ease);
-  pointer-events: auto;
 }
 
-.ngx-drawer-main {
+.ngx-drawer.is-overlay .ngx-drawer-main {
   position: relative;
   min-block-size: 100%;
-  transform-origin: center;
-  transition: transform var(--ngx-duration) var(--ngx-ease);
+  min-inline-size: 0;
   z-index: 1;
 }
 
@@ -65,39 +131,9 @@
   transition: none !important;
 }
 
-.ngx-drawer-main-dim {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  opacity: calc(var(--progress) * 0.22);
-}
-
-.ngx-drawer.mode-push {
-  &.side-start .ngx-drawer-main {
-    transform: translate3d(
-      calc(var(--progress) * var(--ngx-width) * var(--ngx-physical-sign)),
-      0,
-      0
-    );
-  }
-
-  &.side-end .ngx-drawer-main {
-    transform: translate3d(
-      calc(var(--progress) * var(--ngx-width) * var(--ngx-physical-sign)),
-      0,
-      0
-    );
-  }
-}
-
-.ngx-drawer.mode-reveal .ngx-drawer-main {
-  border-radius: calc(var(--progress) * 20px);
-  transform: scale(calc(1 - var(--progress) * 0.055))
-    translate3d(calc(var(--progress) * var(--ngx-width) * 0.22 * var(--ngx-physical-sign)), 0, 0);
-  overflow: clip;
-}
-
+/* =========================
+   PANEL / PHYSICAL POSITION
+   ========================= */
 .ngx-drawer-panel {
   position: fixed;
   inset-block: 0;
@@ -114,52 +150,55 @@
     transform var(--ngx-duration) var(--ngx-ease),
     box-shadow 260ms ease;
   contain: layout paint;
-
-  .side-start & {
-    inset-inline-start: 0;
-    transform: translate3d(var(--closed-offset), 0, 0);
-  }
-
-  .side-end & {
-    inset-inline-end: 0;
-    transform: translate3d(var(--closed-offset), 0, 0);
-  }
 }
 
-/* The compact edge grip is intentionally oversized for touch and mouse. */
-.ngx-drawer-grip {
+.ngx-drawer.is-overlay.physical-left .ngx-drawer-panel {
+  inset-inline-start: 0;
+  transform: translate3d(var(--closed-offset), 0, 0);
+}
+.ngx-drawer.is-overlay.physical-right .ngx-drawer-panel {
+  inset-inline-end: 0;
+  transform: translate3d(var(--closed-offset), 0, 0);
+}
+
+/* The mouse/touch target is deliberately large and full-height. */
+.ngx-drawer-drag-handle {
   position: absolute;
   inset-block: 0;
-  inline-size: 26px;
-  display: grid;
-  place-items: center;
-  z-index: 12;
+  inline-size: 42px;
+  z-index: 30;
   touch-action: none;
   cursor: ew-resize;
-
-  &.grip-start {
-    inset-inline-end: -13px;
-  }
-  &.grip-end {
-    inset-inline-start: -13px;
-  }
-
-  span {
-    inline-size: 4px;
-    block-size: 42px;
-    border-radius: 999px;
-    background: color-mix(in srgb, currentColor 16%, transparent);
-    opacity: 0;
-    transition:
-      opacity 160ms ease,
-      block-size 160ms ease;
-  }
-
-  &:hover span,
-  &:active span {
-    opacity: 1;
-    block-size: 52px;
-  }
+}
+.ngx-drawer-drag-handle.handle-left {
+  inset-inline-end: -18px;
+}
+.ngx-drawer-drag-handle.handle-right {
+  inset-inline-start: -18px;
+}
+.ngx-drawer-drag-handle span {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 4px;
+  block-size: 54px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition:
+    opacity 140ms ease,
+    block-size 140ms ease;
+}
+.ngx-drawer-drag-handle.handle-left span {
+  inset-inline-start: 0;
+}
+.ngx-drawer-drag-handle.handle-right span {
+  inset-inline-end: 0;
+}
+.ngx-drawer-drag-handle:hover span,
+.ngx-drawer-drag-handle:active span {
+  opacity: 0.9;
+  block-size: 68px;
 }
 
 .ngx-drawer-inner {
@@ -169,7 +208,6 @@
   z-index: 5;
   overflow: hidden;
 }
-
 .ngx-drawer-content {
   position: relative;
   block-size: 100%;
@@ -179,67 +217,64 @@
   scrollbar-width: thin;
 }
 
-/* =========================================================
-   THE IMPORTANT PART: progress-driven physical effects
-   ========================================================= */
+/* =========================
+   PUSH / REVEAL FOR EXPLICIT NON-RESPONSIVE USE
+   ========================= */
+.ngx-drawer.is-overlay.mode-push .ngx-drawer-main {
+  transition: transform var(--ngx-duration) var(--ngx-ease);
+}
+.ngx-drawer.is-overlay.mode-push.physical-left .ngx-drawer-main {
+  transform: translate3d(calc(var(--progress) * var(--ngx-width)), 0, 0);
+}
+.ngx-drawer.is-overlay.mode-push.physical-right .ngx-drawer-main {
+  transform: translate3d(calc(var(--progress) * var(--ngx-width) * -1), 0, 0);
+}
+.ngx-drawer.is-overlay.mode-reveal .ngx-drawer-main {
+  border-radius: calc(var(--progress) * 20px);
+  transform: scale(calc(1 - var(--progress) * 0.055));
+  overflow: clip;
+}
 
+/* =========================
+   EFFECTS
+   ========================= */
 .effect-slide .ngx-drawer-panel {
   transform: translate3d(var(--closed-offset), 0, 0);
 }
-
 .effect-spring .ngx-drawer-panel {
   transform: translate3d(var(--closed-offset), 0, 0) scaleX(calc(0.92 + var(--progress) * 0.08));
   transform-origin: center;
 }
-
 .effect-elastic .ngx-drawer-panel {
-  --elastic: calc(sin((var(--progress) - 0.5) * 3.14) * 0.035);
-  transform: translate3d(var(--closed-offset), 0, 0) scaleX(calc(1 + var(--elastic)));
+  transform: translate3d(var(--closed-offset), 0, 0)
+    scaleX(calc(1 + sin((var(--progress) - 0.5) * 3.14) * 0.035));
 }
-
-/* Fabric / curtain hybrid: while dragging, the near edge stays under the pointer,
-   the surface stretches, bends and exposes folds. On release it settles naturally. */
 .effect-fabric .ngx-drawer-panel {
   transform: translate3d(var(--closed-offset), 0, 0)
     skewY(calc((1 - var(--progress)) * var(--ngx-fabric-skew)))
     scaleX(calc(0.78 + var(--progress) * 0.22));
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset-block: 0;
-    inline-size: 32%;
-    z-index: 10;
-    pointer-events: none;
-    opacity: calc((1 - var(--progress)) * 0.92);
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.32),
-      rgba(255, 255, 255, 0.03) 20%,
-      rgba(0, 0, 0, 0.14) 47%,
-      rgba(255, 255, 255, 0.16) 72%,
-      transparent
-    );
-    filter: blur(1px);
-    transform-origin: center;
-    transform: scaleX(calc(0.7 + var(--progress) * 0.3));
-  }
 }
-
 .effect-curtain .ngx-drawer-panel {
   transform: translate3d(var(--closed-offset), 0, 0) scaleX(calc(0.82 + var(--progress) * 0.18));
 }
-
 .effect-reveal .ngx-drawer-panel {
   transform: translate3d(var(--closed-offset), 0, 0) scaleY(calc(0.96 + var(--progress) * 0.04));
-  transform-origin: center;
 }
 
-/* Fabric folds live on top of the panel. They disappear smoothly after arrival. */
+/* In dock mode, layout width is the animation. Don't distort the actual sidebar. */
+.ngx-drawer.is-docked .ngx-drawer-panel,
+.ngx-drawer.is-docked.effect-fabric .ngx-drawer-panel,
+.ngx-drawer.is-docked.effect-spring .ngx-drawer-panel,
+.ngx-drawer.is-docked.effect-elastic .ngx-drawer-panel,
+.ngx-drawer.is-docked.effect-curtain .ngx-drawer-panel,
+.ngx-drawer.is-docked.effect-reveal .ngx-drawer-panel {
+  transform: none !important;
+}
+
+/* Fabric surface. */
 .ngx-drawer-fabric {
   position: absolute;
-  inset-block: 0;
-  inset-inline: 0;
+  inset: 0;
   pointer-events: none;
   z-index: 8;
   overflow: hidden;
@@ -247,7 +282,6 @@
   transition: opacity 220ms ease;
   mix-blend-mode: multiply;
 }
-
 .ngx-fabric-fold {
   position: absolute;
   inset-block: -5%;
@@ -263,24 +297,22 @@
   );
   filter: blur(0.4px);
 }
-
 .ngx-fabric-fold.fold-1 {
   inset-inline-start: 1%;
-  transform: skewY(6deg) scaleX(calc(1.15 - var(--progress) * 0.15));
+  transform: skewY(6deg);
 }
 .ngx-fabric-fold.fold-2 {
   inset-inline-start: 21%;
-  transform: skewY(-4deg) scaleX(calc(1.05 - var(--progress) * 0.05));
+  transform: skewY(-4deg);
 }
 .ngx-fabric-fold.fold-3 {
   inset-inline-start: 43%;
-  transform: skewY(5deg) scaleX(calc(1.12 - var(--progress) * 0.12));
+  transform: skewY(5deg);
 }
 .ngx-fabric-fold.fold-4 {
   inset-inline-start: 65%;
-  transform: skewY(-3deg) scaleX(calc(1.02 - var(--progress) * 0.02));
+  transform: skewY(-3deg);
 }
-
 .ngx-fabric-edge {
   position: absolute;
   inset-block: 0;
@@ -288,11 +320,10 @@
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent);
   filter: blur(3px);
 }
-
-.side-end .ngx-fabric-edge {
+.ngx-drawer.physical-right .ngx-fabric-edge {
   inset-inline-end: 0;
 }
-.side-start .ngx-fabric-edge {
+.ngx-drawer.physical-left .ngx-fabric-edge {
   inset-inline-start: 0;
 }
 
@@ -304,7 +335,6 @@
   pointer-events: none;
   overflow: hidden;
 }
-
 .ngx-drawer-strip {
   flex: 1 1 0;
   block-size: 100%;
@@ -320,7 +350,6 @@
   transition: transform var(--ngx-duration) var(--ngx-ease);
   transition-delay: calc((var(--strip-index) / var(--strip-count)) * 60ms);
 }
-
 .ngx-drawer.is-dragging .ngx-drawer-strip {
   transition: none;
 }

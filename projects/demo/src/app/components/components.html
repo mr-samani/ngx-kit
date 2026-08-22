@@ -1,11 +1,16 @@
 <ngx-drawer-menu
   side="start"
-  effect="slide"
-  [width]="260"
-  [respondToViewport]="false"
-  [openOnDesktop]="true"
-  [openOnMobile]="false"
-  [mobileBreakpoint]="900"
+  effect="fabric"
+  [width]="300"
+  [responsive]="{
+    mode: 'auto',
+    breakpoint: 960,
+    desktopOpen: true,
+    mobileOpen: false,
+    desktopBehavior: 'dock',
+    mobileBehavior: 'overlay',
+    respectPinned: true,
+  }"
   [(open)]="sidebarOpen">
   <app-side-nav drawerContent></app-side-nav>
 

@@ -12,6 +12,8 @@ A gesture-first Angular navigation drawer designed for desktop and mobile.
 - Fabric / curtain / spring / elastic effects.
 - `overlay`, `push`, and `reveal` content modes.
 - Desktop/mobile responsive state.
+- True docked desktop sidebar: open means it occupies layout space and clicking the page never closes it.
+- Mobile overlay behavior with backdrop and edge swipe.
 - Pin/unpin support.
 - Controlled state with `[(open)]`.
 - Reduced-motion support.
@@ -91,3 +93,33 @@ A full `responsive` object is also available when a single config object is pref
     respectPinned: true
   }"></ngx-drawer-menu>
 ```
+
+## Recommended responsive behavior
+
+When `respondToViewport` is enabled, the drawer uses a real sidebar on desktop and an overlay drawer on mobile by default:
+
+```html
+<ngx-drawer-menu
+  side="start"
+  [responsive]="{
+    mode: 'auto',
+    breakpoint: 960,
+    desktopOpen: true,
+    mobileOpen: false,
+    desktopBehavior: 'dock',
+    mobileBehavior: 'overlay',
+    respectPinned: true
+  }"
+  effect="fabric"
+  [width]="300">
+  <router-outlet />
+  <nav drawerContent>...</nav>
+</ngx-drawer-menu>
+```
+
+In this setup:
+
+- `>= 960px`: the open drawer is a real docked sidebar; it owns layout width and does not create a backdrop.
+- `< 960px`: the drawer is an overlay; the page is dimmed and clicking the backdrop can close it.
+- On desktop the drawer can still be dragged closed from its full-height edge handle.
+- When closed, the screen edge remains a mouse/touch drag target and opens the drawer.

@@ -4,22 +4,22 @@ export type NgxDrawerSide = 'start' | 'end';
 /** How the drawer interacts with the application content. */
 export type NgxDrawerMode = 'overlay' | 'push' | 'reveal';
 
+/** Desktop/mobile layout behavior when responsive mode is enabled. */
+export type NgxDrawerResponsiveBehavior = 'overlay' | 'dock';
+
 /** Visual physics used by the drawer while opening/closing. */
 export type NgxDrawerEffect = 'slide' | 'spring' | 'fabric' | 'curtain' | 'elastic' | 'reveal';
 
-/** Controls whether viewport changes own the open state. */
 export type NgxDrawerResponsiveMode = 'off' | 'auto';
 
-/** What happens when the drawer reaches a responsive breakpoint. */
 export interface NgxDrawerResponsiveConfig {
-  /** Enable automatic viewport-driven state changes. */
   mode?: NgxDrawerResponsiveMode;
-  /** Below this width the mobile state is used. */
   breakpoint?: number;
-  /** Default state on desktop. */
   desktopOpen?: boolean;
-  /** Default state on mobile/tablet. */
   mobileOpen?: boolean;
-  /** Do not let responsive rules close a manually pinned drawer. */
+  /** Desktop layout: dock means a real sidebar; overlay means floating drawer. */
+  desktopBehavior?: NgxDrawerResponsiveBehavior;
+  /** Mobile layout is normally overlay. */
+  mobileBehavior?: NgxDrawerResponsiveBehavior;
   respectPinned?: boolean;
 }
