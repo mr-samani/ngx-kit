@@ -1,75 +1,95 @@
 <div
-  class="ngx-drawer-root"
-  [class]="'behavior-' + contentBehavior()"
-  [style.perspective.px]="1200">
-  @if (swipeEnabled() && !open()) {
+  class="ngx-drawer"
+  [class.is-open]="isActuallyOpen()"
+  [class.is-dragging]="isDragging()"
+  [class.is-pinned]="pinned()"
+  [class.side-start]="side() === 'start'"
+  [class.side-end]="side() === 'end'"
+  [class.mode-overlay]="mode() === 'overlay'"
+  [class.mode-push]="mode() === 'push'"
+  [class.mode-reveal]="mode() === 'reveal'"
+  [class.effect-slide]="effect() === 'slide'"
+  [class.effect-spring]="effect() === 'spring'"
+  [class.effect-fabric]="effect() === 'fabric'"
+  [class.effect-curtain]="effect() === 'curtain'"
+  [class.effect-elastic]="effect() === 'elastic'"
+  [class.effect-reveal]="effect() === 'reveal'"
+  [style.--ngx-progress]="progress()"
+  [style.--ngx-width.px]="width()"
+  [style.--ngx-edge-size.px]="edgeSize()"
+  [style.--ngx-max-width.px]="maxWidth()"
+  [style.--ngx-duration]="duration()"
+  [style.--ngx-backdrop-opacity]="backdropOpacity()"
+  [style.--ngx-physical-sign]="physicalSign()"
+  [style.--ngx-closed-translate.px]="(1 - progress()) * -width() * physicalSign()"
+  [style.--ngx-transform-origin]="isPhysicalLeft() ? 'left center' : 'right center'"
+  [style.--ngx-fabric-skew]="(1 - progress()) * 10 + 'deg'">
+  @if (swipeEnabled() && !isActuallyOpen() && !pinned()) {
     <div
       class="ngx-drawer-edge-zone"
       [class.edge-start]="side() === 'start'"
       [class.edge-end]="side() === 'end'"
-      [style.--ngx-drawer-edge-size]="swipeEdgeSize() + 'px'"
-      (mousedown)="onEdgeDragStart($event)"
-      (touchstart)="onEdgeDragStart($event)"></div>
+      (pointerdown)="onEdgePointerDown($event)"
+      aria-hidden="true"></div>
   }
 
-  @if (visualOpen() > 0 && contentBehavior() === 'overlay') {
-    <div
+  @if (isActuallyOpen() && mode() === 'overlay') {
+    <button
       class="ngx-drawer-backdrop"
-      [style.opacity]="visualOpen()"
-      [class.no-transition]="isDragging()"
-      (click)="closeFromBackdrop()"></div>
+      type="button"
+      tabindex="-1"
+      aria-label="Close navigation"
+      (pointerdown)="onBackdropPointerDown($event)"></button>
   }
 
-  <div
-    class="ngx-drawer-main"
-    [class.no-transition]="isDragging()"
-    [style.--ngx-drawer-width]="width() + 'px'"
-    [style.--ngx-drawer-open]="visualOpen()"
-    [style.--ngx-drawer-dir]="pushDirSign()">
+  <main class="ngx-drawer-main">
     <ng-content></ng-content>
 
-    @if (visualOpen() > 0 && contentBehavior() !== 'overlay') {
-      <div
+    @if (isActuallyOpen() && mode() !== 'overlay') {
+      <button
         class="ngx-drawer-main-dim"
-        [style.opacity]="visualOpen() * 0.35"
-        (click)="closeFromBackdrop()"></div>
+        type="button"
+        tabindex="-1"
+        aria-label="Close navigation"
+        (pointerdown)="onBackdropPointerDown($event)"></button>
     }
-  </div>
+  </main>
 
   <aside
     class="ngx-drawer-panel"
-    [class]="'effect-' + effect()"
-    [class.side-start]="side() === 'start'"
-    [class.side-end]="side() === 'end'"
-    [class.no-transition]="isDragging()"
-    [class.is-open]="open()"
-    [class.playing]="playEffectClass()"
-    [style.--ngx-drawer-width]="width() + 'px'"
-    [style.--ngx-drawer-open]="visualOpen()"
-    role="dialog"
-    aria-modal="true">
-    <div
-      class="ngx-drawer-drag-handle"
-      [class.edge-start]="side() === 'start'"
-      [class.edge-end]="side() === 'end'"
-      (mousedown)="onPanelDragStart($event)"
-      (touchstart)="onPanelDragStart($event)"></div>
+    [attr.aria-hidden]="!isActuallyOpen()"
+    [attr.inert]="!isActuallyOpen() ? '' : null"
+    role="navigation">
+    <div class="ngx-drawer-fabric" aria-hidden="true">
+      <div class="ngx-fabric-fold fold-1"></div>
+      <div class="ngx-fabric-fold fold-2"></div>
+      <div class="ngx-fabric-fold fold-3"></div>
+      <div class="ngx-fabric-fold fold-4"></div>
+      <div class="ngx-fabric-edge"></div>
+    </div>
 
-    <div class="ngx-drawer-content">
-      <ng-content select="[drawerContent]"></ng-content>
+    <div
+      class="ngx-drawer-grip"
+      [class.grip-start]="side() === 'start'"
+      [class.grip-end]="side() === 'end'"
+      (pointerdown)="onPanelPointerDown($event)"
+      aria-hidden="true">
+      <span></span>
+    </div>
+
+    <div class="ngx-drawer-inner">
+      <div class="ngx-drawer-content">
+        <ng-content select="[drawerContent]"></ng-content>
+      </div>
     </div>
 
     @if (effect() === 'curtain') {
-      <div
-        class="ngx-drawer-curtain"
-        [class.open]="open()"
-        [class.revealed]="visualOpen() >= 1 && !isDragging()">
+      <div class="ngx-drawer-curtain" aria-hidden="true">
         @for (i of strips(); track i) {
-          <div
+          <span
             class="ngx-drawer-strip"
-            [class.side-start]="side() === 'start'"
-            [class.side-end]="side() === 'end'"
-            [style.transition-delay]="stripDelay(i)"></div>
+            [style.--strip-index]="i"
+            [style.--strip-count]="curtainStrips()"></span>
         }
       </div>
     }

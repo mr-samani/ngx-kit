@@ -1,9 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   DOCUMENT,
-  HostListener,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -11,188 +10,305 @@ import {
   model,
   signal,
 } from '@angular/core';
-import { DirectionService, startDragSession } from 'ngx-kit/shared';
+import { DirectionService } from 'ngx-kit/shared';
 import {
-  NgxDrawerContentBehavior,
   NgxDrawerEffect,
+  NgxDrawerMode,
+  NgxDrawerResponsiveConfig,
   NgxDrawerSide,
 } from '../contracts/drawer-menu-types';
 
-/**
- * درور منو (side drawer) با ۶ جلوه‌ی بازوبسته‌شدنِ متفاوت (از ساده تا
- * سه‌بعدی/ژله‌ای) و ۳ رفتار برای محتوای صفحه (overlay/push/reveal) —
- * دقیقاً مدل کتابخونه‌های حرفه‌ای مثل react-burger-menu یا Ionic Menu، ولی
- * signal-based و بدون هیچ وابستگی خارجی.
- *
- * نکات معماری:
- *  - از 'start'/'end' منطقی استفاده می‌کنه، پس با CSS logical properties
- *    زیر RTL خودکار برعکس می‌شه؛ فقط ریاضیِ درگ (که برخلاف CSS جهت فیزیکیِ
- *    واقعی لازم داره) از DirectionService مشترک استفاده می‌کنه.
- *  - وضعیت باز/بسته با model() دوطرفه‌ست، پس هم با [(open)] قابل کنترله و
- *    هم می‌تونه به‌صورت خودکار و زنده با عرض صفحه هماهنگ بشه (respondToViewport)
- *    — یعنی رد شدن از breakpoint (نه فقط بار اول لود) می‌تونه خودکار باز/بسته‌ش کنه.
- *  - افکت‌های jelly/pull با keyframe سه‌مرحله‌ای (overshoot → نوسان → استقرار)
- *    پیاده شدن، نه فقط یه transition ساده.
- */
 @Component({
   selector: 'ngx-drawer-menu',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './drawer-menu.component.html',
   styleUrl: './drawer-menu.component.scss',
-  host: { class: 'ngx-drawer-menu-host' },
+  host: {
+    class: 'ngx-drawer-menu-host',
+    '(keydown.escape)': 'onEscape()',
+  },
 })
 export class NgxDrawerMenuComponent {
-  side = input<NgxDrawerSide>('start');
-  effect = input<NgxDrawerEffect>('slide');
-  contentBehavior = input<NgxDrawerContentBehavior>('overlay');
-  width = input<number>(280);
-  swipeEdgeSize = input<number>(24);
-  curtainStrips = input<number>(7);
-  backdropClose = input<boolean>(true);
-  swipeEnabled = input<boolean>(true);
+  readonly side = input<NgxDrawerSide>('start');
+  readonly mode = input<NgxDrawerMode>('overlay');
+  readonly effect = input<NgxDrawerEffect>('fabric');
 
-  /** اگه true باشه، رد شدن از mobileBreakpoint به‌صورت زنده open رو با openOnDesktop/openOnMobile هماهنگ می‌کنه */
-  respondToViewport = input<boolean>(true);
-  openOnDesktop = input<boolean>(true);
-  openOnMobile = input<boolean>(false);
-  mobileBreakpoint = input<number>(768);
+  readonly width = input<number>(300);
+  readonly maxWidth = input<number>(420);
+  readonly edgeSize = input<number>(34);
+  readonly dragThreshold = input<number>(0.38);
+  readonly velocityThreshold = input<number>(0.45);
 
-  /** state دوطرفه‌ی باز/بسته؛ با [(open)] قابل bind هست */
-  open = model<boolean>(false);
+  /** Opens/closes the panel from the edge and while the panel itself is dragged. */
+  readonly swipeEnabled = input<boolean>(true);
+  /** Allows closing by clicking the backdrop. */
+  readonly backdropClose = input<boolean>(true);
+  /** Allows Escape to close the drawer. */
+  readonly escapeClose = input<boolean>(true);
 
-  private readonly directionService = inject(DirectionService);
-  private readonly doc = inject(DOCUMENT);
-  private readonly destroyRef = inject(DestroyRef);
+  /** The drawer starts open unless explicitly configured otherwise. */
+  readonly open = model<boolean>(true);
+  /** Pinned drawers are intended for persistent desktop navigation. */
+  readonly pinned = model<boolean>(false);
 
-  /** فقط حین یه درگِ واقعی مقدار داره؛ null یعنی از روی open() تصمیم بگیر */
-  protected readonly dragRatio = signal<number | null>(null);
-  protected readonly isDragging = computed(() => this.dragRatio() !== null);
-  protected readonly visualOpen = computed(() => this.dragRatio() ?? (this.open() ? 1 : 0));
+  /** Responsive behavior. Can be overridden with individual inputs below. */
+  readonly responsive = input<NgxDrawerResponsiveConfig>({
+    mode: 'auto',
+    breakpoint: 768,
+    desktopOpen: true,
+    mobileOpen: false,
+    respectPinned: true,
+  });
+
+  /** Convenience aliases for the common responsive configuration. */
+  readonly respondToViewport = input<boolean>(true);
+  readonly mobileBreakpoint = input<number>(768);
+  readonly openOnDesktop = input<boolean>(true);
+  readonly openOnMobile = input<boolean>(false);
+
+  /** Visual tuning. */
+  readonly curtainStrips = input<number>(9);
+  readonly backdropOpacity = input<number>(0.46);
+  readonly transitionMs = input<number>(420);
+  readonly focusOnOpen = input<boolean>(true);
+
+  protected readonly dragProgress = signal<number | null>(null);
+  protected readonly dragVelocity = signal<number>(0);
+  protected readonly isDragging = computed(() => this.dragProgress() !== null);
+  protected readonly progress = computed(() => this.dragProgress() ?? (this.open() ? 1 : 0));
+  protected readonly isActuallyOpen = computed(() => this.progress() > 0.001);
   protected readonly strips = computed(() =>
-    Array.from({ length: this.curtainStrips() }, (_, i) => i),
+    Array.from({ length: Math.max(3, this.curtainStrips()) }, (_, i) => i),
   );
 
-  /**
-   * +۱ یعنی این پنل فیزیکاً روی لبه‌ی چپِ صفحه‌ست، -۱ یعنی لبه‌ی راست —
-   * برای transform:translateX() محتوای اصلی (که برخلاف inset-inline، به
-   * dir=rtl خودکار واکنش نشون نمی‌ده) لازمه. reactive هست چون هم به side()
-   * و هم به جهتِ زنده‌ی صفحه (directionService.isRtl()) وابسته‌ست.
-   */
-  protected readonly pushDirSign = computed(() => (this.isPhysicalLeftEdge() ? 1 : -1));
+  /** Physical side: true means the drawer is attached to the physical left edge. */
+  protected readonly isPhysicalLeft = computed(() => {
+    const rtl = this.directionService.isRtl();
+    return this.side() === 'start' ? !rtl : rtl;
+  });
 
-  /** برای افکت‌های keyframe‌محور (jelly/pull) — فقط لحظه‌ی رهاشدن (نه حین درگ زنده) پخش می‌شه */
-  protected readonly playEffectClass = signal(false);
+  protected readonly physicalSign = computed(() => (this.isPhysicalLeft() ? 1 : -1));
+  protected readonly duration = computed(() => `${this.transitionMs()}ms`);
 
-  private stopDrag?: () => void;
+  private readonly directionService = inject(DirectionService);
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private pointerId: number | null = null;
   private dragStartX = 0;
-  private dragStartRatio = 0;
-  private prevOpen = false;
+  private dragStartProgress = 0;
+  private dragLastX = 0;
+  private dragLastTime = 0;
+  private lastVelocity = 0;
+  private activePointerTarget: HTMLElement | null = null;
+  private resizeObserver?: ResizeObserver;
+  private mediaQuery?: MediaQueryList;
+  private mediaQueryListener?: (event: MediaQueryListEvent) => void;
+  private lastManagedViewportState: boolean | null = null;
 
   constructor() {
-    // قفل اسکرول پس‌زمینه حین باز بودن پنل (فقط در حالت overlay واقعاً لازمه،
-    // ولی در push/reveal هم بی‌ضرره و تجربه‌ی بهتری می‌ده)
     effect((onCleanup) => {
-      if (this.open() && this.contentBehavior() === 'overlay') {
-        const prevOverflow = this.doc.body.style.overflow;
-        this.doc.body.style.overflow = 'hidden';
-        onCleanup(() => {
-          this.doc.body.style.overflow = prevOverflow;
-        });
-      }
+      const locked = this.open() && this.mode() === 'overlay';
+      if (!locked) return;
+
+      const body = this.document.body;
+      const previous = body.style.overflow;
+      body.style.overflow = 'hidden';
+      onCleanup(() => (body.style.overflow = previous));
     });
 
-    // پخش انیمیشن keyframe‌محور فقط لحظه‌ای که open() واقعاً عوض می‌شه (نه هر CD)
     effect(() => {
-      const isOpen = this.open();
-      if (isOpen !== this.prevOpen) {
-        this.prevOpen = isOpen;
-        this.playEffectClass.set(true);
-        const id = setTimeout(() => this.playEffectClass.set(false), 700);
-        // پاک‌سازی در صورتی که کامپوننت زودتر destroy بشه
-        this.destroyRef.onDestroy(() => clearTimeout(id));
-      }
+      const config = this.responsive();
+      const enabled = this.respondToViewport() && config.mode !== 'off';
+      const breakpoint = config.breakpoint ?? this.mobileBreakpoint();
+      const desktopOpen = config.desktopOpen ?? this.openOnDesktop();
+      const mobileOpen = config.mobileOpen ?? this.openOnMobile();
+
+      this.setupViewportSync(
+        enabled,
+        breakpoint,
+        desktopOpen,
+        mobileOpen,
+        config.respectPinned ?? true,
+      );
     });
 
-    this.destroyRef.onDestroy(() => this.stopDrag?.());
-
-    // هماهنگیِ زنده با breakpoint
-    if (typeof window !== 'undefined') {
-      const mql = window.matchMedia(`(min-width: ${this.mobileBreakpoint()}px)`);
-      const applyForCurrentViewport = (isDesktop: boolean) => {
-        if (this.respondToViewport()) {
-          this.open.set(isDesktop ? this.openOnDesktop() : this.openOnMobile());
-        }
-      };
-      applyForCurrentViewport(mql.matches);
-      const handler = (e: MediaQueryListEvent) => applyForCurrentViewport(e.matches);
-      mql.addEventListener('change', handler);
-      this.destroyRef.onDestroy(() => mql.removeEventListener('change', handler));
-    }
-  }
-
-  @HostListener('document:keydown.escape')
-  protected onEscape(): void {
-    if (this.open()) this.open.set(false);
-  }
-
-  protected closeFromBackdrop(): void {
-    if (this.backdropClose()) this.open.set(false);
+    this.destroyRef.onDestroy(() => {
+      this.disposePointer();
+      this.disposeViewportSync();
+    });
   }
 
   toggle(): void {
-    this.open.update((o) => !o);
+    if (this.pinned() && this.open()) return;
+    this.open.update((value) => !value);
   }
 
-  /** true یعنی این پنل فیزیکاً روی لبه‌ی چپِ صفحه‌ست (صرف‌نظر از start/end منطقی) */
-  private isPhysicalLeftEdge(): boolean {
-    const isRtl = this.directionService.isRtl();
-    return this.side() === 'start' ? !isRtl : isRtl;
+  openDrawer(): void {
+    this.open.set(true);
   }
 
-  protected stripDelay(index: number): string {
-    const count = this.curtainStrips();
-    const order = this.open() ? index : count - 1 - index;
-    return `${order * 28}ms`;
+  closeDrawer(): void {
+    if (!this.pinned()) this.open.set(false);
   }
 
-  // ---------- درگ (هم برای باز کردن از لبه، هم بستن با کشیدنِ پنل) ----------
-  protected onEdgeDragStart(ev: MouseEvent | TouchEvent): void {
-    if (!this.swipeEnabled() || this.open()) return;
-    this.beginDrag(ev, 0);
+  pin(): void {
+    this.pinned.set(true);
+    this.open.set(true);
   }
 
-  protected onPanelDragStart(ev: MouseEvent | TouchEvent): void {
-    if (!this.open()) return;
-    this.beginDrag(ev, 1);
+  unpin(): void {
+    this.pinned.set(false);
   }
 
-  private beginDrag(ev: MouseEvent | TouchEvent, startRatio: number): void {
-    ev.preventDefault();
-    this.dragStartX = this.clientXOf(ev);
-    this.dragStartRatio = startRatio;
-    this.dragRatio.set(startRatio);
-    this.stopDrag?.();
-    this.stopDrag = startDragSession({
-      onMove: (moveEv) => {
-        const dx = this.clientXOf(moveEv) - this.dragStartX;
-        const opensToward = this.isPhysicalLeftEdge() ? 1 : -1;
-        const signedRatio = (dx * opensToward) / this.width();
-        const ratio = Math.min(1, Math.max(0, this.dragStartRatio + signedRatio));
-        this.dragRatio.set(ratio);
-      },
-      onEnd: () => {
-        const ratio = this.dragRatio() ?? this.dragStartRatio;
-        this.open.set(ratio > 0.4);
-        this.dragRatio.set(null);
-        this.stopDrag = undefined;
-      },
-    });
+  protected onEscape(): void {
+    if (this.escapeClose() && !this.pinned()) this.closeDrawer();
   }
 
-  private clientXOf(ev: MouseEvent | TouchEvent): number {
-    return 'touches' in ev
-      ? (ev.touches[0]?.clientX ?? ev.changedTouches[0]?.clientX ?? 0)
-      : ev.clientX;
+  protected onBackdropPointerDown(event: PointerEvent): void {
+    if (!this.backdropClose() || this.pinned()) return;
+    event.preventDefault();
+    this.closeDrawer();
+  }
+
+  protected onEdgePointerDown(event: PointerEvent): void {
+    if (!this.swipeEnabled() || this.open() || this.pinned()) return;
+    this.beginDrag(event, 0);
+  }
+
+  protected onPanelPointerDown(event: PointerEvent): void {
+    if (!this.swipeEnabled() || !this.open() || this.pinned()) return;
+    if (event.button !== 0) return;
+    this.beginDrag(event, 1);
+  }
+
+  private beginDrag(event: PointerEvent, startProgress: number): void {
+    if (this.pointerId !== null) return;
+
+    const target = event.currentTarget as HTMLElement | null;
+    if (!target) return;
+
+    this.pointerId = event.pointerId;
+    this.activePointerTarget = target;
+    this.dragStartX = event.clientX;
+    this.dragLastX = event.clientX;
+    this.dragLastTime = performance.now();
+    this.dragStartProgress = startProgress;
+    this.lastVelocity = 0;
+    this.dragProgress.set(startProgress);
+
+    target.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+
+    target.addEventListener('pointermove', this.onPointerMove);
+    target.addEventListener('pointerup', this.onPointerUp);
+    target.addEventListener('pointercancel', this.onPointerCancel);
+  }
+
+  private readonly onPointerMove = (event: PointerEvent): void => {
+    if (event.pointerId !== this.pointerId) return;
+
+    const now = performance.now();
+    const dx = event.clientX - this.dragStartX;
+    const signedDistance = dx * this.physicalSign();
+    const next = this.clamp01(this.dragStartProgress + signedDistance / this.width());
+
+    const dt = Math.max(8, now - this.dragLastTime);
+    this.lastVelocity = ((event.clientX - this.dragLastX) * this.physicalSign()) / dt;
+    this.dragVelocity.set(this.lastVelocity);
+    this.dragLastX = event.clientX;
+    this.dragLastTime = now;
+
+    this.dragProgress.set(next);
+    event.preventDefault();
+  };
+
+  private readonly onPointerUp = (event: PointerEvent): void => {
+    if (event.pointerId !== this.pointerId) return;
+
+    const progress = this.dragProgress() ?? this.dragStartProgress;
+    const velocity = this.dragVelocity();
+    const opening = velocity > this.velocityThreshold();
+    const closing = velocity < -this.velocityThreshold();
+
+    let shouldOpen: boolean;
+    if (opening) shouldOpen = true;
+    else if (closing) shouldOpen = false;
+    else shouldOpen = progress >= this.dragThreshold();
+
+    this.open.set(shouldOpen);
+    this.dragProgress.set(null);
+    this.dragVelocity.set(0);
+    this.disposePointer(event.pointerId);
+  };
+
+  private readonly onPointerCancel = (event: PointerEvent): void => {
+    if (event.pointerId !== this.pointerId) return;
+    const progress = this.dragProgress() ?? this.dragStartProgress;
+    this.open.set(progress >= 0.5);
+    this.dragProgress.set(null);
+    this.dragVelocity.set(0);
+    this.disposePointer(event.pointerId);
+  };
+
+  private disposePointer(pointerId?: number): void {
+    if (pointerId !== undefined && this.pointerId !== pointerId) return;
+
+    const target = this.activePointerTarget;
+    if (target) {
+      target.removeEventListener('pointermove', this.onPointerMove);
+      target.removeEventListener('pointerup', this.onPointerUp);
+      target.removeEventListener('pointercancel', this.onPointerCancel);
+      if (this.pointerId !== null) {
+        try {
+          target.releasePointerCapture?.(this.pointerId);
+        } catch {
+          // Pointer capture may already be released by the browser.
+        }
+      }
+    }
+
+    this.pointerId = null;
+    this.activePointerTarget = null;
+  }
+
+  private setupViewportSync(
+    enabled: boolean,
+    breakpoint: number,
+    desktopOpen: boolean,
+    mobileOpen: boolean,
+    respectPinned: boolean,
+  ): void {
+    this.disposeViewportSync();
+    if (!enabled || typeof window === 'undefined') return;
+
+    this.mediaQuery = window.matchMedia(`(max-width: ${Math.max(0, breakpoint - 0.02)}px)`);
+
+    const apply = (isMobile: boolean) => {
+      if (respectPinned && this.pinned()) return;
+
+      const next = isMobile ? mobileOpen : desktopOpen;
+      if (this.lastManagedViewportState === next) return;
+      this.lastManagedViewportState = next;
+      this.open.set(next);
+    };
+
+    apply(this.mediaQuery.matches);
+    this.mediaQueryListener = (event) => apply(event.matches);
+    this.mediaQuery.addEventListener('change', this.mediaQueryListener);
+  }
+
+  private disposeViewportSync(): void {
+    if (this.mediaQuery && this.mediaQueryListener) {
+      this.mediaQuery.removeEventListener('change', this.mediaQueryListener);
+    }
+    this.mediaQuery = undefined;
+    this.mediaQueryListener = undefined;
+    this.lastManagedViewportState = null;
+  }
+
+  private clamp01(value: number): number {
+    return Math.max(0, Math.min(1, value));
   }
 }

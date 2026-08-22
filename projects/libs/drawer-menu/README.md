@@ -1,77 +1,93 @@
 # ngx-kit/drawer-menu
 
-A side drawer menu with 7 different opening/closing effects (from simple to 3D/jelly), 3 behaviors for the page content (overlay/push/reveal), and a responsive default open/closed state based on screen size.
+A gesture-first Angular navigation drawer designed for desktop and mobile.
 
-## Install
+## Highlights
 
-```bash
-npm install ngx-kit
-```
+- Logical `start` / `end` placement with RTL/LTR support.
+- Mouse + touch + pen drag using Pointer Events.
+- Open from the screen edge when closed.
+- Drag the drawer itself to close it.
+- Live 0..1 gesture progress — effects react while dragging.
+- Fabric / curtain / spring / elastic effects.
+- `overlay`, `push`, and `reveal` content modes.
+- Desktop/mobile responsive state.
+- Pin/unpin support.
+- Controlled state with `[(open)]`.
+- Reduced-motion support.
+- Escape and backdrop closing.
 
-## Basic usage
+## Recommended configuration
 
 ```html
 <ngx-drawer-menu
   side="start"
-  effect="jelly"
-  contentBehavior="push"
-  [width]="280"
+  mode="push"
+  effect="fabric"
+  [width]="300"
   [openOnDesktop]="true"
   [openOnMobile]="false"
-  [(open)]="isOpen"
->
-  <div drawerContent>
-    <!-- menu content -->
-    <a routerLink="/home">Home</a>
-    <a routerLink="/settings">Settings</a>
-  </div>
-
-  <!-- main page content (default, no select) -->
+  [mobileBreakpoint]="960"
+  [(open)]="drawerOpen"
+  [(pinned)]="drawerPinned">
   <router-outlet />
+
+  <div drawerContent>
+    <!-- navigation -->
+  </div>
 </ngx-drawer-menu>
 ```
 
-## API
+## Behavior model
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `side` | `'start' \| 'end'` | `'start'` | Logical — automatically flips under RTL |
-| `effect` | `'slide' \| 'curtain' \| 'jelly' \| 'pull' \| 'rotate3d' \| 'flip3d' \| 'scale'` | `'slide'` | The panel's own open/close effect (described below) |
-| `contentBehavior` | `'overlay' \| 'push' \| 'reveal'` | `'overlay'` | How the main page content behaves |
-| `width` | `number` | `280` | Panel width in pixels |
-| `swipeEnabled` | `boolean` | `true` | Open by swiping from the screen edge |
-| `swipeEdgeSize` | `number` | `24` | Width of the invisible edge zone that a swipe can start from |
-| `backdropClose` | `boolean` | `true` | Close on backdrop click (or dimming the content in push/reveal) |
-| `curtainStrips` | `number` | `7` | Only for `effect="curtain"` |
-| `open` | `boolean` (model, two-way) | `false` | Controllable via `[(open)]` |
-| `respondToViewport` | `boolean` | `true` | Crossing `mobileBreakpoint` **live** (not just on first load) syncs `open` with `openOnDesktop`/`openOnMobile` |
-| `openOnDesktop` / `openOnMobile` | `boolean` | `true` / `false` | |
-| `mobileBreakpoint` | `number` | `768` | |
+The drawer owns one continuous `progress` value between `0` and `1`.
 
-### Effects (`effect`)
+- `0`: fully closed.
+- `1`: fully open.
+- Pointer dragging directly changes progress.
+- On release, velocity and the configured threshold decide the final state.
 
-| Value | Description |
-| --- | --- |
-| `slide` | Classic simple slide |
-| `curtain` | Several same-colored vertical strips that collapse with a staggered delay, revealing the content |
-| `jelly` | A multi-stage spring oscillation that settles down (inspired by the [Jelly Slide Menu](https://dribbble.com/shots/2307371) effect) |
-| `pull` | A single rubber-band stretch |
-| `rotate3d` | A 3D rotation around a hinge, like a door opening |
-| `flip3d` | Flips with depth on the Z axis, like a book cover |
-| `scale` | Zooms in from the center with a fade |
+This is the key to getting a physical-feeling drawer instead of a drawer that simply jumps between CSS classes.
 
-### Content behavior (`contentBehavior`)
+## Inputs
 
-| Value | Description |
-| --- | --- |
-| `overlay` | Content stays in place, the drawer floats over it (with a backdrop) |
-| `push` | Content is pushed aside by the drawer's width |
-| `reveal` | Content shrinks/recedes slightly, as if the drawer is revealed behind it (the iOS effect) |
+| Input               | Default   | Purpose                                                      |
+| ------------------- | --------- | ------------------------------------------------------------ |
+| `side`              | `start`   | Logical drawer side.                                         |
+| `mode`              | `overlay` | `overlay`, `push`, or `reveal`.                              |
+| `effect`            | `fabric`  | `slide`, `spring`, `fabric`, `curtain`, `elastic`, `reveal`. |
+| `width`             | `300`     | Drawer width in px.                                          |
+| `maxWidth`          | `420`     | Safety cap for drawer width.                                 |
+| `edgeSize`          | `34`      | Edge swipe activation area.                                  |
+| `swipeEnabled`      | `true`    | Enables gesture interaction.                                 |
+| `backdropClose`     | `true`    | Close on backdrop press.                                     |
+| `escapeClose`       | `true`    | Close on Escape.                                             |
+| `open`              | `true`    | Two-way state via `[(open)]`.                                |
+| `pinned`            | `false`   | Persistent drawer state via `[(pinned)]`.                    |
+| `mobileBreakpoint`  | `768`     | Mobile breakpoint.                                           |
+| `openOnDesktop`     | `true`    | State on desktop.                                            |
+| `openOnMobile`      | `false`   | State on mobile/tablet.                                      |
+| `respondToViewport` | `true`    | Enables live responsive switching.                           |
+| `transitionMs`      | `420`     | Settle animation duration.                                   |
 
-## Architecture note: embedding inside a bounded area
+## Responsive behavior
 
-By default, the drawer takes up the full height of the nearest positioned ancestor (which is what you want for a full app shell). If you want to embed it inside a bounded card/area (not the whole page), just give that container `position: relative` and a defined height — the drawer will automatically confine itself to that box (thanks to the `perspective` it uses for 3D effects, which per the CSS spec creates a containing block for `position:fixed` descendants).
+By default:
 
-## Dark mode and RTL
+- Desktop >= 768px: open.
+- Mobile < 768px: closed.
+- Crossing the breakpoint updates the drawer live.
+- A pinned drawer is not closed by responsive rules.
 
-Supported automatically; drag math (which, unlike CSS logical properties, needs the real physical direction) uses the shared `DirectionService`, so it works correctly even with a live `dir` change.
+A full `responsive` object is also available when a single config object is preferable:
+
+```html
+<ngx-drawer-menu
+  [responsive]="{
+    mode: 'auto',
+    breakpoint: 960,
+    desktopOpen: true,
+    mobileOpen: false,
+    respectPinned: true
+  }"></ngx-drawer-menu>
+```

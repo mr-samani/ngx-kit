@@ -1,31 +1,25 @@
-/**
- * از 'start'/'end' منطقی استفاده می‌کنیم نه 'left'/'right' — یعنی توی
- * RTL خودکار برعکس می‌شه (start یعنی راست در RTL، چپ در LTR)، دقیقاً هماهنگ
- * با بقیه‌ی کتابخونه که همه‌جا از پراپرتی‌های منطقیِ CSS استفاده می‌کنه.
- */
+/** Logical drawer placement. `start` is right in RTL and left in LTR. */
 export type NgxDrawerSide = 'start' | 'end';
 
-/**
- * جلوه‌ی بازوبسته‌شدنِ خودِ پنل:
- *  - slide: اسلاید ساده‌ی کلاسیک
- *  - curtain: چند نوار عمودیِ هم‌رنگِ پنل که با تأخیرِ پلکانی جمع می‌شن و
- *    محتوا رو نمایان می‌کنن — حسِ باز شدنِ یه پرده‌ی چندلَته
- *  - jelly: بازشدن با افکتِ ژله‌ای/کشسان — چند نوسانِ فنری که رفته‌رفته
- *    فروکش می‌کنه (الهام از https://dribbble.com/shots/2307371)
- *  - pull: یه کشیدگیِ لاستیکیِ تک‌ضربه‌ای — لبه‌ی پنل از اندازه‌ی نهایی رد
- *    می‌شه و برمی‌گرده سرجاش (rubber-band)
- *  - rotate3d: چرخشِ سه‌بعدیِ دور لولا (مثل باز شدنِ یه در)، با perspective
- *  - flip3d: پنل و محتوای صفحه با هم مثل ورق‌زدنِ یه کتاب می‌چرخن
- *  - scale: بزرگ‌شدن از مرکز همراه با fade
- */
-export type NgxDrawerEffect =
-  'slide' | 'curtain' | 'jelly' | 'pull' | 'rotate3d' | 'flip3d' | 'scale';
+/** How the drawer interacts with the application content. */
+export type NgxDrawerMode = 'overlay' | 'push' | 'reveal';
 
-/**
- * رفتار محتوای اصلیِ صفحه وقتی درور باز می‌شه:
- *  - overlay: محتوا سرجاش می‌مونه، درور روش شناور می‌شه (با بک‌دراپ)
- *  - push: محتوا به‌اندازه‌ی عرضِ درور هل داده می‌شه (کنار می‌ره)
- *  - reveal: محتوا کمی کوچیک/عقب می‌ره، انگار درور از زیرش نمایان می‌شه
- *    (همون افکت معروف iOS)
- */
-export type NgxDrawerContentBehavior = 'overlay' | 'push' | 'reveal';
+/** Visual physics used by the drawer while opening/closing. */
+export type NgxDrawerEffect = 'slide' | 'spring' | 'fabric' | 'curtain' | 'elastic' | 'reveal';
+
+/** Controls whether viewport changes own the open state. */
+export type NgxDrawerResponsiveMode = 'off' | 'auto';
+
+/** What happens when the drawer reaches a responsive breakpoint. */
+export interface NgxDrawerResponsiveConfig {
+  /** Enable automatic viewport-driven state changes. */
+  mode?: NgxDrawerResponsiveMode;
+  /** Below this width the mobile state is used. */
+  breakpoint?: number;
+  /** Default state on desktop. */
+  desktopOpen?: boolean;
+  /** Default state on mobile/tablet. */
+  mobileOpen?: boolean;
+  /** Do not let responsive rules close a manually pinned drawer. */
+  respectPinned?: boolean;
+}
