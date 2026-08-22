@@ -47,13 +47,13 @@
   overflow: clip;
 }
 
-.ngx-drawer.is-docked.physical-left {
+.ngx-drawer.is-docked.side-start {
   grid-template-columns: calc(var(--progress) * min(var(--ngx-width), var(--ngx-max-width))) minmax(
       0,
       1fr
     );
 }
-.ngx-drawer.is-docked.physical-right {
+.ngx-drawer.is-docked.side-end {
   grid-template-columns: minmax(0, 1fr) calc(
       var(--progress) * min(var(--ngx-width), var(--ngx-max-width))
     );
@@ -68,10 +68,10 @@
     min-inline-size var(--ngx-duration) var(--ngx-ease),
     transform var(--ngx-duration) var(--ngx-ease);
 }
-.ngx-drawer.is-docked.physical-left .ngx-drawer-main {
+.ngx-drawer.is-docked.side-start .ngx-drawer-main {
   grid-column: 2;
 }
-.ngx-drawer.is-docked.physical-right .ngx-drawer-main {
+.ngx-drawer.is-docked.side-end .ngx-drawer-main {
   grid-column: 1;
 }
 
@@ -90,10 +90,10 @@
   box-shadow: none;
   border-radius: 0;
 }
-.ngx-drawer.is-docked.physical-left .ngx-drawer-panel {
+.ngx-drawer.is-docked.side-start .ngx-drawer-panel {
   grid-column: 1;
 }
-.ngx-drawer.is-docked.physical-right .ngx-drawer-panel {
+.ngx-drawer.is-docked.side-end .ngx-drawer-panel {
   grid-column: 2;
 }
 
@@ -149,14 +149,14 @@
   transition:
     transform var(--ngx-duration) var(--ngx-ease),
     box-shadow 260ms ease;
-  contain: layout paint;
+  contain: layout;
 }
 
-.ngx-drawer.is-overlay.physical-left .ngx-drawer-panel {
+.ngx-drawer.is-overlay.side-start .ngx-drawer-panel {
   inset-inline-start: 0;
   transform: translate3d(var(--closed-offset), 0, 0);
 }
-.ngx-drawer.is-overlay.physical-right .ngx-drawer-panel {
+.ngx-drawer.is-overlay.side-end .ngx-drawer-panel {
   inset-inline-end: 0;
   transform: translate3d(var(--closed-offset), 0, 0);
 }
@@ -170,10 +170,10 @@
   touch-action: none;
   cursor: ew-resize;
 }
-.ngx-drawer-drag-handle.handle-left {
+.ngx-drawer-drag-handle.handle-start {
   inset-inline-end: -18px;
 }
-.ngx-drawer-drag-handle.handle-right {
+.ngx-drawer-drag-handle.handle-end {
   inset-inline-start: -18px;
 }
 .ngx-drawer-drag-handle span {
@@ -189,10 +189,10 @@
     opacity 140ms ease,
     block-size 140ms ease;
 }
-.ngx-drawer-drag-handle.handle-left span {
+.ngx-drawer-drag-handle.handle-start span {
   inset-inline-start: 0;
 }
-.ngx-drawer-drag-handle.handle-right span {
+.ngx-drawer-drag-handle.handle-end span {
   inset-inline-end: 0;
 }
 .ngx-drawer-drag-handle:hover span,
@@ -320,10 +320,10 @@
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent);
   filter: blur(3px);
 }
-.ngx-drawer.physical-right .ngx-fabric-edge {
+.ngx-drawer.side-end .ngx-fabric-edge {
   inset-inline-end: 0;
 }
-.ngx-drawer.physical-left .ngx-fabric-edge {
+.ngx-drawer.side-start .ngx-fabric-edge {
   inset-inline-start: 0;
 }
 

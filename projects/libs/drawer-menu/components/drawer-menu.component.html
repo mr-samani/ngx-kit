@@ -67,8 +67,8 @@
     @if (swipeEnabled() && !pinned()) {
       <div
         class="ngx-drawer-drag-handle"
-        [class.handle-left]="isPhysicalLeft()"
-        [class.handle-right]="!isPhysicalLeft()"
+        [class.handle-start]="side() === 'start'"
+        [class.handle-end]="side() === 'end'"
         (pointerdown)="onPanelPointerDown($event)"
         aria-hidden="true">
         <span></span>

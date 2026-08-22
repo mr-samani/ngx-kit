@@ -19,6 +19,33 @@ import {
   NgxDrawerSide,
 } from '../contracts/drawer-menu-types';
 
+/**
+ * Structural (not reference) equality for the `responsive` config.
+ *
+ * Consumers are expected to pass this as an inline object literal (see README),
+ * which means the parent template creates a brand-new object on every change
+ * detection run. Without this comparator, the `responsive` input signal sees a
+ * "change" on every such run even when nothing actually changed, which re-triggers
+ * the viewport-sync effect and forcibly resets `open` back to the configured
+ * desktop/mobile default — silently overriding whatever the user just did by
+ * dragging, clicking, or toggling the drawer.
+ */
+function responsiveConfigsEqual(
+  a: NgxDrawerResponsiveConfig,
+  b: NgxDrawerResponsiveConfig,
+): boolean {
+  return (
+    a === b ||
+    (a.mode === b.mode &&
+      a.breakpoint === b.breakpoint &&
+      a.desktopOpen === b.desktopOpen &&
+      a.mobileOpen === b.mobileOpen &&
+      a.desktopBehavior === b.desktopBehavior &&
+      a.mobileBehavior === b.mobileBehavior &&
+      a.respectPinned === b.respectPinned)
+  );
+}
+
 @Component({
   selector: 'ngx-drawer-menu',
   standalone: true,
@@ -59,13 +86,18 @@ export class NgxDrawerMenuComponent {
   readonly pinned = model<boolean>(false);
 
   /** Responsive behavior. Can be overridden with individual inputs below. */
-  readonly responsive = input<NgxDrawerResponsiveConfig>({
-    mode: 'auto',
-    breakpoint: 768,
-    desktopOpen: true,
-    mobileOpen: false,
-    respectPinned: true,
-  });
+  readonly responsive = input<NgxDrawerResponsiveConfig>(
+    {
+      mode: 'auto',
+      breakpoint: 768,
+      desktopOpen: true,
+      mobileOpen: false,
+      respectPinned: true,
+      desktopBehavior: 'dock',
+      mobileBehavior: 'overlay',
+    } as any,
+    // { equal: responsiveConfigsEqual },
+  );
 
   /** Convenience aliases for the common responsive configuration. */
   readonly respondToViewport = input<boolean>(true);
@@ -194,7 +226,7 @@ export class NgxDrawerMenuComponent {
   }
 
   protected onBackdropPointerDown(event: PointerEvent): void {
-    if (!this.backdropClose() || this.pinned() || this.effectiveMode() !== 'overlay') return;
+    if (!this.backdropClose() || this.pinned() || !this.usesOverlay()) return;
     event.preventDefault();
     this.closeDrawer();
   }
