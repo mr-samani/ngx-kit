@@ -1,0 +1,32 @@
+<app-example-showcase
+  title="Virtual Scroll"
+  [files]="sourceFiles"
+  readmePath="readmes/time-picker/README.md">
+  <div class="container">
+    <mat-checkbox
+      [ngModel]="enableVirtualScrolling()"
+      (change)="enableVirtualScrolling.update((x) => (x = !x))">
+      Enable Virtual Scrolling
+    </mat-checkbox>
+
+    @if (enableVirtualScrolling()) {
+      <h3>Virtual Scrolling ({{ maximum | number }} Records)</h3>
+      <ngx-virtual-scroll-viewport
+        [itemSize]="28"
+        [minBufferPx]="200"
+        [maxBufferPx]="400"
+        style="height: 400px">
+        <div *ngxVirtualFor="let item of items; trackBy: trackByFn; let i = index" class="row">
+          {{ i | number }} - {{ item }}
+        </div>
+      </ngx-virtual-scroll-viewport>
+    } @else {
+      <h3>Real Dom ({{ 20000 | number }} Records)</h3>
+      <div style="height: 400px; overflow: auto">
+        @for (item of items | slice: 0 : 20000; track $index; let i = $index) {
+          <div class="row">{{ i | number }} - {{ item }}</div>
+        }
+      </div>
+    }
+  </div>
+</app-example-showcase>

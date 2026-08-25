@@ -6,7 +6,7 @@ import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 import { routes } from './app.routes';
 import { provideNotify } from 'ngx-kit/notify';
 import { provideMessage } from 'ngx-kit/message';
-import { provideTable } from 'ngx-kit/data-table';
+import { providePagination, provideTable } from 'ngx-kit/data-table';
 import { AvatarCellRenderer } from './shared/renderers/AvatarCellRenderer';
 import { BooleanCellRenderer } from './shared/renderers/BooleanCellRenderer';
 import { DateCellRenderer } from './shared/renderers/DateCellRenderer';
@@ -23,7 +23,9 @@ export const appConfig: ApplicationConfig = {
     }),
     provideNotify({ timeout: 5000, dismissible: true, position: 'bottom-center' }),
     provideMessage(),
-    // providePagination(),
+    providePagination({
+      pageSizeOptions: [5, 10, 50, 100, 1000, 2000, 5000],
+    }),
     provideTable({
       renderers: {
         boolean: BooleanCellRenderer,

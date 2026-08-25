@@ -121,6 +121,10 @@ export const MENU_LIST: ICategory[] = [
         imageDark: 'preview/menu-dark.png',
         imageLight: 'preview/menu-light.png',
       },
+      {
+        title: 'Virtual Scroll',
+        url: '/components/virtual-scroll',
+      },
     ],
   },
 ];
