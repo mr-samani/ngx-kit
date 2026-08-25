@@ -1,40 +1,42 @@
 :host.ngx-virtual-scroll-viewport-host {
   display: block;
   position: relative;
-  // پیش‌فرض: مصرف‌کننده باید height (برای عمودی) یا width (برای افقی) بدهد
   overflow: hidden;
+  contain: strict;
 }
 
 .ngx-virtual-scroll-viewport__scrollable {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  // Both axes are always native-scrollable: the auto-detected axis is
+  // virtualized, the cross axis (if it overflows) scrolls normally. This is
+  // what makes "mixed" horizontal + vertical content work, e.g. a wide
+  // table whose rows are virtualized while its columns scroll natively.
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
-
-  &--horizontal {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-  }
+  contain: strict;
 }
 
 .ngx-virtual-scroll-viewport__spacer {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1px;
-  height: 1px;
   pointer-events: none;
   visibility: hidden;
 }
 
-.ngx-virtual-scroll-viewport__content-wrapper {
+.ngx-virtual-scroll-viewport__wrapper {
   position: absolute;
   top: 0;
   left: 0;
   min-width: 100%;
-  will-change: transform;
   contain: layout style;
+}
+
+// `will-change` is only applied while an active scroll is in progress, and
+// removed shortly after it settles, to avoid keeping a compositor layer
+// alive (and the associated memory cost) for the lifetime of the component.
+:host.ngx-virtual-scroll-viewport-host--scrolling .ngx-virtual-scroll-viewport__wrapper {
+  will-change: transform;
 }

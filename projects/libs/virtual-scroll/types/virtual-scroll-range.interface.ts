@@ -1,6 +1,7 @@
 /**
- * بازه‌ی ایندکس‌هایی که در حال حاضر باید در DOM رندر شوند.
- * end اکسکلوسیو است (مثل Array.slice).
+ * A "line" index range that is currently rendered.
+ * A "line" is one item for a plain list, or one row/column of N items
+ * for an auto-detected wrapping grid. `end` is exclusive.
  */
 export interface NgxVirtualScrollRange {
   start: number;

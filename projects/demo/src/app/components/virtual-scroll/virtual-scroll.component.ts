@@ -3,7 +3,7 @@ import {
   ExampleShowcaseComponent,
   type ExampleSourceFile,
 } from '@demo/shared/showcase/example-showcase.component';
-import { NgxVirtualScrollModule } from 'ngx-kit/virtual-scroll';
+import { NgxVirtualScrollViewport } from 'ngx-kit/virtual-scroll';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./virtual-scroll.component.scss'],
   imports: [
     CommonModule,
-    NgxVirtualScrollModule,
+    NgxVirtualScrollViewport,
     ExampleShowcaseComponent,
     MatCheckbox,
     FormsModule,
@@ -36,7 +36,7 @@ export class VirtualScrollComponent implements OnInit {
 
   enableVirtualScrolling = signal(true);
 
-  maximum = 1000000;
+  maximum = 10000000;
   items: string[] = [];
   constructor() {
     for (let i = 0; i <= this.maximum; i++) {

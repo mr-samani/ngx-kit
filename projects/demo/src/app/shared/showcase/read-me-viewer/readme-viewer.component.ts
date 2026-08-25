@@ -14,6 +14,12 @@ import hljs from 'highlight.js';
 import { DarkModeService } from '../../services/dark-mode.service';
 import { MarkdownThemeLoader } from './markdown-theme-loader';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+interface MarkdownTocItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
 /**
  * README.md واقعیِ خودِ لایبرری رو (که با یه asset glob تحت readmes/...
  * سرو می‌شه — دقیقاً همون فایلیه که توی پوشه‌ی لایبرریه، کپی‌ی جدایی نیست)
@@ -38,7 +44,28 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     }
 
     @if (!loading() && !error()) {
-      <article class="markdown-body ngx-markdown-preview" [innerHTML]="html()"></article>
+      <div class="ngx-markdown-layout">
+        <article class="markdown-body ngx-markdown-preview" [innerHTML]="html()"></article>
+
+        @if (toc().length) {
+          <aside class="ngx-markdown-toc">
+            <div class="ngx-markdown-toc__title">On this page</div>
+
+            <nav>
+              @for (item of toc(); track item.id) {
+                <a
+                  [href]="'#' + item.id"
+                  [class.active]="activeTocId() === item.id"
+                  [class.level-3]="item.level === 3"
+                  [class.level-4]="item.level === 4"
+                  (click)="onTocClick($event, item)">
+                  {{ item.text }}
+                </a>
+              }
+            </nav>
+          </aside>
+        }
+      </div>
     }
   `,
   styleUrl: './readme-viewer.component.scss',
@@ -60,7 +87,8 @@ export class ReadmeViewerComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly sanitizer = inject(DomSanitizer);
-
+  readonly toc = signal<MarkdownTocItem[]>([]);
+  readonly activeTocId = signal<string | null>(null);
   constructor() {
     afterNextRender(() => {
       this.load();
@@ -127,7 +155,23 @@ export class ReadmeViewerComponent {
   }
 
   private async renderMarkdown(markdown: string) {
+    const toc: MarkdownTocItem[] = [];
+    const usedIds = new Set<string>();
+
     const renderer = new Renderer();
+
+    renderer.heading = ({ text, depth }) => {
+      const baseId = this.slugify(text);
+      const id = this.createUniqueId(baseId, usedIds);
+
+      toc.push({
+        id,
+        text: this.stripHtml(text),
+        level: depth,
+      });
+
+      return `<h${depth} id="${id}">${text}</h${depth}>`;
+    };
 
     renderer.code = ({ text, lang }) => {
       const language = this.normalizeLanguage(lang);
@@ -177,6 +221,8 @@ export class ReadmeViewerComponent {
     });
 
     const result = marked.parse(markdown) as string;
+
+    this.toc.set(toc);
 
     return this.sanitizer.bypassSecurityTrustHtml(result);
   }
@@ -275,5 +321,51 @@ export class ReadmeViewerComponent {
         }
       });
     });
+  }
+
+  private slugify(value: string): string {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/<[^>]*>/g, '')
+      .replace(/[^\p{L}\p{N}\s-]/gu, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  }
+
+  private createUniqueId(baseId: string, usedIds: Set<string>): string {
+    let id = baseId || 'section';
+    let counter = 2;
+
+    while (usedIds.has(id)) {
+      id = `${baseId}-${counter++}`;
+    }
+
+    usedIds.add(id);
+
+    return id;
+  }
+
+  private stripHtml(value: string): string {
+    return value.replace(/<[^>]*>/g, '');
+  }
+
+  onTocClick(event: MouseEvent, item: MarkdownTocItem): void {
+    event.preventDefault();
+
+    const element = this.elementRef.nativeElement.querySelector(`#${CSS.escape(item.id)}`);
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+
+    history.pushState(null, '', `${window.location.pathname}${window.location.search}#${item.id}`);
+
+    this.activeTocId.set(item.id);
   }
 }

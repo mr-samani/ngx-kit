@@ -12,17 +12,18 @@
     @if (enableVirtualScrolling()) {
       <h3>Virtual Scrolling ({{ maximum | number }} Records)</h3>
       <ngx-virtual-scroll-viewport
-        [itemSize]="28"
+        #vs="ngxVirtualScrollViewport"
+        [items]="items"
         [minBufferPx]="200"
         [maxBufferPx]="400"
-        style="height: 400px">
-        <div *ngxVirtualFor="let item of items; trackBy: trackByFn; let i = index" class="row">
-          {{ i | number }} - {{ item }}
-        </div>
+        class="list-container">
+        @for (item of vs.visibleItems(); track $index; let i = $index) {
+          <div class="row">{{ vs.baseIndex() + i | number }} - {{ item }}</div>
+        }
       </ngx-virtual-scroll-viewport>
     } @else {
       <h3>Real Dom ({{ 20000 | number }} Records)</h3>
-      <div style="height: 400px; overflow: auto">
+      <div class="list-container">
         @for (item of items | slice: 0 : 20000; track $index; let i = $index) {
           <div class="row">{{ i | number }} - {{ item }}</div>
         }

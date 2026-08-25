@@ -1,172 +1,169 @@
 # @ngx-kit/virtual-scroll
 
-Virtual scroll مستقل، سبک و بدون وابستگی به `@angular/material`، با پشتیبانی کامل از
-**اسکرول عمودی و افقی**. طراحی‌شده برای ادغام آسان با کامپوننت‌های سفارشی مثل جدول‌های
-خودساخته (`ngx-table`).
+A zoneless, signal-based virtual scroll viewport for Angular. No `@angular/material`
+or `@angular/cdk` dependency, no `NgZone`, no `ngOnChanges`, no `@Input() itemSize`,
+no `@Input() orientation` — everything that can be derived from the real DOM is
+derived from the real DOM.
 
+## Why this rewrite
 
+| Old design | This design |
+| --- | --- |
+| `NgZone` injected, `zone.run` everywhere | No `NgZone` at all — works natively under `provideZonelessChangeDetection()` |
+| `ngOnChanges` + `SimpleChanges` | `input()` signals + `computed()` / `effect()` |
+| `@Input() itemSize` (broke as soon as your item had margin/border/box-shadow) | Real item size is **measured** from `getBoundingClientRect()` deltas between actually rendered siblings, so margins/borders/shadows are always accounted for |
+| `@Input() orientation` | Axis is **auto-detected** from the real layout of your own item markup |
+| Custom `*ngxVirtualFor` structural directive | Plain native `@for` over a `visibleItems()` signal — you keep full control of `track`, `@empty`, etc. |
+
+## Install & import
 
 ```ts
-// standalone
-import { NgxVirtualScrollViewportComponent, NgxVirtualForOfDirective } from '@ngx-kit/virtual-scroll';
+import { NgxVirtualScrollViewport } from '@ngx-kit/virtual-scroll';
 
 @Component({
   standalone: true,
-  imports: [NgxVirtualScrollViewportComponent, NgxVirtualForOfDirective],
+  imports: [NgxVirtualScrollViewport],
   ...
 })
 ```
 
-یا با NgModule:
-
-```ts
-import { NgxVirtualScrollModule } from '@ngx-kit/virtual-scroll';
-
-@NgModule({ imports: [NgxVirtualScrollModule] })
-export class AppModule {}
-```
-
-## استفاده‌ی پایه (لیست ساده - عمودی)
+## Basic usage — vertical list (auto-detected)
 
 ```html
-<ngx-virtual-scroll-viewport [itemSize]="48" [minBufferPx]="200" [maxBufferPx]="400" style="height: 400px">
-  <div *ngxVirtualFor="let item of items; trackBy: trackByFn; let i = index" class="row">
-    {{ i }} - {{ item.name }}
-  </div>
+<ngx-virtual-scroll-viewport #vs="ngxVirtualScrollViewport" [items]="items" style="height: 400px">
+  @for (item of vs.visibleItems(); track $index; let i = $index) {
+    <div class="row">{{ vs.baseIndex() + i | number }} - {{ item.name }}</div>
+  }
 </ngx-virtual-scroll-viewport>
 ```
 
-## استفاده‌ی افقی
+This is exactly the case that used to break: `.row` can have `margin`, `border`,
+`box-shadow`, `padding` — anything. The viewport measures the real distance between
+two consecutively rendered rows and uses that, not a number you have to keep in sync
+with your CSS.
 
-```html
-<ngx-virtual-scroll-viewport orientation="horizontal" [itemSize]="180" style="width: 100%; height: 60px">
-  <div *ngxVirtualFor="let col of columns" class="col">{{ col.title }}</div>
-</ngx-virtual-scroll-viewport>
+```css
+.row {
+  height: 48px;
+  border: 1px rgb(166 166 166 / 51%) solid;
+  box-shadow: 0px 0px 20px rgb(122 122 122 / 20%);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  margin: 10px;
+  padding: 15px;
+}
 ```
 
-## ادغام با `ngx-table` (معادل الگوی خودت با `mat-table`)
+## Horizontal lists & wrapping grids (auto-detected)
 
-نکته‌ی مهم: اگر کل جدول (شامل `<thead>`) را داخل viewport بگذارید، هدر هم با
-`transform` جابه‌جا می‌شود و ثابت نمی‌ماند. الگوی درست و متداول (که خودِ CDK هم
-داخلی از همین ایده استفاده می‌کند) این است که فقط **بدنه‌ی ردیف‌ها** ویرچوالایز شود
-و هدر بیرون از content-wrapper، به‌صورت جدا یا sticky بماند:
+The axis is inferred purely from how your own items lay out:
+
+- Items stack top-to-bottom (default block flow) → **vertical** list.
+- Items lay out left-to-right in a single line (e.g. `display: inline-flex` on the
+  item, or a `flex-wrap: nowrap` row) → **horizontal** list.
+- Items lay out left-to-right and *wrap* to a new line (e.g. cards with
+  `display: flex; flex-wrap: wrap`) → treated as a **vertical** list of "lines",
+  where each line holds N items. This is how mixed horizontal + vertical layouts
+  (a card grid that scrolls vertically) are supported without a separate 2D data
+  model — the cross axis (row width) lays out and scrolls natively, only the line
+  axis is virtualized.
+
+You don't configure any of this — you only make sure your `.item` CSS actually lays
+out the way you want, and the viewport detects it.
+
+## Mixed content (e.g. wide, virtualized table)
+
+Both axes of the scroll container are always natively scrollable
+(`overflow: auto` on both). Only the detected axis is virtualized; the cross axis
+(for example, a table wider than its container) scrolls with the browser's native
+scrollbar, so wide tables with virtualized rows work out of the box:
 
 ```html
-<ngx-table class="example-container">
-  <!-- هدر ثابت، خارج از ویرچوال‌اسکرول -->
-  <thead>
-    <tr>
-      <th>No.</th>
-      ...
-    </tr>
-  </thead>
+<div class="table-shell">
+  <table><thead>...</thead></table> <!-- kept outside, sticky/fixed header -->
 
-  <!-- بدنه: اینجا ویرچوالایز می‌شود -->
-  <ngx-virtual-scroll-viewport
-    [itemSize]="52"
-    [minBufferPx]="400"
-    [maxBufferPx]="1200"
-    style="display: block; height: 480px"
-  >
-    <tbody>
-      <ng-container *ngxVirtualFor="let element of dataSource; trackBy: trackBy; let i = index">
-        <tr>
-          <td>{{ element.position }}</td>
-          ...
-        </tr>
-      </ng-container>
-    </tbody>
+  <ngx-virtual-scroll-viewport #vs="ngxVirtualScrollViewport" [items]="rows" style="height: 480px">
+    <table>
+      <tbody>
+        @for (row of vs.visibleItems(); track row.id; let i = $index) {
+          <tr>
+            <td>{{ vs.baseIndex() + i }}</td>
+            ...
+          </tr>
+        }
+      </tbody>
+    </table>
   </ngx-virtual-scroll-viewport>
-</ngx-table>
+</div>
 ```
-
-اگر می‌خواهی دقیقاً همان syntax تو دو تگ تو در تو باشد:
-
-```html
-<ngx-virtual-scroll-viewport [itemSize]="52" [minBufferPx]="400" [maxBufferPx]="1200">
-  <ngx-table [dataSource]="dataSource" [trackBy]="trackBy" [virtualRows]="true">
-    ...
-  </ngx-table>
-</ngx-virtual-scroll-viewport>
-```
-
-در این حالت داخل `ngx-table` باید `*ngxVirtualFor` را روی `<tr>`های `tbody` بگذاری
-(نه روی کل جدول)، دقیقاً همان‌طور که در مثال بالا نشان داده شد؛ ngx-table فقط باید
-selector هدرش را با `position: sticky; top: 0; z-index: 1` بدهد تا هنگام اسکرول محتوای
-داخلی، ثابت بماند (چون خودِ container اسکرول‌شونده در سطح `.ngx-virtual-scroll-viewport__scrollable`
-است، نه سطح `ngx-table`).
 
 ## API
 
-### `<ngx-virtual-scroll-viewport>` (alias: `<ngx-virtual-scroll>`)
+### Inputs
 
-| Input          | نوع                            | پیش‌فرض | توضیح                                   |
-| -------------- | ------------------------------- | ------- | ---------------------------------------- |
-| `orientation`  | `'vertical' \| 'horizontal'`    | `vertical` | جهت اسکرول                            |
-| `itemSize`     | `number`                        | `50`    | اندازه‌ی ثابت هر آیتم (px)               |
-| `minBufferPx`  | `number`                        | `100`   | حداقل بافر قبل از محاسبه‌ی دوباره        |
-| `maxBufferPx`  | `number`                        | `200`   | حداکثر بافر رندر خارج از دید             |
+| Input | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `items` | `readonly T[]` | `[]` | Full data set |
+| `minBufferPx` | `number` | `150` | Buffer left before recomputing the range |
+| `maxBufferPx` | `number` | `300` | Extra px rendered outside the viewport |
+| `measureFn` | `NgxVirtualScrollMeasureFn` | `undefined` | Advanced override for the built-in layout probe |
 
-| Output                 | نوع                              | توضیح                          |
-| ----------------------- | --------------------------------- | ------------------------------- |
-| `scrolledIndexChange`   | `EventEmitter<number>`            | ایندکس اولین آیتم قابل‌مشاهده  |
-| `renderedRangeChange`   | `EventEmitter<NgxVirtualScrollRange>` | بازه‌ی فعلی رندرشده        |
+### Outputs
 
-| متد                                              | توضیح                         |
-| -------------------------------------------------- | ------------------------------ |
-| `scrollToIndex(index, behavior?)`                  | اسکرول برنامه‌ای به یک ایندکس |
-| `scrollToOffset(offset, behavior?)`                | اسکرول برنامه‌ای به یک آفست   |
-| `getRenderedRange()`                               | بازه‌ی فعلی رندرشده           |
-| `checkViewportSize()`                              | اندازه‌گیری مجدد دستی          |
+| Output | Type |
+| --- | --- |
+| `scrolledIndexChange` | `OutputEmitterRef<number>` |
+| `rangeChange` | `OutputEmitterRef<NgxVirtualScrollRange>` |
 
-### `*ngxVirtualFor`
+### Public signals (via `#vs="ngxVirtualScrollViewport"`)
 
-```html
-*ngxVirtualFor="let item of items; trackBy: trackByFn; let i = index"
-```
+| Signal | Type | Meaning |
+| --- | --- | --- |
+| `visibleItems()` | `readonly T[]` | Slice of `items()` to render right now |
+| `range()` | `{ start, end }` | Currently rendered line range |
+| `baseIndex()` | `number` | Absolute index of `visibleItems()[0]` |
+| `axis()` | `'vertical' \| 'horizontal'` | Auto-detected scroll axis |
+| `crossCount()` | `number` | Items per line (1 for a plain list) |
+| `lineSize()` | `number` | Measured px size of one line |
+| `isMeasured()` | `boolean` | Whether the initial layout probe has completed |
+| `isScrolling()` | `boolean` | True while an active scroll gesture is in progress |
 
-کانتکست تمپلیت: `$implicit`, `index`, `count`, `first`, `last`, `even`, `odd`.
+### Methods
 
-### استراتژی سفارشی (برای اندازه‌ی متغیر یا الگوریتم دلخواه)
+| Method | Description |
+| --- | --- |
+| `scrollToIndex(index, behavior?)` | Scroll to a given item index |
+| `scrollToOffset(offsetPx, behavior?)` | Scroll to a given pixel offset |
+| `checkViewportSize()` | Force a re-measure (rarely needed — a `ResizeObserver` already handles container resizes) |
 
-```ts
-providers: [
-  { provide: NGX_VIRTUAL_SCROLL_STRATEGY, useClass: MyCustomStrategy }
-]
-```
+## Performance notes
 
-کافیست `NgxVirtualScrollStrategy` را پیاده‌سازی کنید (فایل
-`strategies/virtual-scroll-strategy.ts`).
+- Fully `ChangeDetectionStrategy.OnPush` and zoneless-compatible — no `NgZone`
+  import anywhere; signal writes are what schedule change detection.
+- Scroll handling is `requestAnimationFrame`-throttled and the listener is
+  registered with `{ passive: true }`.
+- The range is only recomputed once the scroll offset gets within
+  `minBufferPx` of the current range's edge — not on every scroll event.
+- Layout is only ever **read** (`getBoundingClientRect`) inside an
+  `afterRenderEffect({ read: ... })` block, so DOM measurement never
+  interleaves with — and never forces — a layout/style write.
+- `will-change: transform` is only applied to the content wrapper while
+  `isScrolling()` is true, and removed ~150ms after the last scroll event, to
+  avoid holding a compositor layer alive for the component's entire lifetime.
+- `contain: strict` / `contain: layout style` isolate the viewport's layout
+  and paint from the rest of the page.
 
-## مقایسه با `cdk-virtual-scroll-viewport`
+## How auto-measurement works
 
-| ویژگی                                   | Angular CDK                          | @ngx-kit/virtual-scroll         |
-| ----------------------------------------- | -------------------------------------- | ---------------------------------- |
-| اسکرول عمودی fixed-size                  | ✅ پایدار                              | ✅                                  |
-| اسکرول افقی                              | ⚠️ تجربی / محدود                       | ✅ به‌صورت رسمی                    |
-| وابستگی                                  | کل `@angular/cdk/scrolling`            | فقط `@angular/core` + `rxjs`      |
-| استراتژی سفارشی                          | ✅ (پیچیده‌تر برای پیاده‌سازی)          | ✅ اینترفیس ساده و مینیمال          |
-| ادغام با جدول سفارشی (غیر از mat-table)  | نیازمند trick و override زیاد           | طراحی‌شده برای این منظور           |
-| اندازه‌بندی متغیر (variable size)        | Experimental                          | با پیاده‌سازی استراتژی سفارشی      |
-
-## معماری داخلی (خلاصه)
-
-```
-src/lib/
-  types/                 → orientation, range, template-context
-  tokens/                → NgxVirtualScrollViewportRef + DI token استراتژی
-  strategies/
-    virtual-scroll-strategy.ts          → قرارداد انتزاعی
-    fixed-size-virtual-scroll-strategy.ts → پیاده‌سازی پیش‌فرض (هر دو جهت)
-  viewport/
-    virtual-scroll-viewport.component.ts  → مدیریت DOM، scroll listener، ResizeObserver
-  directives/
-    virtual-for-of.directive.ts           → recycle کردن EmbeddedViewها
-  ngx-virtual-scroll.module.ts
-```
-
-الگوی رندر دقیقاً مشابه CDK است: یک `spacer` نامرئی با اندازه‌ی کل لیست (برای
-اسکرول‌بار native درست) + یک `content-wrapper` که با `transform: translate` به
-موقعیت بازه‌ی رندرشده منتقل می‌شود، به‌جای positioning تک‌تک آیتم‌ها. این یعنی
-آیتم‌های داخل `tbody` می‌توانند به‌صورت طبیعی (document flow) کنار هم بچینند و
-لایوت جدول native حفظ می‌شود.
+On first render, up to 24 items are rendered "in the open" (un-transformed) purely
+to be measured — see `measure-layout.ts`. Their real `getBoundingClientRect()`
+deltas are used to infer axis, items-per-line, and line size in one pass, all pure
+functions with no Angular dependency (so they are trivially unit-testable). Once
+measured, the real virtualized range replaces the probe range and rendering
+proceeds normally. If your rows can change size at runtime (e.g. responsive
+breakpoints), a `ResizeObserver` on the scroll container triggers `checkViewportSize()`
+automatically to re-fit the viewport dimension; if the *line size itself* changes at
+runtime you can force a full re-measure by re-creating the component (e.g. keyed with
+`@if`/`*ngIf` + a changing key), which is the same limitation `cdk-virtual-scroll-viewport`
+has with its own `FixedSizeVirtualScrollStrategy`.
