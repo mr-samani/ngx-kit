@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { EditorComponent } from 'ngx-monaco-editor-v2';
-import { DarkModeService } from '../services/dark-mode.service';
+import { DarkModeService } from '../../services/dark-mode.service';
 
 /**
  * نمایشگر سورس فقط-خواندنی روی پایه‌ی Monaco؛ آدرس فایل رو می‌گیره

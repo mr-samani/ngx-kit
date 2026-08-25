@@ -11,7 +11,7 @@ import {
 
 import { marked, Renderer } from 'marked';
 import hljs from 'highlight.js';
-import { DarkModeService } from '../services/dark-mode.service';
+import { DarkModeService } from '../../services/dark-mode.service';
 import { MarkdownThemeLoader } from './markdown-theme-loader';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 /**
