@@ -11,17 +11,6 @@
         }
       </select>
     </label>
-
-    <label>
-      contentBehavior
-      <select [ngModel]="behavior()" (ngModelChange)="behavior.set($event)">
-        @for (b of behaviors; track b) {
-          <option [value]="b">{{ b }}</option>
-        }
-      </select>
-    </label>
-
-    <button type="button" (click)="open.set(true)">Open</button>
   </div>
 
   <p class="hint">
@@ -32,7 +21,6 @@
   <div class="frame">
     <ngx-drawer-menu
       [effect]="effect()"
-      [contentBehavior]="behavior()"
       [(open)]="open"
       side="start"
       [width]="220"
@@ -48,6 +36,9 @@
       </div>
 
       <div class="page-content">
+        <button type="button" (click)="open.set(true)">
+          <i class="fa fa-bars"></i>
+        </button>
         <p>This is the page's main content.</p>
         <p>Change "contentBehavior" to see how it reacts.</p>
       </div>

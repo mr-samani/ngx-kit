@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { CodeViewerComponent } from './code-viewer.component';
-import { ReadmeViewerComponent } from './readme-viewer.component';
+import { CodeViewerComponent } from './code-viewer/code-viewer.component';
+import { ReadmeViewerComponent } from './read-me-viewer/readme-viewer.component';
 
 export interface ExampleSourceFile {
   /** برچسبی که روی تب نشون داده می‌شه، مثلاً «TS» یا «HTML» */

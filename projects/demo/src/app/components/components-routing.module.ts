@@ -87,6 +87,11 @@ const routes: Routes = [
         loadComponent: () =>
           import('./drawer-menu/drawer-menu.component').then((c) => c.DrawerMenuComponent),
       },
+      {
+        path: 'virtual-scroll',
+        loadComponent: () =>
+          import('./virtual-scroll/virtual-scroll.component').then((c) => c.VirtualScrollComponent),
+      },
     ],
   },
 ];

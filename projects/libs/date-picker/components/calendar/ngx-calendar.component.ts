@@ -70,6 +70,7 @@ interface EventInteractionState {
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
   localize = input<NgxCalendarLocalization>(this.defaultLocalization);
+  resizeAndMovable = input<boolean>(false);
 
   _config = new NgxDatePickerConfig();
   @Input() set config(val: NgxDatePickerConfig) {
@@ -588,7 +589,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     segment: CalendarMonthEventSegment,
     type: CalendarEventInteractionType = 'move',
   ) {
-    if (ev.button !== 0) return;
+    if (ev.button !== 0 || !this.resizeAndMovable()) return;
     ev.preventDefault();
     ev.stopPropagation();
     this.beginInteraction(ev, segment, type, 'month');
@@ -599,7 +600,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     event: CalendarTimedEvent,
     type: CalendarEventInteractionType = 'move',
   ) {
-    if (ev.button !== 0) return;
+    if (ev.button !== 0 || !this.resizeAndMovable()) return;
     ev.preventDefault();
     ev.stopPropagation();
     this.beginInteraction(ev, event, type, event.allDay ? 'all-day' : 'timed');
@@ -633,7 +634,6 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   private updateEventInteraction(ev: PointerEvent) {
     const state = this.interaction;
     if (!state) return;
-
     const monthMetrics = state.surface === 'month' ? this.monthPointerDelta(ev) : null;
     const timedMetrics = state.surface === 'timed' ? this.timedPointerDelta(ev) : null;
     const allDayMetrics = state.surface === 'all-day' ? this.allDayPointerDelta(ev) : null;

@@ -1,10 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  NgxDrawerMenuComponent,
-  NgxDrawerContentBehavior,
-  NgxDrawerEffect,
-} from 'ngx-kit/drawer-menu';
+import { NgxDrawerMenuComponent, NgxDrawerEffect } from 'ngx-kit/drawer-menu';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
@@ -25,15 +21,14 @@ export class DrawerMenuComponent {
   protected readonly effects: NgxDrawerEffect[] = [
     'slide',
     'curtain',
-    'jelly',
-    'pull',
-    'rotate3d',
-    'flip3d',
-    'scale',
+    'slide',
+    'spring',
+    'fabric',
+    'curtain',
+    'elastic',
+    'reveal',
   ];
-  protected readonly behaviors: NgxDrawerContentBehavior[] = ['overlay', 'push', 'reveal'];
 
-  protected readonly effect = signal<NgxDrawerEffect>('jelly');
-  protected readonly behavior = signal<NgxDrawerContentBehavior>('overlay');
+  protected readonly effect = signal<NgxDrawerEffect>('fabric');
   protected readonly open = signal(false);
 }

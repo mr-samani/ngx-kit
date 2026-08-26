@@ -1,0 +1,6 @@
+<div #scrollable class="ngx-virtual-scroll-viewport__scrollable">
+  <div class="ngx-virtual-scroll-viewport__spacer" [style.width.px]="spacerWidth()" [style.height.px]="spacerHeight()" aria-hidden="true"></div>
+  <div #wrapper class="ngx-virtual-scroll-viewport__wrapper" [style.transform]="wrapperTransform()">
+    <ng-content></ng-content>
+  </div>
+</div>

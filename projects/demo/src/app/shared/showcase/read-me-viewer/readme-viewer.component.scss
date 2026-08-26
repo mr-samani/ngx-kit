@@ -1,0 +1,174 @@
+.ngx-markdown-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 40px;
+  align-items: start;
+}
+
+.ngx-markdown-preview {
+  min-width: 0;
+  box-sizing: border-box;
+
+  padding: 32px;
+}
+
+.ngx-markdown-toc {
+  position: sticky;
+  top: 24px;
+
+  max-height: calc(100vh - 48px);
+
+  overflow-y: auto;
+
+  padding: 8px 0;
+}
+
+.ngx-markdown-toc__title {
+  margin-bottom: 12px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #656d76;
+}
+
+.ngx-markdown-toc nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.ngx-markdown-toc a {
+  display: block;
+
+  padding: 5px 0 5px 12px;
+
+  border-left: 1px solid #d0d7de;
+
+  color: #656d76;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  text-decoration: none;
+
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.ngx-markdown-toc a:hover {
+  color: #0969da;
+}
+
+.ngx-markdown-toc a.active {
+  border-left-color: #0969da;
+  color: #0969da;
+  font-weight: 500;
+}
+
+.ngx-markdown-toc a.level-3 {
+  padding-left: 24px;
+}
+
+.ngx-markdown-toc a.level-4 {
+  padding-left: 36px;
+}
+
+@media (max-width: 900px) {
+  .ngx-markdown-layout {
+    display: block;
+  }
+
+  .ngx-markdown-toc {
+    display: none;
+  }
+}
+
+.ngx-markdown-preview :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 80px;
+}
+
+.ngx-markdown-loading {
+  padding: 32px;
+  text-align: center;
+  color: #656d76;
+}
+
+.ngx-markdown-error {
+  margin: 16px 0;
+  padding: 16px;
+
+  border: 1px solid #ff818266;
+  border-radius: 6px;
+
+  background: #ffebe9;
+  color: #cf222e;
+}
+
+::ng-deep {
+  /*
+ * Code block
+ */
+
+  .ngx-markdown-preview {
+    .ngx-markdown-code {
+      position: relative;
+      margin: 16px 0;
+      overflow: hidden;
+      border: 1px solid #d0d7de54;
+      border-radius: 6px;
+      direction: ltr;
+    }
+
+    .ngx-markdown-code__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 36px;
+      padding: 0 12px;
+      border-bottom: 1px solid #d0d7de54;
+      color: light-dark(#cfcfcf, #626365);
+    }
+
+    .ngx-markdown-code__language {
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .ngx-markdown-code__copy {
+      border: 0;
+      border-radius: 6px;
+      padding: 4px 8px;
+      background: transparent;
+      font-size: 12px;
+      cursor: pointer;
+      &:hover {
+        background: #eaeef297;
+        color: #1f2328;
+      }
+    }
+
+    pre {
+      margin: 0 !important;
+      padding: 16px !important;
+
+      overflow-x: auto;
+
+      background: transparent !important;
+    }
+
+    pre code {
+      display: block;
+
+      padding: 0 !important;
+
+      background: transparent !important;
+
+      font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  }
+}

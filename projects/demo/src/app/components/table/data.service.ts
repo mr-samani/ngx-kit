@@ -26,7 +26,7 @@ export interface GetInputDto {
 
 @Injectable()
 export class DataService {
-  private readonly allUsers = this.generateUsers(100);
+  private readonly allUsers = this.generateUsers(10000);
 
   getUsers(input: GetInputDto): Observable<PagedResult<UserDto>> {
     let items = [...this.allUsers];
@@ -45,7 +45,7 @@ export class DataService {
     }
 
     const page = items.slice(input.skipCount, input.skipCount + input.maxResultCount);
-    return of({ items: page, totalCount: items.length }).pipe(delay(400));
+    return of({ items: page, totalCount: items.length }).pipe(delay(500));
   }
 
   private generateUsers(count: number): UserDto[] {

@@ -1,6 +1,5 @@
 @use './scss//material.scss';
 
-
 * {
   box-sizing: border-box;
 }
@@ -29,4 +28,17 @@ button {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
     cursor: pointer;
   }
+}
+
+.d-flex {
+  display: flex;
+}
+.flex-auto {
+  flex: auto;
+}
+.flex-fill {
+  flex: 1 1 0;
+}
+.align-items-end {
+  align-items: flex-end;
 }

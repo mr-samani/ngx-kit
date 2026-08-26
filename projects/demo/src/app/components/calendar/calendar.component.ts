@@ -5,6 +5,7 @@ import {
   getLocals,
   NgxCalendarComponent,
   provideDateAdapters,
+  type CalendarEventChange,
   type MsEvents,
 } from 'ngx-kit/date-picker';
 import {
@@ -13,6 +14,7 @@ import {
 } from '../../shared/showcase/example-showcase.component';
 import type { ISelectedEvent } from 'ngx-kit/date-picker/models/selected-event';
 import { MSG } from 'ngx-kit/message';
+import { Notify } from 'ngx-kit/notify';
 
 @Component({
   selector: 'app-calendar',
@@ -34,6 +36,7 @@ export class CalendarComponent implements OnInit {
   today = new Date();
   myEvents: MsEvents[] = [
     {
+      id: 1,
       start: this.today,
       end: new Date(
         `${this.today.getFullYear()}-${this.today.getMonth() + 2}-${this.today.getDate() + 3}`,
@@ -43,6 +46,7 @@ export class CalendarComponent implements OnInit {
       allDay: true,
     },
     {
+      id: 2,
       start: this.today,
       end: new Date(
         `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 5}`,
@@ -53,6 +57,7 @@ export class CalendarComponent implements OnInit {
       allDay: true,
     },
     {
+      id: 3,
       start: this.today,
       end: new Date(
         `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 4}`,
@@ -62,14 +67,17 @@ export class CalendarComponent implements OnInit {
       allDay: true,
     },
     {
+      id: 4,
       start: this.today,
       title: 'today 1',
     },
     {
+      id: 5,
       start: this.today,
       title: 'today 2',
     },
     {
+      id: 6,
       start: this.today,
       title: 'today 3',
     },
@@ -81,5 +89,9 @@ export class CalendarComponent implements OnInit {
 
   onSelectEvent(ev: ISelectedEvent) {
     MSG.fire({ title: ev.event.title ?? '', text: ev.date.toISOString() });
+  }
+
+  onEventChange(ev: CalendarEventChange) {
+    Notify.info('Event Changed.');
   }
 }
