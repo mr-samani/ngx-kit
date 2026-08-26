@@ -165,7 +165,27 @@ export class NgxVirtualScrollViewport<T = unknown> {
   // Expressed in the same compressed DOM coordinate space as `scrollOffset`/
   // `totalSize`, so it always stays within the safe, capped range even for
   // enormous data sets — see `scaleFactor`.
-  private readonly contentOffset = computed(() => this.range().start * this.lineSize() * this.scaleFactor());
+  //
+  // The naive `start * lineSize * scaleFactor` value is only an *ideal*
+  // proportional position. It is clamped so the *real* (unscaled) rendered
+  // block — `renderedBlockSize()` — can never be pushed past the end of the
+  // capped spacer. Without this clamp, once `scaleFactor() < 1`, the block
+  // rendered near the tail (real, unscaled size) no longer fits in the tiny
+  // sliver of compressed space "ideally" left for it, so it gets positioned
+  // partly (or entirely) past the bottom of the scrollable area — reachable
+  // in the DOM, but never inside the visible/scrollable viewport. Clamping
+  // guarantees the tail of the list is always flush with, and fully inside,
+  // the scrollable area.
+  private readonly renderedBlockSize = computed(() => {
+    const { start, end } = this.range();
+    return (end - start) * this.lineSize();
+  });
+
+  private readonly contentOffset = computed(() => {
+    const ideal = this.range().start * this.lineSize() * this.scaleFactor();
+    const max = Math.max(0, this.totalSize() - this.renderedBlockSize());
+    return Math.min(ideal, max);
+  });
 
   protected readonly wrapperTransform = computed(() =>
     this.axis() === 'horizontal' ? `translateX(${this.contentOffset()}px)` : `translateY(${this.contentOffset()}px)`
