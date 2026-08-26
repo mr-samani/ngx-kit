@@ -18,7 +18,9 @@ const TOP_TOLERANCE_PX = 0.5;
  * No orientation/itemSize is ever supplied by the consumer — this is the
  * single source of truth for both.
  */
-export function measureLayout(probeElements: readonly Element[]): NgxVirtualScrollMeasurement | null {
+export function measureLayout(
+  probeElements: readonly Element[],
+): NgxVirtualScrollMeasurement | null {
   if (probeElements.length === 0) {
     return null;
   }

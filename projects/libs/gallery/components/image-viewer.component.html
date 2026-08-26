@@ -15,7 +15,11 @@
   }
 
   @if (toolbarConfig().prevNext && images().length > 1) {
-    <button type="button" class="ngx-iv-nav ngx-iv-nav--prev" (click)="prev()" aria-label="Previous">
+    <button
+      type="button"
+      class="ngx-iv-nav ngx-iv-nav--prev"
+      (click)="prev()"
+      aria-label="Previous">
       ‹
     </button>
     <button type="button" class="ngx-iv-nav ngx-iv-nav--next" (click)="next()" aria-label="Next">

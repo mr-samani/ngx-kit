@@ -24,7 +24,12 @@ export const appConfig: ApplicationConfig = {
 ## Usage
 
 ```html
-<input type="text" [ngxInputDatePicker]="date" (change)="date = $event" [locale]="'fa'" [displayFormat]="'yyyy/MM/dd'" />
+<input
+  type="text"
+  [ngxInputDatePicker]="date"
+  (change)="date = $event"
+  [locale]="'fa'"
+  [displayFormat]="'yyyy/MM/dd'" />
 ```
 
 ```html
@@ -35,14 +40,14 @@ export const appConfig: ApplicationConfig = {
 
 ### `[ngxInputDatePicker]`
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `locale` | `string` (`'en'`, `'fa'`, `'hi'`, `'zh'`, or any custom registered locale) | `'en'` | Which calendar to use |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | |
-| `displayFormat` | `string` | `'yyyy/MM/dd'` | Text display format for the date |
-| `min` / `max` | `Date` | | Allowed range |
-| `config` | `NgxDatePickerConfig` | | Show/hide and text for the "today"/"clear" buttons, custom icon templates |
-| `change` *(output)* | `EventEmitter<Date>` | | The selected date (always a standard JavaScript `Date`, regardless of the displayed calendar) |
+| Input               | Type                                                                       | Default        | Description                                                                                   |
+| ------------------- | -------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `locale`            | `string` (`'en'`, `'fa'`, `'hi'`, `'zh'`, or any custom registered locale) | `'en'`         | Which calendar to use                                                                         |
+| `theme`             | `'light' \| 'dark' \| 'auto'`                                              | `'auto'`       |                                                                                               |
+| `displayFormat`     | `string`                                                                   | `'yyyy/MM/dd'` | Text display format for the date                                                              |
+| `min` / `max`       | `Date`                                                                     |                | Allowed range                                                                                 |
+| `config`            | `NgxDatePickerConfig`                                                      |                | Show/hide and text for the "today"/"clear" buttons, custom icon templates                     |
+| `change` _(output)_ | `EventEmitter<Date>`                                                       |                | The selected date (always a standard JavaScript `Date`, regardless of the displayed calendar) |
 
 ### `getLocals()`
 

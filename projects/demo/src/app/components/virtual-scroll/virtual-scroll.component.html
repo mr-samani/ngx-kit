@@ -3,52 +3,47 @@
   [files]="sourceFiles"
   readmePath="readmes/time-picker/README.md">
   <div class="container">
- 
- 
-      <div class="d-flex align-items-end">
-        <div class="flex-fill">
-          <h3>Virtual Scrolling ({{ maximum | number }} Records)</h3>
-          <ngx-virtual-scroll-viewport
-            #vs="ngxVirtualScrollViewport"
-            [items]="items"
-            [minBufferPx]="200"
-            [maxBufferPx]="400"
-            class="list-container">
-            @for (item of vs.visibleItems(); track $index; let i = $index) {
-              <div class="row">{{ vs.baseIndex() + i | number }} - {{ item }}</div>
-            }
-          </ngx-virtual-scroll-viewport>
-        </div>
-        <div class="flex-fill">
-          <h4>
-            Angular Material Cdk Virtual Scroll (CAN NOT LOAD ALL {{ maximum | number }} RECORDS!
-            limited to browser max scrollable height)
-          </h4>
-          <cdk-virtual-scroll-viewport
-            [itemSize]="57"
-            [minBufferPx]="200"
-            [maxBufferPx]="400"
-            class="list-container">
-            <div class="row" *cdkVirtualFor="let item of items; let i = index">
-              {{ i | number }} - {{ item }}
-            </div>
-          </cdk-virtual-scroll-viewport>
-        </div>
+    <div class="d-flex align-items-end">
+      <div class="flex-fill">
+        <h3>Virtual Scrolling ({{ maximum | number }} Records)</h3>
+        <ngx-virtual-scroll-viewport
+          #vs="ngxVirtualScrollViewport"
+          [items]="items"
+          [minBufferPx]="200"
+          [maxBufferPx]="400"
+          class="list-container">
+          @for (item of vs.visibleItems(); track $index; let i = $index) {
+            <div class="row">{{ vs.baseIndex() + i | number }} - {{ item }}</div>
+          }
+        </ngx-virtual-scroll-viewport>
       </div>
-    
-           <h3>Horizontal Virtual Scrolling ({{ maximum | number }} Records)</h3>
-          <ngx-virtual-scroll-viewport
-            #vsH="ngxVirtualScrollViewport"
-            [items]="items"
-            [minBufferPx]="200"
-            [maxBufferPx]="400"
-            class="list-container horizontal">
-            @for (item of vsH.visibleItems(); track $index; let i = $index) {
-              <div class="row">{{ vsH.baseIndex() + i | number }} - {{ item }}</div>
-            }
-          </ngx-virtual-scroll-viewport>
+      <div class="flex-fill">
+        <h4>
+          Angular Material Cdk Virtual Scroll (CAN NOT LOAD ALL {{ maximum | number }} RECORDS!
+          limited to browser max scrollable height)
+        </h4>
+        <cdk-virtual-scroll-viewport
+          [itemSize]="57"
+          [minBufferPx]="200"
+          [maxBufferPx]="400"
+          class="list-container">
+          <div class="row" *cdkVirtualFor="let item of items; let i = index">
+            {{ i | number }} - {{ item }}
+          </div>
+        </cdk-virtual-scroll-viewport>
+      </div>
+    </div>
 
-
-
+    <h3>Horizontal Virtual Scrolling ({{ maximum | number }} Records)</h3>
+    <ngx-virtual-scroll-viewport
+      #vsH="ngxVirtualScrollViewport"
+      [items]="items"
+      [minBufferPx]="200"
+      [maxBufferPx]="400"
+      class="list-container horizontal">
+      @for (item of vsH.visibleItems(); track $index; let i = $index) {
+        <div class="row">{{ vsH.baseIndex() + i | number }} - {{ item }}</div>
+      }
+    </ngx-virtual-scroll-viewport>
   </div>
 </app-example-showcase>

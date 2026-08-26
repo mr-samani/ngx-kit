@@ -2,13 +2,13 @@
   color-scheme: light dark;
 }
 
-:root[data-ngx-theme=light],
-[data-ngx-theme=light] {
+:root[data-ngx-theme='light'],
+[data-ngx-theme='light'] {
   color-scheme: only light;
 }
 
-:root[data-ngx-theme=dark],
-[data-ngx-theme=dark] {
+:root[data-ngx-theme='dark'],
+[data-ngx-theme='dark'] {
   color-scheme: only dark;
 }
 

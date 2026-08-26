@@ -22,18 +22,18 @@ onSaved(result: NgxImageEditorResult) {
 
 ## API
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `source` | `File \| Blob \| string \| null` **(required)** | | The source file/blob/data URL |
-| `aspectRatio` | `number` | free | Lock the crop's aspect ratio (e.g. `1` for a square avatar) |
-| `outputMaxWidth` / `outputMaxHeight` | `number` | unlimited | Resize the final output's dimensions |
-| `outputType` | `'image/jpeg' \| 'image/png' \| 'image/webp'` | `'image/jpeg'` | |
-| `displayMaxWidth` | `number` | `420` | Max display width for the crop area on screen |
+| Input                                | Type                                            | Default        | Description                                                 |
+| ------------------------------------ | ----------------------------------------------- | -------------- | ----------------------------------------------------------- |
+| `source`                             | `File \| Blob \| string \| null` **(required)** |                | The source file/blob/data URL                               |
+| `aspectRatio`                        | `number`                                        | free           | Lock the crop's aspect ratio (e.g. `1` for a square avatar) |
+| `outputMaxWidth` / `outputMaxHeight` | `number`                                        | unlimited      | Resize the final output's dimensions                        |
+| `outputType`                         | `'image/jpeg' \| 'image/png' \| 'image/webp'`   | `'image/jpeg'` |                                                             |
+| `displayMaxWidth`                    | `number`                                        | `420`          | Max display width for the crop area on screen               |
 
-| Output | Type | Description |
-| --- | --- | --- |
-| `saved` | `NgxImageEditorResult` (`{ blob, dataUrl, width, height }`) | |
-| `cancelled` | `void` | |
+| Output      | Type                                                        | Description |
+| ----------- | ----------------------------------------------------------- | ----------- |
+| `saved`     | `NgxImageEditorResult` (`{ blob, dataUrl, width, height }`) |             |
+| `cancelled` | `void`                                                      |             |
 
 ## Internal architecture (why it's fast)
 

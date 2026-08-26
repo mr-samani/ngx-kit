@@ -24,11 +24,11 @@ The output is a valid CSS string like `linear-gradient(90deg, #ff0000 0%, #0000f
 
 ## API
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Panel theme |
-| `setInputBackground` *(directive)* | `boolean` | `true` | Sets the input's background to the selected gradient |
-| `change` *(directive)* | `EventEmitter<string>` | | The new gradient string |
+| Input                              | Type                          | Default  | Description                                          |
+| ---------------------------------- | ----------------------------- | -------- | ---------------------------------------------------- |
+| `theme`                            | `'light' \| 'dark' \| 'auto'` | `'auto'` | Panel theme                                          |
+| `setInputBackground` _(directive)_ | `boolean`                     | `true`   | Sets the input's background to the selected gradient |
+| `change` _(directive)_             | `EventEmitter<string>`        |          | The new gradient string                              |
 
 ## UI notes
 

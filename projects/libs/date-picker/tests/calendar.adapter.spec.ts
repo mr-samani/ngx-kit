@@ -19,22 +19,22 @@ describe('calendar week adapters', () => {
   });
 });
 
-  it('calculates Gregorian week boundaries from any date', () => {
-    const adapter = new GregorianAdapter();
-    const start = adapter.getStartOfWeek(new Date('2026-08-19T12:00:00'));
-    const end = adapter.getEndOfWeek(new Date('2026-08-19T12:00:00'));
+it('calculates Gregorian week boundaries from any date', () => {
+  const adapter = new GregorianAdapter();
+  const start = adapter.getStartOfWeek(new Date('2026-08-19T12:00:00'));
+  const end = adapter.getEndOfWeek(new Date('2026-08-19T12:00:00'));
 
-    expect(start.getDay()).toBe(0);
-    expect(start.getDate()).toBe(16);
-    expect(end.getDay()).toBe(6);
-    expect(end.getDate()).toBe(22);
-  });
+  expect(start.getDay()).toBe(0);
+  expect(start.getDate()).toBe(16);
+  expect(end.getDay()).toBe(6);
+  expect(end.getDate()).toBe(22);
+});
 
-  it('calculates Jalali weeks from Saturday to Friday', () => {
-    const adapter = new JalaliAdapter();
-    const start = adapter.getStartOfWeek(new Date('2026-08-19T12:00:00'));
-    const end = adapter.getEndOfWeek(new Date('2026-08-19T12:00:00'));
+it('calculates Jalali weeks from Saturday to Friday', () => {
+  const adapter = new JalaliAdapter();
+  const start = adapter.getStartOfWeek(new Date('2026-08-19T12:00:00'));
+  const end = adapter.getEndOfWeek(new Date('2026-08-19T12:00:00'));
 
-    expect(start.getDay()).toBe(6);
-    expect(end.getDay()).toBe(5);
-  });
+  expect(start.getDay()).toBe(6);
+  expect(end.getDay()).toBe(5);
+});

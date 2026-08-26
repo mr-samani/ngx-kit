@@ -7,13 +7,13 @@ derived from the real DOM.
 
 ## Why this rewrite
 
-| Old design | This design |
-| --- | --- |
-| `NgZone` injected, `zone.run` everywhere | No `NgZone` at all — works natively under `provideZonelessChangeDetection()` |
-| `ngOnChanges` + `SimpleChanges` | `input()` signals + `computed()` / `effect()` |
+| Old design                                                                    | This design                                                                                                                                                  |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NgZone` injected, `zone.run` everywhere                                      | No `NgZone` at all — works natively under `provideZonelessChangeDetection()`                                                                                 |
+| `ngOnChanges` + `SimpleChanges`                                               | `input()` signals + `computed()` / `effect()`                                                                                                                |
 | `@Input() itemSize` (broke as soon as your item had margin/border/box-shadow) | Real item size is **measured** from `getBoundingClientRect()` deltas between actually rendered siblings, so margins/borders/shadows are always accounted for |
-| `@Input() orientation` | Axis is **auto-detected** from the real layout of your own item markup |
-| Custom `*ngxVirtualFor` structural directive | Plain native `@for` over a `visibleItems()` signal — you keep full control of `track`, `@empty`, etc. |
+| `@Input() orientation`                                                        | Axis is **auto-detected** from the real layout of your own item markup                                                                                       |
+| Custom `*ngxVirtualFor` structural directive                                  | Plain native `@for` over a `visibleItems()` signal — you keep full control of `track`, `@empty`, etc.                                                        |
 
 ## Install & import
 
@@ -32,7 +32,7 @@ import { NgxVirtualScrollViewport } from '@ngx-kit/virtual-scroll';
 ```html
 <ngx-virtual-scroll-viewport #vs="ngxVirtualScrollViewport" [items]="items" style="height: 400px">
   @for (item of vs.visibleItems(); track $index; let i = $index) {
-    <div class="row">{{ vs.baseIndex() + i | number }} - {{ item.name }}</div>
+  <div class="row">{{ vs.baseIndex() + i | number }} - {{ item.name }}</div>
   }
 </ngx-virtual-scroll-viewport>
 ```
@@ -62,7 +62,7 @@ The axis is inferred purely from how your own items lay out:
 - Items stack top-to-bottom (default block flow) → **vertical** list.
 - Items lay out left-to-right in a single line (e.g. `display: inline-flex` on the
   item, or a `flex-wrap: nowrap` row) → **horizontal** list.
-- Items lay out left-to-right and *wrap* to a new line (e.g. cards with
+- Items lay out left-to-right and _wrap_ to a new line (e.g. cards with
   `display: flex; flex-wrap: wrap`) → treated as a **vertical** list of "lines",
   where each line holds N items. This is how mixed horizontal + vertical layouts
   (a card grid that scrolls vertically) are supported without a separate 2D data
@@ -81,16 +81,17 @@ scrollbar, so wide tables with virtualized rows work out of the box:
 
 ```html
 <div class="table-shell">
-  <table><thead>...</thead></table> <!-- kept outside, sticky/fixed header -->
+  <table><thead>...</thead></table>
+  <!-- kept outside, sticky/fixed header -->
 
   <ngx-virtual-scroll-viewport #vs="ngxVirtualScrollViewport" [items]="rows" style="height: 480px">
     <table>
       <tbody>
         @for (row of vs.visibleItems(); track row.id; let i = $index) {
-          <tr>
-            <td>{{ vs.baseIndex() + i }}</td>
-            ...
-          </tr>
+        <tr>
+          <td>{{ vs.baseIndex() + i }}</td>
+          ...
+        </tr>
         }
       </tbody>
     </table>
@@ -108,7 +109,7 @@ unreachable — the classic "scroll gets stuck around ~500k rows" symptom.
 
 This viewport handles it automatically: the spacer's real DOM size is capped
 at `maxAxisSizePx` (6,000,000px by default — safely under every known
-browser limit), and the DOM scrollbar operates in a *compressed* coordinate
+browser limit), and the DOM scrollbar operates in a _compressed_ coordinate
 space via `scaleFactor()`. All range/index math is done against the real,
 uncompressed content size (`naturalTotalSize()`), so scrolling the
 (compressed) native scrollbar all the way to the end still lands you exactly
@@ -127,44 +128,44 @@ You don't need to configure anything for this — it only engages once
 
 ### Inputs
 
-| Input | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `items` | `readonly T[]` | `[]` | Full data set |
-| `minBufferPx` | `number` | `150` | Buffer left before recomputing the range |
-| `maxBufferPx` | `number` | `300` | Extra px rendered outside the viewport |
-| `measureFn` | `NgxVirtualScrollMeasureFn` | `undefined` | Advanced override for the built-in layout probe |
-| `maxAxisSizePx` | `number` | `6_000_000` | Safe ceiling for the real DOM scroll size — see "Very large data sets" below |
+| Input           | Type                        | Default     | Notes                                                                        |
+| --------------- | --------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| `items`         | `readonly T[]`              | `[]`        | Full data set                                                                |
+| `minBufferPx`   | `number`                    | `150`       | Buffer left before recomputing the range                                     |
+| `maxBufferPx`   | `number`                    | `300`       | Extra px rendered outside the viewport                                       |
+| `measureFn`     | `NgxVirtualScrollMeasureFn` | `undefined` | Advanced override for the built-in layout probe                              |
+| `maxAxisSizePx` | `number`                    | `6_000_000` | Safe ceiling for the real DOM scroll size — see "Very large data sets" below |
 
 ### Outputs
 
-| Output | Type |
-| --- | --- |
-| `scrolledIndexChange` | `OutputEmitterRef<number>` |
-| `rangeChange` | `OutputEmitterRef<NgxVirtualScrollRange>` |
+| Output                | Type                                      |
+| --------------------- | ----------------------------------------- |
+| `scrolledIndexChange` | `OutputEmitterRef<number>`                |
+| `rangeChange`         | `OutputEmitterRef<NgxVirtualScrollRange>` |
 
 ### Public signals (via `#vs="ngxVirtualScrollViewport"`)
 
-| Signal | Type | Meaning |
-| --- | --- | --- |
-| `visibleItems()` | `readonly T[]` | Slice of `items()` to render right now |
-| `range()` | `{ start, end }` | Currently rendered line range |
-| `baseIndex()` | `number` | Absolute index of `visibleItems()[0]` |
-| `axis()` | `'vertical' \| 'horizontal'` | Auto-detected scroll axis |
-| `crossCount()` | `number` | Items per line (1 for a plain list) |
-| `lineSize()` | `number` | Measured px size of one line |
-| `isMeasured()` | `boolean` | Whether the initial layout probe has completed |
-| `isScrolling()` | `boolean` | True while an active scroll gesture is in progress |
-| `naturalTotalSize()` | `number` | Real, uncompressed total size along the scroll axis |
-| `totalSize()` | `number` | Size actually applied to the spacer (capped at `maxAxisSizePx`) |
-| `scaleFactor()` | `number` | `totalSize() / naturalTotalSize()`; `1` unless the data set is extremely large |
+| Signal               | Type                         | Meaning                                                                        |
+| -------------------- | ---------------------------- | ------------------------------------------------------------------------------ |
+| `visibleItems()`     | `readonly T[]`               | Slice of `items()` to render right now                                         |
+| `range()`            | `{ start, end }`             | Currently rendered line range                                                  |
+| `baseIndex()`        | `number`                     | Absolute index of `visibleItems()[0]`                                          |
+| `axis()`             | `'vertical' \| 'horizontal'` | Auto-detected scroll axis                                                      |
+| `crossCount()`       | `number`                     | Items per line (1 for a plain list)                                            |
+| `lineSize()`         | `number`                     | Measured px size of one line                                                   |
+| `isMeasured()`       | `boolean`                    | Whether the initial layout probe has completed                                 |
+| `isScrolling()`      | `boolean`                    | True while an active scroll gesture is in progress                             |
+| `naturalTotalSize()` | `number`                     | Real, uncompressed total size along the scroll axis                            |
+| `totalSize()`        | `number`                     | Size actually applied to the spacer (capped at `maxAxisSizePx`)                |
+| `scaleFactor()`      | `number`                     | `totalSize() / naturalTotalSize()`; `1` unless the data set is extremely large |
 
 ### Methods
 
-| Method | Description |
-| --- | --- |
-| `scrollToIndex(index, behavior?)` | Scroll to a given item index |
-| `scrollToOffset(offsetPx, behavior?)` | Scroll to a given pixel offset |
-| `checkViewportSize()` | Force a re-measure (rarely needed — a `ResizeObserver` already handles container resizes) |
+| Method                                | Description                                                                               |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `scrollToIndex(index, behavior?)`     | Scroll to a given item index                                                              |
+| `scrollToOffset(offsetPx, behavior?)` | Scroll to a given pixel offset                                                            |
+| `checkViewportSize()`                 | Force a re-measure (rarely needed — a `ResizeObserver` already handles container resizes) |
 
 ## Performance notes
 
@@ -192,7 +193,7 @@ functions with no Angular dependency (so they are trivially unit-testable). Once
 measured, the real virtualized range replaces the probe range and rendering
 proceeds normally. If your rows can change size at runtime (e.g. responsive
 breakpoints), a `ResizeObserver` on the scroll container triggers `checkViewportSize()`
-automatically to re-fit the viewport dimension; if the *line size itself* changes at
+automatically to re-fit the viewport dimension; if the _line size itself_ changes at
 runtime you can force a full re-measure by re-creating the component (e.g. keyed with
 `@if`/`*ngIf` + a changing key), which is the same limitation `cdk-virtual-scroll-viewport`
 has with its own `FixedSizeVirtualScrollStrategy`.

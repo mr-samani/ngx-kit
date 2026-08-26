@@ -1,10 +1,9 @@
-import { Component, OnInit, signal, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import {
   ExampleShowcaseComponent,
-  type ExampleSourceFile,
+  ExampleSourceFile,
 } from '@demo/shared/showcase/example-showcase.component';
 import { NgxVirtualScrollViewport } from 'ngx-kit/virtual-scroll';
-import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -17,7 +16,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
   imports: [
     CommonModule,
     NgxVirtualScrollViewport,
-    ExampleShowcaseComponent, 
+    ExampleShowcaseComponent,
     FormsModule,
     ScrollingModule,
   ],

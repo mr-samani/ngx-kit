@@ -1,18 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, type OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   getLocals,
   NgxCalendarComponent,
   provideDateAdapters,
-  type CalendarEventChange,
-  type MsEvents,
+  CalendarEventChange,
+  MsEvents,
 } from 'ngx-kit/date-picker';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
-import type { ISelectedEvent } from 'ngx-kit/date-picker/models/selected-event';
+import { ISelectedEvent } from 'ngx-kit/date-picker/models/selected-event';
 import { MSG } from 'ngx-kit/message';
 import { Notify } from 'ngx-kit/notify';
 
