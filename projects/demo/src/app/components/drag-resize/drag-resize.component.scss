@@ -1,0 +1,55 @@
+.drag-item {
+  //   border: 1px solid red;
+  width: 120px;
+  height: 120px;
+  box-shadow: 0 0 10px #00000073;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.boundary {
+  border: 3px dashed red;
+  border-radius: 10px;
+  height: 60vh;
+  width: 1024px;
+  margin: 0 auto;
+  padding: 5px;
+  max-width: 100%;
+}
+
+.list-scroll {
+  height: 500px;
+  overflow: auto;
+}
+
+.obs {
+  position: absolute;
+  left: 100px;
+  top: 100px;
+}
+.fxd {
+  position: fixed;
+  left: 50px;
+  top: 50px;
+}
+.space-for-scroll {
+  min-height: 600px;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.handle {
+  cursor: move;
+  background: #ff005e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 15px;
+  margin-bottom: 15px;
+  span {
+    color: #fff;
+  }
+}

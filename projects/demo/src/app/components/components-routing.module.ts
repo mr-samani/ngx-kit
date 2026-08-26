@@ -92,6 +92,16 @@ const routes: Routes = [
         loadComponent: () =>
           import('./virtual-scroll/virtual-scroll.component').then((c) => c.VirtualScrollComponent),
       },
+      {
+        path: 'grid-layout',
+        loadComponent: () =>
+          import('./grid-layout/grid-layout.component').then((c) => c.GridLayoutComponent),
+      },
+      {
+        path: 'drag-resize',
+        loadComponent: () =>
+          import('./drag-resize/drag-resize.component').then((c) => c.DragResizeComponent),
+      },
     ],
   },
 ];

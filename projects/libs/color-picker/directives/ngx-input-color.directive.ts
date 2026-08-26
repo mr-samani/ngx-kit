@@ -90,11 +90,15 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   _onValidateChange = () => {};
 
   constructor(
-    private el: ElementRef,
+    private el: ElementRef<HTMLInputElement>,
     private renderer: Renderer2,
     private viewContainerRef: ViewContainerRef,
     private overlayService: OverlayService,
-  ) {}
+  ) {
+    if (el.nativeElement.type == 'color') {
+      renderer.setAttribute(el.nativeElement, 'type', 'text');
+    }
+  }
 
   ngAfterViewInit(): void {
     if (this._targetInput && this._targetInput.tagName.toLowerCase() === 'input') {

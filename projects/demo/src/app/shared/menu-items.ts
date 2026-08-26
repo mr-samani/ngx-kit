@@ -125,6 +125,15 @@ export const MENU_LIST: ICategory[] = [
         title: 'Virtual Scroll',
         url: '/components/virtual-scroll',
       },
+      {
+        title: 'Grid Layout',
+        description: 'Grid layout with resizable and draggable widgets',
+        url: '/components/grid-layout',
+      },
+      {
+        title: 'Drag and Resize',
+        url: '/components/drag-resize',
+      },
     ],
   },
 ];
