@@ -17,7 +17,7 @@ import { GridItemConfig } from '../options/gride-item-config';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { Subscription } from 'rxjs/internal/Subscription';
 import 'reflect-metadata';
-import { NgxDraggableDirective, NgxResizableDirective } from 'ngx-kit/drag-resize';
+import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
 
 @Component({
   selector: 'ngx-grid-item',
@@ -46,8 +46,8 @@ export class NgxGridItemComponent implements OnInit, AfterViewInit, OnDestroy, O
 
   isDragging = false;
   isResizing = false;
-  private draggable?: NgxDraggableDirective;
-  private resizable?: NgxResizableDirective;
+  private draggable?: NgxDraggable;
+  private resizable?: NgxResizable;
   private subscriptions: Subscription[] = [];
   private directivesAttached = false;
 
@@ -89,8 +89,8 @@ export class NgxGridItemComponent implements OnInit, AfterViewInit, OnDestroy, O
   private attachDirectivesIfNeeded(): void {
     if (this.directivesAttached) return;
 
-    this.draggable = this.attachDirective(NgxDraggableDirective) as NgxDraggableDirective;
-    this.resizable = this.attachDirective(NgxResizableDirective) as NgxResizableDirective;
+    this.draggable = this.attachDirective(NgxDraggable) as NgxDraggable;
+    this.resizable = this.attachDirective(NgxResizable) as NgxResizable;
 
     if (!this.draggable || !this.resizable) {
       console.error('Failed to attach directives');
@@ -190,8 +190,8 @@ export class NgxGridItemComponent implements OnInit, AfterViewInit, OnDestroy, O
    * Attach a single directive dynamically
    */
   private attachDirective(
-    DirType: typeof NgxDraggableDirective | typeof NgxResizableDirective
-  ): NgxDraggableDirective | NgxResizableDirective | undefined {
+    DirType: typeof NgxDraggable | typeof NgxResizable
+  ): NgxDraggable | NgxResizable | undefined {
     let paramTypes: any[] = [];
     try {
       paramTypes = Reflect.getMetadata('design:paramtypes', DirType) || [];

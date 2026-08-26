@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import {
   IPosition,
   IResizableOutput,
-  NgxDraggableDirective,
-  NgxResizableDirective,
+  NgxDraggable,
+  NgxResizable,
 } from 'ngx-kit/drag-resize';
 
 @Component({
   selector: 'app-drag-resize',
-  imports: [NgxDraggableDirective, NgxResizableDirective],
+  imports: [NgxDraggable, NgxResizable],
   templateUrl: './drag-resize.component.html',
   styleUrl: './drag-resize.component.scss',
 })

@@ -31,7 +31,7 @@ export declare type Corner =
   standalone: true,
   exportAs: 'NgxResizable',
 })
-export class NgxResizableDirective implements OnInit, OnDestroy {
+export class NgxResizable implements OnInit, OnDestroy {
   private boundaryDomRect?: DOMRect;
   @Input() boundary?: HTMLElement;
   @Input() minWidth = 20;

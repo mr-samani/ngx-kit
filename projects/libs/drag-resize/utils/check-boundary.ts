@@ -1,92 +1,29 @@
-/**
- * Improved boundary checking with floating point tolerance and transform support
- */
+const TOLERANCE = 1;
 
-const FLOATING_POINT_TOLERANCE = 1; // pixels
-
-/**
- * Check if new position exceeds boundary in Y axis
- * @param boundaryDomRec - Boundary element rectangle
- * @param el - Element being resized
- * @param offsetY - Y offset to apply
- * @param checkTop - Check if top boundary is exceeded
- * @param checkBottom - Check if bottom boundary is exceeded
- * @returns true if within bounds, false otherwise
- */
-export function checkBoundY(
-  selfRec: DOMRect,
-  boundaryDomRec: DOMRect | undefined,
-  offsetY: number,
-  checkTop = true,
-  checkBottom = true
-): number {
-  if (!boundaryDomRec) {
-    return offsetY;
-  }
-
-  console.log('selfRec', selfRec.top);
-
+export function checkBoundY(selfRec: DOMRect, boundaryDomRec: DOMRect | undefined, offsetY: number): number {
+  if (!boundaryDomRec) return offsetY;
   const newTop = selfRec.top + offsetY;
   const newBottom = selfRec.bottom + offsetY;
-
   // Check top boundary
-  if (checkTop && newTop < boundaryDomRec.top + FLOATING_POINT_TOLERANCE) {
-    // المان از بالا خارج شده، offset را محدود کن
-    const overflow = boundaryDomRec.top - newTop;
-    return offsetY + overflow;
-  }
-
+  if (newTop < boundaryDomRec.top + TOLERANCE) return offsetY + (boundaryDomRec.top - newTop);
   // Check bottom boundary
-  if (checkBottom && newBottom > boundaryDomRec.bottom - FLOATING_POINT_TOLERANCE) {
-    // المان از پایین خارج شده، offset را محدود کن
-    const overflow = newBottom - boundaryDomRec.bottom;
-    return offsetY - overflow;
-  }
-
+  if (newBottom > boundaryDomRec.bottom - TOLERANCE) return offsetY - (newBottom - boundaryDomRec.bottom);
   return offsetY;
 }
 
-/**
- * Check if new position exceeds boundary in X axis
- * @param boundaryDomRec - Boundary element rectangle
- * @param el - Element being resized
- * @param offsetX - X offset to apply
- * @param checkLeft - Check if left boundary is exceeded
- * @param checkRight - Check if right boundary is exceeded
- * @returns true if within bounds, false otherwise
- */
-export function checkBoundX(
-  selfRec: DOMRect,
-  boundaryDomRec: DOMRect | undefined,
-  offsetX: number,
-  checkLeft = true,
-  checkRight = true
-): number {
-  if (!boundaryDomRec) {
-    return offsetX;
-  }
+export function checkBoundX(selfRec: DOMRect, boundaryDomRec: DOMRect | undefined, offsetX: number): number {
+  if (!boundaryDomRec) return offsetX;
   const newLeft = selfRec.left + offsetX;
   const newRight = selfRec.right + offsetX;
-
   // Check left boundary
-  if (checkLeft && newLeft < boundaryDomRec.left + FLOATING_POINT_TOLERANCE) {
-    // المان از چپ خارج شده
-    const overflow = boundaryDomRec.left - newLeft;
-    return offsetX + overflow;
-  }
-
+  if (newLeft < boundaryDomRec.left + TOLERANCE) return offsetX + (boundaryDomRec.left - newLeft);
   // Check right boundary
-  if (checkRight && newRight > boundaryDomRec.right - FLOATING_POINT_TOLERANCE) {
-    // المان از راست خارج شده
-    const overflow = newRight - boundaryDomRec.right;
-    return offsetX - overflow;
-  }
-
+  if (newRight > boundaryDomRec.right - TOLERANCE) return offsetX - (newRight - boundaryDomRec.right);
   return offsetX;
 }
 
 /**
- * ✅ Clamp resize within boundary 
+ * ✅ Clamp resize within boundary
  * @param boundaryDomRec - Boundary element rectangle (viewport coordinates)
  * @param el - Element being resized
  * @param newWidth - Proposed new width
@@ -123,8 +60,8 @@ export function clampWithinBoundary(
   // Calculate new viewport position
   const newViewportLeft = currentRect.left + leftDelta;
   const newViewportTop = currentRect.top + topDelta;
-  const newViewportRight = newViewportLeft + newWidth;
-  const newViewportBottom = newViewportTop + newHeight;
+  // const newViewportRight = newViewportLeft + newWidth;
+  //const newViewportBottom = newViewportTop + newHeight;
 
   let clampedWidth = newWidth;
   let clampedHeight = newHeight;

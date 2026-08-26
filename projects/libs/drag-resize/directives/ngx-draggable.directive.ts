@@ -1,237 +1,156 @@
 import {
-  AfterViewInit,
   Directive,
+  DOCUMENT,
   ElementRef,
   EventEmitter,
   inject,
   InjectionToken,
   Input,
   OnDestroy,
+  OnInit,
   Output,
   Renderer2,
   RendererStyleFlags2,
-  DOCUMENT,
 } from '@angular/core';
-import { Subscription, fromEvent } from 'rxjs';
-import { checkBoundX, checkBoundY } from '../utils/check-boundary';
-import { getPointerPositionOnViewPort, getPointerPosition } from '../utils/get-position';
-import { DragItemRef } from './DragItemRef';
-import { getXYfromTransform } from '../utils/get-transform';
-import { ElementHelper } from '../utils/element.helper';
-import type { IPosition } from '../contracts/IPosition';
+import { IPosition } from '../contracts/IPosition';
+import { fromEvent, Subscription } from 'rxjs';
+import { NGX_DROPLIST } from './ngx-drop-list.directive';
+import { DragDropService } from '../services/drag-drop.service';
+import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
+import { DragRef } from '../drag-ref';
+import { getPointerOnViewPort } from '../utils/get-position';
+
+export const NGX_DRAGGABLE = new InjectionToken<DragRef>('ngx-draggable');
 
 @Directive({
-  selector: '[ngxDraggable]',
-  standalone: true,
-  exportAs: 'NgxDraggable',
-  host: {
-    '[style.touch-action]': '"none"', // CRITICAL: Always disable touch actions
-  },
+  selector: '[NgxDraggable],[ngxDraggable]',
+  providers: [{ provide: NGX_DRAGGABLE, useExisting: NgxDraggable }],
+  host: { '[style.touch-action]': '"none"' },
 })
-export class NgxDraggableDirective extends DragItemRef implements OnDestroy, AfterViewInit {
-  @Input() set boundary(value: HTMLElement | undefined) {
-    this._boundary = value;
-    this.updateDomRect();
-  }
-  get boundary(): HTMLElement | undefined {
-    return this._boundary;
-  }
-
+export class NgxDraggable<T = any> implements OnInit, OnDestroy {
+  @Input() boundary?: HTMLElement;
   @Input() dragRootElement = '';
-
   @Input() disabled = false;
 
   @Output() dragStart = new EventEmitter<IPosition>();
   @Output() dragMove = new EventEmitter<IPosition>();
   @Output() dragEnd = new EventEmitter<IPosition>();
 
-  private previousTransitionProprety?: string;
-  set dragging(val: boolean) {
-    this.isDragging = val == true;
-    if (this.isDragging) {
-      this.previousTransitionProprety = this.el.style.transitionProperty;
-      this.renderer.setStyle(this.el, 'transition-property', 'none', RendererStyleFlags2.Important);
-      this.renderer.setStyle(this.el, 'user-select', 'none');
-      this.renderer.setStyle(this.el, 'pointer-events', 'none');
-      this.renderer.setStyle(this.el, 'cursor', 'grabbing');
-      this.renderer.setStyle(this.el, 'z-index', '999999');
-      this.renderer.setStyle(this.el, 'touch-action', 'none');
-      this.renderer.setStyle(this.el, '-webkit-user-drag', 'none');
-      this.renderer.setStyle(this.el, '-webkit-tap-highlight-color', 'transparent');
-      this.renderer.setStyle(this.el, 'will-change', 'transform');
-      this.el.classList.add('dragging');
-    } else {
-      if (this.previousTransitionProprety)
-        this.renderer.setStyle(this.el, 'transition-property', this.previousTransitionProprety);
-      else this.renderer.removeStyle(this.el, 'transition-property');
-      this.renderer.removeStyle(this.el, 'user-select');
-      this.renderer.removeStyle(this.el, 'pointer-events');
-      this.renderer.removeStyle(this.el, 'cursor');
-      this.renderer.removeStyle(this.el, 'z-index');
-      this.renderer.removeStyle(this.el, '-webkit-user-drag');
-      this.renderer.removeStyle(this.el, '-webkit-tap-highlight-color');
-      this.renderer.removeStyle(this.el, 'will-change');
+  @Input('data') set setData(val: T) {
+    this._ref.data = val;
+  }
 
-      this.el.classList.remove('dragging');
+  private _prevTransition?: string;
+
+  set dragging(val: boolean) {
+    this._ref.isDragging = val === true;
+    if (val) {
+      this._prevTransition = this._ref.el.style.transitionProperty;
+      this.renderer.setStyle(this._ref.el, 'transition-property', 'none', RendererStyleFlags2.Important);
+      this.renderer.setStyle(this._ref.el, 'user-select', 'none');
+      this.renderer.setStyle(this._ref.el, 'pointer-events', 'none');
+      this.renderer.setStyle(this._ref.el, 'cursor', 'grabbing');
+      // this.renderer.setStyle(this._ref.el, 'z-index', '999999');
+      this.renderer.setStyle(this._ref.el, 'touch-action', 'none');
+      this.renderer.setStyle(this._ref.el, 'will-change', 'transform');
+      this._ref.el.classList.add('ngx-draggable--dragging');
+    } else {
+      if (this._prevTransition) {
+        this.renderer.setStyle(this._ref.el, 'transition-property', this._prevTransition);
+      } else {
+        this.renderer.removeStyle(this._ref.el, 'transition-property');
+      }
+      this.renderer.removeStyle(this._ref.el, 'user-select');
+      this.renderer.removeStyle(this._ref.el, 'pointer-events');
+      this.renderer.removeStyle(this._ref.el, 'cursor');
+      // this.renderer.removeStyle(this._ref.el, 'z-index');
+      this.renderer.removeStyle(this._ref.el, 'will-change');
+      this._ref.el.classList.remove('ngx-draggable--dragging');
     }
   }
   get dragging() {
-    return this.isDragging;
+    return this._ref.isDragging;
   }
-  isTouched = false;
-  protected x: number = 0;
-  protected y: number = 0;
-  private previousXY: IPosition = { x: 0, y: 0 };
-  private isFixedPosition = false;
-  private startSubscriptions: Subscription[] = [];
-  private subscriptions: Subscription[] = [];
+
+  private _pointerDown = false;
+  private _startSubs: Subscription[] = [];
+  private _moveSubs: Subscription[] = [];
 
   private readonly renderer = inject(Renderer2);
-  private readonly doc = inject(DOCUMENT);
+  private readonly _doc = inject(DOCUMENT);
+  private readonly _service = inject(DragDropService);
+  private readonly _dropList = inject(NGX_DROPLIST, { skipSelf: true, optional: true });
+  private readonly _dropGroup = inject(NGX_DROPLIST_GROUP, { skipSelf: true, optional: true });
 
-  constructor(elRef: ElementRef) {
-    super(elRef.nativeElement);
-    this.el = elRef.nativeElement;
+  readonly _ref = new DragRef();
+
+  constructor(private elRef: ElementRef<HTMLElement>) {
+    this._ref.dropListGroup = this._dropGroup;
   }
 
-  ngAfterViewInit(): void {
-    // important: drag handler must be after resizable handler
-    this.initDragHandler();
-    this.findFirstParentDragRootElement();
-    this.init();
-  }
+  ngOnInit(): void {
+    this._ref.el = this.dragRootElement
+      ? (this.elRef.nativeElement.closest(this.dragRootElement) ?? this.elRef.nativeElement)
+      : this.elRef.nativeElement;
 
-  adjustDomRect(x: number, y: number) {
-    // this._domRect.top = this._domRect.y;
-    // this._domRect.left = this._domRect.x;
-    // this._domRect.bottom = this._domRect.y + this._domRect.height;
-    // this._domRect.right = this._domRect.x + this._domRect.width;
-    this._domRect = new DOMRect(
-      this._domRect.left + x,
-      this._domRect.top + y,
-      this._domRect.width,
-      this._domRect.height,
-    );
-  }
+    if (this.boundary) this._ref.boundary = this.boundary;
 
-  findFirstParentDragRootElement() {
-    if (this.dragRootElement) {
-      let parentRoot: HTMLElement | null = ElementHelper.findParentBySelector(
-        this.el,
-        this.dragRootElement,
-      );
-      if (parentRoot) {
-        this.el = parentRoot;
-      }
-    }
-    this.el.classList.add('ngx-draggable');
-  }
-  ngOnDestroy() {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this.startSubscriptions.forEach((sub) => sub.unsubscribe());
-    this.el.classList.remove('ngx-draggable');
-  }
+    this._ref.init();
+    this._service.registerDragItem(this._ref);
+    this._ref.withDropList(this._dropList?._ref ?? null);
 
-  init() {
-    const xy = getXYfromTransform(this.el);
-    this.x = xy.x;
-    this.y = xy.y;
-    this.updateDomRect();
-  }
-
-  initDragHandler() {
-    // if passive = true => browser won't allow preventDefault
-    this.startSubscriptions = [
-      fromEvent<PointerEvent>(this.el, 'pointerdown', { passive: false }).subscribe((ev) =>
-        this.onPointerDown(ev),
-      ),
+    this._startSubs = [
+      fromEvent<PointerEvent>(this._ref.el, 'pointerdown', { passive: false }).subscribe(ev => this._onPointerDown(ev)),
     ];
   }
 
-  onEndDrag(ev: PointerEvent) {
-    if (this.dragging) {
-      this.dragEnd.emit({ x: this.x, y: this.y });
-    }
-    this.dragging = false;
-    this.isTouched = false;
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  ngOnDestroy() {
+    [...this._startSubs, ...this._moveSubs].forEach(s => s.unsubscribe());
+    this._service.removeDragItem(this._ref);
+    this._ref.dropList?.removeItem(this._ref);
   }
 
-  onPointerDown(ev: PointerEvent) {
+  private _onPointerDown(ev: PointerEvent) {
     if (ev.button !== 0 || this.disabled) return;
+    // if (this.interaction.isResizing()) return;
     ev.preventDefault();
     // stopPropagation required for nested tree elements
     ev.stopPropagation();
-    const styles = getComputedStyle(this.el);
-    this.isFixedPosition = styles.position === 'fixed';
 
-    // اگر fixed است از viewport position استفاده کن
-    this.previousXY = this.isFixedPosition
-      ? getPointerPositionOnViewPort(ev)
-      : getPointerPosition(ev);
-
-    this.isTouched = true;
-    this.init();
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-    this.subscriptions = [
-      fromEvent<PointerEvent>(this.doc, 'pointermove', { passive: false }).subscribe((ev) =>
-        this.onPointerMove(ev),
-      ),
-      fromEvent<PointerEvent>(window, 'pointerup', { passive: false }).subscribe((ev) =>
-        this.onEndDrag(ev),
-      ),
-      fromEvent<PointerEvent>(window, 'pointercancel', { passive: false }).subscribe((ev) =>
-        this.onEndDrag(ev),
-      ),
+    this._moveSubs.forEach(s => s.unsubscribe());
+    this._moveSubs = [
+      fromEvent<PointerEvent>(this._doc, 'pointermove', { passive: false }).subscribe(ev => this._onPointerMove(ev)),
+      fromEvent<PointerEvent>(window, 'pointerup', { passive: false }).subscribe(ev => this._onPointerUp(ev)),
+      fromEvent<PointerEvent>(window, 'pointercancel', { passive: false }).subscribe(ev => this._onPointerUp(ev)),
     ];
+
+    this._pointerDown = true;
+    this._ref.pointerDown(getPointerOnViewPort(ev));
   }
 
-  onPointerMove(ev: PointerEvent) {
-    let p = getPointerPositionOnViewPort(ev);
+  private _onPointerMove(ev: PointerEvent) {
+    const p = getPointerOnViewPort(ev);
 
-    let position = getPointerPosition(ev);
-
-    if (this.isFixedPosition) {
-      position = getPointerPositionOnViewPort(ev);
-    }
-
-    const offsetX = position.x - this.previousXY.x;
-    const offsetY = position.y - this.previousXY.y;
-
-    //fixed for lag to start dragging
-    if (Math.abs(offsetY) < 1 && Math.abs(offsetX) < 1) {
-      return;
-    }
-
-    if (this.isTouched && !this.dragging) {
+    if (this._pointerDown && !this.dragging) {
+      this._ref.startDrag(p);
+      this.dragStart.emit(p);
       this.dragging = true;
-      this.dragStart.emit(this.previousXY);
-    }
-    if (!this.dragging) {
-      return;
     }
 
-    this.updatePosition(offsetX, offsetY);
-
-    this.dragMove.emit({ x: this.x, y: this.y });
+    if (this.dragging) {
+      this._ref.dragMove(p);
+      this.dragMove.emit({ x: this._ref.x, y: this._ref.y });
+    }
   }
 
-  updatePosition(offsetX: number, offsetY: number) {
-    const selfRect = this.el.getBoundingClientRect();
-
-    const clampedOffsetX = checkBoundX(selfRect, this.boundaryDomRect, offsetX);
-    this.x += clampedOffsetX;
-
-    const clampedOffsetY = checkBoundY(selfRect, this.boundaryDomRect, offsetY);
-    this.y += clampedOffsetY;
-
-    this.previousXY = {
-      x: clampedOffsetX + this.previousXY.x,
-      y: clampedOffsetY + this.previousXY.y,
-    };
-
-    let transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
-    this.renderer.setStyle(this.el, 'transform', transform);
-    return transform;
+  private _onPointerUp(_ev: PointerEvent) {
+    if (this.dragging) {
+      this.dragEnd.emit({ x: this._ref.x, y: this._ref.y });
+    }
+    this.dragging = false;
+    this._moveSubs.forEach(s => s.unsubscribe());
+    this._moveSubs = [];
+    this._pointerDown = false;
+    this._ref.endDrag();
   }
 }
