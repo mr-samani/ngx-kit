@@ -2,52 +2,44 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
-  inject,
   InjectionToken,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  inject,
 } from '@angular/core';
 import { DropListRef } from '../drop-list-ref';
-import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
 import { DragDropService } from '../services/drag-drop.service';
+import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
 import { IDropEvent } from '../contracts/IDropEvent';
-
 export const NGX_DROPLIST = new InjectionToken<NgxDropList>('ngx-drop-list');
-
 @Directive({
-  selector: '[NgxDropList]',
+  selector: '[NgxDropList],[ngxDropList]',
   providers: [{ provide: NGX_DROPLIST, useExisting: NgxDropList }],
 })
 export class NgxDropList<T = any> implements OnInit, OnDestroy {
-  _ref = new DropListRef();
-
-  @Input('data') set setData(val: T) {
-    this._ref.data = val;
+  readonly _ref = new DropListRef<T>();
+  @Input('data') set data(value: T) {
+    this._ref.data = value;
   }
-  @Input('connectedTo') set connections(list: HTMLElement[]) {
-    this._ref.connectedTo = Array.isArray(list) ? list : [];
+  @Input() set connectedTo(value: HTMLElement[] | null | undefined) {
+    this._ref.connectedTo = value ?? [];
   }
-  @Input('disableSort') set setDisableSort(val: boolean) {
-    this._ref.disableSort = val === true;
+  @Input() set disableSort(value: boolean) {
+    this._ref.disableSort = value === true;
   }
-
-  @Output() drop = new EventEmitter<IDropEvent>();
-
-  private dropListGroup = inject(NGX_DROPLIST_GROUP, { skipSelf: true, optional: true });
-  private dragDropService = inject(DragDropService);
-
-  constructor(elRef: ElementRef) {
-    this._ref.el = elRef.nativeElement;
-    this._ref.dropListGroup = this.dropListGroup;
-    this._ref.onDrop = this.drop;
-  }
-
+  @Output() readonly drop = new EventEmitter<IDropEvent<T>>();
+  private readonly service = inject(DragDropService);
+  private readonly group = inject(NGX_DROPLIST_GROUP, { optional: true, skipSelf: true });
+  constructor(private readonly el: ElementRef<HTMLElement>) {}
   ngOnInit(): void {
-    this.dragDropService.registerDropList(this._ref);
+    this._ref.el = this.el.nativeElement;
+    this._ref.dropListGroup = this.group?._ref;
+    this._ref.onDrop.subscribe((e) => this.drop.emit(e));
+    this.service.registerDropList(this._ref);
   }
   ngOnDestroy(): void {
-    this.dragDropService.removeDropList(this._ref);
+    this.service.removeDropList(this._ref);
   }
 }

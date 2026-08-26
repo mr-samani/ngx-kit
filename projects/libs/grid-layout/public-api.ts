@@ -1,12 +1,8 @@
+export * from './options/options';
+export * from './options/grid-item-config';
+export * from './options/layout-output';
+export * from './services/grid-layout.service';
+export * from './grid-layout/grid-layout.component';
+export * from './grid-item/grid-item.component';
 
 export * from './ngx-grid-layout.module';
-export * from './grid-item/grid-item.component';
-export * from './grid-layout/grid-layout.component';
-
-
-export * from './options/gride-item-config';
-export * from './options/layout-output';
-export * from './options/options';
-
-
-

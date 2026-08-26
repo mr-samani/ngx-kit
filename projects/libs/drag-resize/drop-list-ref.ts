@@ -1,118 +1,100 @@
 import { EventEmitter, inject } from '@angular/core';
-import { DragRef } from './drag-ref';
-import { DropListGroupRef } from './drop-list-group-ref';
-import { NGX_PLACEHOLDER } from './directives/ngx-place-holder.directive';
 import { IDropEvent } from './contracts/IDropEvent';
 import { IPosition } from './contracts/IPosition';
+import { DragRef } from './drag-ref';
 import { PositionalSortStrategy } from './sorting/positional-sort-strategy';
+import { PlaceHolderRef } from './placeholder-ref';
 
 export class DropListRef<T = any> {
   data?: T;
   el!: HTMLElement;
-  disableSort: boolean = false;
+  disableSort = false;
   connectedTo: HTMLElement[] = [];
-  dropListGroup?: DropListGroupRef | null;
+  dropListGroup?: unknown;
+  readonly _draggables = new Set<DragRef<T>>();
+  readonly onDrop = new EventEmitter<IDropEvent<T>>();
+  private strategy = new PositionalSortStrategy();
+  private active = false;
+  private previousIndex = -1;
+  private placeholder?: PlaceHolderRef;
 
-  _draggables = new Set<DragRef>();
-  domRect!: DOMRect;
-
-  _placeHolderRef = inject(NGX_PLACEHOLDER, { optional: true });
-  onDrop = new EventEmitter<IDropEvent<T>>();
-
-  private _isDragging = false;
-  private _sortStrategy = new PositionalSortStrategy();
-
-  // ─── Registration ────────────────────────────────────────────────────────────
-
-  updateDomRect() {
-    this.domRect = this.el.getBoundingClientRect();
-  }
-
-  addItem(item: DragRef) {
+  addItem(item: DragRef<T>): void {
     this._draggables.add(item);
   }
-
-  removeItem(item: DragRef) {
+  removeItem(item: DragRef<T>): void {
     this._draggables.delete(item);
   }
-
-  // ─── Session ─────────────────────────────────────────────────────────────────
-
-  /**
-   * Start a drag session / enter this list from another.
-   */
-  enter(currentDragItem: DragRef, pointerX = 0, pointerY = 0): void {
-    if (!this._isDragging) {
-      // Detect RTL from container or document
-      const dir = getComputedStyle(this.el).direction;
-      this._sortStrategy.withRtl(dir === 'rtl');
-      this._sortStrategy.withElementContainer(this.el);
-
-      // Snapshot all non-dragging items
-      const siblings = Array.from(this._draggables).filter(d => d !== currentDragItem);
-      this._sortStrategy.start(siblings);
-
-      this._isDragging = true;
-      this.el.classList.add('ngx-drop-list-dragging');
-    }
-
-    // Place placeholder in the container at the right position
-    try {
-      this._sortStrategy.enter(currentDragItem, pointerX, pointerY);
-    } catch {
-      // placeholder not ready yet on first enter — that's ok
-    }
+  updateDomRect(): void {
+    /* computed lazily to avoid stale rectangles */
   }
 
-  /**
-   * Item exited this list.
-   */
-  exit(currentDragItem: DragRef): void {
-    if (!this._isDragging) return;
+  createPlaceholder(drag: DragRef<T>): PlaceHolderRef {
+    const ref = new PlaceHolderRef();
+    const rect = drag.el.getBoundingClientRect();
+    const style = ref.attach(this.el).style;
+    style.width = `${rect.width}px`;
+    style.height = `${rect.height}px`;
+    style.flex = `0 0 ${rect.width}px`;
+    style.boxSizing = 'border-box';
+    this.placeholder = ref;
+    this.enter(drag, drag.pointer.x, drag.pointer.y);
+    return ref;
+  }
 
-    this._isDragging = false;
-    this.el.classList.remove('ngx-drop-list-dragging');
-    this._sortStrategy.reset();
-
-    // Remove placeholder from DOM
-    try {
-      const ph = currentDragItem.getPlaceholderElement();
-      ph?.remove();
-    } catch {
-      /* placeholder might already be gone */
+  enter(drag: DragRef<T>, x = 0, y = 0): void {
+    if (!this.active) {
+      this.active = true;
+      this.previousIndex = this.indexOf(drag);
+      this.strategy.withElementContainer(this.el).start([...this._draggables]);
+      this.el.classList.add('ngx-drop-list--active');
     }
+    this.strategy.enter(drag, x, y);
   }
 
-  /**
-   * Sort on pointer-move. Returns new placeholder index or null.
-   */
-  sortItem(dragItem: DragRef, position: IPosition, delta: IPosition): number | null {
-    if (!this._isDragging || this.disableSort) return null;
-
-    const result = this._sortStrategy.sort(dragItem, position.x, position.y, delta);
-    if (result !== null) {
-      return result.currentIndex;
-    }
-    return null;
+  sortItem(drag: DragRef<T>, position: IPosition): number | null {
+    if (!this.active || this.disableSort) return null;
+    return this.strategy.sort(drag, position.x, position.y)?.currentIndex ?? null;
   }
 
-  /** Returns current visual index of the placeholder. */
-  getItemIndex(item: DragRef): number {
-    return this._sortStrategy.getItemIndex(item);
+  finishDrag(drag: DragRef<T>): void {
+    if (!this.active) return;
+    const currentIndex = this.strategy.getCurrentIndex();
+    this.onDrop.emit({
+      previousIndex: Math.max(0, this.previousIndex),
+      currentIndex,
+      item: drag,
+      container: this,
+      previousContainer: drag.originDropList ?? this,
+    });
+    this.reset();
   }
 
-  /**
-   * Called from DragRef.endDrag() — cleans up transforms on all lists.
-   */
+  exit(drag: DragRef<T>): void {
+    if (!this.active) return;
+    this.placeholder?.detach();
+    this.reset();
+    void drag;
+  }
   resetSortTransforms(): void {
-    if (!this._isDragging) return;
-    this._isDragging = false;
-    this.el.classList.remove('ngx-drop-list-dragging');
-    this._sortStrategy.reset();
+    this.reset();
+  }
+  getFinalIndex(): number {
+    return this.strategy.getCurrentIndex();
+  }
+  getItemIndex(item: DragRef<T>): number {
+    return this.indexOf(item);
   }
 
-  /** Get the final drop index from the strategy */
-  getFinalIndex(): number {
-    return this._sortStrategy.getCurrentIndex();
+  private indexOf(item: DragRef<T>): number {
+    return [...this.el.children]
+      .filter((el) => el !== this.placeholder?.element)
+      .findIndex((el) => el === item.el);
+  }
+  private reset(): void {
+    this.active = false;
+    this.strategy.reset();
+    this.placeholder?.detach();
+    this.placeholder = undefined;
+    this.el.classList.remove('ngx-drop-list--active');
   }
 }

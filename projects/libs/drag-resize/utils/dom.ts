@@ -70,7 +70,7 @@ export function adjustDomRect(
     height: number;
   },
   top: number,
-  left: number
+  left: number,
 ) {
   domRect.top += top;
   domRect.bottom = domRect.top + domRect.height;
@@ -86,7 +86,12 @@ export function adjustDomRect(
  * @param pointerX Coordinates along the X axis.
  * @param pointerY Coordinates along the Y axis.
  */
-export function isPointerNearDomRect(rect: DOMRect, threshold: number, pointerX: number, pointerY: number): boolean {
+export function isPointerNearDomRect(
+  rect: DOMRect,
+  threshold: number,
+  pointerX: number,
+  pointerY: number,
+): boolean {
   const { top, right, bottom, left, width, height } = rect;
   const xThreshold = width * threshold;
   const yThreshold = height * threshold;

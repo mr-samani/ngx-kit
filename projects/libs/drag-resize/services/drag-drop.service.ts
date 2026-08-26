@@ -1,56 +1,51 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { DragRef } from '../drag-ref';
 import { DropListRef } from '../drop-list-ref';
-import { DropListGroupRef } from '../drop-list-group-ref';
-import { IPosition } from '../contracts/IPosition';
 
 @Injectable({ providedIn: 'root' })
 export class DragDropService {
-  readonly dragItemsMap = new Map<HTMLElement, DragRef>();
-  readonly dropListsMap = new Map<HTMLElement, DropListRef>();
+  readonly drags = signal<readonly DragRef[]>([]);
+  readonly dropLists = signal<readonly DropListRef[]>([]);
+  readonly activeDrag = signal<DragRef | null>(null);
 
-  itemsSnapshot: { item: DragRef; rect: DOMRect }[] = [];
-  listSnapshot: { item: DropListRef; rect: DOMRect }[] = [];
-
-  dropListGroup = new DropListGroupRef();
-
-  clear() {
-    this.dragItemsMap.clear();
-    this.dropListsMap.clear();
+  registerDragItem(ref: DragRef<any>): void {
+    this.drags.update((items) => (items.includes(ref) ? items : [...items, ref]));
   }
-
-  registerDragItem(d: DragRef) {
-    this.dragItemsMap.set(d.el, d);
+  removeDragItem(ref: DragRef<any>): void {
+    this.drags.update((items) => items.filter((x) => x !== ref));
+    if (this.activeDrag() === ref) this.activeDrag.set(null);
   }
-  removeDragItem(d: DragRef) {
-    this.dragItemsMap.delete(d.el);
+  registerDropList(ref: DropListRef): void {
+    this.dropLists.update((items) => (items.includes(ref) ? items : [...items, ref]));
   }
-  registerDropList(l: DropListRef) {
-    this.dropListsMap.set(l.el, l);
+  removeDropList(ref: DropListRef<any>): void {
+    this.dropLists.update((items) => items.filter((x) => x !== ref));
   }
-  removeDropList(l: DropListRef) {
-    this.dropListsMap.delete(l.el);
+  begin(ref: DragRef<any>): void {
+    this.activeDrag.set(ref);
   }
-
-  updateAllRect() {
-    for (const list of this.dropListsMap.values()) {
-      list.updateDomRect();
-      for (const drag of list._draggables.values()) drag.updateDomRect();
-    }
-    this.listSnapshot = [...this.dropListsMap.values()].map(m => ({ item: m, rect: m.domRect }));
-    this.itemsSnapshot = [...this.dragItemsMap.values()].map(m => ({ item: m, rect: m.domRect }));
+  end(ref: DragRef<any>): void {
+    if (this.activeDrag() === ref) this.activeDrag.set(null);
   }
-
-  getDragItemIndex(drag: DragRef): number {
-    if (!drag.dropList) return -1;
-    return [...drag.dropList._draggables.values()].findIndex(x => x.el === drag.el);
-  }
-
-  getDropListFromPointerPosition(pos: IPosition): DropListRef | undefined {
-    return this.listSnapshot.find(w => this._inside(w.rect, pos))?.item;
-  }
-
-  private _inside(rect: DOMRect, pos: IPosition): boolean {
-    return pos.x >= rect.x && pos.x <= rect.x + rect.width && pos.y >= rect.y && pos.y <= rect.y + rect.height;
+  findDropList(point: { x: number; y: number }, current?: DropListRef | null): DropListRef | null {
+    const lists = this.dropLists();
+    const inside = lists.filter((list) => {
+      const r = list.el?.getBoundingClientRect();
+      return (
+        !!r && point.x >= r.left && point.x <= r.right && point.y >= r.top && point.y <= r.bottom
+      );
+    });
+    if (current && inside.includes(current)) return current;
+    return (
+      inside.find(
+        (list) =>
+          !current ||
+          current.connectedTo.length === 0 ||
+          current.connectedTo.includes(list.el) ||
+          list.connectedTo.includes(current.el),
+      ) ??
+      inside[0] ??
+      null
+    );
   }
 }

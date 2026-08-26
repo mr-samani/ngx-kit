@@ -1,234 +1,115 @@
 import {
-  AfterViewInit,
-  booleanAttribute,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  ContentChildren,
   ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnInit,
-  Output,
-  QueryList,
-  ViewChild,
-  ViewContainerRef,
-  ViewEncapsulation,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
 } from '@angular/core';
-import { IGridLayoutOptions } from '../options/options';
-import { DEFAULT_GRID_LAYOUT_CONFIG, GridLayoutService } from '../services/grid-layout.service';
-import { NgxGridItemComponent } from '../grid-item/grid-item.component';
-import { getFirstCollision } from '../utils/grid.utils';
+import { GridLayoutService, GridItemState } from '../services/grid-layout.service';
+import { GridLayoutOptions, IGridLayoutOptions } from '../options/options';
 import { LayoutOutput } from '../options/layout-output';
-import { mergeDeep } from 'ngx-kit/shared';
 
 @Component({
   selector: 'ngx-grid-layout',
+  standalone: true,
   template: `
-    <ng-content #childItem></ng-content>
-    <ng-template #placeholder></ng-template>
+    <div class="ngx-grid-layout__surface"><ng-content /></div>
   `,
-  styleUrls: ['./grid-layout.component.scss'],
+  styles: [
+    `
+      :host {
+        display: block;
+        position: relative;
+        contain: layout style;
+        min-height: 1px;
+      }
+      .ngx-grid-layout__surface {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: inherit;
+      }
+      .ngx-grid-layout__surface::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-size: calc(
+            (100% - var(--grid-gap) * (var(--grid-cols) - 1)) / var(--grid-cols) + var(--grid-gap)
+          )
+          var(--grid-row);
+        background-image:
+          linear-gradient(to right, var(--grid-col-color) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-row-color) 1px, transparent 1px);
+        opacity: var(--grid-bg-opacity);
+        border: var(--grid-border-width) solid var(--grid-border-color);
+        box-sizing: border-box;
+      }
+      .ngx-grid-layout--dragging .ngx-grid-layout__surface::before {
+        opacity: 1;
+      }
+    `,
+  ],
   host: {
-    '[style.position]': '"relative !important"',
-    '[style.boxSizing]': '"border-box"',
-    '[style.height.px]': '_gridService.getGridHeight',
-    '[style.user-select]': '_gridService.editMode ? "none" : "auto"',
-    '[class.edit-mode]': '_gridService.editMode',
+    '[class.ngx-grid-layout--dragging]': 'service.isInteracting()',
+    '[style.height.px]': 'service.height()',
+    '[attr.dir]': 'dir()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
-  standalone: false,
 })
-export class NgxGridLayoutComponent implements OnInit, AfterViewInit {
-  @Input({ alias: 'editMode', transform: booleanAttribute })
-  set setEditMode(val: boolean) {
-    this._gridService.editMode = val;
-    this._changeDetection.markForCheck();
-  }
-
-  get editMode(): boolean {
-    return this._gridService.editMode;
-  }
-
-  @Input()
-  get options(): IGridLayoutOptions {
-    return this._gridService._options;
-  }
-  set options(val: IGridLayoutOptions) {
-    if (val) {
-      this._gridService._options = mergeDeep(DEFAULT_GRID_LAYOUT_CONFIG, val);
-      this.setBackgroundCssVariables();
-    }
-  }
-
-  @Output() layoutChange = new EventEmitter<LayoutOutput[]>();
-
-  el: HTMLElement;
-
-  @ContentChildren(NgxGridItemComponent)
-  set items(value: QueryList<NgxGridItemComponent>) {
-    if (value) {
-      value.changes.subscribe(() => {
-        this._gridService._gridItems = Array.from(value);
-        this.initGridItems();
-      });
-      this._gridService._gridItems = Array.from(value);
-      this.initGridItems();
-    }
-  }
-
-  @ViewChild('placeholder', { read: ViewContainerRef, static: false })
-  private set placeholderRef(val: ViewContainerRef) {
-    this._gridService._placeholderContainerRef = val;
-  }
-
-  constructor(
-    public _gridService: GridLayoutService,
-    private _elRef: ElementRef<HTMLElement>,
-    private _changeDetection: ChangeDetectorRef,
-  ) {
-    this.el = _elRef.nativeElement;
-  }
-
-  ngOnInit(): void {
-    this.setBackgroundCssVariables();
-    this._gridService.gridLayout = this;
-  }
-
-  ngAfterViewInit(): void {
-    // Trigger initial layout calculation
-    setTimeout(() => {
-      this._changeDetection.detectChanges();
-    }, 0);
-  }
-
-  public update(val: IGridLayoutOptions) {
-    this.options = val;
-    this.initGridItems();
-  }
-
-  /**
-   * Set CSS variables for grid background
-   */
-  private setBackgroundCssVariables(): void {
-    const style = this.el.style;
-    const backgroundConfig = this._gridService._options.gridBackgroundConfig;
-    const rowHeight = this._gridService._options.rowHeight;
-    const cols = this._gridService._options.cols;
-    const gap = this._gridService._options.gap;
-
-    if (backgroundConfig) {
-      // Structure
-      style.setProperty('--gap', gap + 'px');
-      style.setProperty('--row-height', rowHeight + 'px');
-      style.setProperty('--columns', `${cols}`);
-      style.setProperty('--border-width', backgroundConfig.borderWidth + 'px');
-
-      // Colors
-      style.setProperty('--border-color', backgroundConfig.borderColor);
-      style.setProperty('--gap-color', backgroundConfig.gapColor);
-      style.setProperty('--row-color', backgroundConfig.rowColor);
-      style.setProperty('--column-color', backgroundConfig.columnColor);
-    } else {
-      // Remove properties if no background config
-      style.removeProperty('--gap');
-      style.removeProperty('--row-height');
-      style.removeProperty('--columns');
-      style.removeProperty('--border-width');
-      style.removeProperty('--border-color');
-      style.removeProperty('--gap-color');
-      style.removeProperty('--row-color');
-      style.removeProperty('--column-color');
-    }
-  }
-
-  /**
-   * Initialize grid items - validate positions and resolve collisions
-   */
-  private initGridItems(): void {
-    if (!this._gridService._gridItems.length) {
-      return;
-    }
-
-    // Assign IDs to items without one
-    for (let i = 0; i < this._gridService._gridItems.length; i++) {
-      const item = this._gridService._gridItems[i];
-      if (!item.id) {
-        item.id = 'GRID_ITEM_' + (i + 1);
-      }
-
-      // Validate and resolve collisions
-      while (getFirstCollision(this._gridService._gridItems, { ...item.config, id: item.id })) {
-        item.config.y++;
-      }
-
-      this._gridService.updateGridItem(item);
-    }
-
-    // Check for duplicate IDs
-    this.checkDuplicatedIds();
-
-    // Compact items to remove gaps
-    this._gridService.compactGridItems();
-
-    // Trigger change detection
-    this._changeDetection.detectChanges();
-  }
-
-  /**
-   * Handle window resize - recalculate grid layout
-   */
-  @HostListener('window:resize')
-  public updateGridLayout(): void {
-    this.setBackgroundCssVariables();
-    this.initGridItems();
-  }
-
-  /**
-   * Emit layout changes to parent component
-   */
-  public emitChangeLayout(layout: LayoutOutput[]): void {
-    this.layoutChange.emit(layout);
-  }
-
-  /**
-   * Check for duplicate IDs and generate new ones if needed
-   */
-  private checkDuplicatedIds(): boolean {
-    const ids = this._gridService._gridItems.map((m) => m.id);
-    let hasDuplicated = false;
-
-    for (let i = 0; i < ids.length; i++) {
-      const currentId = ids[i];
-      const firstIndex = ids.indexOf(currentId);
-
-      if (firstIndex !== i) {
-        // Duplicate found - generate new ID
-        this._gridService._gridItems[i].id = this.generateUniqueId();
-        hasDuplicated = true;
-      }
-    }
-
-    if (hasDuplicated) {
-      console.warn(
-        'GridLayout: Grid items must have unique IDs. Auto-generated IDs for duplicates.',
-        ids,
-      );
-    }
-
-    return hasDuplicated;
-  }
-
-  /**
-   * Generate a unique UUID v4
-   */
-  private generateUniqueId(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
+export class NgxGridLayoutComponent {
+  readonly options = input<IGridLayoutOptions>(new GridLayoutOptions());
+  readonly editMode = input(true);
+  readonly layoutChange = output<LayoutOutput[]>();
+  readonly dir = input<'ltr' | 'rtl'>('ltr');
+  readonly service = inject(GridLayoutService);
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private initialized = signal(false);
+  constructor() {
+    effect(() => {
+      this.service.setOptions(this.options());
+      this.service.setEditMode(this.editMode());
     });
+    effect(() => {
+      this.service.connect((layout) => this.layoutChange.emit(layout));
+    });
+  }
+  ngAfterViewInit(): void {
+    const surface = this.el.nativeElement.querySelector('.ngx-grid-layout__surface') as HTMLElement;
+    this.service.attachElement(surface);
+    this.initialized.set(true);
+    this.setCss();
+    new ResizeObserver(() => this.setCss()).observe(surface);
+  }
+  setItems(items: GridItemState[]): void {
+    this.service.setItems(items);
+  }
+  update(options: Partial<IGridLayoutOptions>): void {
+    this.service.setOptions(options);
+  }
+  private setCss(): void {
+    const el = this.el.nativeElement,
+      o = this.service.options();
+    el.style.setProperty('--grid-cols', String(o.cols));
+    el.style.setProperty('--grid-gap', `${o.gap ?? 0}px`);
+    el.style.setProperty('--grid-row', `${o.rowHeight === 'fit' ? 100 : o.rowHeight}px`);
+    const b = o.gridBackgroundConfig;
+    el.style.setProperty('--grid-border-width', `${b?.borderWidth ?? 0}px`);
+    el.style.setProperty('--grid-border-color', b?.borderColor ?? 'transparent');
+    el.style.setProperty('--grid-row-color', b?.rowColor ?? 'transparent');
+    el.style.setProperty('--grid-col-color', b?.columnColor ?? 'transparent');
+    el.style.setProperty(
+      '--grid-bg-opacity',
+      b?.show === 'never'
+        ? '0'
+        : b?.show === 'whenDragging'
+          ? this.service.isInteracting()
+            ? '1'
+            : '0'
+          : '1',
+    );
   }
 }

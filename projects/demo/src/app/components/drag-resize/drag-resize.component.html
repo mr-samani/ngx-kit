@@ -3,7 +3,12 @@
 <div class="drag-item obs" ngxResizable ngxDraggable>Drag&resize in absolute</div>
 <div class="drag-item fxd" ngxResizable ngxDraggable>Drag&resize in fixed</div>
 
-<div class="drag-item" ngxResizable ngxDraggable (resizeEnd)="onResizeEnd($event)" (dragEnd)="onDragEnd($event)">
+<div
+  class="drag-item"
+  ngxResizable
+  ngxDraggable
+  (resizeEnd)="onResizeEnd($event)"
+  (dragEnd)="onDragEnd($event)">
   Drag&resize in relative
 </div>
 
@@ -11,7 +16,11 @@
   <div class="container">
     <h3>Drag with handler</h3>
     <div class="drag-item">
-      <span class="handle" [boundary]="sectionWithHandler" [dragRootElement]="'.boundary .drag-item'" ngxDraggable>
+      <span
+        class="handle"
+        [boundary]="sectionWithHandler"
+        [dragRootElement]="'.boundary .drag-item'"
+        ngxDraggable>
         <i class="fad fa-arrows fa-2x"></i>
         handle
       </span>

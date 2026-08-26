@@ -29,7 +29,7 @@ export function copyEssentialStyles(source: HTMLElement, target: HTMLElement) {
     'outline-color',
   ];
 
-  keysToCopy.forEach(key => {
+  keysToCopy.forEach((key) => {
     const value = styles.getPropertyValue(key);
     if (value) {
       target.style.setProperty(key, value, styles.getPropertyPriority(key));
@@ -42,5 +42,7 @@ export function copyEssentialStyles(source: HTMLElement, target: HTMLElement) {
  * that exited before the base transform was applied.
  */
 export function combineTransforms(transform: string, initialTransform?: string): string {
-  return initialTransform && initialTransform != 'none' ? transform + ' ' + initialTransform : transform;
+  return initialTransform && initialTransform != 'none'
+    ? transform + ' ' + initialTransform
+    : transform;
 }

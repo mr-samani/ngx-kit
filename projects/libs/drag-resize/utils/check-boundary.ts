@@ -1,24 +1,34 @@
 const TOLERANCE = 1;
 
-export function checkBoundY(selfRec: DOMRect, boundaryDomRec: DOMRect | undefined, offsetY: number): number {
+export function checkBoundY(
+  selfRec: DOMRect,
+  boundaryDomRec: DOMRect | undefined,
+  offsetY: number,
+): number {
   if (!boundaryDomRec) return offsetY;
   const newTop = selfRec.top + offsetY;
   const newBottom = selfRec.bottom + offsetY;
   // Check top boundary
   if (newTop < boundaryDomRec.top + TOLERANCE) return offsetY + (boundaryDomRec.top - newTop);
   // Check bottom boundary
-  if (newBottom > boundaryDomRec.bottom - TOLERANCE) return offsetY - (newBottom - boundaryDomRec.bottom);
+  if (newBottom > boundaryDomRec.bottom - TOLERANCE)
+    return offsetY - (newBottom - boundaryDomRec.bottom);
   return offsetY;
 }
 
-export function checkBoundX(selfRec: DOMRect, boundaryDomRec: DOMRect | undefined, offsetX: number): number {
+export function checkBoundX(
+  selfRec: DOMRect,
+  boundaryDomRec: DOMRect | undefined,
+  offsetX: number,
+): number {
   if (!boundaryDomRec) return offsetX;
   const newLeft = selfRec.left + offsetX;
   const newRight = selfRec.right + offsetX;
   // Check left boundary
   if (newLeft < boundaryDomRec.left + TOLERANCE) return offsetX + (boundaryDomRec.left - newLeft);
   // Check right boundary
-  if (newRight > boundaryDomRec.right - TOLERANCE) return offsetX - (newRight - boundaryDomRec.right);
+  if (newRight > boundaryDomRec.right - TOLERANCE)
+    return offsetX - (newRight - boundaryDomRec.right);
   return offsetX;
 }
 
@@ -38,7 +48,7 @@ export function clampWithinBoundary(
   newWidth: number,
   newHeight: number,
   newLeft: number,
-  newTop: number
+  newTop: number,
 ): { width: number; height: number; left: number; top: number } {
   if (!boundaryDomRec) {
     return { width: newWidth, height: newHeight, left: newLeft, top: newTop };

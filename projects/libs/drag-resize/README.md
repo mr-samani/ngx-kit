@@ -1,41 +1,27 @@
-# ngx-kit/gradient-picker
+# ngx-kit drag-resize
 
-A linear/radial gradient picker with multiple draggable color stops, outputting a ready-to-use CSS string.
+## Design goals
 
-## Install
+The package uses Angular 22 signals and Pointer Events. Sorting is geometry-driven: the list detects whether it is CSS Grid, flex row, flex column, or an unstructured container and chooses the appropriate insertion algorithm. RTL is determined from the actual computed `direction` instead of from an input flag.
 
-```bash
-npm install ngx-kit
-```
-
-## Usage
+## Basic drop list
 
 ```html
-<ngx-input-gradient [(ngModel)]="gradientCss"></ngx-input-gradient>
+<div NgxDropList (drop)="onDrop($event)">
+  @for (item of items; track item.id) {
+  <article NgxDraggable [data]="item">{{ item.name }}</article>
+  }
+</div>
 ```
 
-Or as a directive on a plain input:
+## Resize
 
 ```html
-<input type="text" [ngxInputGradient]="gradientCss" (change)="gradientCss = $event" />
+<article
+  NgxResizable
+  [minWidth]="120"
+  [minHeight]="80"
+  [directions]="['n','e','s','w','ne','se','sw','nw']"></article>
 ```
 
-The output is a valid CSS string like `linear-gradient(90deg, #ff0000 0%, #0000ff 100%)`, ready to use directly in `background`/`background-image`.
-
-## API
-
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Panel theme |
-| `setInputBackground` *(directive)* | `boolean` | `true` | Sets the input's background to the selected gradient |
-| `change` *(directive)* | `EventEmitter<string>` | | The new gradient string |
-
-## UI notes
-
-- Add a color stop by clicking on the gradient bar; drag to move it.
-- Double-click a stop to remove it (or use the delete button if shown).
-- Each stop's color is edited with the same `ngx-kit/color-picker` panel (this package depends on it).
-
-## Dark mode and RTL
-
-Supported automatically.
+Resize is pointer based, supports all eight directions, minimum/maximum constraints and optional pixel snapping.

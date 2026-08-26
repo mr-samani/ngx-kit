@@ -1,32 +1,5 @@
-export interface IGridLayoutOptions {
-  cols: number;
-  rowHeight?: 'fit' | number;
-  gap?: number;
-  gridBackgroundConfig?: IGridBackgroundCfg;
-
-  //TODO : add responsive layout
-  // breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-  // cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-
-  /* If true, grid can be placed one over the other.
-   * If set, implies `preventCollision`.
-   */
-  // allowOverlap: ?boolean = false,
-}
-export class GridLayoutOptions implements IGridLayoutOptions {
-  cols = 12;
-  rowHeight: 'fit' | number = 50;
-  gap: number = 5;
-  gridBackgroundConfig: Required<IGridBackgroundCfg> = {
-    show: 'always',
-    borderColor: 'rgba(255, 128, 0, 0.25)',
-    gapColor: 'transparent',
-    borderWidth: 1,
-    rowColor: 'rgba(128, 128, 128, 0.10)',
-    columnColor: 'rgba(128, 128, 128, 0.10)',
-  };
-}
-
+export type GridFlow = 'free' | 'horizontal' | 'vertical';
+export type CompactMode = 'none' | 'vertical' | 'horizontal' | 'both';
 export interface IGridBackgroundCfg {
   show?: 'never' | 'always' | 'whenDragging';
   borderColor?: string;
@@ -34,4 +7,39 @@ export interface IGridBackgroundCfg {
   rowColor?: string;
   columnColor?: string;
   borderWidth?: number;
+}
+export interface IGridLayoutOptions {
+  cols: number;
+  rowHeight: number | 'fit';
+  gap?: number;
+  padding?: number;
+  flow?: GridFlow;
+  compact?: CompactMode;
+  allowOverlap?: boolean;
+  pushItems?: boolean;
+  dragThreshold?: number;
+  animate?: boolean;
+  rtl?: boolean | 'auto';
+  gridBackgroundConfig?: IGridBackgroundCfg;
+}
+export class GridLayoutOptions implements IGridLayoutOptions {
+  cols = 12;
+  rowHeight: number | 'fit' = 50;
+  gap = 8;
+  padding = 0;
+  flow = 'free' as GridFlow;
+  compact = 'vertical' as CompactMode;
+  allowOverlap = false;
+  pushItems = true;
+  dragThreshold = 3;
+  animate = true;
+  rtl = 'auto' as boolean | 'auto';
+  gridBackgroundConfig: IGridBackgroundCfg = {
+    show: 'always' as const,
+    borderColor: 'rgba(128,128,128,.16)',
+    gapColor: 'transparent',
+    rowColor: 'rgba(128,128,128,.07)',
+    columnColor: 'rgba(128,128,128,.07)',
+    borderWidth: 1,
+  };
 }
