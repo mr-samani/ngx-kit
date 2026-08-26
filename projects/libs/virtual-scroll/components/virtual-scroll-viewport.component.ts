@@ -23,10 +23,26 @@ import {
   NgxVirtualScrollMeasurement,
 } from '../types/virtual-scroll-measurement.interface';
 import { measureLayout } from '../utils/measure-layout';
-import { CommonModule } from '@angular/common';
 
 /** How many items are rendered "in the open" (no transform) purely to probe their real layout. */
 const PROBE_COUNT = 24;
+
+/**
+ * Browsers clamp any single element's CSS width/height (and therefore
+ * `scrollWidth`/`scrollHeight`) to a hard maximum — roughly 33,554,428px in
+ * Chromium and considerably less in older WebKit (historically ~8,388,608px)
+ * and Gecko (~17,895,697px). Once the spacer element (used purely to give
+ * the native scrollbar the right size) exceeds that ceiling, the browser
+ * silently clamps it, the scrollbar stops early, and everything past that
+ * point becomes unreachable — exactly the "stuck around 524k rows" symptom.
+ *
+ * To support arbitrarily large data sets we cap the spacer at this safe
+ * ceiling and scroll the DOM in a *compressed* coordinate space, while all
+ * index math still happens against the real, uncompressed pixel space (see
+ * `scaleFactor`). Kept conservative (well under every known browser cap) so
+ * it works everywhere without per-browser detection.
+ */
+const DEFAULT_MAX_AXIS_SIZE_PX = 6_000_000;
 
 /**
  * Headless, signal-based virtual scroll viewport.
@@ -78,6 +94,14 @@ export class NgxVirtualScrollViewport<T = unknown> {
   /** Advanced escape hatch: replace the built-in layout probe entirely. */
   readonly measureFn = input<NgxVirtualScrollMeasureFn | undefined>(undefined);
 
+  /**
+   * Safe ceiling (px) for the scrollable axis's real DOM size. Only relevant
+   * for very large data sets — see `DEFAULT_MAX_AXIS_SIZE_PX`. You should
+   * not need to change this; it's exposed only for advanced cases (e.g. you
+   * know your app never targets older WebKit and want to raise the ceiling).
+   */
+  readonly maxAxisSizePx = input(DEFAULT_MAX_AXIS_SIZE_PX);
+
   /** Emits the index of the first fully-visible item as the user scrolls. */
   readonly scrolledIndexChange = output<number>();
 
@@ -105,7 +129,27 @@ export class NgxVirtualScrollViewport<T = unknown> {
   readonly isMeasured = computed(() => this.measurement() !== null);
 
   readonly lineCount = computed(() => Math.ceil(this.items().length / this.crossCount()));
-  readonly totalSize = computed(() => this.lineCount() * this.lineSize());
+
+  /** Real, uncompressed total size along the scroll axis — can exceed the browser's element-size cap. */
+  readonly naturalTotalSize = computed(() => this.lineCount() * this.lineSize());
+
+  /**
+   * Size actually applied to the spacer element, clamped to `maxAxisSizePx`.
+   * Equal to `naturalTotalSize()` for any data set small enough to matter in
+   * practice — the compression only ever engages for extreme list sizes.
+   */
+  readonly totalSize = computed(() => Math.min(this.naturalTotalSize(), this.maxAxisSizePx()));
+
+  /**
+   * Ratio between the (possibly capped) DOM scroll space and the real,
+   * uncompressed content size. `1` unless `naturalTotalSize()` exceeds
+   * `maxAxisSizePx()`, in which case it's `< 1` and the DOM scrollbar
+   * represents the whole data set in a compressed coordinate space.
+   */
+  readonly scaleFactor = computed(() => {
+    const natural = this.naturalTotalSize();
+    return natural > 0 ? this.totalSize() / natural : 1;
+  });
 
   /** Absolute index of the first item in `visibleItems()`, for display purposes. */
   readonly baseIndex = computed(() => this.range().start * this.crossCount());
@@ -118,19 +162,16 @@ export class NgxVirtualScrollViewport<T = unknown> {
     return data.slice(start * cross, Math.min(data.length, end * cross));
   });
 
-  private readonly contentOffset = computed(() => this.range().start * this.lineSize());
+  // Expressed in the same compressed DOM coordinate space as `scrollOffset`/
+  // `totalSize`, so it always stays within the safe, capped range even for
+  // enormous data sets — see `scaleFactor`.
+  private readonly contentOffset = computed(() => this.range().start * this.lineSize() * this.scaleFactor());
 
   protected readonly wrapperTransform = computed(() =>
-    this.axis() === 'horizontal'
-      ? `translateX(${this.contentOffset()}px)`
-      : `translateY(${this.contentOffset()}px)`,
+    this.axis() === 'horizontal' ? `translateX(${this.contentOffset()}px)` : `translateY(${this.contentOffset()}px)`
   );
-  protected readonly spacerWidth = computed(() =>
-    this.axis() === 'horizontal' ? this.totalSize() : 1,
-  );
-  protected readonly spacerHeight = computed(() =>
-    this.axis() === 'vertical' ? this.totalSize() : 1,
-  );
+  protected readonly spacerWidth = computed(() => (this.axis() === 'horizontal' ? this.totalSize() : 1));
+  protected readonly spacerHeight = computed(() => (this.axis() === 'vertical' ? this.totalSize() : 1));
 
   private resizeObserver?: ResizeObserver;
   private scrollingIdleTimer?: ReturnType<typeof setTimeout>;
@@ -158,7 +199,6 @@ export class NgxVirtualScrollViewport<T = unknown> {
         const measure = this.measureFn() ?? measureLayout;
         const result = measure(children);
         if (result) {
-          console.log(result)
           this.measurement.set(result);
         }
       },
@@ -200,11 +240,17 @@ export class NgxVirtualScrollViewport<T = unknown> {
     this.scrollToOffset(line * this.lineSize(), behavior);
   }
 
-  /** Programmatically scroll to a given pixel offset along the scroll axis. */
+  /**
+   * Programmatically scroll to a given pixel offset along the scroll axis.
+   * `offset` is expressed in real, uncompressed content px (i.e. the same
+   * space as `index * lineSize()`) — internally converted to the
+   * (possibly compressed) DOM scroll coordinate via `scaleFactor()`.
+   */
   scrollToOffset(offset: number, behavior: ScrollBehavior = 'auto'): void {
     const el = this.scrollableRef().nativeElement;
+    const domOffset = offset * this.scaleFactor();
     const options: ScrollToOptions =
-      this.axis() === 'horizontal' ? { left: offset, behavior } : { top: offset, behavior };
+      this.axis() === 'horizontal' ? { left: domOffset, behavior } : { top: domOffset, behavior };
     el.scrollTo(options);
   }
 
@@ -243,7 +289,8 @@ export class NgxVirtualScrollViewport<T = unknown> {
 
       const size = this.lineSize();
       if (size > 0) {
-        this.scrolledIndexChange.emit(Math.floor(offset / size) * this.crossCount());
+        const realOffset = offset / this.scaleFactor();
+        this.scrolledIndexChange.emit(Math.floor(realOffset / size) * this.crossCount());
       }
     });
   };
@@ -264,6 +311,13 @@ export class NgxVirtualScrollViewport<T = unknown> {
    * Recomputes the rendered line range. Mirrors the CDK "fixed size"
    * strategy: only recompute once the scroll offset gets within
    * `minBufferPx` of the current range's edge, instead of on every pixel.
+   *
+   * All math here happens in *real* (uncompressed) content px, obtained by
+   * dividing the raw DOM scroll offset/viewport size by `scaleFactor()`.
+   * This is what makes the very last items reachable even when the total
+   * content size has been compressed into a browser-safe DOM range: as
+   * `domScrollOffset` sweeps its full (capped) range, `realOffset` still
+   * sweeps the entire, real `naturalTotalSize()`.
    */
   private recomputeRange(force: boolean): void {
     const lineSize = this.lineSize();
@@ -271,20 +325,23 @@ export class NgxVirtualScrollViewport<T = unknown> {
       return;
     }
 
+    const scale = this.scaleFactor();
+    const realOffset = this.scrollOffset() / scale;
+    const realViewportSize = this.viewportSize() / scale;
+
     const current = this.range();
-    const scrollOffset = this.scrollOffset();
-    const viewportSize = this.viewportSize();
     const min = this.minBufferPx();
     const max = this.maxBufferPx();
 
-    const distanceToStart = scrollOffset - current.start * lineSize;
-    const distanceToEnd = current.end * lineSize - (scrollOffset + viewportSize);
+    const distanceToStart = realOffset - current.start * lineSize;
+    const distanceToEnd = current.end * lineSize - (realOffset + realViewportSize);
+
     if (!force && distanceToStart >= min && distanceToEnd >= min) {
       return;
     }
-    
-    const bufferStart = Math.max(0, scrollOffset - max);
-    const bufferEnd = scrollOffset + viewportSize + max;
+
+    const bufferStart = Math.max(0, realOffset - max);
+    const bufferEnd = realOffset + realViewportSize + max;
 
     const start = Math.max(0, Math.floor(bufferStart / lineSize));
     const end = Math.min(this.lineCount(), Math.ceil(bufferEnd / lineSize));

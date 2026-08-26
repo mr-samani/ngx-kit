@@ -98,6 +98,31 @@ scrollbar, so wide tables with virtualized rows work out of the box:
 </div>
 ```
 
+## Very large data sets (1M+ rows)
+
+Browsers clamp any element's real CSS `height`/`width` to a hard maximum
+(~33.5M px in Chromium, far less in older WebKit/Gecko). Once a naive
+"spacer" element crosses that ceiling, the browser silently clamps it,
+`scrollHeight` stops growing, and everything past that point becomes
+unreachable — the classic "scroll gets stuck around ~500k rows" symptom.
+
+This viewport handles it automatically: the spacer's real DOM size is capped
+at `maxAxisSizePx` (6,000,000px by default — safely under every known
+browser limit), and the DOM scrollbar operates in a *compressed* coordinate
+space via `scaleFactor()`. All range/index math is done against the real,
+uncompressed content size (`naturalTotalSize()`), so scrolling the
+(compressed) native scrollbar all the way to the end still lands you exactly
+on the last item, no matter how many millions of rows you have. The only
+user-visible trade-off for truly massive lists is that the scrollbar thumb's
+motion is no longer perfectly 1:1 with "one row per pixel" — an unavoidable
+consequence of representing an arbitrarily large data set inside a bounded
+native scrollbar, and the same trade-off every large-scale virtual scroll
+implementation makes.
+
+You don't need to configure anything for this — it only engages once
+`naturalTotalSize()` actually exceeds `maxAxisSizePx`, and is a no-op
+(`scaleFactor() === 1`) for the vast majority of real-world lists.
+
 ## API
 
 ### Inputs
@@ -108,6 +133,7 @@ scrollbar, so wide tables with virtualized rows work out of the box:
 | `minBufferPx` | `number` | `150` | Buffer left before recomputing the range |
 | `maxBufferPx` | `number` | `300` | Extra px rendered outside the viewport |
 | `measureFn` | `NgxVirtualScrollMeasureFn` | `undefined` | Advanced override for the built-in layout probe |
+| `maxAxisSizePx` | `number` | `6_000_000` | Safe ceiling for the real DOM scroll size — see "Very large data sets" below |
 
 ### Outputs
 
@@ -128,6 +154,9 @@ scrollbar, so wide tables with virtualized rows work out of the box:
 | `lineSize()` | `number` | Measured px size of one line |
 | `isMeasured()` | `boolean` | Whether the initial layout probe has completed |
 | `isScrolling()` | `boolean` | True while an active scroll gesture is in progress |
+| `naturalTotalSize()` | `number` | Real, uncompressed total size along the scroll axis |
+| `totalSize()` | `number` | Size actually applied to the spacer (capped at `maxAxisSizePx`) |
+| `scaleFactor()` | `number` | `totalSize() / naturalTotalSize()`; `1` unless the data set is extremely large |
 
 ### Methods
 

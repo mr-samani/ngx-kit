@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import {
   ExampleShowcaseComponent,
   type ExampleSourceFile,
@@ -7,20 +7,22 @@ import { NgxVirtualScrollViewport } from 'ngx-kit/virtual-scroll';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'app-virtual-scroll',
   templateUrl: './virtual-scroll.component.html',
   styleUrls: ['./virtual-scroll.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     NgxVirtualScrollViewport,
-    ExampleShowcaseComponent,
-    MatCheckbox,
+    ExampleShowcaseComponent, 
     FormsModule,
+    ScrollingModule,
   ],
 })
-export class VirtualScrollComponent implements OnInit {
+export class VirtualScrollComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
@@ -34,17 +36,6 @@ export class VirtualScrollComponent implements OnInit {
     },
   ];
 
-  enableVirtualScrolling = signal(true);
-
-  maximum = 10000000;
-  items: string[] = [];
-  constructor() {
-    for (let i = 0; i <= this.maximum; i++) {
-      this.items.push(`Item ${i}`);
-    }
-  }
-
-  ngOnInit() {}
-
-  trackByFn(index: number, item: string) {}
+  maximum = 1000000;
+  items: string[] = Array.from<number>({ length: this.maximum }).map((_, i) => `Item ${i + 1}`);
 }
