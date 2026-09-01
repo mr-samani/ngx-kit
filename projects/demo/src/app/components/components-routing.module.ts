@@ -102,6 +102,11 @@ const routes: Routes = [
         loadComponent: () =>
           import('./drag-resize/drag-resize.component').then((c) => c.DragResizeComponent),
       },
+      {
+        path: 'b',
+        loadComponent: () =>
+          import('./webflow/builder-canvas.component').then((c) => c.BuilderCanvasComponent),
+      },
     ],
   },
 ];

@@ -134,6 +134,10 @@ export const MENU_LIST: ICategory[] = [
         title: 'Drag and Resize',
         url: '/components/drag-resize',
       },
+      {
+        title: 'b',
+        url: '/components/b',
+      },
     ],
   },
 ];
