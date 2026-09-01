@@ -7,6 +7,11 @@ export class GridItemConfig {
   minH?: number;
   maxW?: number;
   maxH?: number;
+  /** Item can't be dragged or resized, and never moves during compaction/push. */
+  static?: boolean;
+  /** Overrides the layout-level draggable/resizable flags for this item only. */
+  isDraggable?: boolean;
+  isResizable?: boolean;
 
   constructor(x: number = 0, y: number = 0, w: number = 1, h: number = 1) {
     this.x = x;
@@ -15,6 +20,7 @@ export class GridItemConfig {
     this.h = h;
   }
 }
+
 export const normalizeGridItem = (value?: Partial<GridItemConfig>): GridItemConfig => ({
   x: Math.max(0, Math.floor(value?.x ?? 0)),
   y: Math.max(0, Math.floor(value?.y ?? 0)),
@@ -24,4 +30,7 @@ export const normalizeGridItem = (value?: Partial<GridItemConfig>): GridItemConf
   minH: value?.minH,
   maxW: value?.maxW,
   maxH: value?.maxH,
+  static: value?.static ?? false,
+  isDraggable: value?.isDraggable,
+  isResizable: value?.isResizable,
 });

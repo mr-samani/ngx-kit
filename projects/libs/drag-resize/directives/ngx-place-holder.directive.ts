@@ -1,7 +1,9 @@
 import { Directive, InjectionToken, TemplateRef, inject } from '@angular/core';
 import { PlaceHolderRef } from '../placeholder-ref';
 import { NGX_DROPLIST } from './ngx-drop-list.directive';
+
 export const NGX_PLACEHOLDER = new InjectionToken<PlaceHolderRef>('ngx-place-holder');
+
 @Directive({
   selector: '[NgxPlaceholder],[ngxPlaceholder]',
   providers: [{ provide: NGX_PLACEHOLDER, useExisting: NgxPlaceholder }],

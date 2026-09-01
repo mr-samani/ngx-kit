@@ -29,7 +29,9 @@ button {
     cursor: pointer;
   }
 }
-
+.ngx-drawer-panel {
+  max-height: calc(100dvh - 60px);
+}
 .d-flex {
   display: flex;
 }

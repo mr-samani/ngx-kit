@@ -1,14 +1,21 @@
 import { DragRef } from '../drag-ref';
+import { isRtl } from '../utils/rtl';
 import { SortResult } from './sort-strategy';
 
 type Flow = 'grid' | 'flex-row' | 'flex-column' | 'free';
+
 interface Snapshot {
   drag: DragRef;
   rect: DOMRect;
   order: number;
 }
 
-/** Geometry-driven sorter. It does not assume LTR or a single-axis list. */
+/**
+ * Geometry-driven sort strategy. It never assumes a fixed axis or writing
+ * direction — it reads the container's computed layout (grid / flex-row /
+ * flex-column / free-form) and its computed `direction` on every drag start,
+ * so RTL containers reorder exactly as a user reading right-to-left expects.
+ */
 export class PositionalSortStrategy {
   private container!: HTMLElement;
   private snapshots: Snapshot[] = [];
@@ -21,13 +28,10 @@ export class PositionalSortStrategy {
     this.container = el;
     return this;
   }
-  withRtl(rtl: boolean): this {
-    this.rtl = rtl;
-    return this;
-  }
+
   start(items: readonly DragRef<any>[]): void {
     this.flow = detectFlow(this.container);
-    this.rtl = getComputedStyle(this.container).direction === 'rtl';
+    this.rtl = isRtl(this.container);
     this.snapshots = items.map((drag, order) => ({
       drag,
       rect: drag.el.getBoundingClientRect(),
@@ -35,10 +39,12 @@ export class PositionalSortStrategy {
     }));
     this.index = -1;
   }
+
   enter(drag: DragRef<any>, x: number, y: number): void {
     this.dragging = drag;
     this.movePlaceholder(drag, this.findIndex(x, y));
   }
+
   sort(drag: DragRef<any>, x: number, y: number): SortResult | null {
     const next = this.findIndex(x, y);
     if (next === this.index) return null;
@@ -46,12 +52,15 @@ export class PositionalSortStrategy {
     this.movePlaceholder(drag, next);
     return { previousIndex: previous, currentIndex: next };
   }
+
   getCurrentIndex(): number {
     return Math.max(0, this.index);
   }
+
   getItemIndex(item: DragRef): number {
     return this.snapshots.findIndex((x) => x.drag === item);
   }
+
   reset(): void {
     this.dragging = null;
     this.snapshots = [];
@@ -76,24 +85,28 @@ export class PositionalSortStrategy {
     if (!items.length) return 0;
     if (this.flow === 'flex-row') return this.findFlexRow(items, x);
     if (this.flow === 'flex-column') return this.findFlexColumn(items, y);
-    if (this.flow === 'grid') return this.findGrid(items, x, y);
-    return this.findFree(items, x, y);
+    // 'grid' and wrapped flex rows/columns both resolve as 2D layouts.
+    return this.findGrid(items, x, y);
   }
 
   private findFlexRow(items: Snapshot[], x: number): number {
     for (let i = 0; i < items.length; i++) {
       const r = items[i].rect;
       const mid = r.left + r.width / 2;
+      // In RTL, reading order runs right -> left, so "before" means "further right".
       const before = this.rtl ? x > mid : x < mid;
       if (before) return i;
     }
     return items.length;
   }
+
   private findFlexColumn(items: Snapshot[], y: number): number {
-    for (let i = 0; i < items.length; i++)
+    for (let i = 0; i < items.length; i++) {
       if (y < items[i].rect.top + items[i].rect.height / 2) return i;
+    }
     return items.length;
   }
+
   private findGrid(items: Snapshot[], x: number, y: number): number {
     const scored = items
       .map((item, i) => {
@@ -114,29 +127,15 @@ export class PositionalSortStrategy {
       : y < target.top + target.height / 2;
     return Math.max(0, Math.min(items.length, scored.i + (before ? 0 : 1)));
   }
-  private findFree(items: Snapshot[], x: number, y: number): number {
-    let best = { index: items.length, score: Number.POSITIVE_INFINITY };
-    for (let i = 0; i < items.length; i++) {
-      const r = items[i].rect;
-      const dx = x - (r.left + r.width / 2);
-      const dy = y - (r.top + r.height / 2);
-      const score = dx * dx + dy * dy;
-      if (score < best.score) best = { index: i, score };
-    }
-    const r = items[best.index]?.rect;
-    if (!r) return items.length;
-    const before =
-      y < r.top + r.height / 2 ||
-      (Math.abs(y - (r.top + r.height / 2)) < r.height * 0.35 &&
-        (this.rtl ? x > r.left + r.width / 2 : x < r.left + r.width / 2));
-    return best.index + (before ? 0 : 1);
-  }
 }
 
 function detectFlow(el: HTMLElement): Flow {
   const s = getComputedStyle(el);
   if (s.display.includes('grid')) return 'grid';
-  if (s.display.includes('flex'))
+  if (s.display.includes('flex')) {
+    // A wrapped flex container behaves like a 2D grid, not a single-axis list.
+    if (s.flexWrap !== 'nowrap') return 'grid';
     return s.flexDirection.startsWith('column') ? 'flex-column' : 'flex-row';
+  }
   return 'free';
 }

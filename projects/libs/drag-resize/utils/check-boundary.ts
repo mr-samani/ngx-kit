@@ -1,139 +1,87 @@
-const TOLERANCE = 1;
+/**
+ * Boundary clamping utilities.
+ * All functions work purely in viewport ("client") coordinates so they can be
+ * reused identically for translate-based dragging and left/top-based resizing.
+ */
+const TOLERANCE = 0.5;
 
-export function checkBoundY(
-  selfRec: DOMRect,
-  boundaryDomRec: DOMRect | undefined,
-  offsetY: number,
-): number {
-  if (!boundaryDomRec) return offsetY;
-  const newTop = selfRec.top + offsetY;
-  const newBottom = selfRec.bottom + offsetY;
-  // Check top boundary
-  if (newTop < boundaryDomRec.top + TOLERANCE) return offsetY + (boundaryDomRec.top - newTop);
-  // Check bottom boundary
-  if (newBottom > boundaryDomRec.bottom - TOLERANCE)
-    return offsetY - (newBottom - boundaryDomRec.bottom);
+/** Clamps a proposed vertical delta so the element's rect stays inside the boundary rect. */
+export function checkBoundY(selfRect: DOMRect, boundaryRect: DOMRect | undefined, offsetY: number): number {
+  if (!boundaryRect) return offsetY;
+  const newTop = selfRect.top + offsetY;
+  const newBottom = selfRect.bottom + offsetY;
+  if (newTop < boundaryRect.top + TOLERANCE) return offsetY + (boundaryRect.top - newTop);
+  if (newBottom > boundaryRect.bottom - TOLERANCE) return offsetY - (newBottom - boundaryRect.bottom);
   return offsetY;
 }
 
-export function checkBoundX(
-  selfRec: DOMRect,
-  boundaryDomRec: DOMRect | undefined,
-  offsetX: number,
-): number {
-  if (!boundaryDomRec) return offsetX;
-  const newLeft = selfRec.left + offsetX;
-  const newRight = selfRec.right + offsetX;
-  // Check left boundary
-  if (newLeft < boundaryDomRec.left + TOLERANCE) return offsetX + (boundaryDomRec.left - newLeft);
-  // Check right boundary
-  if (newRight > boundaryDomRec.right - TOLERANCE)
-    return offsetX - (newRight - boundaryDomRec.right);
+/** Clamps a proposed horizontal delta so the element's rect stays inside the boundary rect. */
+export function checkBoundX(selfRect: DOMRect, boundaryRect: DOMRect | undefined, offsetX: number): number {
+  if (!boundaryRect) return offsetX;
+  const newLeft = selfRect.left + offsetX;
+  const newRight = selfRect.right + offsetX;
+  if (newLeft < boundaryRect.left + TOLERANCE) return offsetX + (boundaryRect.left - newLeft);
+  if (newRight > boundaryRect.right - TOLERANCE) return offsetX - (newRight - boundaryRect.right);
   return offsetX;
 }
 
 /**
- * ✅ Clamp resize within boundary
- * @param boundaryDomRec - Boundary element rectangle (viewport coordinates)
- * @param el - Element being resized
- * @param newWidth - Proposed new width
- * @param newHeight - Proposed new height
- * @param newLeft - Proposed new left position (relative to current position)
- * @param newTop - Proposed new top position (relative to current position)
- * @returns Clamped dimensions and position
+ * Clamps a resize result (width/height/left/top, all relative CSS px deltas from the
+ * element's start position) so the element never grows/moves outside `boundaryRect`.
+ * `startRect` is the element's `getBoundingClientRect()` captured at resize-start.
  */
-export function clampWithinBoundary(
-  boundaryDomRec: DOMRect | undefined,
-  el: HTMLElement,
-  newWidth: number,
-  newHeight: number,
-  newLeft: number,
-  newTop: number,
+export function clampResizeWithinBoundary(
+  boundaryRect: DOMRect | undefined,
+  startRect: DOMRect,
+  width: number,
+  height: number,
+  left: number,
+  top: number,
 ): { width: number; height: number; left: number; top: number } {
-  if (!boundaryDomRec) {
-    return { width: newWidth, height: newHeight, left: newLeft, top: newTop };
-  }
+  if (!boundaryRect) return { width, height, left, top };
 
-  // ✅ Get element's CURRENT position in viewport
-  const currentRect = el.getBoundingClientRect();
+  // Viewport position implied by the proposed left/top deltas.
+  const viewportLeft = startRect.left + left;
+  const viewportTop = startRect.top + top;
 
-  // ✅ Calculate where element WOULD BE after applying new values
-  // currentRect gives us viewport position, newLeft/newTop are CSS left/top values
-  const computed = getComputedStyle(el);
-  const currentCSSLeft = parseFloat(computed.left || '0');
-  const currentCSSTop = parseFloat(computed.top || '0');
+  let clampedWidth = width;
+  let clampedHeight = height;
+  let clampedLeft = left;
+  let clampedTop = top;
 
-  // Calculate the offset between current CSS values and new values
-  const leftDelta = newLeft - currentCSSLeft;
-  const topDelta = newTop - currentCSSTop;
-
-  // Calculate new viewport position
-  const newViewportLeft = currentRect.left + leftDelta;
-  const newViewportTop = currentRect.top + topDelta;
-  // const newViewportRight = newViewportLeft + newWidth;
-  //const newViewportBottom = newViewportTop + newHeight;
-
-  let clampedWidth = newWidth;
-  let clampedHeight = newHeight;
-  let clampedLeft = newLeft;
-  let clampedTop = newTop;
-
-  // ✅ Clamp left edge
-  if (newViewportLeft < boundaryDomRec.left) {
-    const overflow = boundaryDomRec.left - newViewportLeft;
-    clampedLeft = newLeft + overflow;
+  if (viewportLeft < boundaryRect.left) {
+    const overflow = boundaryRect.left - viewportLeft;
+    clampedLeft = left + overflow;
     clampedWidth = Math.max(0, clampedWidth - overflow);
   }
-
-  // ✅ Clamp top edge
-  if (newViewportTop < boundaryDomRec.top) {
-    const overflow = boundaryDomRec.top - newViewportTop;
-    clampedTop = newTop + overflow;
+  if (viewportTop < boundaryRect.top) {
+    const overflow = boundaryRect.top - viewportTop;
+    clampedTop = top + overflow;
     clampedHeight = Math.max(0, clampedHeight - overflow);
   }
 
-  // ✅ Clamp right edge
-  const clampedViewportLeft = newViewportLeft + (clampedLeft - newLeft);
-  const clampedRightEdge = clampedViewportLeft + clampedWidth;
-  if (clampedRightEdge > boundaryDomRec.right) {
-    clampedWidth = Math.max(0, boundaryDomRec.right - clampedViewportLeft);
+  const clampedViewportLeft = startRect.left + clampedLeft;
+  const rightEdge = clampedViewportLeft + clampedWidth;
+  if (rightEdge > boundaryRect.right) {
+    clampedWidth = Math.max(0, boundaryRect.right - clampedViewportLeft);
   }
 
-  // ✅ Clamp bottom edge
-  const clampedViewportTop = newViewportTop + (clampedTop - newTop);
-  const clampedBottomEdge = clampedViewportTop + clampedHeight;
-  if (clampedBottomEdge > boundaryDomRec.bottom) {
-    clampedHeight = Math.max(0, boundaryDomRec.bottom - clampedViewportTop);
+  const clampedViewportTop = startRect.top + clampedTop;
+  const bottomEdge = clampedViewportTop + clampedHeight;
+  if (bottomEdge > boundaryRect.bottom) {
+    clampedHeight = Math.max(0, boundaryRect.bottom - clampedViewportTop);
   }
 
-  return {
-    width: clampedWidth,
-    height: clampedHeight,
-    left: clampedLeft,
-    top: clampedTop,
-  };
+  return { width: clampedWidth, height: clampedHeight, left: clampedLeft, top: clampedTop };
 }
 
-/**
- * Get zoom level of the page
- * @returns Current zoom level (1.0 = 100%, 1.5 = 150%, etc.)
- */
+/** Current page zoom level (1 = 100%). Falls back to devicePixelRatio pre visualViewport. */
 export function getPageZoom(): number {
-  // Modern browsers
-  if (window.visualViewport) {
-    return window.visualViewport.scale;
-  }
-
-  // Fallback
-  return window.devicePixelRatio || 1;
+  return window.visualViewport?.scale ?? window.devicePixelRatio ?? 1;
 }
 
-/**
- * Adjust coordinates for page zoom
- * @param value - Value to adjust
- * @returns Adjusted value accounting for zoom
- */
+/** Adjusts a raw pointer-derived value for the current page zoom level. */
 export function adjustForZoom(value: number): number {
   const zoom = getPageZoom();
-  return value / zoom;
+  return zoom ? value / zoom : value;
 }

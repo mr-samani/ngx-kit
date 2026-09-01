@@ -7,4 +7,5 @@ export interface IDropEvent<T = unknown> {
   item: DragRef<T>;
   container: DropListRef<T>;
   previousContainer: DropListRef<T>;
+  isPointerOverContainer?: boolean;
 }

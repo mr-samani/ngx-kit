@@ -27,25 +27,22 @@ export class DragDropService {
   end(ref: DragRef<any>): void {
     if (this.activeDrag() === ref) this.activeDrag.set(null);
   }
+
+  /** Cancels whatever drag is currently in progress (used by the global Escape handler). */
+  cancelActive(): void {
+    const ref = this.activeDrag();
+    if (!ref) return;
+    ref.cancelDrag();
+    this.activeDrag.set(null);
+  }
+
   findDropList(point: { x: number; y: number }, current?: DropListRef | null): DropListRef | null {
     const lists = this.dropLists();
     const inside = lists.filter((list) => {
       const r = list.el?.getBoundingClientRect();
-      return (
-        !!r && point.x >= r.left && point.x <= r.right && point.y >= r.top && point.y <= r.bottom
-      );
+      return !!r && point.x >= r.left && point.x <= r.right && point.y >= r.top && point.y <= r.bottom;
     });
     if (current && inside.includes(current)) return current;
-    return (
-      inside.find(
-        (list) =>
-          !current ||
-          current.connectedTo.length === 0 ||
-          current.connectedTo.includes(list.el) ||
-          list.connectedTo.includes(current.el),
-      ) ??
-      inside[0] ??
-      null
-    );
+    return inside.find((list) => !current || current.isConnectedTo(list)) ?? inside[0] ?? null;
   }
 }

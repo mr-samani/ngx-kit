@@ -12,16 +12,19 @@ export class PlaceHolderRef {
       this.element = document.createElement('div');
       this.element.className = 'ngx-drag-placeholder';
       this.element.setAttribute('aria-hidden', 'true');
+      this.element.setAttribute('inert', '');
     }
     this._visible = true;
-    if (reference) container.insertBefore(this.element, reference);
+    if (reference && reference.parentNode === container) container.insertBefore(this.element, reference);
     else container.appendChild(this.element);
     return this.element;
   }
+
   detach(): void {
     this.element?.remove();
     this._visible = false;
   }
+
   get visible(): boolean {
     return this._visible;
   }

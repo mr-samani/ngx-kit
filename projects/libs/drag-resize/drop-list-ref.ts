@@ -1,18 +1,21 @@
-import { EventEmitter, inject } from '@angular/core';
+import { EventEmitter } from '@angular/core';
 import { IDropEvent } from './contracts/IDropEvent';
 import { IPosition } from './contracts/IPosition';
 import { DragRef } from './drag-ref';
+import { DropListGroupRef } from './drop-list-group-ref';
 import { PositionalSortStrategy } from './sorting/positional-sort-strategy';
 import { PlaceHolderRef } from './placeholder-ref';
+import { copyEssentialStyles } from './utils/styling';
 
 export class DropListRef<T = any> {
   data?: T;
   el!: HTMLElement;
   disableSort = false;
   connectedTo: HTMLElement[] = [];
-  dropListGroup?: unknown;
+  dropListGroup?: DropListGroupRef | null;
   readonly _draggables = new Set<DragRef<T>>();
   readonly onDrop = new EventEmitter<IDropEvent<T>>();
+
   private strategy = new PositionalSortStrategy();
   private active = false;
   private previousIndex = -1;
@@ -24,18 +27,25 @@ export class DropListRef<T = any> {
   removeItem(item: DragRef<T>): void {
     this._draggables.delete(item);
   }
-  updateDomRect(): void {
-    /* computed lazily to avoid stale rectangles */
+
+  /** Whether `other` is a valid drop target reachable from this list. */
+  isConnectedTo(other: DropListRef<any>): boolean {
+    if (other === (this as any)) return true;
+    if (this.connectedTo.includes(other.el) || other.connectedTo.includes(this.el)) return true;
+    return !!this.dropListGroup && this.dropListGroup.has(other);
   }
 
   createPlaceholder(drag: DragRef<T>): PlaceHolderRef {
     const ref = new PlaceHolderRef();
     const rect = drag.el.getBoundingClientRect();
-    const style = ref.attach(this.el).style;
-    style.width = `${rect.width}px`;
-    style.height = `${rect.height}px`;
-    style.flex = `0 0 ${rect.width}px`;
-    style.boxSizing = 'border-box';
+    const el = ref.attach(this.el);
+    copyEssentialStyles(drag.el, el);
+    el.style.width = `${rect.width}px`;
+    el.style.height = `${rect.height}px`;
+    el.style.flex = `0 0 ${rect.width}px`;
+    el.style.boxSizing = 'border-box';
+    el.style.visibility = 'visible';
+    el.style.pointerEvents = 'none';
     this.placeholder = ref;
     this.enter(drag, drag.pointer.x, drag.pointer.y);
     return ref;
@@ -75,6 +85,7 @@ export class DropListRef<T = any> {
     this.reset();
     void drag;
   }
+
   resetSortTransforms(): void {
     this.reset();
   }
@@ -90,6 +101,7 @@ export class DropListRef<T = any> {
       .filter((el) => el !== this.placeholder?.element)
       .findIndex((el) => el === item.el);
   }
+
   private reset(): void {
     this.active = false;
     this.strategy.reset();

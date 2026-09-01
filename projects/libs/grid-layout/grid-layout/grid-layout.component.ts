@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, effect, inject, input, output, signal } from '@angular/core';
 import { GridLayoutService, GridItemState } from '../services/grid-layout.service';
 import { GridLayoutOptions, IGridLayoutOptions } from '../options/options';
 import { LayoutOutput } from '../options/layout-output';
@@ -47,49 +38,67 @@ import { LayoutOutput } from '../options/layout-output';
         opacity: var(--grid-bg-opacity);
         border: var(--grid-border-width) solid var(--grid-border-color);
         box-sizing: border-box;
-      }
-      .ngx-grid-layout--dragging .ngx-grid-layout__surface::before {
-        opacity: 1;
+        transition: opacity 0.15s ease;
       }
     `,
   ],
   host: {
     '[class.ngx-grid-layout--dragging]': 'service.isInteracting()',
+    '[class.ngx-grid-layout--view]': '!editMode()',
     '[style.height.px]': 'service.height()',
-    '[attr.dir]': 'dir()',
+    '[attr.dir]': "dirOverride() ?? null",
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgxGridLayoutComponent {
+export class NgxGridLayoutComponent implements OnDestroy {
   readonly options = input<IGridLayoutOptions>(new GridLayoutOptions());
   readonly editMode = input(true);
   readonly layoutChange = output<LayoutOutput[]>();
-  readonly dir = input<'ltr' | 'rtl'>('ltr');
+  /** Explicit direction override. Leave unset to inherit the page/host direction automatically. */
+  readonly dir = input<'ltr' | 'rtl' | undefined>(undefined);
+  readonly dirOverride = this.dir;
+
   readonly service = inject(GridLayoutService);
   private readonly el = inject(ElementRef<HTMLElement>);
-  private initialized = signal(false);
+  private surface?: HTMLElement;
+  private resizeObserver?: ResizeObserver;
+
   constructor() {
     effect(() => {
-      this.service.setOptions(this.options());
+      const opts = { ...this.options() };
+      if (this.dir()) opts.rtl = this.dir() === 'rtl';
+      this.service.setOptions(opts);
       this.service.setEditMode(this.editMode());
     });
     effect(() => {
       this.service.connect((layout) => this.layoutChange.emit(layout));
     });
   }
+
   ngAfterViewInit(): void {
-    const surface = this.el.nativeElement.querySelector('.ngx-grid-layout__surface') as HTMLElement;
-    this.service.attachElement(surface);
-    this.initialized.set(true);
+    debugger
+    this.surface = this.el.nativeElement.querySelector('.ngx-grid-layout__surface') as HTMLElement;
+    this.service.attachElement(this.surface);
     this.setCss();
-    new ResizeObserver(() => this.setCss()).observe(surface);
+    this.resizeObserver = new ResizeObserver(() => {
+      this.service.attachElement(this.surface!);
+      this.setCss();
+    });
+    this.resizeObserver.observe(this.surface);
   }
+
+  ngOnDestroy(): void {
+    // The original never disconnected its ResizeObserver — fixed here.
+    this.resizeObserver?.disconnect();
+  }
+
   setItems(items: GridItemState[]): void {
     this.service.setItems(items);
   }
   update(options: Partial<IGridLayoutOptions>): void {
     this.service.setOptions(options);
   }
+
   private setCss(): void {
     const el = this.el.nativeElement,
       o = this.service.options();
@@ -103,13 +112,7 @@ export class NgxGridLayoutComponent {
     el.style.setProperty('--grid-col-color', b?.columnColor ?? 'transparent');
     el.style.setProperty(
       '--grid-bg-opacity',
-      b?.show === 'never'
-        ? '0'
-        : b?.show === 'whenDragging'
-          ? this.service.isInteracting()
-            ? '1'
-            : '0'
-          : '1',
+      b?.show === 'never' ? '0' : b?.show === 'whenDragging' ? (this.service.isInteracting() ? '1' : '0') : '1',
     );
   }
 }
