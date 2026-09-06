@@ -1,28 +1,67 @@
-/**
- * Central RTL/LTR helpers shared by every part of the drag/resize/grid engine.
- * Nothing else in the library should call `getComputedStyle(...).direction` directly —
- * route it through here so behaviour stays consistent everywhere.
- */
+import { ResizeDirection } from '../contracts/IResizableOutput';
 
-/** Returns true when the element's computed writing direction is right-to-left. */
-export function isRtl(el: Element | null | undefined): boolean {
-  if (!el) return false;
-  return getComputedStyle(el).direction === 'rtl';
+/**
+ * Logical directions that resolve differently depending on text direction.
+ * 'n' and 's' never change - only the horizontal component is direction-aware.
+ */
+type LogicalDirectionKey = 'start' | 'end' | 'n-start' | 'n-end' | 's-start' | 's-end';
+
+/** Base (LTR) physical direction for every logical direction. */
+const LTR_BASE: Record<LogicalDirectionKey, ResizeDirection> = {
+  start: 'w',
+  end: 'e',
+  'n-start': 'nw',
+  'n-end': 'ne',
+  's-start': 'sw',
+  's-end': 'se',
+};
+
+/** Mirrors the horizontal component of a physical direction. 'n' / 's' pass through unchanged. */
+const MIRROR: Record<ResizeDirection, ResizeDirection> = {
+  n: 'n',
+  s: 's',
+  e: 'w',
+  w: 'e',
+  ne: 'nw',
+  nw: 'ne',
+  se: 'sw',
+  sw: 'se',
+};
+
+function isLogicalDirection(dir: string): dir is LogicalDirectionKey {
+  return Object.prototype.hasOwnProperty.call(LTR_BASE, dir);
 }
 
 /**
- * Resolves a logical direction ('start' / 'end' / 'n-start' / ...) to a physical,
- * viewport-space direction ('w' / 'e' / 'n' / ...) based on the element's direction.
- * Physical directions (n, e, s, w, ne, nw, se, sw) pass through untouched.
+ * True when `element` sits inside a right-to-left context.
+ *
+ * Reads the *computed* `direction` style instead of `element.dir`, because
+ * `direction` is inherited and is almost never set on the resizable element
+ * itself - it's usually set on `<html>`, `<body>`, or some ancestor wrapper.
  */
-export function resolveLogicalDirection(dir: string, rtl: boolean): string {
-  const map: Record<string, string> = rtl
-    ? { start: 'e', end: 'w', 'n-start': 'ne', 'n-end': 'nw', 's-start': 'se', 's-end': 'sw' }
-    : { start: 'w', end: 'e', 'n-start': 'nw', 'n-end': 'ne', 's-start': 'sw', 's-end': 'se' };
-  return map[dir] ?? dir;
+export function isRtl(element: HTMLElement): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.getComputedStyle(element).direction === 'rtl';
 }
 
-/** Converts a logical inline-axis delta (positive = towards "end") to a physical X delta. */
-export function logicalDeltaToPhysicalX(logicalDelta: number, rtl: boolean): number {
-  return rtl ? -logicalDelta : logicalDelta;
+/**
+ * Resolves a logical direction ('start' | 'end' | 'n-start' | 'n-end' | 's-start' | 's-end')
+ * to a physical, viewport-space direction ('n' | 'e' | 's' | 'w' | 'ne' | 'nw' | 'se' | 'sw')
+ * based on `rtl`.
+ *
+ * Physical directions pass through untouched, so it's always safe to call this
+ * even when `dir` might already be physical (e.g. resolving a direction that was
+ * already resolved once before).
+ */
+export function resolveLogicalDirection(dir: string, rtl: boolean): ResizeDirection {
+  if (!isLogicalDirection(dir)) {
+    return dir as ResizeDirection;
+  }
+
+  const base = LTR_BASE[dir];
+
+  return rtl ? MIRROR[base] : base;
 }

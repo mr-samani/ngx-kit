@@ -27,15 +27,11 @@ const KEYBOARD_STEP = 8;
 })
 export class NgxResizable {
   @Input() disabled = false;
-
   @Input() minWidth = 20;
   @Input() minHeight = 20;
-
   @Input() maxWidth = Infinity;
   @Input() maxHeight = Infinity;
-
   @Input() directions: LogicalResizeDirection[] = [...ALL_DIRECTIONS];
-
   @Input() grid?: number | { x: number; y: number };
   /** Element whose rect constrains the resize. Previously accepted nowhere on this directive. */
   @Input() boundary?: HTMLElement;
@@ -43,33 +39,22 @@ export class NgxResizable {
   @Input() keyboardStep = KEYBOARD_STEP;
 
   @Output() readonly resizeStart = new EventEmitter<IResizableOutput>();
-
   @Output() readonly resizeMove = new EventEmitter<IResizableOutput>();
-
   @Output() readonly resizeEnd = new EventEmitter<IResizableOutput>();
 
   readonly resizing = signal(false);
-
   private direction: ResizeDirection = 'se';
 
   private start!: DOMRect;
-
   private pointer = {
     x: 0,
     y: 0,
   };
-
   private beforeTransition = '';
-
   private beforeWidth = '';
   private beforeHeight = '';
-
   private beforeTransform = '';
-  private resizeTranslateX = 0;
-  private resizeTranslateY = 0;
-
   private pointerId = -1;
-
   constructor(private readonly el: ElementRef<HTMLElement>) {}
 
   @HostListener('pointerdown', ['$event'])
@@ -89,10 +74,8 @@ export class NgxResizable {
     e.stopImmediatePropagation();
 
     const element = this.el.nativeElement;
-
     this.direction = dir;
     this.pointerId = e.pointerId;
-
     /**
      * This is the actual visual rectangle.
      * It already contains any transform created by DragRef.
@@ -114,19 +97,11 @@ export class NgxResizable {
      */
     this.beforeTransform = element.style.transform;
 
-    this.resizeTranslateX = 0;
-    this.resizeTranslateY = 0;
-
     this.resizing.set(true);
-
     element.style.transition = 'none';
-
     element.setPointerCapture?.(e.pointerId);
-
     const out = this.calculate(e);
-
     this.apply(out);
-
     this.resizeStart.emit(out);
   }
 
@@ -135,11 +110,8 @@ export class NgxResizable {
     if (!this.resizing() || e.pointerId !== this.pointerId) {
       return;
     }
-
     const out = this.calculate(e);
-
     this.apply(out);
-
     this.resizeMove.emit(out);
   }
 
@@ -148,13 +120,9 @@ export class NgxResizable {
     if (!this.resizing() || e.pointerId !== this.pointerId) {
       return;
     }
-
     const out = this.calculate(e);
-
     this.apply(out);
-
     this.resizeEnd.emit(out);
-
     this.finish();
   }
 
@@ -163,19 +131,14 @@ export class NgxResizable {
     if (!this.resizing()) {
       return;
     }
-
     if (e.key !== 'Escape') {
       return;
     }
-
     e.preventDefault();
-
     const element = this.el.nativeElement;
-
     element.style.width = this.beforeWidth;
     element.style.height = this.beforeHeight;
     element.style.transform = this.beforeTransform;
-
     this.finish();
   }
 
@@ -186,12 +149,9 @@ export class NgxResizable {
     }
 
     const rtl = isRtl(this.el.nativeElement);
-
     const step = this.keyboardStep * (e.shiftKey ? 4 : 1);
-
     let dw = 0;
     let dh = 0;
-
     if (e.key === 'ArrowRight') {
       dw = rtl ? -step : step;
     } else if (e.key === 'ArrowLeft') {
@@ -235,7 +195,6 @@ export class NgxResizable {
 
     let width = this.start.width;
     let height = this.start.height;
-
     /**
      * East
      */
@@ -286,9 +245,7 @@ export class NgxResizable {
     }
 
     let moveLeft = left - this.start.left;
-
     let moveTop = top - this.start.top;
-
     /**
      * Boundary constraint.
      */
@@ -301,15 +258,11 @@ export class NgxResizable {
         moveLeft,
         moveTop,
       );
-
       width = clamped.width;
       height = clamped.height;
-
       moveLeft = clamped.left;
       moveTop = clamped.top;
-
       left = this.start.left + moveLeft;
-
       top = this.start.top + moveTop;
     }
 
@@ -326,140 +279,92 @@ export class NgxResizable {
 
   private apply(out: IResizableOutput): void {
     const element = this.el.nativeElement;
-
     /**
-     * Always start from the transform that existed
-     * before resizing started.
+     * Always reset to the transform that existed before
+     * this resize operation started.
      *
-     * This prevents resize translations from accumulating.
+     * This prevents resize corrections from accumulating.
      */
     element.style.transform = this.beforeTransform;
 
     /**
-     * First change the actual size.
+     * Apply the actual size first.
      *
-     * For static/relative/flex/grid elements this can
-     * cause the browser to re-layout the element.
+     * Changing width/height may cause the browser to re-layout
+     * the element, especially for relative/flex/grid/static layouts.
      */
     element.style.width = `${out.width}px`;
     element.style.height = `${out.height}px`;
 
     /**
-     * Read the element AFTER layout/reflow.
-     *
-     * This is the important part.
+     * Force/read layout after changing the size.
      */
     const current = element.getBoundingClientRect();
 
-    let correctionX = 0;
-    let correctionY = 0;
+    /**
+     * These are the positions where the element MUST visually be.
+     *
+     * `out.moveLeft` / `out.moveTop` are calculated in `calculate()`
+     * from the original visual rectangle.
+     */
+    const targetLeft = this.start.left + out.moveLeft;
+    const targetTop = this.start.top + out.moveTop;
 
     /**
-     * West resize:
+     * Browser's actual position after width/height changed.
      *
-     * The LEFT edge must remain visually fixed.
-     *
-     * If changing width caused the element to move,
-     * compensate that movement with transform.
+     * The difference between target and current position is the
+     * correction that must be applied using transform.
      */
-    if (this.direction.includes('w')) {
-      correctionX = this.start.left - current.left;
-    }
-
-    /**
-     * East resize:
-     *
-     * The RIGHT edge must remain visually fixed only
-     * when the resize operation is supposed to anchor it.
-     *
-     * For normal east resize, left is the anchor,
-     * therefore no correction is needed.
-     */
-    if (this.direction.includes('n')) {
-      correctionY = this.start.top - current.top;
-    }
-
-    /**
-     * Preserve the original Drag transform and add
-     * only the correction produced by Resize.
-     */
-    this.resizeTranslateX = correctionX;
-    this.resizeTranslateY = correctionY;
-
+    const correctionX = targetLeft - current.left;
+    const correctionY = targetTop - current.top;
     const hasCorrection = correctionX !== 0 || correctionY !== 0;
-
-    if (hasCorrection) {
-      const base =
-        this.beforeTransform && this.beforeTransform !== 'none' ? `${this.beforeTransform} ` : '';
-
-      element.style.transform =
-        `${base}translate3d(` + `${correctionX}px, ` + `${correctionY}px, 0)`;
-    } else {
+    if (!hasCorrection) {
       element.style.transform = this.beforeTransform;
+      return;
     }
+    /**
+     * Preserve DragRef's existing transform and add only the
+     * correction required by Resize.
+     */
+    const baseTransform =
+      this.beforeTransform && this.beforeTransform !== 'none' ? `${this.beforeTransform} ` : '';
+    element.style.transform =
+      `${baseTransform}translate3d(` + `${correctionX}px, ` + `${correctionY}px, 0)`;
   }
 
   private clampGrid(value: number, axis: 'x' | 'y'): number {
     const grid = typeof this.grid === 'number' ? this.grid : this.grid?.[axis];
-
     if (!grid || grid <= 0) {
       return value;
     }
-
     return Math.round(value / grid) * grid;
   }
 
   private finish(): void {
     this.resizing.set(false);
-
-    /**
-     * The transform currently contains:
-     *
-     *   previous drag transform
-     *   +
-     *   resize correction
-     *
-     * Keep it.
-     *
-     * Do NOT restore beforeTransform.
-     */
     this.el.nativeElement.style.transition = this.beforeTransition;
-
     this.pointerId = -1;
-
     this.beforeTransform = '';
-
-    this.resizeTranslateX = 0;
-    this.resizeTranslateY = 0;
   }
 
   private resolvedDirections(): ResizeDirection[] {
     const rtl = isRtl(this.el.nativeElement);
-
     const set = new Set<ResizeDirection>();
-
     for (const direction of this.directions) {
       set.add(resolveLogicalDirection(direction, rtl) as ResizeDirection);
     }
-
     return [...set];
   }
 
   private hitDirection(e: PointerEvent): ResizeDirection | null {
     const element = this.el.nativeElement;
-
     const rect = element.getBoundingClientRect();
-
     const edge = Math.min(12, Math.max(6, Math.min(rect.width, rect.height) * 0.18));
-
     const isLeft = e.clientX - rect.left <= edge;
-
     const isRight = rect.right - e.clientX <= edge;
-
     const isTop = e.clientY - rect.top <= edge;
-
     const isBottom = rect.bottom - e.clientY <= edge;
-
     /**
      * Explicit resize handle has priority.
      */
@@ -474,9 +379,7 @@ export class NgxResizable {
       if (!raw) {
         return null;
       }
-
       const resolved = resolveLogicalDirection(raw, isRtl(element)) as ResizeDirection;
-
       return this.resolvedDirections().includes(resolved) ? resolved : null;
     }
 
@@ -511,7 +414,6 @@ export class NgxResizable {
     if (!direction) {
       return null;
     }
-
     return this.resolvedDirections().includes(direction) ? direction : null;
   }
 }
