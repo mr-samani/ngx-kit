@@ -1,42 +1,50 @@
-<section class="showcase">
-  @if (title()) {
-    <h3 class="showcase-title">{{ title() }}</h3>
-  }
+<section class="playground-toolbar">
+  <div class="toolbar-divider"></div>
 
-  <div class="showcase-tabs" role="tablist">
-    <button
-      type="button"
-      role="tab"
-      class="showcase-tab"
-      [class.active]="activeTab() === 0"
-      [attr.aria-selected]="activeTab() === 0"
-      (click)="select(0)">
-      Preview
-    </button>
-    @for (file of files(); track file.path; let i = $index) {
+  <div class="toolbar-group" role="tablist">
+    <span class="toolbar-label">{{ title() }}</span>
+    <div class="segmented">
       <button
         type="button"
         role="tab"
-        class="showcase-tab"
-        [class.active]="activeTab() === i + 1"
-        [attr.aria-selected]="activeTab() === i + 1"
-        (click)="select(i + 1)">
-        {{ file.label }}
+        [class.active]="activeTab() === 0"
+        [attr.aria-selected]="activeTab() === 0"
+        (click)="select(0)">
+        Preview
       </button>
-    }
-    @if (readmePath()) {
-      <button
-        type="button"
-        role="tab"
-        class="showcase-tab"
-        [class.active]="activeTab() === files().length + 1"
-        [attr.aria-selected]="activeTab() === files().length + 1"
-        (click)="select(files().length + 1)">
-        Docs
-      </button>
-    }
+      @for (file of files(); track file.path; let i = $index) {
+        <button
+          type="button"
+          role="tab"
+          class="showcase-tab"
+          [class.active]="activeTab() === i + 1"
+          [attr.aria-selected]="activeTab() === i + 1"
+          (click)="select(i + 1)">
+          {{ file.label }}
+        </button>
+      }
+      @if (readmePath()) {
+        <button
+          type="button"
+          role="tab"
+          class="showcase-tab"
+          [class.active]="activeTab() === files().length + 1"
+          [attr.aria-selected]="activeTab() === files().length + 1"
+          (click)="select(files().length + 1)">
+          Docs
+        </button>
+      }
+    </div>
   </div>
 
+  <div class="toolbar-spacer"></div>
+
+  <!-- <span class="toolbar-button">
+   
+  </span> -->
+</section>
+
+<section class="showcase">
   <div class="showcase-panel">
     <div class="showcase-preview" [hidden]="activeTab() !== 0">
       <ng-content />
