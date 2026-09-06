@@ -1,64 +1,118 @@
 <aside class="sidebar">
-  @for (cat of list; track $index) {
-    <small>{{ cat.name }}</small>
-    <nav class="example-list">
-      @for (item of cat.items; track $index) {
+  @if (isFragmentNavigation()) {
+    <!-- Fragment Navigation -->
+
+    <div class="fragment-header">
+      <button type="button" class="back-button" (click)="backToMainMenu()">
+        <span class="back-icon">←</span>
+
+        <span>Back</span>
+      </button>
+    </div>
+
+    <div class="fragment-title">
+      <span class="fragment-title-icon">
+        {{ fragmentMenuItem()?.icon ?? '✦' }}
+      </span>
+
+      <div>
+        <strong>
+          {{ fragmentMenuItem()?.title }}
+        </strong>
+
+        <small>Sections</small>
+      </div>
+    </div>
+
+    <nav class="example-list fragment-list">
+      @for (fragment of activeFragments(); track fragment.id) {
         <button
           type="button"
-          class="example-button"
-          [routerLink]="item.url"
-          routerLinkActive="active">
+          class="example-button fragment-button"
+          [routerLink]="fragmentMenuItem()!.url"
+          [fragment]="fragment.id"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{
+            paths: 'exact',
+            queryParams: 'ignored',
+            matrixParams: 'ignored',
+            fragment: 'exact',
+          }">
           <span class="example-icon">
-            {{ item.icon ?? '✦' }}
+            {{ fragment.icon ?? '✦' }}
           </span>
 
           <span class="example-info">
             <span class="example-title">
-              {{ item.title }}
+              {{ fragment.title }}
             </span>
 
             <span class="example-description">
-              {{ item.description }}
+              {{ fragment.description }}
             </span>
           </span>
+
+          <span class="fragment-arrow">→</span>
         </button>
-
-        @if (item.fragments) {
-          <div class="segments">
-            @for (f of item.fragments; track f.id) {
-              <button
-                type="button"
-                class="example-button"
-                [routerLink]="item.url"
-                [fragment]="f.id"
-                routerLinkActive="active">
-                <span class="example-icon">
-                  {{ f.icon ?? '✦' }}
-                </span>
-                <span class="example-info">
-                  <span class="example-title">
-                    {{ f.title }}
-                  </span>
-
-                  <span class="example-description">
-                    {{ f.description }}
-                  </span>
-                </span>
-              </button>
-            }
-          </div>
-        }
       }
     </nav>
-  }
-  <div class="sidebar-footer">
-    <div class="library-info">
-      <span class="version-dot"></span>
+  } @else {
+    <!-- Main Navigation -->
 
-      <div>
-        <strong>ngx-kit</strong>
-        <small>@version</small>
+    @for (cat of list; track cat.name) {
+      <small>
+        {{ cat.name }}
+      </small>
+
+      <nav class="example-list">
+        @for (item of cat.items; track item.url) {
+          <button
+            type="button"
+            class="example-button"
+            [routerLink]="item.url"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{
+              paths: 'exact',
+              queryParams: 'ignored',
+              matrixParams: 'ignored',
+              fragment: 'ignored',
+            }"
+            (click)="openMenuItem(item)">
+            <span class="example-icon">
+              {{ item.icon ?? '✦' }}
+            </span>
+
+            <span class="example-info">
+              <span class="example-title">
+                {{ item.title }}
+              </span>
+
+              @if (item.description) {
+                <span class="example-description">
+                  {{ item.description }}
+                </span>
+              }
+            </span>
+
+            @if (item.fragments?.length) {
+              <span class="has-fragments">
+                {{ item.fragments.length }}
+              </span>
+            }
+          </button>
+        }
+      </nav>
+    }
+
+    <div class="sidebar-footer">
+      <div class="library-info">
+        <span class="version-dot"></span>
+
+        <div>
+          <strong>ngx-kit</strong>
+          <small>@version</small>
+        </div>
       </div>
     </div>
-  </div>
+  }
 </aside>
