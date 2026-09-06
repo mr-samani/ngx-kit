@@ -20,7 +20,6 @@
     flex-basis 180ms ease;
 }
 
-
 /* =========================================================
    MAIN NAVIGATION
    ========================================================= */
@@ -36,7 +35,6 @@
 
   scrollbar-width: thin;
 }
-
 
 /* =========================================================
    CATEGORY
@@ -59,7 +57,6 @@
   text-transform: uppercase;
 }
 
-
 /* =========================================================
    EXAMPLE LIST
    ========================================================= */
@@ -71,7 +68,6 @@
 
   gap: 2px;
 }
-
 
 /* =========================================================
    EXAMPLE BUTTON
@@ -121,13 +117,12 @@
   color: var(--primary);
 }
 
-
 /* =========================================================
    ACTIVE INDICATOR
    ========================================================= */
 
 .example-button.active::before {
-  content: "";
+  content: '';
 
   position: absolute;
 
@@ -142,7 +137,6 @@
 
   background: var(--primary);
 }
-
 
 /* =========================================================
    ICON
@@ -175,7 +169,6 @@
 
   color: var(--primary);
 }
-
 
 /* =========================================================
    INFO
@@ -217,7 +210,6 @@
   text-overflow: ellipsis;
 }
 
-
 /* =========================================================
    HAS FRAGMENTS
    ========================================================= */
@@ -242,20 +234,13 @@
   transform: translateX(0);
 }
 
-
 /* =========================================================
    FRAGMENT MODE
    ========================================================= */
 
 .sidebar.fragment-mode {
-  background:
-    linear-gradient(
-      180deg,
-      var(--surface),
-      var(--surface-2)
-    );
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
 }
-
 
 /* =========================================================
    FRAGMENT NAVIGATION
@@ -275,7 +260,6 @@
   overflow: hidden;
 }
 
-
 /* =========================================================
    BACK
    ========================================================= */
@@ -290,7 +274,7 @@
 
   gap: 8px;
 
-  margin-bottom: 14px;
+  margin-bottom: 4px;
 
   padding: 0 10px;
 
@@ -329,22 +313,15 @@
   line-height: 1;
 }
 
-
 /* =========================================================
    FRAGMENT HEADER
    ========================================================= */
 
 .fragment-header {
   display: flex;
-  align-items: center;
-
-  gap: 11px;
-
-  padding: 12px 8px 16px;
-
-  margin-bottom: 4px;
-
+  flex-direction: column;
   border-bottom: 1px solid var(--border);
+  padding: 10px;
 }
 
 .fragment-component-icon {
@@ -364,8 +341,7 @@
 
   font-size: 17px;
 
-  box-shadow:
-    inset 0 0 0 1px var(--primary-border);
+  box-shadow: inset 0 0 0 1px var(--primary-border);
 }
 
 .fragment-component-info {
@@ -399,7 +375,6 @@
   letter-spacing: 0.04em;
 }
 
-
 /* =========================================================
    FRAGMENT LIST
    ========================================================= */
@@ -415,7 +390,6 @@
 
   scrollbar-width: thin;
 }
-
 
 /* =========================================================
    FRAGMENT BUTTON
@@ -459,17 +433,15 @@
 
   color: var(--primary);
 
-  box-shadow:
-    inset 0 0 0 1px var(--primary-border);
+  box-shadow: inset 0 0 0 1px var(--primary-border);
 }
-
 
 /* =========================================================
    FRAGMENT ACTIVE INDICATOR
    ========================================================= */
 
 .fragment-button.active::before {
-  content: "";
+  content: '';
 
   position: absolute;
 
@@ -484,7 +456,6 @@
 
   background: var(--primary);
 }
-
 
 /* =========================================================
    FRAGMENT ICON
@@ -512,7 +483,6 @@
   background: rgba(99, 91, 255, 0.13);
 }
 
-
 /* =========================================================
    FRAGMENT INFO
    ========================================================= */
@@ -537,6 +507,7 @@
 
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: var(--primary);
 }
 
 .fragment-description {
@@ -550,7 +521,6 @@
 
   text-overflow: ellipsis;
 }
-
 
 /* =========================================================
    FRAGMENT ARROW
@@ -576,7 +546,6 @@
 
   transform: translateX(0);
 }
-
 
 /* =========================================================
    FOOTER
@@ -631,17 +600,14 @@
 
   background: var(--primary);
 
-  box-shadow:
-    0 0 0 4px var(--primary-soft);
+  box-shadow: 0 0 0 4px var(--primary-soft);
 }
-
 
 /* =========================================================
    RTL
    ========================================================= */
 
-:host-context([dir="rtl"]) {
-
+:host-context([dir='rtl']) {
   .example-button.active::before,
   .fragment-button.active::before {
     border-radius: 4px 0 0 4px;
@@ -655,19 +621,15 @@
   .fragment-button.active .fragment-arrow {
     transform: translateX(0);
   }
-
 }
-
 
 /* =========================================================
    MOBILE
    ========================================================= */
 
 @media (max-width: 760px) {
-
   .sidebar {
     width: 270px;
     flex-basis: 270px;
   }
-
 }

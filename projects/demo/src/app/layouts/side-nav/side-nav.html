@@ -8,19 +8,18 @@
 
         <span>Back</span>
       </button>
-    </div>
+      <div class="fragment-title">
+        <span class="fragment-title-icon">
+          {{ fragmentMenuItem()?.icon ?? '✦' }}
+        </span>
 
-    <div class="fragment-title">
-      <span class="fragment-title-icon">
-        {{ fragmentMenuItem()?.icon ?? '✦' }}
-      </span>
+        <div>
+          <strong>
+            {{ fragmentMenuItem()?.title }}
+          </strong>
 
-      <div>
-        <strong>
-          {{ fragmentMenuItem()?.title }}
-        </strong>
-
-        <small>Sections</small>
+          <small>Sections</small>
+        </div>
       </div>
     </div>
 
