@@ -103,6 +103,11 @@ const routes: Routes = [
           import('./drag-resize/drag-resize.component').then((c) => c.DragResizeComponent),
       },
       {
+        path: 'kanban',
+        loadComponent: () =>
+          import('./kanban-view/kanban-view.component').then((c) => c.KanbanViewComponent),
+      },
+      {
         path: 'b',
         loadComponent: () =>
           import('./webflow/builder-canvas.component').then((c) => c.BuilderCanvasComponent),

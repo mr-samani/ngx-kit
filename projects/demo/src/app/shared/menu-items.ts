@@ -204,6 +204,11 @@ export const MENU_LIST: ICategory[] = [
         ],
       },
       {
+        title: 'kanban',
+        description: '',
+        url: '/components/kanban',
+      },
+      {
         title: 'b',
         url: '/components/b',
       },

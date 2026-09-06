@@ -159,6 +159,9 @@ export class DragRef<T = unknown> {
     this.el.style.willChange = '';
     this.el.style.zIndex = this.previousZIndex;
     this.el.style.transition = '';
+    if (this.dropList) {
+      this.el.style.transform = this.previousTransform;
+    }
     this.placeholder?.detach();
     this.placeholder = undefined;
     this.dropList?.finishDrag(this);
