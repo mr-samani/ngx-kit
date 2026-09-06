@@ -1,363 +1,399 @@
 :host {
+  --ngx-drawer-width: 300px;
+  --ngx-drawer-duration: 280ms;
+  --ngx-drawer-z-index: 1000;
+
   display: block;
-  min-block-size: 100%;
-  --ngx-ease: cubic-bezier(0.22, 0.9, 0.28, 1);
-  --ngx-spring: cubic-bezier(0.17, 0.88, 0.32, 1.24);
+
+  width: 100%;
+  // height: 100%;
+
+  position: relative;
+
+  isolation: isolate;
 }
+
+:host,
+:host *,
+:host *::before,
+:host *::after {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   ROOT
+   ========================================================================== */
+
+.ngx-drawer-root {
+  position: relative;
+
+  display: flex;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  outline: none;
+}
+
+/* ==========================================================================
+   MAIN
+   ========================================================================== */
+
+.ngx-drawer-main {
+  position: relative;
+
+  flex: 1 1 auto;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  display: flex;
+
+  transition:
+    width var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    margin var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    transform var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    opacity var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ngx-drawer-main-content {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: auto;
+}
+
+/* ==========================================================================
+   DRAWER
+   ========================================================================== */
 
 .ngx-drawer {
   position: relative;
-  min-block-size: 100%;
-  isolation: isolate;
-  color: light-dark(#101114, #f5f7fb);
-  --progress: var(--ngx-progress, 0);
-  --closed-offset: var(--ngx-closed-translate, 0px);
-}
 
-/* =========================
-   CLOSED / EDGE GESTURE
-   ========================= */
-.ngx-drawer-edge-zone {
-  position: fixed;
-  inset-block: 0;
-  inline-size: max(
-    var(--ngx-edge-size, 34px),
-    env(safe-area-inset-left),
-    env(safe-area-inset-right)
-  );
-  z-index: 1600;
-  touch-action: none;
-  cursor: ew-resize;
-}
-.ngx-drawer-edge-zone.edge-start {
-  inset-inline-start: 0;
-}
-.ngx-drawer-edge-zone.edge-end {
-  inset-inline-end: 0;
-}
+  flex: 0 0 var(--ngx-drawer-width);
 
-/* =========================
-   TRUE DESKTOP DOCKED SIDEBAR
-   The panel participates in layout; it is NOT an overlay.
-   ========================= */
-.ngx-drawer.is-docked {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr);
-  min-inline-size: 0;
-  overflow: clip;
-}
+  width: var(--ngx-drawer-width);
+  min-width: var(--ngx-drawer-width);
+  max-width: var(--ngx-drawer-width);
 
-.ngx-drawer.is-docked.side-start {
-  grid-template-columns: calc(var(--progress) * min(var(--ngx-width), var(--ngx-max-width))) minmax(
-      0,
-      1fr
-    );
-}
-.ngx-drawer.is-docked.side-end {
-  grid-template-columns: minmax(0, 1fr) calc(
-      var(--progress) * min(var(--ngx-width), var(--ngx-max-width))
-    );
-}
+  height: 100%;
 
-.ngx-drawer.is-docked .ngx-drawer-main {
-  position: relative;
-  min-inline-size: 0;
-  min-block-size: 100%;
-  grid-row: 1;
+  z-index: calc(var(--ngx-drawer-z-index) + 2);
+
   transition:
-    min-inline-size var(--ngx-duration) var(--ngx-ease),
-    transform var(--ngx-duration) var(--ngx-ease);
-}
-.ngx-drawer.is-docked.side-start .ngx-drawer-main {
-  grid-column: 2;
-}
-.ngx-drawer.is-docked.side-end .ngx-drawer-main {
-  grid-column: 1;
+    transform var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    width var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    opacity var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* The desktop drawer is an actual sidebar slot. */
-.ngx-drawer.is-docked .ngx-drawer-panel {
+.ngx-drawer-surface {
   position: relative;
-  inset: auto !important;
-  grid-row: 1;
-  inline-size: auto;
-  min-inline-size: 0;
-  max-inline-size: none;
-  block-size: 100%;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
   overflow: hidden;
-  z-index: 2;
-  transform: none !important;
-  box-shadow: none;
-  border-radius: 0;
-}
-.ngx-drawer.is-docked.side-start .ngx-drawer-panel {
-  grid-column: 1;
-}
-.ngx-drawer.is-docked.side-end .ngx-drawer-panel {
-  grid-column: 2;
+
+  background: var(--ngx-drawer-background, #fff);
+
+  color: var(--ngx-drawer-color, #1f2937);
+
+  border: 0;
+
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
-/* =========================
-   OVERLAY MODE
-   ========================= */
-.ngx-drawer.is-overlay {
-  min-block-size: 100%;
-  overflow: clip;
+.ngx-drawer-content {
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: auto;
 }
+
+/* ==========================================================================
+   START / END
+   ========================================================================== */
+
+:host.drawer-start .ngx-drawer {
+  order: 0;
+}
+
+:host.drawer-start .ngx-drawer-main {
+  order: 1;
+}
+
+:host.drawer-end .ngx-drawer {
+  order: 1;
+}
+
+:host.drawer-end .ngx-drawer-main {
+  order: 0;
+}
+
+/* ==========================================================================
+   DOCK
+   ========================================================================== */
+
+:host.drawer-dock .ngx-drawer {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+:host.drawer-dock.drawer-start.drawer-open .ngx-drawer {
+  transform: translateX(0);
+}
+
+:host.drawer-dock.drawer-start:not(.drawer-open) .ngx-drawer {
+  transform: translateX(-100%);
+}
+
+:host.drawer-dock.drawer-end.drawer-open .ngx-drawer {
+  transform: translateX(0);
+}
+
+:host.drawer-dock.drawer-end:not(.drawer-open) .ngx-drawer {
+  transform: translateX(100%);
+}
+
+/* ==========================================================================
+   OVERLAY
+   ========================================================================== */
+
+:host.drawer-overlay .ngx-drawer {
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  z-index: calc(var(--ngx-drawer-z-index) + 2);
+
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+:host.drawer-start.drawer-overlay .ngx-drawer {
+  left: 0;
+}
+
+:host.drawer-end.drawer-overlay .ngx-drawer {
+  right: 0;
+}
+
+:host.drawer-overlay.drawer-start.drawer-open .ngx-drawer {
+  transform: translateX(0);
+}
+
+:host.drawer-overlay.drawer-start:not(.drawer-open) .ngx-drawer {
+  transform: translateX(-105%);
+}
+
+:host.drawer-overlay.drawer-end.drawer-open .ngx-drawer {
+  transform: translateX(0);
+}
+
+:host.drawer-overlay.drawer-end:not(.drawer-open) .ngx-drawer {
+  transform: translateX(105%);
+}
+
+/* ==========================================================================
+   BACKDROP
+   ========================================================================== */
 
 .ngx-drawer-backdrop {
-  position: fixed;
+  position: absolute;
+
   inset: 0;
-  z-index: 1450;
-  appearance: none;
-  border: 0;
-  padding: 0;
-  background: #000;
+
+  z-index: calc(var(--ngx-drawer-z-index) + 1);
+
+  background: rgba(0, 0, 0, 0.38);
+
+  backdrop-filter: blur(1px);
+
+  opacity: 1;
+
+  animation: ngx-drawer-backdrop-in var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1);
+
   cursor: default;
-  opacity: calc(var(--progress) * var(--ngx-backdrop-opacity));
-  transition: opacity var(--ngx-duration) var(--ngx-ease);
 }
 
-.ngx-drawer.is-overlay .ngx-drawer-main {
+@keyframes ngx-drawer-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   FABRIC EFFECT
+   ========================================================================== */
+
+:host.effect-fabric .ngx-drawer-surface {
   position: relative;
-  min-block-size: 100%;
-  min-inline-size: 0;
-  z-index: 1;
+
+  overflow: hidden;
 }
 
-.ngx-drawer.is-dragging .ngx-drawer-main,
-.ngx-drawer.is-dragging .ngx-drawer-backdrop,
-.ngx-drawer.is-dragging .ngx-drawer-panel {
-  transition: none !important;
-}
+:host.effect-fabric .ngx-drawer-surface::before {
+  content: '';
 
-/* =========================
-   PANEL / PHYSICAL POSITION
-   ========================= */
-.ngx-drawer-panel {
-  position: fixed;
-  inset-block: 0;
-  z-index: 1500;
-  inline-size: min(var(--ngx-width), var(--ngx-max-width));
-  max-inline-size: calc(100vw - 12px);
-  overflow: visible;
-  background: light-dark(#fff, #181a1f);
-  box-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.16),
-    0 4px 18px rgba(0, 0, 0, 0.12);
-  will-change: transform;
-  transition:
-    transform var(--ngx-duration) var(--ngx-ease),
-    box-shadow 260ms ease;
-  contain: layout;
-}
-
-.ngx-drawer.is-overlay.side-start .ngx-drawer-panel {
-  inset-inline-start: 0;
-  transform: translate3d(var(--closed-offset), 0, 0);
-}
-.ngx-drawer.is-overlay.side-end .ngx-drawer-panel {
-  inset-inline-end: 0;
-  transform: translate3d(var(--closed-offset), 0, 0);
-}
-
-/* The mouse/touch target is deliberately large and full-height. */
-.ngx-drawer-drag-handle {
   position: absolute;
-  inset-block: 0;
-  inline-size: 42px;
-  z-index: 30;
-  touch-action: none;
-  cursor: ew-resize;
-}
-.ngx-drawer-drag-handle.handle-start {
-  inset-inline-end: -18px;
-}
-.ngx-drawer-drag-handle.handle-end {
-  inset-inline-start: -18px;
-}
-.ngx-drawer-drag-handle span {
-  position: absolute;
-  inset-block-start: 50%;
-  inline-size: 4px;
-  block-size: 54px;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 18%, transparent);
+
+  top: 0;
+  bottom: 0;
+
+  width: 100px;
+
+  pointer-events: none;
+
   opacity: 0;
-  transform: translateY(-50%);
+
   transition:
-    opacity 140ms ease,
-    block-size 140ms ease;
-}
-.ngx-drawer-drag-handle.handle-start span {
-  inset-inline-start: 0;
-}
-.ngx-drawer-drag-handle.handle-end span {
-  inset-inline-end: 0;
-}
-.ngx-drawer-drag-handle:hover span,
-.ngx-drawer-drag-handle:active span {
-  opacity: 0.9;
-  block-size: 68px;
-}
+    opacity var(--ngx-drawer-duration) ease,
+    transform var(--ngx-drawer-duration) ease;
 
-.ngx-drawer-inner {
-  position: relative;
-  block-size: 100%;
-  min-block-size: 100%;
-  z-index: 5;
-  overflow: hidden;
-}
-.ngx-drawer-content {
-  position: relative;
-  block-size: 100%;
-  min-block-size: 100%;
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-}
-
-/* =========================
-   PUSH / REVEAL FOR EXPLICIT NON-RESPONSIVE USE
-   ========================= */
-.ngx-drawer.is-overlay.mode-push .ngx-drawer-main {
-  transition: transform var(--ngx-duration) var(--ngx-ease);
-}
-.ngx-drawer.is-overlay.mode-push.physical-left .ngx-drawer-main {
-  transform: translate3d(calc(var(--progress) * var(--ngx-width)), 0, 0);
-}
-.ngx-drawer.is-overlay.mode-push.physical-right .ngx-drawer-main {
-  transform: translate3d(calc(var(--progress) * var(--ngx-width) * -1), 0, 0);
-}
-.ngx-drawer.is-overlay.mode-reveal .ngx-drawer-main {
-  border-radius: calc(var(--progress) * 20px);
-  transform: scale(calc(1 - var(--progress) * 0.055));
-  overflow: clip;
-}
-
-/* =========================
-   EFFECTS
-   ========================= */
-.effect-slide .ngx-drawer-panel {
-  transform: translate3d(var(--closed-offset), 0, 0);
-}
-.effect-spring .ngx-drawer-panel {
-  transform: translate3d(var(--closed-offset), 0, 0) scaleX(calc(0.92 + var(--progress) * 0.08));
-  transform-origin: center;
-}
-.effect-elastic .ngx-drawer-panel {
-  transform: translate3d(var(--closed-offset), 0, 0)
-    scaleX(calc(1 + sin((var(--progress) - 0.5) * 3.14) * 0.035));
-}
-.effect-fabric .ngx-drawer-panel {
-  transform: translate3d(var(--closed-offset), 0, 0)
-    skewY(calc((1 - var(--progress)) * var(--ngx-fabric-skew)))
-    scaleX(calc(0.78 + var(--progress) * 0.22));
-}
-.effect-curtain .ngx-drawer-panel {
-  transform: translate3d(var(--closed-offset), 0, 0) scaleX(calc(0.82 + var(--progress) * 0.18));
-}
-.effect-reveal .ngx-drawer-panel {
-  transform: translate3d(var(--closed-offset), 0, 0) scaleY(calc(0.96 + var(--progress) * 0.04));
-}
-
-/* In dock mode, layout width is the animation. Don't distort the actual sidebar. */
-.ngx-drawer.is-docked .ngx-drawer-panel,
-.ngx-drawer.is-docked.effect-fabric .ngx-drawer-panel,
-.ngx-drawer.is-docked.effect-spring .ngx-drawer-panel,
-.ngx-drawer.is-docked.effect-elastic .ngx-drawer-panel,
-.ngx-drawer.is-docked.effect-curtain .ngx-drawer-panel,
-.ngx-drawer.is-docked.effect-reveal .ngx-drawer-panel {
-  transform: none !important;
-}
-
-/* Fabric surface. */
-.ngx-drawer-fabric {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 8;
-  overflow: hidden;
-  opacity: calc((1 - var(--progress)) * 0.9);
-  transition: opacity 220ms ease;
-  mix-blend-mode: multiply;
-}
-.ngx-fabric-fold {
-  position: absolute;
-  inset-block: -5%;
-  inline-size: 19%;
-  transform-origin: center;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.16) 28%,
-    rgba(0, 0, 0, 0.14) 52%,
-    rgba(255, 255, 255, 0.1) 72%,
-    rgba(255, 255, 255, 0)
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 100%
   );
-  filter: blur(0.4px);
-}
-.ngx-fabric-fold.fold-1 {
-  inset-inline-start: 1%;
-  transform: skewY(6deg);
-}
-.ngx-fabric-fold.fold-2 {
-  inset-inline-start: 21%;
-  transform: skewY(-4deg);
-}
-.ngx-fabric-fold.fold-3 {
-  inset-inline-start: 43%;
-  transform: skewY(5deg);
-}
-.ngx-fabric-fold.fold-4 {
-  inset-inline-start: 65%;
-  transform: skewY(-3deg);
-}
-.ngx-fabric-edge {
-  position: absolute;
-  inset-block: 0;
-  inline-size: 18px;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent);
-  filter: blur(3px);
-}
-.ngx-drawer.side-end .ngx-fabric-edge {
-  inset-inline-end: 0;
-}
-.ngx-drawer.side-start .ngx-fabric-edge {
-  inset-inline-start: 0;
 }
 
-.ngx-drawer-curtain {
-  position: absolute;
-  inset: 0;
-  z-index: 11;
-  display: flex;
-  pointer-events: none;
-  overflow: hidden;
+:host.effect-fabric.drawer-start .ngx-drawer-surface::before {
+  right: -100px;
 }
-.ngx-drawer-strip {
-  flex: 1 1 0;
-  block-size: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.24),
-    rgba(0, 0, 0, 0.08),
-    rgba(255, 255, 255, 0.08)
-  );
-  transform-origin: center;
-  transform: scaleX(calc(1 - var(--progress)));
-  transition: transform var(--ngx-duration) var(--ngx-ease);
-  transition-delay: calc((var(--strip-index) / var(--strip-count)) * 60ms);
+
+:host.effect-fabric.drawer-end .ngx-drawer-surface::before {
+  left: -100px;
 }
-.ngx-drawer.is-dragging .ngx-drawer-strip {
-  transition: none;
+
+:host.effect-fabric.drawer-open .ngx-drawer-surface::before {
+  opacity: 1;
 }
+
+/* ==========================================================================
+   SLIDE EFFECT
+   ========================================================================== */
+
+:host.effect-slide .ngx-drawer {
+  will-change: transform;
+}
+
+/* ==========================================================================
+   PUSH EFFECT
+   ========================================================================== */
+
+:host.effect-push.drawer-start.drawer-open .ngx-drawer-main {
+  transform: translateX(calc(var(--ngx-drawer-width) / 2));
+}
+
+:host.effect-push.drawer-end.drawer-open .ngx-drawer-main {
+  transform: translateX(calc(var(--ngx-drawer-width) / -2));
+}
+
+/* ==========================================================================
+   SCALE EFFECT
+   ========================================================================== */
+
+:host.effect-scale.drawer-open .ngx-drawer-main-content {
+  transform: scale(0.985);
+
+  opacity: 0.92;
+}
+
+.ngx-drawer-main-content {
+  transition:
+    transform var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1),
+    opacity var(--ngx-drawer-duration) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   PINNED
+   ========================================================================== */
+
+:host.drawer-dock.drawer-open.drawer-desktop.drawer-start {
+  --ngx-drawer-shadow: 8px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+:host.drawer-dock.drawer-open.drawer-desktop.drawer-end {
+  --ngx-drawer-shadow: -8px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+:host.drawer-dock .ngx-drawer-surface {
+  box-shadow: var(--ngx-drawer-shadow, none);
+}
+
+:host.drawer-dock.drawer-desktop.drawer-open .ngx-drawer {
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   MOBILE
+   ========================================================================== */
+
+:host.drawer-mobile {
+  --ngx-drawer-duration: 260ms;
+}
+
+:host.drawer-mobile .ngx-drawer {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   DARK MODE
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --ngx-drawer-background: #111827;
+    --ngx-drawer-color: #f3f4f6;
+  }
+
+  .ngx-drawer-surface {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .ngx-drawer-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-  .ngx-drawer *,
-  .ngx-drawer {
-    transition-duration: 1ms !important;
-    animation-duration: 1ms !important;
+  :host {
+    --ngx-drawer-duration: 0ms;
+  }
+
+  .ngx-drawer,
+  .ngx-drawer-main,
+  .ngx-drawer-main-content,
+  .ngx-drawer-backdrop {
+    transition: none !important;
+    animation: none !important;
   }
 }

@@ -1,11 +1,10 @@
 :host {
   display: block;
-  min-block-size: calc(100dvh - 58px);
 }
 
 ::ng-deep ngx-drawer-menu {
   display: block;
-  min-block-size: calc(100dvh - 58px);
+  height: calc(100dvh - 68px);
 }
 
 .mobile-menu-toggle {

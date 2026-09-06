@@ -1,95 +1,49 @@
 <div
-  class="ngx-drawer"
-  [class.is-open]="isActuallyOpen()"
-  [class.is-dragging]="isDragging()"
+  class="ngx-drawer-root"
+  [class.is-open]="drawerVisible()"
+  [class.is-closed]="!drawerVisible()"
+  [class.is-overlay]="isOverlay()"
+  [class.is-dock]="isDocked()"
   [class.is-pinned]="pinned()"
-  [class.is-docked]="isDocked()"
-  [class.is-overlay]="usesOverlay()"
-  [class.side-start]="side() === 'start'"
-  [class.side-end]="side() === 'end'"
-  [class.physical-left]="isPhysicalLeft()"
-  [class.physical-right]="!isPhysicalLeft()"
-  [class.mode-overlay]="effectiveMode() === 'overlay'"
-  [class.mode-push]="effectiveMode() === 'push'"
-  [class.mode-reveal]="effectiveMode() === 'reveal'"
-  [class.effect-slide]="effect() === 'slide'"
-  [class.effect-spring]="effect() === 'spring'"
-  [class.effect-fabric]="effect() === 'fabric'"
-  [class.effect-curtain]="effect() === 'curtain'"
-  [class.effect-elastic]="effect() === 'elastic'"
-  [class.effect-reveal]="effect() === 'reveal'"
-  [style.--ngx-progress]="progress()"
-  [style.--ngx-width.px]="width()"
-  [style.--ngx-edge-size.px]="edgeSize()"
-  [style.--ngx-max-width.px]="maxWidth()"
-  [style.--ngx-duration]="duration()"
-  [style.--ngx-backdrop-opacity]="backdropOpacity()"
-  [style.--ngx-physical-sign]="physicalSign()"
-  [style.--ngx-closed-translate.px]="(1 - progress()) * -width() * physicalSign()"
-  [style.--ngx-transform-origin]="isPhysicalLeft() ? 'left center' : 'right center'"
-  [style.--ngx-fabric-skew]="(1 - progress()) * 10 + 'deg'">
-  @if (swipeEnabled() && !isActuallyOpen() && !pinned()) {
-    <div
-      class="ngx-drawer-edge-zone"
-      [class.edge-start]="side() === 'start'"
-      [class.edge-end]="side() === 'end'"
-      (pointerdown)="onEdgePointerDown($event)"
-      aria-hidden="true"></div>
+  [class.is-mobile]="currentMode() === 'mobile'"
+  [class.is-desktop]="currentMode() === 'desktop'"
+  (keydown)="onKeyDown($event)"
+  tabindex="-1">
+  <!-- ===================================================================== -->
+  <!-- Backdrop                                                               -->
+  <!-- ===================================================================== -->
+
+  @if (shouldShowBackdrop()) {
+    <div class="ngx-drawer-backdrop" aria-hidden="true" (click)="onBackdropClick()"></div>
   }
 
-  @if (isActuallyOpen() && usesOverlay()) {
-    <button
-      class="ngx-drawer-backdrop"
-      type="button"
-      tabindex="-1"
-      aria-label="Close navigation"
-      (pointerdown)="onBackdropPointerDown($event)"></button>
-  }
-
-  <main class="ngx-drawer-main">
-    <ng-content></ng-content>
-  </main>
+  <!-- ===================================================================== -->
+  <!-- Drawer                                                                 -->
+  <!-- ===================================================================== -->
 
   <aside
-    class="ngx-drawer-panel"
-    [attr.aria-hidden]="!isActuallyOpen()"
-    [attr.inert]="!isActuallyOpen() ? '' : null"
-    role="navigation">
-    <div class="ngx-drawer-fabric" aria-hidden="true">
-      <div class="ngx-fabric-fold fold-1"></div>
-      <div class="ngx-fabric-fold fold-2"></div>
-      <div class="ngx-fabric-fold fold-3"></div>
-      <div class="ngx-fabric-fold fold-4"></div>
-      <div class="ngx-fabric-edge"></div>
-    </div>
-
-    <!-- Full-height drag affordance at the physical edge of the panel. -->
-    @if (swipeEnabled() && !pinned()) {
-      <div
-        class="ngx-drawer-drag-handle"
-        [class.handle-start]="side() === 'start'"
-        [class.handle-end]="side() === 'end'"
-        (pointerdown)="onPanelPointerDown($event)"
-        aria-hidden="true">
-        <span></span>
-      </div>
-    }
-
-    <div class="ngx-drawer-inner">
+    class="ngx-drawer"
+    [attr.aria-hidden]="!drawerVisible()"
+    [attr.data-side]="side()"
+    [attr.data-mode]="currentMode()"
+    [attr.data-behavior]="currentBehavior()"
+    [attr.data-effect]="effect()"
+    [attr.data-pinned]="pinned()">
+    <div class="ngx-drawer-surface">
+      <!-- Drawer Content -->
       <div class="ngx-drawer-content">
         <ng-content select="[drawerContent]"></ng-content>
       </div>
     </div>
-
-    @if (effect() === 'curtain') {
-      <div class="ngx-drawer-curtain" aria-hidden="true">
-        @for (i of strips(); track i) {
-          <span
-            class="ngx-drawer-strip"
-            [style.--strip-index]="i"
-            [style.--strip-count]="curtainStrips()"></span>
-        }
-      </div>
-    }
   </aside>
+
+  <!-- ===================================================================== -->
+  <!-- Main Content                                                           -->
+  <!-- ===================================================================== -->
+
+  <main class="ngx-drawer-main">
+    <div class="ngx-drawer-main-content">
+      <ng-content></ng-content>
+    </div>
+  </main>
 </div>
