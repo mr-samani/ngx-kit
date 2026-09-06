@@ -133,6 +133,69 @@ export const MENU_LIST: ICategory[] = [
       {
         title: 'Drag and Resize',
         url: '/components/drag-resize',
+
+        fragments: [
+          {
+            id: 'overview',
+            title: 'Overview',
+            description: 'Explore drag and resize capabilities.',
+            icon: '✦',
+          },
+          {
+            id: 'drag',
+            title: 'Basic Drag',
+            description: 'Simple draggable elements.',
+            icon: '✥',
+          },
+          {
+            id: 'resize',
+            title: 'Basic Resize',
+            description: 'Resize elements from every direction.',
+            icon: '↗',
+          },
+          {
+            id: 'combined',
+            title: 'Drag + Resize',
+            description: 'Move and resize simultaneously.',
+            icon: '⤢',
+          },
+          {
+            id: 'positions',
+            title: 'Position Modes',
+            description: 'Static, relative, absolute and fixed.',
+            icon: '▣',
+          },
+          {
+            id: 'boundary',
+            title: 'Boundary',
+            description: 'Keep elements inside a container.',
+            icon: '□',
+          },
+          {
+            id: 'handle',
+            title: 'Drag Handle',
+            description: 'Drag using a dedicated handle.',
+            icon: '☷',
+          },
+          {
+            id: 'scroll',
+            title: 'Scrolling',
+            description: 'Drag inside scrollable containers.',
+            icon: '↕',
+          },
+          {
+            id: 'rtl',
+            title: 'RTL / LTR',
+            description: 'Bidirectional layouts.',
+            icon: '⇄',
+          },
+          {
+            id: 'multiple',
+            title: 'Multiple Elements',
+            description: 'Real-world dashboard layout.',
+            icon: '▦',
+          },
+        ],
       },
       {
         title: 'b',

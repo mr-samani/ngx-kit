@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, effect, inject, Service, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { IAppMenu } from '@demo/shared/interfaces/IAppMenu';
 import { ICategory } from '@demo/shared/interfaces/ICategory';
 import { MENU_LIST } from '@demo/shared/menu-items';
 
@@ -12,3 +13,4 @@ import { MENU_LIST } from '@demo/shared/menu-items';
 export class SideNav {
   list: ICategory[] = MENU_LIST;
 }
+

@@ -1,17 +1,64 @@
-<nav class="side-nav">
+<aside class="sidebar">
   @for (cat of list; track $index) {
-    <div class="nav-group">
-      <span class="nav-group-title">{{ cat.name }}</span>
-      <ul>
-        @for (item of cat.items; track $index) {
-          <li>
-            <a [routerLink]="item.url" routerLinkActive="active">
-              <span class="dot"></span>
+    <small>{{ cat.name }}</small>
+    <nav class="example-list">
+      @for (item of cat.items; track $index) {
+        <button
+          type="button"
+          class="example-button"
+          [routerLink]="item.url"
+          routerLinkActive="active">
+          <span class="example-icon">
+            {{ item.icon ?? '✦' }}
+          </span>
+
+          <span class="example-info">
+            <span class="example-title">
               {{ item.title }}
-            </a>
-          </li>
+            </span>
+
+            <span class="example-description">
+              {{ item.description }}
+            </span>
+          </span>
+        </button>
+
+        @if (item.fragments) {
+          <div class="segments">
+            @for (f of item.fragments; track f.id) {
+              <button
+                type="button"
+                class="example-button"
+                [routerLink]="item.url"
+                [fragment]="f.id"
+                routerLinkActive="active">
+                <span class="example-icon">
+                  {{ f.icon ?? '✦' }}
+                </span>
+                <span class="example-info">
+                  <span class="example-title">
+                    {{ f.title }}
+                  </span>
+
+                  <span class="example-description">
+                    {{ f.description }}
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
         }
-      </ul>
-    </div>
+      }
+    </nav>
   }
-</nav>
+  <div class="sidebar-footer">
+    <div class="library-info">
+      <span class="version-dot"></span>
+
+      <div>
+        <strong>ngx-kit</strong>
+        <small>@version</small>
+      </div>
+    </div>
+  </div>
+</aside>
