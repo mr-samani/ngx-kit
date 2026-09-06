@@ -195,6 +195,12 @@ export const MENU_LIST: ICategory[] = [
             description: 'Real-world dashboard layout.',
             icon: '▦',
           },
+          {
+            id: 'resizepan',
+            title: 'Resize pan',
+            description: 'Resize side pan',
+            icon: '🔛',
+          },
         ],
       },
       {

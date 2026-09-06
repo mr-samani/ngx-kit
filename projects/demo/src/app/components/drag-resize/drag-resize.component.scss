@@ -799,6 +799,39 @@
   background: linear-gradient(to top, var(--primary), rgba(99, 91, 255, 0.35));
 }
 
+/* ==============================================
+RESIZE PAN
+=================================================== */
+.sidepan-demo {
+  border: 1px var(--border) solid;
+  display: flex;
+  min-height: 50dvh;
+
+  .sidenav {
+    background-color: var(--surface);
+    border: 1px var(--border) solid;
+    width: 30%;
+    position: relative;
+    .ngx-resize-handler {
+      position: absolute;
+      width: 4px;
+      background: #6f6b70;
+      height: 50%;
+      top: 25%;
+      border-radius: 50px;
+      right: 4px;
+      cursor: e-resize;
+      display: none;
+    }
+    &:hover .ngx-resize-handler {
+      display: block;
+    }
+  }
+  .main {
+    background-color: var(--surface-2);
+    flex: auto;
+  }
+}
 /* =========================================================
    PROPERTIES
    ========================================================= */

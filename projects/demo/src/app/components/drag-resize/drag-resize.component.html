@@ -370,6 +370,25 @@
           </div>
         </div>
       }
+
+      <!-- --------------------------------------- -->
+      <!-- Resize Pan -->
+      <!-- --------------------------------------- -->
+      @if (selectedExample() === 'resizepan') {
+        <div class="sidepan-demo">
+          <div
+            class="sidenav"
+            ngxResizable
+            (resizeEnd)="onResizeEnd($event)"
+            [directions]="['e']"
+            [minWidth]="120">
+            side nav content
+
+            <div class="ngx-resize-handler" data-ngx-resize-handle="end"></div>
+          </div>
+          <div class="main">main layout</div>
+        </div>
+      }
     </div>
   </section>
 
