@@ -99,7 +99,6 @@ export class GridLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.items = JSON.parse(JSON.stringify(this.DEFAULT_ITEMS));
-    this.loadLayout();
   }
 
   onLayoutChange(layout: LayoutOutput[]): void {
@@ -111,42 +110,6 @@ export class GridLayoutComponent implements OnInit {
         item.config = new GridItemConfig(layoutItem.x, layoutItem.y, layoutItem.w, layoutItem.h);
       }
     });
-    // ذخیره‌سازی خودکار
-    this.saveLayout();
-  }
-
-  /**
-   * ذخیره Layout
-   */
-  private saveLayout(): void {
-    try {
-      localStorage.setItem(
-        'advanced-grid-layout',
-        JSON.stringify({
-          items: this.items,
-          options: this.gridOptions,
-          timestamp: new Date().toISOString(),
-        }),
-      );
-    } catch (e) {
-      console.error('Error on save:', e);
-    }
-  }
-
-  /**
-   * بارگذاری Layout
-   */
-  loadLayout(): void {
-    try {
-      const saved = localStorage.getItem('advanced-grid-layout');
-      if (saved) {
-        const data = JSON.parse(saved);
-        this.gridOptions = data.options;
-        this.items = data.items;
-      }
-    } catch (e) {
-      console.error('Error on Load:', e);
-    }
   }
 
   update() {
@@ -179,7 +142,6 @@ export class GridLayoutComponent implements OnInit {
 
   resetToDefault(): void {
     this.items = JSON.parse(JSON.stringify(this.DEFAULT_ITEMS));
-    this.saveLayout();
     setTimeout(() => {
       this.update();
     });

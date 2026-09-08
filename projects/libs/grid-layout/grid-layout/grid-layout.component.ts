@@ -38,17 +38,34 @@ import { LayoutOutput } from '../options/layout-output';
         position: absolute;
         inset: 0;
         pointer-events: none;
-        background-size: calc(
-            (100% - var(--grid-gap) * (var(--grid-cols) - 1)) / var(--grid-cols) + var(--grid-gap)
-          )
-          var(--grid-row);
-        background-image:
-          linear-gradient(to right, var(--grid-col-color) 1px, transparent 1px),
-          linear-gradient(to bottom, var(--grid-row-color) 1px, transparent 1px);
+
         opacity: var(--grid-bg-opacity);
         border: var(--grid-border-width) solid var(--grid-border-color);
         box-sizing: border-box;
         transition: opacity 0.15s ease;
+
+        background-image:
+          repeating-linear-gradient(
+            var(--grid-border-color) 0 var(--grid-border-width),
+            var(--grid-row-color) var(--grid-border-width)
+              calc(var(--grid-row) - var(--grid-border-width)),
+            var(--grid-border-color) calc(var(--grid-row) - var(--grid-border-width))
+              calc(var(--grid-row)),
+            var(--grid-gap-color) calc(var(--grid-row))
+              calc(var(--grid-row) + var(--grid-gap))
+          ),
+          repeating-linear-gradient(
+            90deg,
+            var(--grid-border-color) 0 var(--grid-border-width),
+            var(--grid-col-color) var(--grid-border-width)
+              calc(100% - (var(--grid-border-width) + var(--grid-gap))),
+            var(--grid-border-color) calc(100% - (var(--grid-border-width) + var(--grid-gap)))
+              calc(100% - var(--grid-gap)),
+            var(--grid-gap-color) calc(100% - var(--grid-gap)) 100%
+          );
+        background-size: calc((100% + var(--grid-gap)) / var(--grid-cols))
+          calc(var(--grid-row) + var(--grid-gap));
+        background-position: 0 0;
       }
     `,
   ],
@@ -105,6 +122,7 @@ export class NgxGridLayoutComponent implements AfterViewInit, OnDestroy {
   }
   update(options: Partial<IGridLayoutOptions>): void {
     this.service.setOptions(options);
+    this.setCss();
   }
 
   private setCss(): void {
@@ -114,6 +132,7 @@ export class NgxGridLayoutComponent implements AfterViewInit, OnDestroy {
     el.style.setProperty('--grid-gap', `${o.gap ?? 0}px`);
     el.style.setProperty('--grid-row', `${o.rowHeight === 'fit' ? 100 : o.rowHeight}px`);
     const b = o.gridBackgroundConfig;
+    el.style.setProperty('--grid-gap-color', `${b.gapColor}`); 
     el.style.setProperty('--grid-border-width', `${b?.borderWidth ?? 0}px`);
     el.style.setProperty('--grid-border-color', b?.borderColor ?? 'transparent');
     el.style.setProperty('--grid-row-color', b?.rowColor ?? 'transparent');

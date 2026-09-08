@@ -1,18 +1,19 @@
 .advanced-demo {
-  display: flex;
+  display: grid;
   gap: 20px;
   padding: 20px;
-  font-family: 'Vazir', sans-serif;
+  grid-template-columns: 1fr 25%;
 }
 
 .settings-panel {
-  width: 300px;
   border: 1px solid #dddddd3f;
   border-radius: 8px;
   padding: 20px;
   height: fit-content;
   position: sticky;
   top: 20px;
+  max-height: calc(100dvh - 120px);
+  overflow: auto;
 }
 
 .settings-panel h3 {
@@ -71,6 +72,8 @@
   cursor: pointer;
   font-size: 14px;
   transition: transform 0.2s;
+  position: sticky;
+  bottom: 0;
 }
 
 .preset-btn:hover {
