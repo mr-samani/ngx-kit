@@ -34,3 +34,30 @@ export const normalizeGridItem = (value?: Partial<GridItemConfig>): GridItemConf
   isDraggable: value?.isDraggable,
   isResizable: value?.isResizable,
 });
+
+/**
+ * Value equality for two (already-normalized) configs.
+ *
+ * This is what breaks the register -> settle -> new-object -> re-register
+ * feedback loop: signals compare by *reference*, so anything that recomputes
+ * a fresh config object on every change-detection pass (a `computed()` layout,
+ * an inline object literal in a template, etc.) will always look "changed" to
+ * an `effect()` even when nothing meaningful did. Callers must compare by
+ * value before writing back to a signal, otherwise the write itself produces
+ * a new reference that trips the same effect again — forever.
+ */
+export function gridItemConfigsEqual(a: GridItemConfig, b: GridItemConfig): boolean {
+  return (
+    a.x === b.x &&
+    a.y === b.y &&
+    a.w === b.w &&
+    a.h === b.h &&
+    (a.minW ?? null) === (b.minW ?? null) &&
+    (a.minH ?? null) === (b.minH ?? null) &&
+    (a.maxW ?? null) === (b.maxW ?? null) &&
+    (a.maxH ?? null) === (b.maxH ?? null) &&
+    !!a.static === !!b.static &&
+    (a.isDraggable ?? null) === (b.isDraggable ?? null) &&
+    (a.isResizable ?? null) === (b.isResizable ?? null)
+  );
+}

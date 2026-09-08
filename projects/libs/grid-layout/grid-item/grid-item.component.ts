@@ -3,14 +3,15 @@ import {
   Component,
   ElementRef,
   OnDestroy,
-  OnInit,
   computed,
   effect,
   inject,
   input,
   output,
   signal,
+  type OnInit,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { GridItemConfig } from '../options/grid-item-config';
 import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
@@ -40,7 +41,7 @@ import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgxGridItemComponent implements OnInit, OnDestroy {
+export class NgxGridItemComponent implements OnDestroy, OnInit {
   /** Bound as `[id]` in templates (matches the demo app's existing usage). */
   readonly itemId = input<string | undefined>(undefined, { alias: 'id' });
   readonly config = input<GridItemConfig>({ x: 0, y: 0, w: 1, h: 1 });
@@ -66,20 +67,15 @@ export class NgxGridItemComponent implements OnInit, OnDestroy {
   private readonly resize = inject(NgxResizable);
 
   constructor() {
-    this.drag.dragStart.subscribe(() => this.onDragStart());
-    this.drag.dragMove.subscribe((v) => this.onDragMove(v));
-    this.drag.dragEnd.subscribe(() => this.onDragEnd());
-    this.resize.resizeStart.subscribe(() => this.onResizeStart());
-    this.resize.resizeMove.subscribe((v) => this.onResizeMove(v));
-    this.resize.resizeEnd.subscribe(() => this.onResizeEnd());
-
-    effect(() => {
-      debugger;
-      const id = this.itemId();
-      if (!id) return;
-      this.service.registerItem({ id, config: this.config(), element: this.el.nativeElement });
-      this.service.updateItemConfig(id, this.config());
-    });
+    // `takeUntilDestroyed()` releases these subscriptions on destroy — the
+    // event for every grid item ever created (real damage in layouts where
+    // items are added/removed dynamically, e.g. via *ngFor + trackBy).
+    this.drag.dragStart.pipe(takeUntilDestroyed()).subscribe(() => this.onDragStart());
+    this.drag.dragMove.pipe(takeUntilDestroyed()).subscribe((v) => this.onDragMove(v));
+    this.drag.dragEnd.pipe(takeUntilDestroyed()).subscribe(() => this.onDragEnd());
+    this.resize.resizeStart.pipe(takeUntilDestroyed()).subscribe(() => this.onResizeStart());
+    this.resize.resizeMove.pipe(takeUntilDestroyed()).subscribe((v) => this.onResizeMove(v));
+    this.resize.resizeEnd.pipe(takeUntilDestroyed()).subscribe(() => this.onResizeEnd());
 
     // Keep the hosted directives in sync with per-item state: static items and
     // items explicitly marked non-draggable/non-resizable stop reacting entirely.
@@ -92,7 +88,13 @@ export class NgxGridItemComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const id = this.itemId();
+    if (!id) return;
+    this.service.registerItem({ id, config: this.config(), element: this.el.nativeElement });
+    this.service.updateItemConfig(id, this.config());
+  }
+
   ngOnDestroy(): void {
     const id = this.itemId();
     if (id) this.service.unregisterItem(id);

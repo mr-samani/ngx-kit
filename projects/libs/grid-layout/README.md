@@ -30,7 +30,7 @@ Use `[dir]="'rtl'"` or `options.rtl = 'auto'`. Logical `x=0` is always the start
   [options]="{ cols: 12, rowHeight: 48, gap: 8, compact: 'vertical', pushItems: true }"
   (layoutChange)="saveLayout($event)">
   @for (item of layout(); track item.id) {
-  <ngx-grid-item [itemId]="item.id!" [config]="item">
+  <ngx-grid-item [id]="item.id!" [config]="item">
     <div class="widget">{{ item.id }}</div>
   </ngx-grid-item>
   }
@@ -38,6 +38,16 @@ Use `[dir]="'rtl'"` or `options.rtl = 'auto'`. Logical `x=0` is always the start
 ```
 
 `ngx-grid-item` installs drag and resize behavior on its host. Resize recognizes all eight edges/corners and uses grid snapping supplied by the grid engine.
+
+> **Note on `[config]="item"` above:** `layout()` is a `computed()` that maps the
+> internal item list to a fresh array of fresh objects on every recompute, so
+> each item gets a *new* config object reference whenever anything in the grid
+> changes — even if the values are identical. `NgxGridItemComponent` and
+> `GridLayoutService` are written to tolerate this (they compare configs by
+> value before writing to any signal), so this pattern is safe to use as-is.
+> If you maintain your own item list instead, prefer keeping a stable object
+> reference per item and only replacing it when its values actually change —
+> it's cheaper and avoids relying on the library's internal guards.
 
 # Grid layout API reference
 

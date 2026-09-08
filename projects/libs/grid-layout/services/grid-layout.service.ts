@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { GridLayoutOptions, IGridLayoutOptions } from '../options/options';
-import { normalizeGridItem, GridItemConfig } from '../options/grid-item-config';
+import { normalizeGridItem, gridItemConfigsEqual, GridItemConfig } from '../options/grid-item-config';
 import { LayoutOutput } from '../options/layout-output';
 import { computeMetrics, leftToCol, placeItem, topToRow, GridMetrics } from '../utils/geometry';
 import { compact, maxOccupiedRow, moveItem, trySwap } from '../utils/compaction';
@@ -12,6 +12,15 @@ export interface GridItemState {
   element?: HTMLElement;
   dragging?: boolean;
   resizing?: boolean;
+}
+
+/** Structural + value equality for two item-state arrays (order-independent). */
+function itemsEqual(a: readonly GridItemState[], b: readonly GridItemState[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((itemA) => {
+    const itemB = b.find((x) => x.id === itemA.id);
+    return !!itemB && itemA.element === itemB.element && gridItemConfigsEqual(itemA.config, itemB.config);
+  });
 }
 
 @Injectable()
@@ -28,7 +37,6 @@ export class GridLayoutService {
   readonly rtl = computed(() => this.resolveRtl());
   private rtlTick = signal(0);
 
-  private changeListener?: () => void;
   private layoutListener?: (layout: LayoutOutput[]) => void;
   private startConfig: GridItemConfig | null = null;
   private _element!: HTMLElement;
@@ -57,14 +65,38 @@ export class GridLayoutService {
     this.settle();
     this.emit();
   }
+  /**
+   * Registers a new item, or refreshes the DOM element reference of one that's
+   * already tracked. Adding an item can shift the whole layout (compaction /
+   * push), so that path settles. Merely re-supplying the same element on an
+   * already-known id has no geometric effect, so it is a deliberate no-op —
+   * skipping it is what keeps a per-item `effect()` that calls this on every
+   * change-detection pass from re-triggering `settle()` indefinitely.
+   */
   registerItem(item: GridItemState): void {
-    this.items.update((xs) =>
-      xs.some((x) => x.id === item.id) ? xs.map((x) => (x.id === item.id ? { ...x, element: item.element } : x)) : [...xs, item],
-    );
-    this.settle();
+    const existing = this.items().find((x) => x.id === item.id);
+    if (!existing) {
+      this.items.update((xs) => [...xs, { ...item, config: normalizeGridItem(item.config) }]);
+      this.settle();
+      return;
+    }
+    if (existing.element === item.element) return;
+    this.items.update((xs) => xs.map((x) => (x.id === item.id ? { ...x, element: item.element } : x)));
   }
+
+  /**
+   * Updates an item's config. Only writes the signal and re-settles the layout
+   * when the *value* actually changed. Without this guard, any caller that
+   * supplies a structurally-equal but referentially-new config object (e.g. a
+   * template bound to a `computed()` layout) would cause an unconditional
+   * `items.set()` on every run — which produces new output objects, which
+   * feed back into that same new config reference, forever.
+   */
   updateItemConfig(id: string, config: GridItemConfig): void {
-    this.items.update((xs) => xs.map((x) => (x.id === id ? { ...x, config: normalizeGridItem(config) } : x)));
+    const normalized = normalizeGridItem(config);
+    const existing = this.items().find((x) => x.id === id);
+    if (!existing || gridItemConfigsEqual(existing.config, normalized)) return;
+    this.items.update((xs) => xs.map((x) => (x.id === id ? { ...x, config: normalized } : x)));
     this.settle();
   }
   unregisterItem(id: string): void {
@@ -73,11 +105,19 @@ export class GridLayoutService {
     this.emit();
   }
 
+  /** Called once the grid surface element exists (e.g. from `ngAfterViewInit`). */
   attachElement(el: HTMLElement): void {
     this._element = el;
+    // `rtl` reads `this._element` directly (it isn't a signal), so bump a tick
+    // signal to force the `rtl` computed to re-evaluate now that the element,
+    // and therefore its computed `direction`, is known.
     this.rtlTick.update((n) => n + 1);
     this.applyCss();
-    this.changeListener?.();
+  }
+
+  /** Recomputes pixel positions after the surface resizes. Call from a `ResizeObserver`. */
+  refreshMetrics(): void {
+    this.applyCss();
   }
 
   isItemDraggable(item: GridItemState): boolean {
@@ -95,10 +135,11 @@ export class GridLayoutService {
     this.activeId.set(id);
   }
 
-  move(id: string, dx: number, dy: number): void {
+  move(id: string, x: number, y: number): void {
     const target = this.items().find((x) => x.id === id);
     if (!target?.element) return;
-    const next = this.screenToGrid(target, dx, dy);
+    const next = this.screenToGrid(target, x, y);
+   // console.log(x,y,next)
     this.preview(id, next);
   }
 
@@ -168,16 +209,15 @@ export class GridLayoutService {
     this.applyCss();
   }
 
-  private screenToGrid(item: GridItemState, dx: number, dy: number): GridItemConfig {
-    const r = item.element!.getBoundingClientRect();
+  private screenToGrid(item: GridItemState, x: number, y: number): GridItemConfig {
     const containerRect = this._element.getBoundingClientRect();
     const m = this.metrics();
     const rtl = this.rtl();
-    const leftPx = r.left + dx - containerRect.left;
-    const topPx = r.top + dy - containerRect.top;
-    const x = leftToCol(leftPx, item.config.w, m, rtl);
-    const y = topToRow(topPx, m);
-    return this.clamp({ ...item.config, x, y });
+    const leftPx = x - containerRect.left;
+    const topPx = y - containerRect.top;
+    const nx = leftToCol(leftPx, item.config.w, m, rtl);
+    const ny = topToRow(topPx, m);
+    return this.clamp({ ...item.config, x:nx, y:ny });
   }
 
   private screenResizeToGrid(item: GridItemState, out: { width: number; height: number; moveLeft: number; moveTop: number }): GridItemConfig {
@@ -223,9 +263,10 @@ export class GridLayoutService {
   }
 
   /** Applies pushes on drag-end and, when configured, removes gaps via compaction. */
-  private settle(activeId?: string, _preview = false): void {
+  private settle(activeId?: string): void {
     const opt = this.options();
-    let arr = this.items().map((x) => ({ ...x, config: { ...x.config } }));
+    const before = this.items();
+    let arr = before.map((x) => ({ ...x, config: { ...x.config } }));
     if (!opt.allowOverlap) {
       if (activeId && opt.pushItems) {
         arr = moveItem(arr, activeId, arr.find((x) => x.id === activeId)!.config.x, arr.find((x) => x.id === activeId)!.config.y, {
@@ -237,6 +278,12 @@ export class GridLayoutService {
       }
       if (opt.compact !== 'none') arr = compact(arr, opt.compact);
     }
+    // Compaction/push are deterministic pure functions: if they didn't change
+    // anything, keep the previous array reference instead of writing an
+    // equal-but-new one — that would otherwise ripple into every computed
+    // derived from `items` (layout, height, per-item `interactive`, ...) for
+    // no reason, and risks re-arming the same feedback loop described above.
+    if (itemsEqual(before, arr)) return;
     this.items.set(arr);
     this.applyCss();
   }

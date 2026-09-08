@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, effect, inject, input, output, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { GridLayoutService, GridItemState } from '../services/grid-layout.service';
 import { GridLayoutOptions, IGridLayoutOptions } from '../options/options';
 import { LayoutOutput } from '../options/layout-output';
@@ -46,11 +56,11 @@ import { LayoutOutput } from '../options/layout-output';
     '[class.ngx-grid-layout--dragging]': 'service.isInteracting()',
     '[class.ngx-grid-layout--view]': '!editMode()',
     '[style.height.px]': 'service.height()',
-    '[attr.dir]': "dirOverride() ?? null",
+    '[attr.dir]': 'dirOverride() ?? null',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgxGridLayoutComponent implements OnDestroy {
+export class NgxGridLayoutComponent implements AfterViewInit, OnDestroy {
   readonly options = input<IGridLayoutOptions>(new GridLayoutOptions());
   readonly editMode = input(true);
   readonly layoutChange = output<LayoutOutput[]>();
@@ -70,25 +80,23 @@ export class NgxGridLayoutComponent implements OnDestroy {
       this.service.setOptions(opts);
       this.service.setEditMode(this.editMode());
     });
-    effect(() => {
-      this.service.connect((layout) => this.layoutChange.emit(layout));
-    });
+
+    this.service.connect((layout) => this.layoutChange.emit(layout));
   }
 
   ngAfterViewInit(): void {
-    debugger
     this.surface = this.el.nativeElement.querySelector('.ngx-grid-layout__surface') as HTMLElement;
     this.service.attachElement(this.surface);
     this.setCss();
+
     this.resizeObserver = new ResizeObserver(() => {
-      this.service.attachElement(this.surface!);
+      this.service.refreshMetrics();
       this.setCss();
     });
     this.resizeObserver.observe(this.surface);
   }
 
   ngOnDestroy(): void {
-    // The original never disconnected its ResizeObserver — fixed here.
     this.resizeObserver?.disconnect();
   }
 
@@ -112,7 +120,13 @@ export class NgxGridLayoutComponent implements OnDestroy {
     el.style.setProperty('--grid-col-color', b?.columnColor ?? 'transparent');
     el.style.setProperty(
       '--grid-bg-opacity',
-      b?.show === 'never' ? '0' : b?.show === 'whenDragging' ? (this.service.isInteracting() ? '1' : '0') : '1',
+      b?.show === 'never'
+        ? '0'
+        : b?.show === 'whenDragging'
+          ? this.service.isInteracting()
+            ? '1'
+            : '0'
+          : '1',
     );
   }
 }
