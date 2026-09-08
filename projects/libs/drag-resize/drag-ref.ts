@@ -45,7 +45,7 @@ export class DragRef<T = unknown> {
   private moveDy = 0;
 
   init(): void {
-    this.previousTransform = this.el.style.transform;
+    this.previousTransform = getComputedStyle(this.el).getPropertyValue('transform');
   }
 
   withDropList(list: DropListRef<T> | null): this {
@@ -78,16 +78,7 @@ export class DragRef<T = unknown> {
 
     this.originDropList = this.dropList;
 
-    /**
-     * Capture the current inline transform as the base transform.
-     *
-     * Example:
-     *
-     * translate3d(100px, 50px, 0)
-     *
-     * The next drag will start from this position.
-     */
-    this.previousTransform = this.el.style.transform;
+    this.previousTransform = getComputedStyle(this.el).getPropertyValue('transform');
 
     this.isDragging.set(true);
 
@@ -104,6 +95,8 @@ export class DragRef<T = unknown> {
 
   dragMove(pointer: IPosition): void {
     if (!this.isDragging()) return;
+    // TODO: lastpointer must be chack bounding
+    // onDragEnd return lastpointer
     this.lastPointer = { ...pointer };
     let dx = pointer.x - this.startPointer.x;
     let dy = pointer.y - this.startPointer.y;
@@ -128,7 +121,6 @@ export class DragRef<T = unknown> {
       x: dx,
       y: dy,
     });
-
     this.applyTransform();
   }
 
