@@ -1,6 +1,10 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { GridLayoutOptions, IGridLayoutOptions } from '../options/options';
-import { normalizeGridItem, gridItemConfigsEqual, GridItemConfig } from '../options/grid-item-config';
+import {
+  normalizeGridItem,
+  gridItemConfigsEqual,
+  GridItemConfig,
+} from '../options/grid-item-config';
 import { LayoutOutput } from '../options/layout-output';
 import { computeMetrics, leftToCol, placeItem, topToRow, GridMetrics } from '../utils/geometry';
 import { compact, maxOccupiedRow, moveItem, trySwap } from '../utils/compaction';
@@ -19,7 +23,9 @@ function itemsEqual(a: readonly GridItemState[], b: readonly GridItemState[]): b
   if (a.length !== b.length) return false;
   return a.every((itemA) => {
     const itemB = b.find((x) => x.id === itemA.id);
-    return !!itemB && itemA.element === itemB.element && gridItemConfigsEqual(itemA.config, itemB.config);
+    return (
+      !!itemB && itemA.element === itemB.element && gridItemConfigsEqual(itemA.config, itemB.config)
+    );
   });
 }
 
@@ -31,7 +37,9 @@ export class GridLayoutService {
   readonly activeId = signal<string | null>(null);
   readonly isInteracting = computed(() => this.activeId() !== null);
   readonly height = computed(() => this.calculateHeight(this.items(), this.options()));
-  readonly layout = computed<LayoutOutput[]>(() => this.items().map((x) => ({ id: x.id, ...x.config })));
+  readonly layout = computed<LayoutOutput[]>(() =>
+    this.items().map((x) => ({ id: x.id, ...x.config })),
+  );
   readonly columns = computed(() => Math.max(1, Math.floor(this.options().cols)));
   /** Resolves `rtl: 'auto'` against the attached element's *actual* computed direction. */
   readonly rtl = computed(() => this.resolveRtl());
@@ -85,7 +93,9 @@ export class GridLayoutService {
       return;
     }
     if (existing.element === item.element) return;
-    this.items.update((xs) => xs.map((x) => (x.id === item.id ? { ...x, element: item.element } : x)));
+    this.items.update((xs) =>
+      xs.map((x) => (x.id === item.id ? { ...x, element: item.element } : x)),
+    );
   }
 
   /**
@@ -112,7 +122,8 @@ export class GridLayoutService {
   /** Called once the grid surface element exists (e.g. from `ngAfterViewInit`). */
   attachElement(el: HTMLElement): void {
     this._element = el;
-    this.placeholder = el.querySelector('.ngx-grid-layout__placeholder') as HTMLElement | null ?? undefined;
+    this.placeholder =
+      (el.querySelector('.ngx-grid-layout__placeholder') as HTMLElement | null) ?? undefined;
     if (this.placeholder) {
       this.placeholder.style.position = 'absolute';
       this.placeholder.style.display = 'none';
@@ -151,15 +162,17 @@ export class GridLayoutService {
     this.applyCss();
   }
 
-  move(id: string, x: number, y: number): void {
-    const target = this.items().find((x) => x.id === id);
+  move(id: string): void {
+    const target = this.items().find((it) => it.id === id);
     if (!target?.element) return;
-    const next = this.screenToGrid(target, x, y);
-   // console.log(x,y,next)
+    const next = this.screenToGrid(target);
     this.preview(id, next);
   }
 
-  resize(id: string, out: { width: number; height: number; moveLeft: number; moveTop: number }): void {
+  resize(
+    id: string,
+    out: { width: number; height: number; moveLeft: number; moveTop: number },
+  ): void {
     const target = this.items().find((x) => x.id === id);
     if (!target?.element) return;
     const next = this.screenResizeToGrid(target, out);
@@ -173,6 +186,8 @@ export class GridLayoutService {
     if (preview) {
       this.items.set(preview.map((x) => ({ ...x, config: { ...x.config } })));
     }
+    const target = this.items().find((x) => x.id === id);
+    if (target?.element) target.element.style.transform = '';
 
     this.previewItems.set(null);
     this.activeId.set(null);
@@ -201,8 +216,18 @@ export class GridLayoutService {
     const target = this.items().find((x) => x.id === id);
     if (!target) return;
     this.begin(id);
-    const w = this.clampSize(target.config.w + dCols, target.config.minW, target.config.maxW, this.columns());
-    const h = this.clampSize(target.config.h + dRows, target.config.minH, target.config.maxH, Infinity);
+    const w = this.clampSize(
+      target.config.w + dCols,
+      target.config.minW,
+      target.config.maxW,
+      this.columns(),
+    );
+    const h = this.clampSize(
+      target.config.h + dRows,
+      target.config.minH,
+      target.config.maxH,
+      Infinity,
+    );
     this.preview(id, { ...target.config, w, h });
     this.end(id);
   }
@@ -222,9 +247,11 @@ export class GridLayoutService {
 
     if (!opt.allowOverlap && opt.swap && this.startConfig) {
       const swapped = trySwap(base, id, this.startConfig, clamped);
-      candidate = swapped ?? base.map((x) =>
-        x.id === id ? { ...x, config: { ...clamped } } : { ...x, config: { ...x.config } },
-      );
+      candidate =
+        swapped ??
+        base.map((x) =>
+          x.id === id ? { ...x, config: { ...clamped } } : { ...x, config: { ...x.config } },
+        );
     } else {
       candidate = base.map((x) =>
         x.id === id ? { ...x, config: { ...clamped } } : { ...x, config: { ...x.config } },
@@ -239,23 +266,30 @@ export class GridLayoutService {
         maxRows: opt.maxRows,
       });
     }
+    if (!opt.allowOverlap && opt.compact !== 'none') {
+      candidate = compact(candidate, opt.compact);
+    }
 
     this.previewItems.set(candidate);
     this.applyCss();
   }
 
-  private screenToGrid(item: GridItemState, x: number, y: number): GridItemConfig {
+  private screenToGrid(item: GridItemState): GridItemConfig {
     const containerRect = this._element.getBoundingClientRect();
+    const r = item.element!.getBoundingClientRect();
     const m = this.metrics();
     const rtl = this.rtl();
-    const leftPx = x - containerRect.left;
-    const topPx = y - containerRect.top;
+    const leftPx = r.left - containerRect.left;
+    const topPx = r.top - containerRect.top;
     const nx = leftToCol(leftPx, item.config.w, m, rtl);
     const ny = topToRow(topPx, m);
-    return this.clamp({ ...item.config, x:nx, y:ny });
+    return this.clamp({ ...item.config, x: nx, y: ny });
   }
 
-  private screenResizeToGrid(item: GridItemState, out: { width: number; height: number; moveLeft: number; moveTop: number }): GridItemConfig {
+  private screenResizeToGrid(
+    item: GridItemState,
+    out: { width: number; height: number; moveLeft: number; moveTop: number },
+  ): GridItemConfig {
     const m = this.metrics();
     const gap = m.gap;
     let w = Math.max(1, Math.round((out.width + gap) / (m.colWidth + gap)));
@@ -287,11 +321,17 @@ export class GridLayoutService {
     next.h = this.clampSize(next.h, next.minH, next.maxH, this.options().maxRows ?? Infinity);
     next.x = Math.max(0, Math.min(next.x, cols - next.w));
     next.y = Math.max(0, next.y);
-    if (this.options().maxRows) next.y = Math.min(next.y, Math.max(0, this.options().maxRows! - next.h));
+    if (this.options().maxRows)
+      next.y = Math.min(next.y, Math.max(0, this.options().maxRows! - next.h));
     return next;
   }
 
-  private clampSize(size: number, min: number | undefined, max: number | undefined, hardMax: number): number {
+  private clampSize(
+    size: number,
+    min: number | undefined,
+    max: number | undefined,
+    hardMax: number,
+  ): number {
     let v = Math.max(min ?? 1, size);
     if (max) v = Math.min(v, max);
     return Math.min(v, hardMax);
@@ -304,12 +344,18 @@ export class GridLayoutService {
     let arr = before.map((x) => ({ ...x, config: { ...x.config } }));
     if (!opt.allowOverlap) {
       if (activeId && opt.pushItems) {
-        arr = moveItem(arr, activeId, arr.find((x) => x.id === activeId)!.config.x, arr.find((x) => x.id === activeId)!.config.y, {
-          cols: this.columns(),
-          compact: opt.compact === 'none' ? 'vertical' : opt.compact,
-          allowOverlap: false,
-          maxRows: opt.maxRows,
-        });
+        arr = moveItem(
+          arr,
+          activeId,
+          arr.find((x) => x.id === activeId)!.config.x,
+          arr.find((x) => x.id === activeId)!.config.y,
+          {
+            cols: this.columns(),
+            compact: opt.compact === 'none' ? 'vertical' : opt.compact,
+            allowOverlap: false,
+            maxRows: opt.maxRows,
+          },
+        );
       }
       if (opt.compact !== 'none') arr = compact(arr, opt.compact);
     }
@@ -387,7 +433,13 @@ export class GridLayoutService {
     const preview = this.previewItems();
     const source = preview ?? items;
     const rows = Math.max(1, maxOccupiedRow(source));
-    const m = this._element ? this.metrics() : { rowHeight: o.rowHeight === 'fit' ? 100 : o.rowHeight, gap: o.gap ?? 0, padding: o.padding ?? 0 } as GridMetrics;
+    const m = this._element
+      ? this.metrics()
+      : ({
+          rowHeight: o.rowHeight === 'fit' ? 100 : o.rowHeight,
+          gap: o.gap ?? 0,
+          padding: o.padding ?? 0,
+        } as GridMetrics);
     return m.padding * 2 + rows * m.rowHeight + Math.max(0, rows - 1) * m.gap;
   }
 

@@ -71,7 +71,7 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
     // event for every grid item ever created (real damage in layouts where
     // items are added/removed dynamically, e.g. via *ngFor + trackBy).
     this.drag.dragStart.pipe(takeUntilDestroyed()).subscribe(() => this.onDragStart());
-    this.drag.dragMove.pipe(takeUntilDestroyed()).subscribe((v) => this.onDragMove(v));
+    this.drag.dragMove.pipe(takeUntilDestroyed()).subscribe(() => this.onDragMove());
     this.drag.dragEnd.pipe(takeUntilDestroyed()).subscribe(() => this.onDragEnd());
     this.resize.resizeStart.pipe(takeUntilDestroyed()).subscribe(() => this.onResizeStart());
     this.resize.resizeMove.pipe(takeUntilDestroyed()).subscribe((v) => this.onResizeMove(v));
@@ -108,9 +108,9 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
     const id = this.itemId();
     if (id) this.service.begin(id);
   };
-  onDragMove = ({ x, y }: { x: number; y: number }): void => {
+  onDragMove = (): void => {
     const id = this.itemId();
-    if (id) this.service.move(id, x, y);
+    if (id) this.service.move(id);
   };
   onDragEnd = (): void => {
     this.dragging.set(false);

@@ -48,20 +48,30 @@ export function moveItem<T extends LayoutNode>(
 
   if (opts.allowOverlap || depth > arr.length + 24) return arr;
 
-  const order = [...arr].sort(compareForCompaction(opts.compact)).map((i) => i.id);
-  for (const otherId of order) {
-    if (otherId === id) continue;
+  const compareFn = compareForCompaction(opts.compact);
+  let guard = 0;
+  while (guard++ < arr.length + 24) {
     const mover = arr.find((i) => i.id === id)!;
-    const other = arr.find((i) => i.id === otherId)!;
-    if (isStatic(other) || !collides(mover.config, other.config)) continue;
-    arr = pushAway(arr, mover, other, opts, depth + 1);
+    const blockers = arr
+      .filter((i) => i.id !== id && !isStatic(i) && collides(mover.config, i.config))
+      .sort(compareFn);
+    if (blockers.length === 0) break;
+    arr = pushAway(arr, mover, blockers[0], opts, depth + 1);
   }
   return arr;
 }
 
-function pushAway<T extends LayoutNode>(items: T[], mover: T, blocked: T, opts: MoveOptions, depth: number): T[] {
-  const targetX = opts.compact === 'horizontal' ? mover.config.x + mover.config.w : blocked.config.x;
-  const targetY = opts.compact === 'horizontal' ? blocked.config.y : mover.config.y + mover.config.h;
+function pushAway<T extends LayoutNode>(
+  items: T[],
+  mover: T,
+  blocked: T,
+  opts: MoveOptions,
+  depth: number,
+): T[] {
+  const targetX =
+    opts.compact === 'horizontal' ? mover.config.x + mover.config.w : blocked.config.x;
+  const targetY =
+    opts.compact === 'horizontal' ? blocked.config.y : mover.config.y + mover.config.h;
   return moveItem(items, blocked.id, targetX, targetY, opts, depth);
 }
 
