@@ -13,11 +13,12 @@ export class GridItemConfig {
   isDraggable?: boolean;
   isResizable?: boolean;
 
-  constructor(x: number = 0, y: number = 0, w: number = 1, h: number = 1) {
+  constructor(x: number = 0, y: number = 0, w: number = 1, h: number = 1, s?: boolean) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
+    this.static = s == true;
   }
 }
 

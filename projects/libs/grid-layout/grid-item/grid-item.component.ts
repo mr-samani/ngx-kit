@@ -34,12 +34,65 @@ import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
     '[class.ngx-grid-item--dragging]': 'dragging()',
     '[class.ngx-grid-item--resizing]': 'resizing()',
     '[class.ngx-grid-item--static]': 'config().static',
+    '[class.with-resize-handler]': 'resizable()',
     '[attr.tabindex]': 'interactive() ? 0 : null',
     '[attr.aria-grabbed]': 'dragging()',
     '[attr.data-grid-id]': 'itemId()',
     '(keydown)': 'onKeyDown($event)',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    :host {
+      display: block;
+      &.with-resize-handler:after {
+        position: absolute;
+        pointer-events: none;
+        outline: 1px #2196f3 solid;
+        outline-offset: -5px;
+        // circular resize hanlder
+        // background:
+        //   radial-gradient(circle 5px at center 5px, #2196f3 100%, transparent 0),
+        //   radial-gradient(circle 5px at calc(100% - 5px) center, #2196f3 100%, transparent 0),
+        //   radial-gradient(circle 5px at 5px center, #2196f3 100%, transparent 0),
+        //   radial-gradient(circle 5px at center calc(100% - 5px), #2196f3 100%, transparent 0),
+        //   radial-gradient(circle 5px at 5px 5px, #2196f3 100%, transparent 0),
+        //   radial-gradient(circle 5px at calc(100% - 5px) 5px, #2196f3 100%, transparent 0),
+        //   radial-gradient(circle 5px at 5px calc(100% - 5px), #2196f3 100%, transparent 0),
+        //   radial-gradient(
+        //     circle 5px at calc(100% - 5px) calc(100% - 5px),
+        //     #2196f3 100%,
+        //     transparent 0
+        //   );
+        // squre resize handler
+        background:
+          linear-gradient(#2196f3, #2196f3) 0 0 / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 100% 0 / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 0 100% / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 100% 100% / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 50% 0 / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 50% 100% / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 0 50% / 10px 10px no-repeat,
+          linear-gradient(#2196f3, #2196f3) 100% 50% / 10px 10px no-repeat;
+        background-repeat: no-repeat;
+        transition: none;
+        inset: -2.5px;
+        opacity: 0;
+        animation: showResizeHandle 0.3s forwards;
+      }
+      &:hover:after {
+        opacity: 1;
+        content: ' ';
+      }
+    }
+    @keyframes showResizeHandle {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+  `,
 })
 export class NgxGridItemComponent implements OnDestroy, OnInit {
   /** Bound as `[id]` in templates (matches the demo app's existing usage). */
@@ -66,6 +119,9 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
   private readonly drag = inject(NgxDraggable);
   private readonly resize = inject(NgxResizable);
 
+  readonly resizable = computed(() => {
+    return !this.resize.disabled;
+  });
   constructor() {
     // `takeUntilDestroyed()` releases these subscriptions on destroy — the
     // event for every grid item ever created (real damage in layouts where
@@ -84,6 +140,7 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
       const item = id ? this.service.items().find((x) => x.id === id) : undefined;
       this.drag.disabled = !item || !this.service.isItemDraggable(item);
       this.resize.disabled = !item || !this.service.isItemResizable(item);
+      debugger;
       if (item) this.applySizeConstraints(item.config);
     });
   }

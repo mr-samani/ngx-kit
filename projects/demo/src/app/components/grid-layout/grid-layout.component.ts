@@ -99,6 +99,14 @@ export class GridLayoutComponent implements OnInit {
       description: 'Total income',
       config: new GridItemConfig(8, 3, 4, 2),
     },
+    {
+      id: 'STATIC',
+      type: 'Static',
+      icon: 'S',
+      title: 'Static',
+      description: 'this item is static and can not change',
+      config: new GridItemConfig(7, 7, 2, 2, true),
+    },
   ];
 
   ngOnInit(): void {
