@@ -9,6 +9,8 @@ import { Dialog, NgxDialogModule } from 'ngx-kit/dialog';
 })
 export class MyCostomDialog {
   openDialog() {
-    Dialog.open(MyCostomDialog);
+    Dialog.open(MyCostomDialog, {
+      width: '50dvw',
+    });
   }
 }
