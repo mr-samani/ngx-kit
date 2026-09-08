@@ -39,13 +39,17 @@ export class GridLayoutService {
 
   private layoutListener?: (layout: LayoutOutput[]) => void;
   private startConfig: GridItemConfig | null = null;
+  private startItems: readonly GridItemState[] | null = null;
+  private previewItems = signal<readonly GridItemState[] | null>(null);
   private _element!: HTMLElement;
+  private placeholder?: HTMLElement;
 
   constructor() {
     effect(() => {
       // Re-run whenever options or items change so CSS positions always reflect state.
       this.options();
       this.items();
+      this.previewItems();
       this.rtlTick();
       if (this._element) this.applyCss();
     });
@@ -108,6 +112,13 @@ export class GridLayoutService {
   /** Called once the grid surface element exists (e.g. from `ngAfterViewInit`). */
   attachElement(el: HTMLElement): void {
     this._element = el;
+    this.placeholder = el.querySelector('.ngx-grid-layout__placeholder') as HTMLElement | null ?? undefined;
+    if (this.placeholder) {
+      this.placeholder.style.position = 'absolute';
+      this.placeholder.style.display = 'none';
+      this.placeholder.style.pointerEvents = 'none';
+      this.placeholder.setAttribute('aria-hidden', 'true');
+    }
     // `rtl` reads `this._element` directly (it isn't a signal), so bump a tick
     // signal to force the `rtl` computed to re-evaluate now that the element,
     // and therefore its computed `direction`, is known.
@@ -131,8 +142,13 @@ export class GridLayoutService {
 
   begin(id: string): void {
     const target = this.items().find((x) => x.id === id);
-    this.startConfig = target ? { ...target.config } : null;
+    if (!target) return;
+
+    this.startItems = this.items().map((x) => ({ ...x, config: { ...x.config } }));
+    this.startConfig = { ...target.config };
+    this.previewItems.set(null);
     this.activeId.set(id);
+    this.applyCss();
   }
 
   move(id: string, x: number, y: number): void {
@@ -152,9 +168,20 @@ export class GridLayoutService {
 
   end(id: string): void {
     if (this.activeId() !== id) return;
-    this.settle(id);
+
+    const preview = this.previewItems();
+    if (preview) {
+      this.items.set(preview.map((x) => ({ ...x, config: { ...x.config } })));
+    }
+
+    this.previewItems.set(null);
     this.activeId.set(null);
     this.startConfig = null;
+    this.startItems = null;
+
+    // Final normalization/compaction happens only after the preview is committed.
+    this.settle(id);
+    this.applyCss();
     this.emit();
   }
 
@@ -183,29 +210,37 @@ export class GridLayoutService {
   // ---- Internals ----------------------------------------------------------------------
 
   private preview(id: string, config: GridItemConfig): void {
+    const base = this.startItems;
+    if (!base) return;
+
     const clamped = this.clamp(config);
     const opt = this.options();
 
+    // The placeholder is the moving item during preview. The real DOM element
+    // remains under ngxDraggable's control and is never repositioned by the grid.
+    let candidate: GridItemState[];
+
     if (!opt.allowOverlap && opt.swap && this.startConfig) {
-      const swapped = trySwap(this.items(), id, this.startConfig, clamped);
-      if (swapped) {
-        this.items.set(swapped);
-        this.applyCss();
-        return;
-      }
+      const swapped = trySwap(base, id, this.startConfig, clamped);
+      candidate = swapped ?? base.map((x) =>
+        x.id === id ? { ...x, config: { ...clamped } } : { ...x, config: { ...x.config } },
+      );
+    } else {
+      candidate = base.map((x) =>
+        x.id === id ? { ...x, config: { ...clamped } } : { ...x, config: { ...x.config } },
+      );
     }
 
-    this.items.update((xs) => xs.map((x) => (x.id === id ? { ...x, config: clamped } : x)));
-
     if (!opt.allowOverlap && opt.pushItems) {
-      const pushed = moveItem(this.items(), id, clamped.x, clamped.y, {
+      candidate = moveItem(candidate, id, clamped.x, clamped.y, {
         cols: this.columns(),
         compact: opt.compact === 'none' ? 'vertical' : opt.compact,
         allowOverlap: false,
         maxRows: opt.maxRows,
       });
-      this.items.set(pushed);
     }
+
+    this.previewItems.set(candidate);
     this.applyCss();
   }
 
@@ -290,11 +325,20 @@ export class GridLayoutService {
 
   private applyCss(): void {
     if (!this._element) return;
-    const opt = this.options();
+
+    const source = this.previewItems() ?? this.items();
+    const activeId = this.activeId();
     const m = this.metrics();
     const rtl = this.rtl();
-    for (const item of this.items()) {
+
+    for (const item of source) {
       if (!item.element) continue;
+
+      // While dragging/resizing, the real active element is moved by
+      // ngxDraggable/ngxResizable. Never fight those directives by writing
+      // left/top/width/height here.
+      if (item.id === activeId) continue;
+
       const box = placeItem(item.config, m, rtl);
       const style = item.element.style;
       style.position = 'absolute';
@@ -307,7 +351,25 @@ export class GridLayoutService {
       item.element.dataset['gridW'] = String(item.config.w);
       item.element.dataset['gridH'] = String(item.config.h);
     }
-    void opt;
+
+    const placeholderItem = activeId ? source.find((x) => x.id === activeId) : undefined;
+    if (this.placeholder) {
+      if (placeholderItem && activeId) {
+        const box = placeItem(placeholderItem.config, m, rtl);
+        const style = this.placeholder.style;
+        style.display = 'block';
+        style.left = `${box.left}px`;
+        style.top = `${box.top}px`;
+        style.width = `${box.width}px`;
+        style.height = `${box.height}px`;
+        this.placeholder.dataset['gridX'] = String(placeholderItem.config.x);
+        this.placeholder.dataset['gridY'] = String(placeholderItem.config.y);
+        this.placeholder.dataset['gridW'] = String(placeholderItem.config.w);
+        this.placeholder.dataset['gridH'] = String(placeholderItem.config.h);
+      } else {
+        this.placeholder.style.display = 'none';
+      }
+    }
   }
 
   private metrics(): GridMetrics {
@@ -322,7 +384,9 @@ export class GridLayoutService {
   }
 
   private calculateHeight(items: readonly GridItemState[], o: GridLayoutOptions): number {
-    const rows = Math.max(1, maxOccupiedRow(items));
+    const preview = this.previewItems();
+    const source = preview ?? items;
+    const rows = Math.max(1, maxOccupiedRow(source));
     const m = this._element ? this.metrics() : { rowHeight: o.rowHeight === 'fit' ? 100 : o.rowHeight, gap: o.gap ?? 0, padding: o.padding ?? 0 } as GridMetrics;
     return m.padding * 2 + rows * m.rowHeight + Math.max(0, rows - 1) * m.gap;
   }

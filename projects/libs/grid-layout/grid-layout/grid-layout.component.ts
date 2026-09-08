@@ -17,7 +17,10 @@ import { LayoutOutput } from '../options/layout-output';
   selector: 'ngx-grid-layout',
   standalone: true,
   template: `
-    <div class="ngx-grid-layout__surface"><ng-content /></div>
+    <div class="ngx-grid-layout__surface">
+      <div class="ngx-grid-layout__placeholder"></div>
+      <ng-content />
+    </div>
   `,
   styles: [
     `
@@ -33,6 +36,17 @@ import { LayoutOutput } from '../options/layout-output';
         height: 100%;
         min-height: inherit;
       }
+      .ngx-grid-layout__placeholder {
+        display: none;
+        position: absolute;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 0;
+        border: 2px dashed currentColor;
+        border-radius: inherit;
+        opacity: 0.45;
+      }
+
       .ngx-grid-layout__surface::before {
         content: '';
         position: absolute;
@@ -51,8 +65,7 @@ import { LayoutOutput } from '../options/layout-output';
               calc(var(--grid-row) - var(--grid-border-width)),
             var(--grid-border-color) calc(var(--grid-row) - var(--grid-border-width))
               calc(var(--grid-row)),
-            var(--grid-gap-color) calc(var(--grid-row))
-              calc(var(--grid-row) + var(--grid-gap))
+            var(--grid-gap-color) calc(var(--grid-row)) calc(var(--grid-row) + var(--grid-gap))
           ),
           repeating-linear-gradient(
             90deg,

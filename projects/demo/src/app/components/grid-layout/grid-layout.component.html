@@ -57,6 +57,30 @@
       <span>{{ gridOptions.gap }}px</span>
     </div>
 
+    <div class="demo-choice">
+      <button
+        type="button"
+        class="demo-choice-item"
+        [class.active]="gridOptions.flow === 'free'"
+        (click)="gridOptions.flow = 'free'">
+        Free
+      </button>
+      <button
+        type="button"
+        class="demo-choice-item"
+        [class.active]="gridOptions.flow === 'vertical'"
+        (click)="gridOptions.flow = 'vertical'">
+        Vertical
+      </button>
+      <button
+        type="button"
+        class="demo-choice-item"
+        [class.active]="gridOptions.flow === 'horizontal'"
+        (click)="gridOptions.flow = 'horizontal'">
+        Horizontal
+      </button>
+    </div>
+
     @if (gridOptions.gridBackgroundConfig) {
       <div class="setting-group">
         <h4>🎨 Colors</h4>

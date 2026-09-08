@@ -37,8 +37,8 @@ export class GridLayoutComponent implements OnInit {
     gap: 10,
     gridBackgroundConfig: {
       borderWidth: 1,
-      borderColor: '#e0e0e0',
-      gapColor: '#f5f5f5',
+      borderColor: '#e0e0e065',
+      gapColor: '#c8c8c83f',
       rowColor: 'rgba(0,0,0,0.02)',
       columnColor: 'rgba(0,0,0,0.02)',
     },

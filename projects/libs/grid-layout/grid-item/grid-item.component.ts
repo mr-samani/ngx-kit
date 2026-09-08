@@ -91,8 +91,11 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
   ngOnInit(): void {
     const id = this.itemId();
     if (!id) return;
-    this.service.registerItem({ id, config: this.config(), element: this.el.nativeElement });
-    this.service.updateItemConfig(id, this.config());
+    this.service.registerItem({
+      id,
+      config: this.config(),
+      element: this.el.nativeElement,
+    });
   }
 
   ngOnDestroy(): void {
