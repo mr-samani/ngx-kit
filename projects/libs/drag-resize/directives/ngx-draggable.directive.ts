@@ -136,7 +136,6 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.removeEscape = this.renderer.listen(this.doc, 'keydown', (ev: KeyboardEvent) => {
       if (ev.key === 'Escape' && this.dragging()) this.cancel();
     });
-    this._ref.el.setPointerCapture?.(e.pointerId);
   }
 
   private pointerMove(e: PointerEvent): void {

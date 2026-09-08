@@ -6,7 +6,7 @@
       [editMode]="gridSettings.editMode"
       [options]="gridOptions"
       (layoutChange)="onLayoutChange($event)">
-      @for (item of items; track $index) {
+      @for (item of items(); track item.id) {
         <ngx-grid-item [id]="item.id" [config]="item.config" [ngClass]="'item-' + item.type">
           <div class="item-wrapper">
             <div class="item-header">
@@ -17,9 +17,8 @@
               <p>id={{ item.id }}</p>
               {{ item.description }}
             </div>
-            @if (gridSettings.editMode) {
-              <button (click)="removeItem(item.id)" class="remove-btn">🗑️</button>
-            }
+            @if (gridSettings.editMode) {}
+            <button type="button" class="remove-btn" (click)="removeItem(item.id)">🗑️</button>
           </div>
         </ngx-grid-item>
       }

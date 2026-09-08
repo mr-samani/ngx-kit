@@ -1,4 +1,4 @@
-import { Component, OnInit, viewChild } from '@angular/core';
+import { Component, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -35,6 +35,10 @@ export class GridLayoutComponent implements OnInit {
     cols: 12,
     rowHeight: 80,
     gap: 10,
+    compact: 'vertical',
+    flow: 'vertical',
+    animate: true,
+    swap: false,
     gridBackgroundConfig: {
       borderWidth: 1,
       borderColor: '#e0e0e065',
@@ -44,7 +48,7 @@ export class GridLayoutComponent implements OnInit {
     },
   };
 
-  items: SampleLayout[] = [];
+  items = signal<SampleLayout[]>([]);
 
   DEFAULT_ITEMS: SampleLayout[] = [
     {
@@ -98,14 +102,14 @@ export class GridLayoutComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.items = JSON.parse(JSON.stringify(this.DEFAULT_ITEMS));
+    this.items.set(JSON.parse(JSON.stringify(this.DEFAULT_ITEMS)));
   }
 
   onLayoutChange(layout: LayoutOutput[]): void {
     console.log('📐 Layout changed:', layout);
     // اعمال layout به items
     layout.forEach((layoutItem) => {
-      const item = this.items.find((i) => i.id === layoutItem.id);
+      const item = this.items().find((i) => i.id === layoutItem.id);
       if (item) {
         item.config = new GridItemConfig(layoutItem.x, layoutItem.y, layoutItem.w, layoutItem.h);
       }
@@ -130,18 +134,19 @@ export class GridLayoutComponent implements OnInit {
       config: new GridItemConfig(0, 0, randomW, randomH),
     };
 
-    this.items.push(newItem);
+    this.items.update((u) => [...u, newItem]);
   }
 
   removeItem(id: string): void {
-    const index = this.items.findIndex((item) => item.id === id);
+    const index = this.items().findIndex((item) => item.id === id);
     if (index > -1) {
-      this.items.splice(index, 1);
+      this.items().splice(index, 1);
     }
+    this.update();
   }
 
   resetToDefault(): void {
-    this.items = JSON.parse(JSON.stringify(this.DEFAULT_ITEMS));
+    this.items.set(JSON.parse(JSON.stringify(this.DEFAULT_ITEMS)));
     setTimeout(() => {
       this.update();
     });

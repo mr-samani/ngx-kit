@@ -145,7 +145,7 @@ export class NgxGridLayoutComponent implements AfterViewInit, OnDestroy {
     el.style.setProperty('--grid-gap', `${o.gap ?? 0}px`);
     el.style.setProperty('--grid-row', `${o.rowHeight === 'fit' ? 100 : o.rowHeight}px`);
     const b = o.gridBackgroundConfig;
-    el.style.setProperty('--grid-gap-color', `${b.gapColor}`); 
+    el.style.setProperty('--grid-gap-color', `${b.gapColor}`);
     el.style.setProperty('--grid-border-width', `${b?.borderWidth ?? 0}px`);
     el.style.setProperty('--grid-border-color', b?.borderColor ?? 'transparent');
     el.style.setProperty('--grid-row-color', b?.rowColor ?? 'transparent');
