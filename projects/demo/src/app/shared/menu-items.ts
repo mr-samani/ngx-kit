@@ -209,6 +209,21 @@ export const MENU_LIST: ICategory[] = [
         url: '/components/kanban',
       },
       {
+        title: 'Drop List',
+        description: '',
+        url: '/components/drop-list',
+        fragments: [
+          {
+            id: 'sortable',
+            title: 'Sortable list',
+          },
+          {
+            id: 'mixed',
+            title: 'Mixed',
+          },
+        ],
+      },
+      {
         title: 'b',
         url: '/components/b',
       },

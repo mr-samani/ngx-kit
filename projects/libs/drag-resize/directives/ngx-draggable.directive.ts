@@ -116,7 +116,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     if (
       this.disabled ||
       e.button !== 0 ||
-      this.isInteractive(e.target) ||
+      // this.isInteractive(e.target) ||
       !this.isOnHandle(e.target)
     )
       return;

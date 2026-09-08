@@ -108,6 +108,11 @@ const routes: Routes = [
           import('./kanban-view/kanban-view.component').then((c) => c.KanbanViewComponent),
       },
       {
+        path: 'drop-list',
+        loadComponent: () =>
+          import('./drop-list/drop-list.component').then((c) => c.DropListComponent),
+      },
+      {
         path: 'b',
         loadComponent: () =>
           import('./webflow/builder-canvas.component').then((c) => c.BuilderCanvasComponent),
