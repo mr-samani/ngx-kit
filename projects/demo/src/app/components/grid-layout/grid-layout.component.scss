@@ -166,16 +166,16 @@
 
 .remove-btn {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: #ff4444;
+  background: #ff0035;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 0px 0px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 18px;
   transition: all 0.2s;
+  inset-inline-end: 8px;
+  inset-block-start: calc(100% - 40px);
 }
 
 .remove-btn:hover {

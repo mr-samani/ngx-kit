@@ -39,6 +39,7 @@ export class GridLayoutComponent implements OnInit {
     flow: 'vertical',
     animate: true,
     swap: false,
+    pushItems: true,
     gridBackgroundConfig: {
       borderWidth: 1,
       borderColor: '#e0e0e065',
