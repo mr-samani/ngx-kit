@@ -181,7 +181,6 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
 
   private pointerUp(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
-    debugger;
     if (this.dragging()) {
       if (this._ref.dropList) {
         this._ref.endDrag();

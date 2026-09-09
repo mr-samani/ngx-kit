@@ -163,7 +163,6 @@ export class DragRef<T = unknown> {
 
   endDrag(): void {
     if (!this.isDragging()) return;
-    debugger;
     const dropList = this.dropList;
 
     this.isDragging.set(false);
@@ -171,7 +170,7 @@ export class DragRef<T = unknown> {
     // Normal Drag MUST behave exactly like before.
     this.placeholder?.detach();
     this.placeholder = undefined;
-    
+
     if (dropList) {
       dropList.finishDrag(this);
       this.el.style.transform = this.previousTransform;
