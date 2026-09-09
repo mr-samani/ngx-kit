@@ -12,37 +12,28 @@ export function cloneDragElementInBody(
   pointerX: number,
   pointerY: number,
 ): DragPreviewState {
-  const clone = dragEl.cloneNode(true) as HTMLElement;
+  const preview = dragEl.cloneNode(true) as HTMLElement;
 
-  clone.removeAttribute('id');
-  clone.classList.add('ngx-drag-in-body');
-  clone.setAttribute('aria-hidden', 'true');
-  clone.setAttribute('data-ngx-drag-preview', '');
+  // Avoid duplicated ids in the document.
+  preview.removeAttribute('id');
 
-  copyComputedStyleTree(dragEl, clone);
+  preview.classList.add('ngx-drag-preview');
 
-  // It is now detached from the original containing block.
-  clone.style.setProperty('position', 'fixed', 'important');
-  clone.style.setProperty('top', `${rect.top}px`, 'important');
-  clone.style.setProperty('left', `${rect.left}px`, 'important');
-  clone.style.setProperty('width', `${rect.width}px`, 'important');
-  clone.style.setProperty('height', `${rect.height}px`, 'important');
-  clone.style.setProperty('margin', '0', 'important');
-  clone.style.setProperty('pointer-events', 'none', 'important');
-  clone.style.setProperty('user-select', 'none', 'important');
-  clone.style.setProperty('opacity', '0.88', 'important');
-  clone.style.setProperty('z-index', '2147483647', 'important');
-  clone.style.setProperty('transition', 'none', 'important');
-  clone.style.setProperty('animation', 'none', 'important');
-  clone.style.setProperty('transform-origin', '0 0', 'important');
-  clone.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
-  clone.style.setProperty('box-sizing', 'border-box', 'important');
-  clone.style.setProperty('contain', 'layout style paint', 'important');
+  Object.assign(preview.style, {
+    position: 'fixed',
+    top: `${rect.top}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
+    margin: '0',
+    pointerEvents: 'none',
+    boxSizing: 'border-box',
+  });
 
-  document.body.appendChild(clone);
+  document.body.appendChild(preview);
 
   return {
-    element: clone,
+    element: preview,
     offsetX: pointerX - rect.left,
     offsetY: pointerY - rect.top,
   };

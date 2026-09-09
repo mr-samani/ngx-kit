@@ -1,7 +1,9 @@
 @if (selectedExample() === 'sortable') {
   <div ngxDropList class="example-list" (drop)="drop($event, items)">
     @for (item of items; track $index) {
-      <div class="card" ngxDraggable>{{ item.title }}</div>
+      <div class="card" ngxDraggable>
+        {{ item.title }}
+      </div>
     }
   </div>
 } @else if (selectedExample() === 'mixed') {

@@ -40,6 +40,7 @@ export class DragRef<T = unknown> {
   private previewOffsetX = 0;
   private previewOffsetY = 0;
   private sourceVisibility = '';
+  private sourceDisplay = '';
   private sourcePointerEvents = '';
 
   init(): void {
@@ -81,6 +82,7 @@ export class DragRef<T = unknown> {
 
     this.previousZIndex = this.el.style.zIndex;
     this.sourceVisibility = this.el.style.visibility;
+    this.sourceDisplay = this.el.style.display;
     this.sourcePointerEvents = this.el.style.pointerEvents;
 
     this.el.classList.add('ngx-draggable--dragging');
@@ -88,25 +90,34 @@ export class DragRef<T = unknown> {
     this.el.style.transition = 'none';
     this.el.style.zIndex = String(++zIndexCounter);
 
-    // The real item remains anchored in the list. Its placeholder occupies its
-    // layout slot while this body-level preview is the only visible moving item.
-    this.placeholder = this.dropList?.createPlaceholder(this);
+    /*
+     * IMPORTANT:
+     *
+     * Normal Drag:
+     *   absolutely nothing changes in the element's rendering mechanism.
+     *
+     * DropList Drag:
+     *   create a body-level preview because the original element can be
+     *   inside an overflow:auto/hidden container such as a Kanban column.
+     */
+    if (this.dropList) {
+      this.placeholder = this.dropList.createPlaceholder(this);
 
-    const preview = cloneDragElementInBody(
-      this.el,
-      this.startRect,
-      pointer.x,
-      pointer.y,
-    );
+      const preview = cloneDragElementInBody(this.el, this.startRect, pointer.x, pointer.y);
 
-    this.preview = preview.element;
-    this.previewOffsetX = preview.offsetX;
-    this.previewOffsetY = preview.offsetY;
+      this.preview = preview.element;
+      this.previewOffsetX = preview.offsetX;
+      this.previewOffsetY = preview.offsetY;
 
-    this.el.style.visibility = 'hidden';
-    this.el.style.pointerEvents = 'none';
+      this.el.style.visibility = 'hidden';
+      this.el.style.display = 'none';
+      this.el.style.pointerEvents = 'none';
 
-    this.updatePreview();
+      this.updatePreview();
+    } else {
+      // KEEP THE ORIGINAL DRAG BEHAVIOR.
+      this.applyTransform();
+    }
   }
 
   dragMove(pointer: IPosition): void {
@@ -119,6 +130,7 @@ export class DragRef<T = unknown> {
 
     if (this.boundary) {
       dx = checkBoundX(this.startRect, this.boundary.getBoundingClientRect(), dx);
+
       dy = checkBoundY(this.startRect, this.boundary.getBoundingClientRect(), dy);
     }
 
@@ -128,8 +140,16 @@ export class DragRef<T = unknown> {
     this.moveDx = dx;
     this.moveDy = dy;
 
-    this.position.set({ x: dx, y: dy });
-    this.updatePreview();
+    this.position.set({
+      x: dx,
+      y: dy,
+    });
+
+    if (this.dropList) {
+      this.updatePreview();
+    } else {
+      this.applyTransform();
+    }
   }
 
   nudge(dx: number, dy: number): void {
@@ -143,31 +163,31 @@ export class DragRef<T = unknown> {
 
   endDrag(): void {
     if (!this.isDragging()) return;
+    debugger;
+    const dropList = this.dropList;
 
     this.isDragging.set(false);
 
+    // Normal Drag MUST behave exactly like before.
+    this.placeholder?.detach();
+    this.placeholder = undefined;
+    
+    if (dropList) {
+      dropList.finishDrag(this);
+      this.el.style.transform = this.previousTransform;
+    }
+
+    // Remove body preview after DropList has finished reading its state.
     this.preview?.remove();
     this.preview = undefined;
 
     this.el.classList.remove('ngx-draggable--dragging');
+
     this.el.style.visibility = this.sourceVisibility;
+    this.el.style.display = this.sourceDisplay;
     this.el.style.pointerEvents = this.sourcePointerEvents;
     this.el.style.willChange = '';
     this.el.style.zIndex = this.previousZIndex;
-    this.el.style.transition = '';
-
-    // Preserve the accumulated transform exactly as the previous implementation
-    // did. The visual preview has already carried the drag movement.
-    if (this.dropList) {
-      this.el.style.transform = this.previousTransform;
-    }
-
-    if (this.dropList) {
-      this.dropList.finishDrag(this);
-    } else {
-      this.placeholder?.detach();
-      this.placeholder = undefined;
-    }
   }
 
   cancelDrag(): void {
@@ -207,11 +227,17 @@ export class DragRef<T = unknown> {
   getPlaceholderElement(): HTMLElement | undefined {
     return this.placeholder?.element;
   }
+  private applyTransform(): void {
+    const base =
+      this.previousTransform && this.previousTransform !== 'none'
+        ? this.previousTransform + ' '
+        : '';
 
+    this.el.style.transform = `${base}translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
+  }
   private updatePreview(): void {
     if (!this.preview) return;
 
-    this.preview.style.transform =
-      `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
+    this.preview.style.transform = `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
   }
 }

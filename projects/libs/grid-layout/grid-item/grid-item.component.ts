@@ -140,7 +140,6 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
       const item = id ? this.service.items().find((x) => x.id === id) : undefined;
       this.drag.disabled = !item || !this.service.isItemDraggable(item);
       this.resize.disabled = !item || !this.service.isItemResizable(item);
-      debugger;
       if (item) this.applySizeConstraints(item.config);
     });
   }

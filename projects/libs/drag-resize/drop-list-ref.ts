@@ -7,6 +7,12 @@ import { PositionalSortStrategy } from './sorting/positional-sort-strategy';
 import { PlaceHolderRef } from './placeholder-ref';
 import { copyComputedStyleTree } from './utils/styling';
 
+/**
+ * DropListRef is intentionally generic, while the positional sorting strategy
+ * works on DragRef<any>. The public DropList/DragRef relationship is invariant
+ * because IDropEvent<T> contains T in a callback position. Keep the strongly
+ * typed Set here, and narrow only at the DOM-local bridge / strategy boundary.
+ */
 export class DropListRef<T = any> {
   data?: T;
   el!: HTMLElement;
@@ -24,12 +30,12 @@ export class DropListRef<T = any> {
 
   addItem(item: DragRef<T>): void {
     this._draggables.add(item);
-    if (this.el) (this.el as any).__ngxDragItems = this._draggables;
+    this.publishDragItems();
   }
 
   removeItem(item: DragRef<T>): void {
     this._draggables.delete(item);
-    if (this.el) (this.el as any).__ngxDragItems = this._draggables;
+    this.publishDragItems();
   }
 
   isConnectedTo(other: DropListRef<any>): boolean {
@@ -64,20 +70,23 @@ export class DropListRef<T = any> {
       this.previousIndex = this.indexOf(drag);
 
       // Sorting strategy reads the live DOM. Expose the authoritative refs
-      // without importing DropListRef back into the strategy.
-      (this.el as any).__ngxDragItems = this._draggables;
+      // through a DOM-local bridge with the intentionally wider any type.
+      this.publishDragItems();
 
-      this.strategy.withElementContainer(this.el).start([...this._draggables]);
+      this.strategy.withElementContainer(this.el).start(this.getStrategyItems());
+
       this.el.classList.add('ngx-drop-list--active');
     }
 
-    this.strategy.enter(drag, x, y);
+    this.strategy.enter(this.asStrategyDrag(drag), x, y);
   }
 
   sortItem(drag: DragRef<T>, position: IPosition): number | null {
     if (!this.active || this.disableSort) return null;
 
-    return this.strategy.sort(drag, position.x, position.y)?.currentIndex ?? null;
+    return (
+      this.strategy.sort(this.asStrategyDrag(drag), position.x, position.y)?.currentIndex ?? null
+    );
   }
 
   finishDrag(drag: DragRef<T>): void {
@@ -116,11 +125,22 @@ export class DropListRef<T = any> {
   }
 
   private indexOf(item: DragRef<T>): number {
-    return Array.from(this.el.children).filter(
-      (el) =>
-        el !== this.placeholder?.element &&
-        !el.classList.contains('ngx-drag-in-body'),
-    ).findIndex((el) => el === item.el);
+    const elements = new Set(this._draggables as Set<DragRef<T>>);
+
+    let index = 0;
+    for (const node of Array.from(this.el.children)) {
+      if (!(node instanceof HTMLElement)) continue;
+      if (node === this.placeholder?.element) continue;
+      if (node.classList.contains('ngx-drag-in-body')) continue;
+
+      const ref = Array.from(elements).find((candidate) => candidate.el === node);
+      if (!ref) continue;
+
+      if (ref === item) return index;
+      index++;
+    }
+
+    return -1;
   }
 
   private reset(): void {
@@ -128,7 +148,7 @@ export class DropListRef<T = any> {
     this.strategy.reset();
     this.placeholder?.detach();
     this.placeholder = undefined;
-    this.el.__ngxDragItems = undefined;
+    this.publishDragItems();
     this.el.classList.remove('ngx-drop-list--active');
   }
 
@@ -137,7 +157,7 @@ export class DropListRef<T = any> {
     placeholder: HTMLElement,
     rect: DOMRect,
   ): void {
-    copyComputedStyleTree(source, placeholder);
+    // copyComputedStyleTree(source, placeholder);
 
     placeholder.style.setProperty('width', `${rect.width}px`, 'important');
     placeholder.style.setProperty('height', `${rect.height}px`, 'important');
@@ -152,5 +172,22 @@ export class DropListRef<T = any> {
     placeholder.style.setProperty('transition', 'none', 'important');
     placeholder.style.setProperty('animation', 'none', 'important');
     placeholder.style.setProperty('box-sizing', 'border-box', 'important');
+  }
+
+  /**
+   * The sorting strategy only needs a read-only collection of draggable refs.
+   * Using DragRef<any> at this internal boundary avoids the invariant generic
+   * relationship between DragRef<T> and DragRef<unknown>.
+   */
+  private getStrategyItems(): readonly DragRef<any>[] {
+    return Array.from(this._draggables) as readonly DragRef<any>[];
+  }
+
+  private asStrategyDrag(drag: DragRef<T>): DragRef<any> {
+    return drag as DragRef<any>;
+  }
+
+  private publishDragItems(): void {
+    this.el.__ngxDragItems = this._draggables as Iterable<DragRef<any>>;
   }
 }
