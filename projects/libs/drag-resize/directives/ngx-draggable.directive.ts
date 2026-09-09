@@ -151,23 +151,46 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       this.dragStart.emit(p);
     }
     this._ref.dragMove(p);
-    if (this.autoScroll) this.scroller.update(p.x, p.y);
+
     const target = this.service.findDropList(p, this._ref.dropList);
-    if (target && target !== this._ref.dropList) {
+
+    if (target !== this._ref.dropList) {
       this._ref.dropList?.exit(this._ref);
-      this._ref.dropList?.removeItem(this._ref);
-      this._ref.withDropList(target);
-      this._ref.placeholder = target.createPlaceholder(this._ref);
+      this._ref.clearDropList();
+
+      if (target) {
+        this._ref.withDropList(target);
+        target.createPlaceholder(this._ref);
+
+        if (this.autoScroll) {
+          this.scroller.stop();
+          this.scroller.start(target.el);
+        }
+      } else if (this.autoScroll) {
+        this.scroller.stop();
+      }
     }
+
+    // Sorting uses the pointer against the currently active list. Its geometry
+    // is read live, so the placeholder and auto-scroll are both reflected.
     this._ref.dropList?.sortItem(this._ref, p);
+
+    if (this.autoScroll) this.scroller.update(p.x, p.y);
     this.dragMove.emit(p);
   }
 
   private pointerUp(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
-    if (this.dragging()) this.dragEnd.emit(this._ref.pointer);
-    this._ref.endDrag();
-    this.service.end(this._ref);
+    if (this.dragging()) {
+      if (this._ref.dropList) {
+        this._ref.endDrag();
+        this.dragEnd.emit(this._ref.pointer);
+      } else {
+        // Dropping outside every connected list is a cancelled drag.
+        this._ref.cancelDrag();
+      }
+      this.service.end(this._ref);
+    }
     this.finish();
   }
 

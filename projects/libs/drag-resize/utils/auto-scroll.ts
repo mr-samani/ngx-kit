@@ -66,7 +66,7 @@ function getScrollRect(container: HTMLElement | Window): { left: number; right: 
 }
 
 function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
-  let node: HTMLElement | null = el.parentElement;
+  let node: HTMLElement | null = el;
   while (node) {
     const style = getComputedStyle(node);
     const scrollable = /(auto|scroll|overlay)/.test(style.overflowY + style.overflowX);

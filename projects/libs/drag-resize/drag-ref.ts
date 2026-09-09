@@ -4,6 +4,7 @@ import { DropListRef } from './drop-list-ref';
 import { PlaceHolderRef } from './placeholder-ref';
 import { DropListGroupRef } from './drop-list-group-ref';
 import { checkBoundX, checkBoundY } from './utils/check-boundary';
+import { cloneDragElementInBody } from './utils/clone-drag-element-in-body';
 
 export type DragAxis = 'x' | 'y' | undefined;
 
@@ -12,9 +13,7 @@ let zIndexCounter = 1000;
 export class DragRef<T = unknown> {
   data?: T;
   el!: HTMLElement;
-  /** Element whose bounding rect constrains the drag. Actually enforced (previously a no-op). */
   boundary?: HTMLElement;
-  /** Restrict movement to a single axis. */
   lockAxis?: DragAxis;
 
   dropList: DropListRef<T> | null = null;
@@ -22,6 +21,7 @@ export class DragRef<T = unknown> {
 
   placeholder?: PlaceHolderRef;
   originDropList: DropListRef<T> | null = null;
+  originIndex = -1;
 
   readonly isDragging = signal(false);
   readonly position = signal<IPosition>({ x: 0, y: 0 });
@@ -30,28 +30,34 @@ export class DragRef<T = unknown> {
   private startRect!: DOMRect;
   private lastPointer = { x: 0, y: 0 };
 
-  /**
-   * Transform that existed before the current drag started.
-   */
   private previousTransform = '';
-
-  /**
-   * Transform that existed before the current drag started.
-   * Used when a drag is cancelled.
-   */
   private previousZIndex = '';
 
   private moveDx = 0;
   private moveDy = 0;
+
+  private preview?: HTMLElement;
+  private previewOffsetX = 0;
+  private previewOffsetY = 0;
+  private sourceVisibility = '';
+  private sourcePointerEvents = '';
 
   init(): void {
     this.previousTransform = getComputedStyle(this.el).getPropertyValue('transform');
   }
 
   withDropList(list: DropListRef<T> | null): this {
+    if (this.dropList === list) return this;
+
+    this.dropList?.removeItem(this);
     this.dropList = list;
     list?.addItem(this);
     return this;
+  }
+
+  clearDropList(): void {
+    this.dropList?.removeItem(this);
+    this.dropList = null;
   }
 
   pointerDown(pointer: IPosition): void {
@@ -60,44 +66,54 @@ export class DragRef<T = unknown> {
   }
 
   startDrag(pointer: IPosition): void {
-    /**
-     * IMPORTANT:
-     *
-     * The element may already have a committed transform from a previous drag.
-     * getBoundingClientRect() therefore gives us its actual current position.
-     *
-     * We do NOT need to parse the transform here.
-     */
     this.startRect = this.el.getBoundingClientRect();
 
     this.startPointer = { ...pointer };
     this.lastPointer = { ...pointer };
-
     this.moveDx = 0;
     this.moveDy = 0;
 
     this.originDropList = this.dropList;
-
+    this.originIndex = this.dropList?.getItemIndex(this) ?? -1;
     this.previousTransform = getComputedStyle(this.el).getPropertyValue('transform');
 
     this.isDragging.set(true);
 
     this.previousZIndex = this.el.style.zIndex;
+    this.sourceVisibility = this.el.style.visibility;
+    this.sourcePointerEvents = this.el.style.pointerEvents;
 
     this.el.classList.add('ngx-draggable--dragging');
-
     this.el.style.willChange = 'transform';
     this.el.style.transition = 'none';
     this.el.style.zIndex = String(++zIndexCounter);
 
+    // The real item remains anchored in the list. Its placeholder occupies its
+    // layout slot while this body-level preview is the only visible moving item.
     this.placeholder = this.dropList?.createPlaceholder(this);
+
+    const preview = cloneDragElementInBody(
+      this.el,
+      this.startRect,
+      pointer.x,
+      pointer.y,
+    );
+
+    this.preview = preview.element;
+    this.previewOffsetX = preview.offsetX;
+    this.previewOffsetY = preview.offsetY;
+
+    this.el.style.visibility = 'hidden';
+    this.el.style.pointerEvents = 'none';
+
+    this.updatePreview();
   }
 
   dragMove(pointer: IPosition): void {
     if (!this.isDragging()) return;
-    // TODO: lastpointer must be chack bounding
-    // onDragEnd return lastpointer
+
     this.lastPointer = { ...pointer };
+
     let dx = pointer.x - this.startPointer.x;
     let dy = pointer.y - this.startPointer.y;
 
@@ -106,31 +122,18 @@ export class DragRef<T = unknown> {
       dy = checkBoundY(this.startRect, this.boundary.getBoundingClientRect(), dy);
     }
 
-    if (this.lockAxis === 'x') {
-      dy = 0;
-    }
-
-    if (this.lockAxis === 'y') {
-      dx = 0;
-    }
+    if (this.lockAxis === 'x') dy = 0;
+    if (this.lockAxis === 'y') dx = 0;
 
     this.moveDx = dx;
     this.moveDy = dy;
 
-    this.position.set({
-      x: dx,
-      y: dy,
-    });
-    this.applyTransform();
+    this.position.set({ x: dx, y: dy });
+    this.updatePreview();
   }
 
-  /** Nudge by a fixed pixel delta — used for keyboard-driven dragging. */
   nudge(dx: number, dy: number): void {
-    const wasDragging = this.isDragging();
-
-    if (!wasDragging) {
-      this.startDrag(this.lastPointer);
-    }
+    if (!this.isDragging()) this.startDrag(this.lastPointer);
 
     this.dragMove({
       x: this.startPointer.x + this.moveDx + dx,
@@ -138,48 +141,49 @@ export class DragRef<T = unknown> {
     });
   }
 
-  /**
-   * Commits the current drag position.
-   *
-   * This means the next drag automatically starts from the
-   * element's actual transformed position.
-   */
   endDrag(): void {
     if (!this.isDragging()) return;
+
     this.isDragging.set(false);
+
+    this.preview?.remove();
+    this.preview = undefined;
+
     this.el.classList.remove('ngx-draggable--dragging');
+    this.el.style.visibility = this.sourceVisibility;
+    this.el.style.pointerEvents = this.sourcePointerEvents;
     this.el.style.willChange = '';
     this.el.style.zIndex = this.previousZIndex;
     this.el.style.transition = '';
+
+    // Preserve the accumulated transform exactly as the previous implementation
+    // did. The visual preview has already carried the drag movement.
     if (this.dropList) {
       this.el.style.transform = this.previousTransform;
     }
-    this.placeholder?.detach();
-    this.placeholder = undefined;
-    this.dropList?.finishDrag(this);
+
+    if (this.dropList) {
+      this.dropList.finishDrag(this);
+    } else {
+      this.placeholder?.detach();
+      this.placeholder = undefined;
+    }
   }
 
-  /**
-   * Cancels the drag and restores the exact state before dragging.
-   */
   cancelDrag(): void {
     if (!this.isDragging()) return;
 
     this.moveDx = 0;
     this.moveDy = 0;
 
-    this.position.set({
-      x: 0,
-      y: 0,
-    });
+    this.position.set({ x: 0, y: 0 });
 
     this.dropList?.exit(this);
-    this.dropList = this.originDropList;
+    this.clearDropList();
 
-    /**
-     * Restore the transform BEFORE ending the drag.
-     */
     this.el.style.transform = this.previousTransform;
+    this.el.style.visibility = this.sourceVisibility;
+    this.el.style.pointerEvents = this.sourcePointerEvents;
 
     this.endDrag();
   }
@@ -204,12 +208,10 @@ export class DragRef<T = unknown> {
     return this.placeholder?.element;
   }
 
-  private applyTransform(): void {
-    const base =
-      this.previousTransform && this.previousTransform !== 'none'
-        ? this.previousTransform + ' '
-        : '';
+  private updatePreview(): void {
+    if (!this.preview) return;
 
-    this.el.style.transform = `${base}translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
+    this.preview.style.transform =
+      `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
   }
 }

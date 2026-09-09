@@ -4,21 +4,24 @@ import { SortResult } from './sort-strategy';
 
 type Flow = 'grid' | 'flex-row' | 'flex-column' | 'free';
 
-interface Snapshot {
+interface ItemGeometry {
   drag: DragRef;
   rect: DOMRect;
-  order: number;
+  domIndex: number;
 }
 
 /**
- * Geometry-driven sort strategy. It never assumes a fixed axis or writing
- * direction — it reads the container's computed layout (grid / flex-row /
- * flex-column / free-form) and its computed `direction` on every drag start,
- * so RTL containers reorder exactly as a user reading right-to-left expects.
+ * Live geometry sorting.
+ *
+ * Unlike the old snapshot-only implementation, every sort pass reads the
+ * current DOM order and current client rects. This matters when:
+ *  - the placeholder changes layout,
+ *  - a Kanban column is scrolled while dragging,
+ *  - the dragged item enters another list,
+ *  - CSS grid/flex reflows occur.
  */
 export class PositionalSortStrategy {
   private container!: HTMLElement;
-  private snapshots: Snapshot[] = [];
   private dragging: DragRef | null = null;
   private index = -1;
   private flow: Flow = 'free';
@@ -29,113 +32,230 @@ export class PositionalSortStrategy {
     return this;
   }
 
-  start(items: readonly DragRef<any>[]): void {
+  start(_items: readonly DragRef<any>[]): void {
     this.flow = detectFlow(this.container);
     this.rtl = isRtl(this.container);
-    this.snapshots = items.map((drag, order) => ({
-      drag,
-      rect: drag.el.getBoundingClientRect(),
-      order,
-    }));
     this.index = -1;
   }
 
   enter(drag: DragRef<any>, x: number, y: number): void {
     this.dragging = drag;
-    this.movePlaceholder(drag, this.findIndex(x, y));
+    this.index = this.findInsertionIndex(drag, x, y);
+    this.movePlaceholder(drag, this.index);
   }
 
   sort(drag: DragRef<any>, x: number, y: number): SortResult | null {
-    const next = this.findIndex(x, y);
-    if (next === this.index) return null;
-    const previous = this.index;
+    this.dragging = drag;
+
+    const next = this.findInsertionIndex(drag, x, y);
+    const previous = this.getCurrentIndex();
+
+    if (next === previous) return null;
+
     this.movePlaceholder(drag, next);
-    return { previousIndex: previous, currentIndex: next };
+
+    return {
+      previousIndex: previous,
+      currentIndex: next,
+    };
   }
 
   getCurrentIndex(): number {
+    if (!this.container) return Math.max(0, this.index);
+
+    const placeholder = this.dragging?.getPlaceholderElement();
+    if (placeholder?.parentElement === this.container) {
+      const refs = new Set(this.container.__ngxDragItems ?? []);
+      let position = 0;
+
+      const itemElements = new Set(Array.from(refs, (item) => item.el));
+
+      for (const node of Array.from(this.container.children)) {
+        if (node === placeholder) return position;
+
+        if (
+          node instanceof HTMLElement &&
+          itemElements.has(node) &&
+          node !== this.dragging?.el
+        ) {
+          position++;
+        }
+      }
+    }
+
     return Math.max(0, this.index);
   }
 
   getItemIndex(item: DragRef): number {
-    return this.snapshots.findIndex((x) => x.drag === item);
+    let index = 0;
+    const refs = new Set(this.container.__ngxDragItems ?? []);
+
+    const itemElements = new Set(Array.from(refs, (ref) => ref.el));
+
+    for (const node of Array.from(this.container.children)) {
+      if (node === item.el) return index;
+
+      if (
+        node instanceof HTMLElement &&
+        !node.classList.contains('ngx-drag-placeholder') &&
+        !node.classList.contains('ngx-drag-in-body') &&
+        (!refs.size || itemElements.has(node))
+      ) {
+        index++;
+      }
+    }
+
+    return -1;
   }
 
   reset(): void {
     this.dragging = null;
-    this.snapshots = [];
     this.index = -1;
   }
 
   private movePlaceholder(drag: DragRef, index: number): void {
     const ph = drag.getPlaceholderElement();
     if (!ph || !this.container) return;
-    const items = this.orderedSnapshots(drag);
+
+    const items = this.readItems(drag);
     const reference = items[index]?.drag.el ?? null;
-    this.container.insertBefore(ph, reference);
-    this.index = index;
+
+    if (reference) {
+      if (ph !== reference.previousSibling) {
+        this.container.insertBefore(ph, reference);
+      }
+    } else if (ph.parentElement !== this.container || ph !== this.container.lastElementChild) {
+      this.container.appendChild(ph);
+    }
+
+    this.index = Math.max(0, Math.min(index, items.length));
   }
 
-  private orderedSnapshots(drag: DragRef): Snapshot[] {
-    return this.snapshots.filter((x) => x.drag !== drag).sort((a, b) => a.order - b.order);
-  }
-
-  private findIndex(x: number, y: number): number {
-    const items = this.orderedSnapshots(this.dragging!);
+  private findInsertionIndex(drag: DragRef, x: number, y: number): number {
+    const items = this.readItems(drag);
     if (!items.length) return 0;
-    if (this.flow === 'flex-row') return this.findFlexRow(items, x);
-    if (this.flow === 'flex-column') return this.findFlexColumn(items, y);
-    // 'grid' and wrapped flex rows/columns both resolve as 2D layouts.
-    return this.findGrid(items, x, y);
+
+    switch (this.flow) {
+      case 'flex-row':
+        return this.findFlexRow(items, x);
+      case 'flex-column':
+        return this.findFlexColumn(items, y);
+      case 'grid':
+      case 'free':
+      default:
+        return this.findGrid(items, x, y);
+    }
   }
 
-  private findFlexRow(items: Snapshot[], x: number): number {
+  private readItems(drag: DragRef): ItemGeometry[] {
+    const itemSet = new Set<DragRef>(
+      // DropListRef maintains the authoritative set; DOM order is authoritative
+      // for placement, so we only inspect direct children here.
+      this.container.__ngxDragItems ?? [],
+    );
+    const byElement = new Map<HTMLElement, DragRef>(
+      Array.from(itemSet, (item) => [item.el, item] as const),
+    );
+
+    const result: ItemGeometry[] = [];
+
+    Array.from(this.container.children).forEach((element, domIndex) => {
+      if (
+        !(element instanceof HTMLElement) ||
+        element === drag.el ||
+        element.classList.contains('ngx-drag-placeholder') ||
+        element.classList.contains('ngx-drag-in-body')
+      ) {
+        return;
+      }
+
+      const ref = byElement.get(element);
+      if (!ref) return;
+
+      result.push({
+        drag: ref,
+        rect: element.getBoundingClientRect(),
+        domIndex,
+      });
+    });
+
+    // Fallback for environments where the private bridge is not available.
+    if (!result.length) {
+      return [];
+    }
+
+    return result;
+  }
+
+  private findFlexRow(items: ItemGeometry[], x: number): number {
     for (let i = 0; i < items.length; i++) {
       const r = items[i].rect;
       const mid = r.left + r.width / 2;
-      // In RTL, reading order runs right -> left, so "before" means "further right".
       const before = this.rtl ? x > mid : x < mid;
       if (before) return i;
     }
     return items.length;
   }
 
-  private findFlexColumn(items: Snapshot[], y: number): number {
+  private findFlexColumn(items: ItemGeometry[], y: number): number {
     for (let i = 0; i < items.length; i++) {
-      if (y < items[i].rect.top + items[i].rect.height / 2) return i;
+      const r = items[i].rect;
+      if (y < r.top + r.height / 2) return i;
     }
     return items.length;
   }
 
-  private findGrid(items: Snapshot[], x: number, y: number): number {
-    const scored = items
-      .map((item, i) => {
-        const cx = item.rect.left + item.rect.width / 2;
-        const cy = item.rect.top + item.rect.height / 2;
-        const dx = Math.abs(x - cx) / Math.max(item.rect.width, 1);
-        const dy = Math.abs(y - cy) / Math.max(item.rect.height, 1);
-        return { i, score: dx + dy * 1.15 };
-      })
-      .sort((a, b) => a.score - b.score)[0];
-    if (!scored) return 0;
-    const target = items[scored.i].rect;
-    const sameRow = Math.abs(y - (target.top + target.height / 2)) <= target.height * 0.75;
+  private findGrid(items: ItemGeometry[], x: number, y: number): number {
+    let best = items[0];
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    for (const item of items) {
+      const cx = item.rect.left + item.rect.width / 2;
+      const cy = item.rect.top + item.rect.height / 2;
+      const dx = Math.abs(x - cx) / Math.max(item.rect.width, 1);
+      const dy = Math.abs(y - cy) / Math.max(item.rect.height, 1);
+      const score = dx + dy * 1.2;
+      if (score < bestScore) {
+        bestScore = score;
+        best = item;
+      }
+    }
+
+    const target = best.rect;
+    const sameRow =
+      y >= target.top - target.height * 0.35 &&
+      y <= target.bottom + target.height * 0.35;
+
     const before = sameRow
       ? this.rtl
         ? x > target.left + target.width / 2
         : x < target.left + target.width / 2
       : y < target.top + target.height / 2;
-    return Math.max(0, Math.min(items.length, scored.i + (before ? 0 : 1)));
+
+    return Math.max(
+      0,
+      Math.min(items.length, items.findIndex((x) => x === best) + (before ? 0 : 1)),
+    );
   }
 }
 
 function detectFlow(el: HTMLElement): Flow {
   const s = getComputedStyle(el);
+
   if (s.display.includes('grid')) return 'grid';
+
   if (s.display.includes('flex')) {
-    // A wrapped flex container behaves like a 2D grid, not a single-axis list.
     if (s.flexWrap !== 'nowrap') return 'grid';
     return s.flexDirection.startsWith('column') ? 'flex-column' : 'flex-row';
   }
+
   return 'free';
+}
+
+// Internal, DOM-local bridge used to avoid introducing a circular dependency
+// between the sorting strategy and DropListRef.
+declare global {
+  interface HTMLElement {
+    __ngxDragItems?: Iterable<DragRef>;
+  }
 }

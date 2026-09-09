@@ -1,48 +1,56 @@
-export function copyEssentialStyles(source: HTMLElement, target: HTMLElement) {
-  const styles = window.getComputedStyle(source);
-  const keysToCopy = [
-    'font',
-    'font-size',
-    'line-height',
-    'font-weight',
-    'color',
-    'background-color',
-    'border',
-    'border-radius',
-    //'box-shadow',
-    'padding',
-    // 'margin',
-    'text-align',
-    'vertical-align',
-    'display',
-    'align-items',
-    'justify-content',
-    'gap',
-    'width',
-    'height',
-    'max-width',
-    'max-height',
-    'min-width',
-    'min-height',
-    'outline',
-    'outline-offset',
-    'outline-color',
-  ];
+/**
+ * Copy the browser-resolved visual state of an element.
+ *
+ * A drag preview is moved to <body>, so selectors depending on ancestors no
+ * longer apply. Copying computed styles (including custom properties) makes
+ * the preview visually independent from the original DOM subtree.
+ */
+export function copyComputedStyle(source: HTMLElement, target: HTMLElement): void {
+  const computed = window.getComputedStyle(source);
 
-  keysToCopy.forEach((key) => {
-    const value = styles.getPropertyValue(key);
+  for (let i = 0; i < computed.length; i++) {
+    const property = computed.item(i);
+    const value = computed.getPropertyValue(property);
+
     if (value) {
-      target.style.setProperty(key, value, styles.getPropertyPriority(key));
+      target.style.setProperty(property, value, computed.getPropertyPriority(property));
     }
-  });
+  }
+
+  // Make the preview deterministic once it is taken out of normal flow.
+  target.style.setProperty('margin', '0', 'important');
+  target.style.setProperty('box-sizing', 'border-box', 'important');
 }
 
-/**
- * Combines a transform string with an optional other transform
- * that exited before the base transform was applied.
- */
+export function copyComputedStyleTree(source: HTMLElement, target: HTMLElement): void {
+  copyComputedStyle(source, target);
+
+  const sourceChildren = Array.from(source.children);
+  const targetChildren = Array.from(target.children);
+
+  const count = Math.min(sourceChildren.length, targetChildren.length);
+
+  for (let i = 0; i < count; i++) {
+    if (
+      sourceChildren[i] instanceof HTMLElement &&
+      targetChildren[i] instanceof HTMLElement
+    ) {
+      copyComputedStyleTree(
+        sourceChildren[i] as HTMLElement,
+        targetChildren[i] as HTMLElement,
+      );
+    }
+  }
+}
+
+/** Backward-compatible helper retained for consumers of older versions. */
+export function copyEssentialStyles(source: HTMLElement, target: HTMLElement): void {
+  copyComputedStyle(source, target);
+  target.style.setProperty('box-sizing', 'border-box');
+}
+
 export function combineTransforms(transform: string, initialTransform?: string): string {
-  return initialTransform && initialTransform != 'none'
+  return initialTransform && initialTransform !== 'none'
     ? transform + ' ' + initialTransform
     : transform;
 }
