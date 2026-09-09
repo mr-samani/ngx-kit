@@ -22,66 +22,6 @@ import { LayoutOutput } from '../options/layout-output';
       <ng-content />
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        position: relative;
-        contain: layout style;
-        min-height: 1px;
-      }
-      .ngx-grid-layout__surface {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        min-height: inherit;
-      }
-      .ngx-grid-layout__placeholder {
-        display: none;
-        position: absolute;
-        box-sizing: border-box;
-        pointer-events: none;
-        z-index: 0;
-        border: 2px dashed currentColor;
-        border-radius: inherit;
-        opacity: 0.45;
-      }
-
-      .ngx-grid-layout__surface::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-
-        opacity: var(--grid-bg-opacity);
-        border: var(--grid-border-width) solid var(--grid-border-color);
-        box-sizing: border-box;
-        transition: opacity 0.15s ease;
-
-        background-image:
-          repeating-linear-gradient(
-            var(--grid-border-color) 0 var(--grid-border-width),
-            var(--grid-row-color) var(--grid-border-width)
-              calc(var(--grid-row) - var(--grid-border-width)),
-            var(--grid-border-color) calc(var(--grid-row) - var(--grid-border-width))
-              calc(var(--grid-row)),
-            var(--grid-gap-color) calc(var(--grid-row)) calc(var(--grid-row) + var(--grid-gap))
-          ),
-          repeating-linear-gradient(
-            90deg,
-            var(--grid-border-color) 0 var(--grid-border-width),
-            var(--grid-col-color) var(--grid-border-width)
-              calc(100% - (var(--grid-border-width) + var(--grid-gap))),
-            var(--grid-border-color) calc(100% - (var(--grid-border-width) + var(--grid-gap)))
-              calc(100% - var(--grid-gap)),
-            var(--grid-gap-color) calc(100% - var(--grid-gap)) 100%
-          );
-        background-size: calc((100% + var(--grid-gap)) / var(--grid-cols))
-          calc(var(--grid-row) + var(--grid-gap));
-        background-position: 0 0;
-      }
-    `,
-  ],
   host: {
     '[class.ngx-grid-layout--dragging]': 'service.isInteracting()',
     '[class.ngx-grid-layout--view]': '!editMode()',
@@ -89,6 +29,7 @@ import { LayoutOutput } from '../options/layout-output';
     '[attr.dir]': 'dirOverride() ?? null',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./grid-layout.component.scss'],
 })
 export class NgxGridLayoutComponent implements AfterViewInit, OnDestroy {
   readonly options = input<IGridLayoutOptions>(new GridLayoutOptions());

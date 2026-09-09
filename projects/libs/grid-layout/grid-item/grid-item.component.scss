@@ -1,0 +1,52 @@
+:host {
+  display: block;
+  &.with-resize-handler:after {
+    position: absolute;
+    pointer-events: none;
+    outline: 1px #2196f3 solid;
+    outline-offset: -5px;
+    /* circular resize hanlder*/
+    /*
+        background:
+          radial-gradient(circle 5px at center 5px, #2196f3 100%, transparent 0),
+          radial-gradient(circle 5px at calc(100% - 5px) center, #2196f3 100%, transparent 0),
+          radial-gradient(circle 5px at 5px center, #2196f3 100%, transparent 0),
+          radial-gradient(circle 5px at center calc(100% - 5px), #2196f3 100%, transparent 0),
+          radial-gradient(circle 5px at 5px 5px, #2196f3 100%, transparent 0),
+          radial-gradient(circle 5px at calc(100% - 5px) 5px, #2196f3 100%, transparent 0),
+          radial-gradient(circle 5px at 5px calc(100% - 5px), #2196f3 100%, transparent 0),
+          radial-gradient(
+            circle 5px at calc(100% - 5px) calc(100% - 5px),
+            #2196f3 100%,
+            transparent 0
+          );
+          */
+    /* squre resize handler*/
+    background:
+      linear-gradient(#2196f3, #2196f3) 0 0 / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 100% 0 / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 0 100% / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 100% 100% / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 50% 0 / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 50% 100% / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 0 50% / 10px 10px no-repeat,
+      linear-gradient(#2196f3, #2196f3) 100% 50% / 10px 10px no-repeat;
+    background-repeat: no-repeat;
+    transition: none;
+    inset: -2.5px;
+    opacity: 0;
+    animation: showResizeHandle 0.3s forwards;
+  }
+  &:hover:after {
+    opacity: 1;
+    content: ' ';
+  }
+}
+@keyframes showResizeHandle {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

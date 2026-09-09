@@ -20,10 +20,6 @@
   overflow: hidden;
   background: var(--ngx-table-row-bg);
 }
-
-// یک کانتینر اسکرول واحد برای هدر و بدنه با هم؛ یعنی هم اسکرول افقی خودکار
-// سینک می‌مونه (چون هر دو داخل همون کانتینر هستن) و هم هدر با position:sticky
-// چسبیده می‌مونه — بدون هیچ scroll-listener دستی و بدون نشتی حافظه.
 .ngx-table-scroll {
   overflow: auto;
   max-height: 75vh;
@@ -68,7 +64,7 @@
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  min-inline-size: 0; // بدون این، ستون‌های flex:1 1 0 (بدون width صریح) هیچ‌وقت واقعاً کوچیک‌تر از عرض طبیعیِ محتواشون نمی‌شن، پس ellipsis/overflow:hidden بی‌اثر می‌مونه و ممکنه از جدول بیرون بزنن
+  min-inline-size: 0; /* بدون این، ستون‌های flex:1 1 0 (بدون width صریح) هیچ‌وقت واقعاً کوچیک‌تر از عرض طبیعیِ محتواشون نمی‌شن، پس ellipsis/overflow:hidden بی‌اثر می‌مونه و ممکنه از جدول بیرون بزنن*/
   border-bottom: 1px solid var(--ngx-table-border);
   border-inline-end: 1px solid var(--ngx-table-border);
 
@@ -122,7 +118,6 @@
   }
 }
 
-// دستگیره‌ی ریسایز روی لبه‌ی «انتهای منطقی» — زیر dir="rtl" خودش جابه‌جا می‌شود.
 .ngx-table__resize-handle,
 [ngxColumnResize] {
   position: absolute;
@@ -166,7 +161,7 @@
 }
 
 .cell-title {
-  display: none; // فقط در حالت کارت موبایل نمایش داده می‌شود
+  display: none; /* فقط در حالت کارت موبایل نمایش داده می‌شود*/
   font-weight: 600;
   color: var(--ngx-table-header-fg);
 }
@@ -212,7 +207,7 @@
   color: var(--ngx-table-accent);
 }
 
-// --------------------------------------------------------------- کارت موبایل
+/* --------------------------------------------------------------- کارت موبایل*/
 @media (max-width: 768px) {
   .ngx-table-scroll {
     overflow: visible;
