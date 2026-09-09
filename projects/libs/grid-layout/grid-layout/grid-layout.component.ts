@@ -17,7 +17,7 @@ import { LayoutOutput } from '../options/layout-output';
   selector: 'ngx-grid-layout',
   standalone: true,
   template: `
-    <div class="ngx-grid-layout__surface">
+    <div class="ngx-grid-layout__surface" [class.edit-mode]="editMode()">
       <div class="ngx-grid-layout__placeholder"></div>
       <ng-content />
     </div>

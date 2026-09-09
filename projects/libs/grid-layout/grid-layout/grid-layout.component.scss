@@ -21,7 +21,7 @@
   opacity: 0.45;
 }
 
-.ngx-grid-layout__surface::before {
+.ngx-grid-layout__surface.edit-mode::before {
   content: '';
   position: absolute;
   inset: 0;

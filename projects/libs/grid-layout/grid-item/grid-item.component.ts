@@ -69,7 +69,7 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
   private readonly resize = inject(NgxResizable);
 
   readonly resizable = computed(() => {
-    return !this.resize.disabled;
+    return !this.resize.disabled && this.service.editMode();
   });
   constructor() {
     // `takeUntilDestroyed()` releases these subscriptions on destroy — the
