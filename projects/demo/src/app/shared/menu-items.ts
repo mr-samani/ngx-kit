@@ -227,6 +227,10 @@ export const MENU_LIST: ICategory[] = [
         title: 'b',
         url: '/components/b',
       },
+      {
+        title: 'Infinite Scroll',
+        url: '/components/infinite-scroll',
+      },
     ],
   },
 ];

@@ -117,6 +117,13 @@ const routes: Routes = [
         loadComponent: () =>
           import('./webflow/builder-canvas.component').then((c) => c.BuilderCanvasComponent),
       },
+      {
+        path: 'infinite-scroll',
+        loadComponent: () =>
+          import('./infinite-scroll/infinite-scroll.component').then(
+            (c) => c.InfiniteScrollComponent,
+          ),
+      },
     ],
   },
 ];
