@@ -52,6 +52,19 @@ export function moveItem<T extends LayoutNode>(
   let guard = 0;
   while (guard++ < arr.length + 24) {
     const mover = arr.find((i) => i.id === id)!;
+    const staticBlocker = arr.find(
+      (i) => i.id !== id && isStatic(i) && collides(mover.config, i.config),
+    );
+    if (staticBlocker) {
+      if (opts.compact === 'horizontal') {
+        mover.config.x = staticBlocker.config.x + staticBlocker.config.w;
+      } else {
+        mover.config.y = staticBlocker.config.y + staticBlocker.config.h;
+      }
+      clampToCols(mover.config, opts.cols);
+      continue; // the new position may collide with something else — re-check from the top.
+    }
+
     const blockers = arr
       .filter((i) => i.id !== id && !isStatic(i) && collides(mover.config, i.config))
       .sort(compareFn);
@@ -93,6 +106,7 @@ export function trySwap<T extends LayoutNode>(
   previous: GridItemConfig,
   next: GridItemConfig,
 ): T[] | null {
+  if (items.some((i) => i.id !== id && isStatic(i) && collides(i.config, next))) return null;
   const collisions = items.filter((i) => i.id !== id && !isStatic(i) && collides(i.config, next));
   if (collisions.length !== 1) return null;
   const [target] = collisions;

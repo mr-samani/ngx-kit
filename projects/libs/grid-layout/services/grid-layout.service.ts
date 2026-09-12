@@ -29,6 +29,33 @@ function itemsEqual(a: readonly GridItemState[], b: readonly GridItemState[]): b
   });
 }
 
+/** Value equality for two options objects — see `setOptions` for why this matters. */
+function optionsEqual(a: GridLayoutOptions, b: GridLayoutOptions): boolean {
+  const bg1 = a.gridBackgroundConfig ?? {};
+  const bg2 = b.gridBackgroundConfig ?? {};
+  return (
+    a.cols === b.cols &&
+    a.rowHeight === b.rowHeight &&
+    a.gap === b.gap &&
+    a.padding === b.padding &&
+    a.flow === b.flow &&
+    a.compact === b.compact &&
+    a.allowOverlap === b.allowOverlap &&
+    a.pushItems === b.pushItems &&
+    a.swap === b.swap &&
+    a.dragThreshold === b.dragThreshold &&
+    a.animate === b.animate &&
+    a.rtl === b.rtl &&
+    (a.maxRows ?? null) === (b.maxRows ?? null) &&
+    bg1.show === bg2.show &&
+    bg1.borderColor === bg2.borderColor &&
+    bg1.gapColor === bg2.gapColor &&
+    bg1.rowColor === bg2.rowColor &&
+    bg1.columnColor === bg2.columnColor &&
+    bg1.borderWidth === bg2.borderWidth
+  );
+}
+
 @Injectable()
 export class GridLayoutService {
   readonly options = signal<GridLayoutOptions>(new GridLayoutOptions());
@@ -41,8 +68,11 @@ export class GridLayoutService {
     this.items().map((x) => ({ id: x.id, ...x.config })),
   );
   readonly columns = computed(() => Math.max(1, Math.floor(this.options().cols)));
-  /** Resolves `rtl: 'auto'` against the attached element's *actual* computed direction. */
-  readonly rtl = computed(() => this.resolveRtl());
+
+  readonly rtl = computed(() => {
+    this.rtlTick();
+    return this.resolveRtl();
+  });
   private rtlTick = signal(0);
 
   private layoutListener?: (layout: LayoutOutput[]) => void;
@@ -67,7 +97,9 @@ export class GridLayoutService {
     this.layoutListener = onLayout;
   }
   setOptions(value: Partial<IGridLayoutOptions>): void {
-    this.options.update((o) => Object.assign(new GridLayoutOptions(), o, value));
+    const next = Object.assign(new GridLayoutOptions(), this.options(), value);
+    if (optionsEqual(this.options(), next)) return;
+    this.options.set(next);
   }
   setEditMode(value: boolean): void {
     this.editMode.set(value);
