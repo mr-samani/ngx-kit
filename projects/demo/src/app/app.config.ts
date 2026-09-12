@@ -1,5 +1,5 @@
 import { ApplicationConfig, Injectable } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
@@ -16,8 +16,14 @@ import { StatusCellRenderer } from './shared/renderers/StatusCellRenderer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'top',
+      }),
+    ),
     provideHttpClient(),
+
     provideMonacoEditor({
       baseUrl: 'assets/monaco/min/vs',
     }),

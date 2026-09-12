@@ -1,6 +1,3 @@
-// این استایل global لازمه چون NgxImageViewerService یه <dialog> واقعی رو
-// مستقیم با document.createElement می‌سازه (نه از طریق تمپلیت یه کامپوننت
-// انگیولار)، پس هیچ‌وقت زیر style encapsulation قرار نمی‌گیره.
 dialog.ngx-image-viewer-dialog {
   border: none;
   padding: 1rem;

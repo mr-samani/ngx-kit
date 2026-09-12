@@ -1,0 +1,656 @@
+<!-- =============================================== -->
+<!-- HERO -->
+<!-- =============================================== -->
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">ANGULAR INTERACTION PRIMITIVES</div>
+
+    <h1>
+      Drag anything.
+      <span>Resize everything.</span>
+    </h1>
+
+    <p>A powerful and flexible drag & resize system designed for modern Angular applications.</p>
+  </div>
+</section>
+<!-- =============================================== -->
+<!-- TOOLBAR -->
+<!-- =============================================== -->
+
+<section class="playground-toolbar">
+  <div class="toolbar-divider"></div>
+
+  <div class="toolbar-group">
+    <span class="toolbar-label">Position</span>
+
+    <div class="segmented">
+      <button
+        type="button"
+        [class.active]="selectedPosition() === 'static'"
+        (click)="setPosition('static')">
+        Static
+      </button>
+
+      <button
+        type="button"
+        [class.active]="selectedPosition() === 'relative'"
+        (click)="setPosition('relative')">
+        Relative
+      </button>
+
+      <button
+        type="button"
+        [class.active]="selectedPosition() === 'absolute'"
+        (click)="setPosition('absolute')">
+        Absolute
+      </button>
+
+      <button
+        type="button"
+        [class.active]="selectedPosition() === 'fixed'"
+        (click)="setPosition('fixed')">
+        Fixed
+      </button>
+    </div>
+  </div>
+
+  <div class="toolbar-spacer"></div>
+
+  <button type="button" class="toolbar-button" [class.active]="showGrid()" (click)="toggleGrid()">
+    <span>▦</span>
+
+    Grid
+  </button>
+</section>
+
+<!-- =============================================== -->
+<!-- CONTENT -->
+<!-- =============================================== -->
+
+<div class="content-grid">
+  <!-- ============================================= -->
+  <!-- PLAYGROUND -->
+  <!-- ============================================= -->
+
+  <section class="playground-card">
+    <div class="card-header">
+      <div>
+        <strong>Playground</strong>
+
+        <span>Drag and resize the elements below</span>
+      </div>
+
+      <div class="live-status">
+        <span></span>
+
+        Live
+      </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- CANVAS -->
+    <!-- ========================================= -->
+
+    <div class="canvas" [class.grid-visible]="showGrid()" [style.--grid-size.px]="gridSize()">
+      <!-- --------------------------------------- -->
+      <!-- BASIC DRAG -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'overview' || selectedExample() === 'drag') {
+        <div
+          class="demo-object drag-object"
+          ngxDraggable
+          (dragEnd)="onDragEnd($event)"
+          (click)="selectElement('basic-drag')">
+          <div class="object-icon">✥</div>
+
+          <strong>Drag me</strong>
+
+          <small>ngxDraggable</small>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- RESIZE -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'overview' || selectedExample() === 'resize') {
+        <div
+          class="demo-object resize-object"
+          ngxResizable
+          (resizeEnd)="onResizeEnd($event)"
+          (click)="selectElement('basic-resize')">
+          <div class="resize-content">
+            <div class="resize-symbol">⤢</div>
+
+            <strong>Resize me</strong>
+
+            <small>ngxResizable</small>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- COMBINED -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'overview' || selectedExample() === 'combined') {
+        <div
+          class="demo-object combined-object"
+          ngxDraggable
+          ngxResizable
+          (dragEnd)="onDragEnd($event)"
+          (resizeEnd)="onResizeEnd($event)"
+          (click)="selectElement('combined')">
+          <div class="window-header">
+            <div class="window-dots">
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+
+            <span>Drag & Resize</span>
+          </div>
+
+          <div class="window-body">
+            <div class="window-icon">⤢</div>
+
+            <strong>Drag + Resize</strong>
+
+            <small>Both directives at once</small>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- POSITION MODES -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'positions') {
+        <div class="position-demo">
+          <div class="position-card">
+            <span class="position-badge">STATIC</span>
+
+            <div
+              class="card static-card"
+              ngxDraggable
+              (dragEnd)="onDragEnd($event)"
+              (resizeEnd)="onResizeEnd($event)">
+              <strong>Normal flow</strong>
+
+              <small>ngxDraggable</small>
+            </div>
+          </div>
+
+          <div class="position-card">
+            <span class="position-badge">RELATIVE</span>
+
+            <div
+              class="card relative-card"
+              ngxDraggable
+              ngxResizable
+              (dragEnd)="onDragEnd($event)"
+              (resizeEnd)="onResizeEnd($event)">
+              <strong>Relative</strong>
+
+              <small>Drag + Resize</small>
+            </div>
+          </div>
+
+          <div class="position-card">
+            <span class="position-badge">ABSOLUTE</span>
+            <div
+              class="card absolute-card"
+              ngxDraggable
+              ngxResizable
+              (dragEnd)="onDragEnd($event)"
+              (resizeEnd)="onResizeEnd($event)">
+              <strong>Absolute</strong>
+
+              <small>Drag + Resize</small>
+            </div>
+          </div>
+
+          <div class="position-card">
+            <span class="position-badge">FIXED</span>
+
+            <div
+              class="card fixed-card"
+              ngxDraggable
+              ngxResizable
+              (dragEnd)="onDragEnd($event)"
+              (resizeEnd)="onResizeEnd($event)">
+              <strong>Fixed</strong>
+
+              <small>Drag + Resize</small>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- BOUNDARY -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'boundary') {
+        <div class="boundary-demo" #boundaryDemo>
+          <div class="boundary-label">
+            <span>BOUNDARY</span>
+
+            <small>Element cannot escape this area</small>
+          </div>
+
+          <div
+            class="boundary-object"
+            ngxDraggable
+            ngxResizable
+            [boundary]="boundaryDemo"
+            (dragEnd)="onDragEnd($event)"
+            (resizeEnd)="onResizeEnd($event)">
+            <div class="object-icon">□</div>
+
+            <strong>Boundary</strong>
+
+            <small>Drag & Resize</small>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- HANDLE -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'handle') {
+        <section class="handle-boundary" #handleBoundary>
+          <div class="handle-window">
+            <div
+              class="handle-header"
+              ngxDraggable
+              [boundary]="handleBoundary"
+              [dragRootElement]="'.handle-window'"
+              (dragEnd)="onDragEnd($event)">
+              <span class="handle-grip">⋮⋮</span>
+
+              <span>Drag from header</span>
+            </div>
+
+            <div class="handle-body">
+              <div class="handle-icon">☷</div>
+
+              <strong>Drag Handle</strong>
+
+              <small>Only the header is draggable</small>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- SCROLL -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'scroll') {
+        <div class="scroll-demo">
+          <div class="scroll-header">Scrollable container</div>
+
+          <div class="scroll-content">
+            <div class="scroll-grid">
+              @for (item of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track item) {
+                <div class="scroll-item" ngxDraggable (dragEnd)="onDragEnd($event)">
+                  <span>
+                    {{ item }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- RTL -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'rtl') {
+        <div class="rtl-demo">
+          <div class="rtl-info">
+            <span>
+              {{ directionLabel() }}
+            </span>
+
+            <strong>Bidirectional support</strong>
+          </div>
+
+          <div
+            class="rtl-object"
+            ngxDraggable
+            ngxResizable
+            (dragEnd)="onDragEnd($event)"
+            (resizeEnd)="onResizeEnd($event)">
+            <span>
+              {{ direction() === 'rtl' ? 'قابل جابجایی' : 'Draggable' }}
+            </span>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- MULTIPLE -->
+      <!-- --------------------------------------- -->
+
+      @if (selectedExample() === 'multiple') {
+        <div class="dashboard-demo">
+          <div class="dashboard-card card-a" ngxDraggable ngxResizable>
+            <span>Revenue</span>
+
+            <strong>$48,240</strong>
+
+            <small>+18.4%</small>
+          </div>
+
+          <div class="dashboard-card card-b" ngxDraggable ngxResizable>
+            <span>Users</span>
+
+            <strong>12,842</strong>
+
+            <small>+12.8%</small>
+          </div>
+
+          <div class="dashboard-card chart-card" ngxDraggable ngxResizable>
+            <div class="fake-chart">
+              <span style="height: 30%"></span>
+              <span style="height: 50%"></span>
+              <span style="height: 42%"></span>
+              <span style="height: 75%"></span>
+              <span style="height: 60%"></span>
+              <span style="height: 90%"></span>
+              <span style="height: 72%"></span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- --------------------------------------- -->
+      <!-- Resize Pan -->
+      <!-- --------------------------------------- -->
+      @if (selectedExample() === 'resizepan') {
+        <div class="sidepan-demo">
+          <div
+            class="sidenav"
+            ngxResizable
+            (resizeEnd)="onResizeEnd($event)"
+            [directions]="['e']"
+            [minWidth]="120">
+            side nav content
+
+            <div class="ngx-resize-handler" data-ngx-resize-handle="end"></div>
+          </div>
+          <div class="main">main layout</div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ============================================= -->
+  <!-- PROPERTY PANEL -->
+  <!-- ============================================= -->
+
+  <aside class="properties-card">
+    <div class="card-header">
+      <div>
+        <strong>Inspector</strong>
+
+        <span>Live properties</span>
+      </div>
+
+      <span class="inspector-icon">◈</span>
+    </div>
+
+    <div class="property-section">
+      <div class="section-title">POSITION</div>
+
+      <div class="property-grid">
+        <div class="property">
+          <span>X</span>
+
+          <strong>{{ demoX() }}px</strong>
+        </div>
+
+        <div class="property">
+          <span>Y</span>
+
+          <strong>{{ demoY() }}px</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="property-section">
+      <div class="section-title">SIZE</div>
+
+      <div class="property-grid">
+        <div class="property">
+          <span>WIDTH</span>
+
+          <strong>{{ demoWidth() }}px</strong>
+        </div>
+
+        <div class="property">
+          <span>HEIGHT</span>
+
+          <strong>{{ demoHeight() }}px</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="property-section">
+      <div class="section-title">CONFIGURATION</div>
+
+      <div class="config-list">
+        <div>
+          <span>Direction</span>
+          <strong>
+            {{ direction() | uppercase }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Position</span>
+          <strong>
+            {{ positionLabel() }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Grid</span>
+
+          <strong>
+            {{ showGrid() ? 'Enabled' : 'Disabled' }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Grid size</span>
+
+          <strong>{{ gridSize() }}px</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="capability-section">
+      <div class="section-title">CAPABILITIES</div>
+
+      <div class="capability-list">
+        <span>✓ Drag</span>
+        <span>✓ Resize</span>
+        <span>✓ Boundary</span>
+        <span>✓ RTL</span>
+        <span>✓ Scroll</span>
+        <span>✓ Pointer</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- =============================================== -->
+<!-- CODE -->
+<!-- =============================================== -->
+
+@if (showCode()) {
+  <section class="code-card">
+    <div class="code-header">
+      <div>
+        <strong>Implementation</strong>
+
+        <span>Drop these directives into your Angular template</span>
+      </div>
+
+      <button type="button" class="copy-button">Copy</button>
+    </div>
+
+    <pre><code>{{ generatedCode() }}</code></pre>
+  </section>
+}
+
+<!-- =============================================== -->
+<!-- EVENT INSPECTOR -->
+<!-- =============================================== -->
+
+@if (showEvents()) {
+  <section class="events-card">
+    <div class="events-header">
+      <div>
+        <strong>Event Inspector</strong>
+
+        <span>Real-time interaction events</span>
+      </div>
+
+      <div class="events-actions">
+        <span class="event-count">{{ events().length }} events</span>
+
+        <button type="button" (click)="clearEvents()">Clear</button>
+      </div>
+    </div>
+
+    <div class="event-table">
+      <div class="event-row event-head">
+        <span>EVENT</span>
+
+        <span>TIME</span>
+
+        <span>X</span>
+
+        <span>Y</span>
+
+        <span>WIDTH</span>
+
+        <span>HEIGHT</span>
+      </div>
+
+      @if (events().length === 0) {
+        <div class="empty-events">
+          <div class="empty-icon">◌</div>
+
+          <strong>No events yet</strong>
+
+          <span>Start dragging or resizing an element.</span>
+        </div>
+      }
+
+      @for (event of events(); track event.id) {
+        <div class="event-row">
+          <span
+            class="event-type"
+            [class.drag-event]="event.type.startsWith('drag')"
+            [class.resize-event]="event.type.startsWith('resize')">
+            {{ event.type }}
+          </span>
+
+          <span>
+            {{ event.time }}
+          </span>
+
+          <span>
+            {{ event.x ?? '—' }}
+          </span>
+
+          <span>
+            {{ event.y ?? '—' }}
+          </span>
+
+          <span>
+            {{ event.width ?? '—' }}
+          </span>
+
+          <span>
+            {{ event.height ?? '—' }}
+          </span>
+        </div>
+      }
+    </div>
+  </section>
+}
+
+<!-- =============================================== -->
+<!-- FEATURE GRID -->
+<!-- =============================================== -->
+
+<section class="feature-section">
+  <div class="feature-heading">
+    <div class="eyebrow">BUILT FOR REAL APPLICATIONS</div>
+
+    <h2>More than just drag and drop.</h2>
+
+    <p>Designed to handle the edge cases that appear in real Angular applications.</p>
+  </div>
+
+  <div class="feature-grid">
+    <article class="feature-card">
+      <div class="feature-icon">↔</div>
+
+      <strong>Any Position</strong>
+
+      <p>Static, relative, absolute and fixed positioning scenarios.</p>
+    </article>
+
+    <article class="feature-card">
+      <div class="feature-icon">◫</div>
+
+      <strong>Boundary Aware</strong>
+
+      <p>Restrict movement and resizing to a specific container.</p>
+    </article>
+
+    <article class="feature-card">
+      <div class="feature-icon">⇄</div>
+
+      <strong>RTL Ready</strong>
+
+      <p>Built to behave correctly in both LTR and RTL interfaces.</p>
+    </article>
+
+    <article class="feature-card">
+      <div class="feature-icon">⤢</div>
+
+      <strong>Drag + Resize</strong>
+
+      <p>Combine both directives for powerful interactive components.</p>
+    </article>
+
+    <article class="feature-card">
+      <div class="feature-icon">☷</div>
+
+      <strong>Drag Handles</strong>
+
+      <p>Use dedicated handles without making the entire component draggable.</p>
+    </article>
+
+    <article class="feature-card">
+      <div class="feature-icon">↕</div>
+
+      <strong>Scroll Containers</strong>
+
+      <p>Designed for applications where draggable elements live inside scrolling areas.</p>
+    </article>
+  </div>
+</section>

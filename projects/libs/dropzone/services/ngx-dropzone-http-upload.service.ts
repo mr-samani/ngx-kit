@@ -4,7 +4,7 @@ import {
   HttpEventType,
   HttpHeaders,
   HttpResponse,
-  type HttpUploadProgressEvent,
+  HttpUploadProgressEvent,
 } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, filter, map } from 'rxjs';

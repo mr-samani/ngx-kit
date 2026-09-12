@@ -1,111 +1,170 @@
-.app-header {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 100;
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+.topbar {
+  height: 68px;
+
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding-inline: 1.25rem;
-  block-size: 58px;
-  background: light-dark(rgba(255, 255, 255, 0.75), rgba(18, 18, 20, 0.7));
-  backdrop-filter: blur(10px);
-  border-block-end: 1px solid light-dark(#e5e7eb, #2a2a2f);
+
+  padding: 0 24px;
+
+  border-bottom: 1px solid var(--border);
+
+  background: color-mix(
+    in srgb,
+    var(--surface) 92%,
+    transparent
+  );
+
+  backdrop-filter: blur(18px);
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: inherit;
+  gap: 12px;
 }
 
 .brand-mark {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c6cff,
+      #5147d9
+    );
+
+  box-shadow:
+    0 6px 16px rgba(99, 91, 255, 0.3);
+}
+
+.brand-text {
   display: flex;
   align-items: center;
-  justify-content: center;
-  inline-size: 30px;
-  block-size: 30px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #6366f1, #2563eb);
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.95rem;
+  gap: 5px;
+
+  font-size: 14px;
 }
 
-.brand-name {
-  font-size: 1rem;
-  font-weight: 500;
-  color: light-dark(#1f2937, #f4f4f5);
-
-  b {
-    font-weight: 700;
-    background: linear-gradient(135deg, #6366f1, #2563eb);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
+.brand-text span {
+  color: var(--text-3);
 }
 
-.main-nav {
+.topbar-center {
+  position: absolute;
+
+  left: 50%;
+  transform: translateX(-50%);
+
   display: flex;
-  gap: 0.25rem;
-
-  a {
-    text-decoration: none;
-    color: light-dark(#4b5563, #a1a1aa);
-    font-size: 0.85rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 8px;
-    transition:
-      background-color 150ms ease,
-      color 150ms ease;
-
-    &:hover {
-      background: light-dark(#f3f4f6, #232327);
-      color: light-dark(#1f2937, #f4f4f5);
-    }
-    &.active {
-      background: light-dark(#eef2ff, #1e2a4a);
-      color: light-dark(#4338ca, #93c5fd);
-      font-weight: 600;
-    }
-  }
-}
-
-.spacer {
-  flex: auto;
-}
-
-.icon-btn {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  inline-size: 34px;
-  block-size: 34px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: light-dark(#4b5563, #a1a1aa);
+  gap: 8px;
+
+  color: var(--text-2);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: var(--success);
+
+  box-shadow:
+    0 0 0 4px rgba(24, 166, 106, 0.1);
+}
+
+.topbar-actions {
+  margin-inline-start: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button,
+.top-action {
+  border: 1px solid var(--border);
+
+  background: var(--surface);
+
+  color: var(--text-2);
+
   cursor: pointer;
-  text-decoration: none;
+
   transition:
-    background-color 150ms ease,
-    color 150ms ease;
-
-  &:hover {
-    background: light-dark(#f3f4f6, #232327);
-    color: light-dark(#1f2937, #f4f4f5);
-  }
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
 }
 
-.dir-label {
-  font-size: 0.7rem;
-  font-weight: 700;
+.icon-button:hover,
+.top-action:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
 }
 
-@media (max-width: 500px) {
-  .main-nav {
-    display: none;
+.icon-button {
+  width: 36px;
+  height: 36px;
+
+  border-radius: 9px;
+
+  display: grid;
+  place-items: center;
+}
+
+.menu-button {
+  margin-inline-end: 2px;
+}
+
+.top-action {
+  height: 36px;
+
+  padding: 0 12px;
+
+  border-radius: 9px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+
+.main-nav{
+  display: flex;
+  gap: 5px;
+  margin: 0 5px;
+  a{
+    text-decoration: none;
   }
 }

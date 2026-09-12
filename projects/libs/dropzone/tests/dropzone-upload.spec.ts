@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Subject, type Observable } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { NgxDropzoneComponent } from '../components/dropzone.component';
 import {

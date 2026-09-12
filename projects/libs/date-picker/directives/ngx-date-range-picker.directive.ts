@@ -206,9 +206,7 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
 
     const startText = format(start);
     const endText = format(end);
-    const value = startText && endText
-      ? `${startText}${this.rangeSeparator}${endText}`
-      : startText;
+    const value = startText && endText ? `${startText}${this.rangeSeparator}${endText}` : startText;
 
     this.renderer.setProperty(this.el.nativeElement, 'value', value);
   }

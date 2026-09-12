@@ -240,7 +240,6 @@
   }
 }
 
-
 /* ---------- upload ---------- */
 .ngx-dropzone-actions {
   display: flex;
@@ -261,7 +260,9 @@
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.35rem 0.65rem;
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
 }
 
 .ngx-dropzone-upload:hover:not(:disabled),

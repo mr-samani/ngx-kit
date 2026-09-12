@@ -24,9 +24,9 @@ The output is a valid CSS string like `0px 4px 12px 0px rgba(0,0,0,0.25)`.
 
 ## API
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `setInputBackground` *(directive)* | `boolean` | `true` | Shows the shadow color as the input's background |
+| Input                              | Type      | Default | Description                                      |
+| ---------------------------------- | --------- | ------- | ------------------------------------------------ |
+| `setInputBackground` _(directive)_ | `boolean` | `true`  | Shows the shadow color as the input's background |
 
 ## Dark mode and RTL
 

@@ -12,7 +12,14 @@ import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
-import { NgxFormField, NgxInput, NgxPrefix, NgxSuffix, NgxHint, NgxError } from 'ngx-kit/form-field';
+import {
+  NgxFormField,
+  NgxInput,
+  NgxPrefix,
+  NgxSuffix,
+  NgxHint,
+  NgxError,
+} from 'ngx-kit/form-field';
 
 @Component({
   selector: 'app-time-picker',
@@ -29,8 +36,8 @@ import { NgxFormField, NgxInput, NgxPrefix, NgxSuffix, NgxHint, NgxError } from 
     NgxSuffix,
     NgxPrefix,
     NgxHint,
-    NgxError
-],
+    NgxError,
+  ],
   providers: [],
 })
 export class TimePickerComponent implements OnInit {

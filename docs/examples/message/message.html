@@ -1,91 +1,318 @@
 <app-example-showcase title="Message" [files]="sourceFiles" readmePath="readmes/message/README.md">
-  <div class="configuration">
-    <mat-form-field appearance="outline">
-      <mat-label>Title</mat-label>
-      <input matInput type="text" [(ngModel)]="options.title" name="title" />
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Text</mat-label>
-      <input matInput type="text" [(ngModel)]="options.text" name="text" />
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Html</mat-label>
-      <input matInput type="text" [(ngModel)]="options.html" name="html" />
-    </mat-form-field>
+  <div class="demo-playground">
+    <!-- =====================================================
+         CONTENT
+         ===================================================== -->
 
-    <mat-form-field appearance="outline">
-      <mat-label>Icon</mat-label>
-      <mat-select type="text" [(ngModel)]="options.icon" name="icon">
-        <mat-option [value]="''">None</mat-option>
-        <mat-option [value]="'success'">Success</mat-option>
-        <mat-option [value]="'error'">Error</mat-option>
-        <mat-option [value]="'info'">Info</mat-option>
-        <mat-option [value]="'warning'">Warning</mat-option>
-        <mat-option [value]="'question'">Question</mat-option>
-        <mat-option [value]="'loading'">Loading</mat-option>
-      </mat-select>
-    </mat-form-field>
+    <div class="config-preview">
+      <div class="demo-configuration">
+        <section class="demo-section">
+          <div class="demo-section-header">
+            <div>
+              <h3 class="demo-section-title">Content</h3>
+              <p class="demo-section-description">Configure the title and message content.</p>
+            </div>
+
+            <span class="badge">Message</span>
+          </div>
+
+          <div class="demo-grid">
+            <label class="demo-field">
+              <span class="demo-field-label">Title</span>
+
+              <input
+                class="demo-input"
+                type="text"
+                [(ngModel)]="options.title"
+                name="title"
+                placeholder="Message title" />
+            </label>
+
+            <label class="demo-field">
+              <span class="demo-field-label">Text</span>
+
+              <input
+                class="demo-input"
+                type="text"
+                [(ngModel)]="options.text"
+                name="text"
+                placeholder="Message body" />
+            </label>
+          </div>
+
+          <div style="height: 14px"></div>
+
+          <label class="demo-field">
+            <span class="demo-field-label">HTML content</span>
+
+            <textarea
+              class="demo-textarea"
+              [(ngModel)]="options.html"
+              name="html"
+              placeholder="<strong>Hello</strong>"></textarea>
+
+            <span class="demo-field-hint">Optional HTML content rendered inside the message.</span>
+          </label>
+
+          <!-- =====================================================
+         ICON
+         ===================================================== -->
+
+          <div class="demo-section-header">
+            <div>
+              <h3 class="demo-section-title">Icon</h3>
+              <p class="demo-section-description">Select the visual state of the message.</p>
+            </div>
+          </div>
+
+          <div class="demo-choice">
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === undefined"
+              (click)="options.icon = undefined">
+              None
+            </button>
+
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === 'success'"
+              (click)="options.icon = 'success'">
+              Success
+            </button>
+
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === 'error'"
+              (click)="options.icon = 'error'">
+              Error
+            </button>
+
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === 'info'"
+              (click)="options.icon = 'info'">
+              Info
+            </button>
+
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === 'warning'"
+              (click)="options.icon = 'warning'">
+              Warning
+            </button>
+
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === 'question'"
+              (click)="options.icon = 'question'">
+              Question
+            </button>
+
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="options.icon === 'loading'"
+              (click)="options.icon = 'loading'">
+              Loading
+            </button>
+          </div>
+
+          <!-- =====================================================
+         BEHAVIOR
+         ===================================================== -->
+
+          <div class="demo-section-header">
+            <div>
+              <h3 class="demo-section-title">Behavior</h3>
+              <p class="demo-section-description">
+                Configure how the message can be dismissed and interacted with.
+              </p>
+            </div>
+          </div>
+
+          <div class="demo-check-grid">
+            <label class="demo-check">
+              <input type="checkbox" [(ngModel)]="options.showCloseButton" name="showCloseButton" />
+
+              <span class="demo-check-box"></span>
+
+              <span>Show close button</span>
+            </label>
+
+            <label class="demo-check">
+              <input
+                type="checkbox"
+                [(ngModel)]="options.allowOutsideClick"
+                name="allowOutsideClick" />
+
+              <span class="demo-check-box"></span>
+
+              <span>Allow outside click</span>
+            </label>
+
+            <label class="demo-check">
+              <input type="checkbox" [(ngModel)]="options.allowEnterKey" name="allowEnterKey" />
+
+              <span class="demo-check-box"></span>
+
+              <span>Allow Enter key</span>
+            </label>
+
+            <label class="demo-check">
+              <input type="checkbox" [(ngModel)]="options.allowEscapeKey" name="allowEscapeKey" />
+
+              <span class="demo-check-box"></span>
+
+              <span>Allow Escape key</span>
+            </label>
+
+            <label class="demo-check">
+              <input type="checkbox" [(ngModel)]="options.useOverlay" name="useOverlay" />
+
+              <span class="demo-check-box"></span>
+
+              <span>Use Overlay popover</span>
+            </label>
+          </div>
+
+          <!-- =====================================================
+         BUTTONS
+         ===================================================== -->
+
+          <div class="demo-section-header">
+            <div>
+              <h3 class="demo-section-title">Buttons</h3>
+              <p class="demo-section-description">
+                Configure the action buttons displayed by the message.
+              </p>
+            </div>
+          </div>
+
+          <div class="demo-grid">
+            <!-- Confirm -->
+
+            <div>
+              <label class="demo-check">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="options.showConfirmButton"
+                  name="showConfirmButton" />
+
+                <span class="demo-check-box"></span>
+
+                <span>Show confirm button</span>
+              </label>
+
+              <div style="height: 10px"></div>
+
+              <label class="demo-field">
+                <span class="demo-field-label">Confirm text</span>
+
+                <input
+                  class="demo-input"
+                  type="text"
+                  [(ngModel)]="options.confirmButtonText"
+                  name="confirmButtonText" />
+              </label>
+            </div>
+
+            <!-- Cancel -->
+
+            <div>
+              <label class="demo-check">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="options.showCancelButton"
+                  name="showCancelButton" />
+
+                <span class="demo-check-box"></span>
+
+                <span>Show cancel button</span>
+              </label>
+
+              <div style="height: 10px"></div>
+
+              <label class="demo-field">
+                <span class="demo-field-label">Cancel text</span>
+
+                <input
+                  class="demo-input"
+                  type="text"
+                  [(ngModel)]="options.cancelButtonText"
+                  name="cancelButtonText" />
+              </label>
+            </div>
+
+            <!-- Deny -->
+
+            <div>
+              <label class="demo-check">
+                <input type="checkbox" [(ngModel)]="options.showDenyButton" name="showDenyButton" />
+
+                <span class="demo-check-box"></span>
+
+                <span>Show deny button</span>
+              </label>
+
+              <div style="height: 10px"></div>
+
+              <label class="demo-field">
+                <span class="demo-field-label">Deny text</span>
+
+                <input
+                  class="demo-input"
+                  type="text"
+                  [(ngModel)]="options.denyButtonText"
+                  name="denyButtonText" />
+              </label>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="demo-preview">
+        <!-- =====================================================
+         ACTION
+         ===================================================== -->
+
+        <div class="demo-actions">
+          <button type="button" class="demo-button primary" (click)="openModal()">
+            <span>✦</span>
+            Show Message
+          </button>
+
+          <button type="button" class="demo-button secondary" (click)="showLoading()">
+            Show 5s Loading
+          </button>
+        </div>
+        <!-- =====================================================
+         RESULT
+         ===================================================== -->
+
+        <section class="demo-section">
+          <div class="demo-section-header">
+            <div>
+              <h3 class="demo-section-title">Result</h3>
+              <p class="demo-section-description">
+                Result returned by the message after it is closed.
+              </p>
+            </div>
+          </div>
+
+          @if (result) {
+            <pre class="demo-result">{{ result | json }}</pre>
+          } @else {
+            <div class="demo-result demo-empty">
+              No result yet. Show the message to see its result.
+            </div>
+          }
+        </section>
+      </div>
+    </div>
   </div>
-
-  <div>
-    <mat-checkbox [(ngModel)]="options.showCloseButton" name="showCloseButton">
-      Show Close Button
-    </mat-checkbox>
-    <mat-checkbox [(ngModel)]="options.allowOutsideClick" name="allowOutsideClick">
-      Allow Outside Click
-    </mat-checkbox>
-    <mat-checkbox [(ngModel)]="options.allowEnterKey" name="allowEnterKey">
-      Allow Enter Key
-    </mat-checkbox>
-    <mat-checkbox [(ngModel)]="options.allowEscapeKey" name="allowEscapeKey">
-      Allow Escape Key
-    </mat-checkbox>
-  </div>
-  <!-- -------------------------- -->
-
-  <div class="configuration">
-    <mat-checkbox [(ngModel)]="options.showConfirmButton" name="showConfirmButton">
-      Show confirm button
-    </mat-checkbox>
-    <mat-form-field appearance="outline">
-      <mat-label>Text</mat-label>
-      <input
-        matInput
-        type="text"
-        [(ngModel)]="options.confirmButtonText"
-        name="confirmButtonText" />
-    </mat-form-field>
-  </div>
-  <div class="configuration">
-    <mat-checkbox [(ngModel)]="options.showCancelButton">Show Cancel button</mat-checkbox>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Text</mat-label>
-      <input matInput type="text" [(ngModel)]="options.cancelButtonText" name="cancelButtonText" />
-    </mat-form-field>
-  </div>
-  <div class="configuration">
-    <mat-checkbox [(ngModel)]="options.showDenyButton">Show Deny button</mat-checkbox>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Text</mat-label>
-      <input matInput type="text" [(ngModel)]="options.denyButtonText" name="cancelButtonText" />
-    </mat-form-field>
-  </div>
-
-  <div class="configuration">
-    <mat-checkbox [(ngModel)]="options.useOverlay">
-      Use Overlay popover (add popover="manual" to show dialog in top layer)
-    </mat-checkbox>
-  </div>
-
-  <button (click)="openModal()" mat-raised-button color="primary" class="btn-demo">
-    Show Alert
-  </button>
-  <h5>Result:</h5>
-  <pre dir="ltr" style="text-align: left">{{ result | json }}</pre>
-
-  <button (click)="showLoading()" mat-raised-button color="primary" class="btn-demo">
-    Show loading with 5 seconds
-  </button>
 </app-example-showcase>

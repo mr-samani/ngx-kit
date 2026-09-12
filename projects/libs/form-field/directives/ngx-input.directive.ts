@@ -1,18 +1,8 @@
-import {
-  AfterViewInit,
-  Directive,
-  ElementRef,
-  HostListener,
-  inject,
-  signal,
-} from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, HostListener, inject, signal } from '@angular/core';
 
 import { MX_FORM_FIELD } from '../tokens/form-field.token';
 
-type FormControlElement =
-  | HTMLInputElement
-  | HTMLSelectElement
-  | HTMLTextAreaElement;
+type FormControlElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 @Directive({
   selector: '[ngxInput],ngx-input',
@@ -22,8 +12,7 @@ type FormControlElement =
   },
 })
 export class NgxInput implements AfterViewInit {
-  private readonly el =
-    inject<ElementRef<FormControlElement>>(ElementRef);
+  private readonly el = inject<ElementRef<FormControlElement>>(ElementRef);
 
   private readonly ref = inject(MX_FORM_FIELD);
 
@@ -55,10 +44,6 @@ export class NgxInput implements AfterViewInit {
 
     this.ref.value.set(value);
 
-    this.hasValue.set(
-      value !== null &&
-      value !== undefined &&
-      value !== '',
-    );
+    this.hasValue.set(value !== null && value !== undefined && value !== '');
   }
 }

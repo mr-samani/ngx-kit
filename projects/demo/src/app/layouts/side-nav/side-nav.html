@@ -1,17 +1,117 @@
-<nav class="side-nav">
-  @for (cat of list; track $index) {
-    <div class="nav-group">
-      <span class="nav-group-title">{{ cat.name }}</span>
-      <ul>
-        @for (item of cat.items; track $index) {
-          <li>
-            <a [routerLink]="item.url" routerLinkActive="active">
-              <span class="dot"></span>
-              {{ item.title }}
-            </a>
-          </li>
+<aside class="sidebar">
+  @if (isFragmentNavigation()) {
+    <!-- Fragment Navigation -->
+
+    <div class="fragment-header">
+      <button type="button" class="back-button" (click)="backToMainMenu()">
+        <span class="back-icon">←</span>
+
+        <span>Back</span>
+      </button>
+      <div class="fragment-title">
+        <span class="fragment-title-icon">
+          {{ fragmentMenuItem()?.icon ?? '✦' }}
+        </span>
+
+        <div>
+          <strong>
+            {{ fragmentMenuItem()?.title }}
+          </strong>
+
+          <small>Sections</small>
+        </div>
+      </div>
+    </div>
+
+    <nav class="example-list fragment-list">
+      @for (fragment of activeFragments(); track fragment.id) {
+        <button
+          type="button"
+          class="example-button fragment-button"
+          [routerLink]="fragmentMenuItem()!.url"
+          [fragment]="fragment.id"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{
+            paths: 'exact',
+            queryParams: 'ignored',
+            matrixParams: 'ignored',
+            fragment: 'exact',
+          }">
+          <span class="example-icon">
+            {{ fragment.icon ?? '✦' }}
+          </span>
+
+          <span class="example-info">
+            <span class="example-title">
+              {{ fragment.title }}
+            </span>
+
+            <span class="example-description">
+              {{ fragment.description }}
+            </span>
+          </span>
+
+          <span class="fragment-arrow">→</span>
+        </button>
+      }
+    </nav>
+  } @else {
+    <!-- Main Navigation -->
+
+    @for (cat of list; track cat.name) {
+      <small>
+        {{ cat.name }}
+      </small>
+
+      <nav class="example-list">
+        @for (item of cat.items; track item.url) {
+          <button
+            type="button"
+            class="example-button"
+            [routerLink]="item.url"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{
+              paths: 'exact',
+              queryParams: 'ignored',
+              matrixParams: 'ignored',
+              fragment: 'ignored',
+            }"
+            (click)="openMenuItem(item)">
+            <span class="example-icon">
+              {{ item.icon ?? '✦' }}
+            </span>
+
+            <span class="example-info">
+              <span class="example-title">
+                {{ item.title }}
+              </span>
+
+              @if (item.description) {
+                <span class="example-description">
+                  {{ item.description }}
+                </span>
+              }
+            </span>
+
+            @if (item.fragments?.length) {
+              <span class="has-fragments">
+                {{ item.fragments.length }}
+              </span>
+            }
+          </button>
         }
-      </ul>
+      </nav>
+    }
+
+    <div class="sidebar-footer">
+      <div class="library-info">
+        <span class="version-dot"></span>
+
+        <div>
+          <strong>ngx-kit</strong>
+          <small>@version</small>
+        </div>
+      </div>
     </div>
   }
-</nav>
+</aside>

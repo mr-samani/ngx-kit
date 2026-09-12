@@ -10,6 +10,8 @@ export * from './utils/drag-session';
 export * from './utils/window';
 export * from './utils/string';
 export * from './utils/confetti';
+export * from './utils/sequential-guid';
+export * from './utils/merge-deep';
 
 export * from './contracts/IPosition';
 
