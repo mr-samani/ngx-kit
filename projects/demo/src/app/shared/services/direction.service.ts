@@ -30,6 +30,13 @@ export class DirectionService {
     this.setDir(dir, lang);
   }
 
+  setDirection(dir: DirectionType) {
+    this.isRtl.set(dir == 'rtl');
+    let lang = this.isRtl() ? 'fa-IR' : 'en';
+    if (this.isBrowser) localStorage.setItem('dir', dir);
+    this.setDir(dir, lang);
+  }
+
   private setDir(dir: DirectionType, lang: string) {
     this.doc.documentElement.setAttribute('dir', dir);
     this.doc.documentElement.setAttribute('lang', lang);

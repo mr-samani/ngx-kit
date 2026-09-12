@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, EventEmitter, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NgxNotificationComponent,
@@ -7,6 +7,7 @@ import {
   NgxNotifyType,
   NgxNotifyOptions,
   NgxNotifyPositionType,
+  type NgxNotifyPayload,
 } from 'ngx-kit/notify';
 import {
   ExampleShowcaseComponent,
@@ -19,40 +20,58 @@ import {
   styleUrls: ['./notify.component.scss'],
   standalone: true,
   imports: [CommonModule, NgxNotificationComponent, FormsModule, ExampleShowcaseComponent],
-  providers: [],
 })
-export class NotifyComponent implements OnInit {
+export class NotifyComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: 'examples/notify/notify.component.ts', language: 'typescript' },
-    { label: 'HTML', path: 'examples/notify/notify.component.html', language: 'html' },
+    {
+      label: 'TS',
+      path: 'examples/notify/notify.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/notify/notify.component.html',
+      language: 'html',
+    },
   ];
 
   message = 'Data saved Successfully!';
-  description = '<p style="color:red;">this is a description</p>';
+
+  description = '<p style="color:green;">this is a description</p>';
+
   type: NgxNotifyType = 'info';
+
   options: NgxNotifyOptions = {
     dismissible: true,
-    timeout: 50000,
+    allowHtml: true,
+    timeout: 5000,
     position: 'center',
   };
 
-  payload: any = {
-    id: '1',
-    message: this.message,
-    description: this.description,
-    type: this.type,
-    options: this.options,
-  };
-  ngOnInit() {}
+  get payload(): NgxNotifyPayload {
+    return {
+      id: '1',
+      message: this.message,
+      description: this.description,
+      type: this.type,
+      options: this.options,
+      onClose: new EventEmitter(),
+      onFinish: new EventEmitter(),
+      close: function (): void {
+        throw new Error('Function not implemented.');
+      },
+    };
+  }
 
-  showNotify() {
-    console.log(this.options);
-    const m = Notify.show(this.type, this.message, this.description, this.options);
-    m.onClose.subscribe((r) => {
-      console.log('close', r.id);
+  showNotify(): void {
+    const notification = Notify.show(this.type, this.message, this.description, this.options);
+
+    notification.onClose.subscribe((result) => {
+      console.log('close', result.id);
     });
-    m.onFinish.subscribe((r) => {
-      console.log('finish', r.id);
+
+    notification.onFinish.subscribe((result) => {
+      console.log('finish', result.id);
     });
   }
 }

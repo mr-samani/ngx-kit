@@ -18,16 +18,7 @@ export class DrawerMenuComponent {
     { label: 'HTML', path: 'examples/drawer-menu/drawer-menu.component.html', language: 'html' },
   ];
 
-  protected readonly effects: NgxDrawerEffect[] = [
-    'slide',
-    'curtain',
-    'slide',
-    'spring',
-    'fabric',
-    'curtain',
-    'elastic',
-    'reveal',
-  ];
+  protected readonly effects: NgxDrawerEffect[] = ['none', 'fabric', 'slide', 'push', 'scale'];
 
   protected readonly effect = signal<NgxDrawerEffect>('fabric');
   protected readonly open = signal(false);

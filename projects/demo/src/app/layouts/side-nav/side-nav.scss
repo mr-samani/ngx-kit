@@ -1,68 +1,632 @@
-.side-nav {
-  block-size: 100%;
-  overflow-y: auto;
-  padding: 1rem 0.75rem;
-  box-sizing: border-box;
-  user-select: none;
-}
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
 
-.nav-group {
-  margin-block-end: 1.1rem;
-}
-
-.nav-group-title {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: light-dark(#9ca3af, #6b7280);
-  padding: 0.3rem 0.6rem;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.sidebar {
   display: flex;
   flex-direction: column;
+
+  border-inline-end: 1px solid var(--border);
+
+  background: var(--surface);
+
+  overflow: hidden;
+
+  transition:
+    width 180ms ease,
+    flex-basis 180ms ease;
+}
+
+/* =========================================================
+   MAIN NAVIGATION
+   ========================================================= */
+
+.main-navigation {
+  flex: 1;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding: 12px 10px;
+
+  scrollbar-width: thin;
+}
+
+/* =========================================================
+   CATEGORY
+   ========================================================= */
+
+.menu-category {
+  margin-bottom: 18px;
+}
+
+.category-title {
+  padding: 7px 10px 6px;
+
+  color: var(--text-3);
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.11em;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   EXAMPLE LIST
+   ========================================================= */
+
+.example-list {
+  display: flex;
+
+  flex-direction: column;
+
   gap: 2px;
 }
 
-li a {
+/* =========================================================
+   EXAMPLE BUTTON
+   ========================================================= */
+
+.example-button {
+  position: relative;
+
+  width: 100%;
+  min-height: 48px;
+
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+
+  gap: 10px;
+
+  padding: 7px 9px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: var(--text-2);
+
   text-decoration: none;
-  color: light-dark(#374151, #d4d4d8);
-  padding: 0.5rem 0.6rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
+
+  text-align: start;
+
+  cursor: pointer;
+
   transition:
-    background-color 150ms ease,
-    color 150ms ease;
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
 
-  .dot {
-    inline-size: 5px;
-    block-size: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.35;
-    flex-shrink: 0;
+.example-button:hover {
+  background: var(--surface-2);
+
+  color: var(--text);
+}
+
+.example-button.active {
+  background: var(--primary-soft);
+
+  color: var(--primary);
+}
+
+/* =========================================================
+   ACTIVE INDICATOR
+   ========================================================= */
+
+.example-button.active::before {
+  content: '';
+
+  position: absolute;
+
+  inset-inline-start: 0;
+
+  top: 8px;
+  bottom: 8px;
+
+  width: 3px;
+
+  border-radius: 0 4px 4px 0;
+
+  background: var(--primary);
+}
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.example-icon {
+  width: 32px;
+  height: 32px;
+
+  flex: 0 0 32px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 8px;
+
+  background: var(--surface-2);
+
+  color: var(--text-2);
+
+  font-size: 15px;
+
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.example-button.active .example-icon {
+  background: rgba(99, 91, 255, 0.13);
+
+  color: var(--primary);
+}
+
+/* =========================================================
+   INFO
+   ========================================================= */
+
+.example-info {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.example-title {
+  overflow: hidden;
+
+  color: inherit;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.example-description {
+  overflow: hidden;
+
+  color: var(--text-3);
+
+  font-size: 9px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   HAS FRAGMENTS
+   ========================================================= */
+
+.has-fragments {
+  color: var(--text-3);
+
+  font-size: 16px;
+
+  opacity: 0;
+
+  transform: translateX(-3px);
+
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.example-button:hover .has-fragments {
+  opacity: 1;
+
+  transform: translateX(0);
+}
+
+/* =========================================================
+   FRAGMENT MODE
+   ========================================================= */
+
+.sidebar.fragment-mode {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+}
+
+/* =========================================================
+   FRAGMENT NAVIGATION
+   ========================================================= */
+
+.fragment-navigation {
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  padding: 12px 10px;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   BACK
+   ========================================================= */
+
+.back-button {
+  width: 100%;
+
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 4px;
+
+  padding: 0 10px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 9px;
+
+  background: var(--surface);
+
+  color: var(--text-2);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.back-button:hover {
+  color: var(--primary);
+
+  border-color: var(--primary-border);
+
+  background: var(--primary-soft);
+}
+
+.back-icon {
+  font-size: 16px;
+
+  line-height: 1;
+}
+
+/* =========================================================
+   FRAGMENT HEADER
+   ========================================================= */
+
+.fragment-header {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+  padding: 10px;
+}
+
+.fragment-component-icon {
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  background: var(--primary-soft);
+
+  color: var(--primary);
+
+  font-size: 17px;
+
+  box-shadow: inset 0 0 0 1px var(--primary-border);
+}
+
+.fragment-component-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.fragment-component-info strong {
+  overflow: hidden;
+
+  color: var(--text);
+
+  font-size: 13px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.fragment-component-info small {
+  margin: 0;
+
+  color: var(--text-3);
+
+  font-size: 9px;
+
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   FRAGMENT LIST
+   ========================================================= */
+
+.fragment-list {
+  min-height: 0;
+
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 10px 0;
+
+  scrollbar-width: thin;
+}
+
+/* =========================================================
+   FRAGMENT BUTTON
+   ========================================================= */
+
+.fragment-button {
+  position: relative;
+
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin: 2px 0;
+
+  padding: 7px 9px;
+
+  border-radius: 9px;
+
+  color: var(--text-2);
+
+  text-decoration: none;
+
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.fragment-button:hover {
+  background: var(--surface);
+
+  color: var(--text);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.fragment-button.active {
+  background: var(--primary-soft);
+
+  color: var(--primary);
+
+  box-shadow: inset 0 0 0 1px var(--primary-border);
+}
+
+/* =========================================================
+   FRAGMENT ACTIVE INDICATOR
+   ========================================================= */
+
+.fragment-button.active::before {
+  content: '';
+
+  position: absolute;
+
+  inset-inline-start: 0;
+
+  top: 9px;
+  bottom: 9px;
+
+  width: 3px;
+
+  border-radius: 0 4px 4px 0;
+
+  background: var(--primary);
+}
+
+/* =========================================================
+   FRAGMENT ICON
+   ========================================================= */
+
+.fragment-icon {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 30px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 7px;
+
+  background: var(--surface-2);
+
+  color: inherit;
+
+  font-size: 13px;
+}
+
+.fragment-button.active .fragment-icon {
+  background: rgba(99, 91, 255, 0.13);
+}
+
+/* =========================================================
+   FRAGMENT INFO
+   ========================================================= */
+
+.fragment-info {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.fragment-title {
+  overflow: hidden;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--primary);
+}
+
+.fragment-description {
+  overflow: hidden;
+
+  color: var(--text-3);
+
+  font-size: 9px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   FRAGMENT ARROW
+   ========================================================= */
+
+.fragment-arrow {
+  color: var(--text-3);
+
+  font-size: 13px;
+
+  opacity: 0;
+
+  transform: translateX(-3px);
+
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.fragment-button:hover .fragment-arrow,
+.fragment-button.active .fragment-arrow {
+  opacity: 1;
+
+  transform: translateX(0);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.sidebar-footer {
+  flex-shrink: 0;
+
+  padding: 13px;
+
+  border-top: 1px solid var(--border);
+
+  background: var(--surface);
+}
+
+.library-info {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+.library-info > div {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.library-info strong {
+  font-size: 11px;
+}
+
+.library-info small {
+  margin: 0;
+
+  color: var(--text-3);
+
+  font-size: 9px;
+}
+
+.version-dot {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  border-radius: 50%;
+
+  background: var(--primary);
+
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+/* =========================================================
+   RTL
+   ========================================================= */
+
+:host-context([dir='rtl']) {
+  .example-button.active::before,
+  .fragment-button.active::before {
+    border-radius: 4px 0 0 4px;
   }
 
-  &:hover {
-    background: light-dark(#f3f4f6, #232327);
-    color: light-dark(#111827, #f4f4f5);
+  .fragment-arrow {
+    transform: translateX(3px);
   }
 
-  &.active {
-    background: light-dark(#eef2ff, #1e2a4a);
-    color: light-dark(#4338ca, #93c5fd);
-    font-weight: 600;
+  .fragment-button:hover .fragment-arrow,
+  .fragment-button.active .fragment-arrow {
+    transform: translateX(0);
+  }
+}
 
-    .dot {
-      opacity: 1;
-    }
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .sidebar {
+    width: 270px;
+    flex-basis: 270px;
   }
 }

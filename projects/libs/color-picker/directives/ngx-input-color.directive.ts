@@ -1,24 +1,26 @@
 import {
+  AfterViewInit,
   Directive,
-  forwardRef,
-  OnDestroy,
-  Input,
   ElementRef,
+  EventEmitter,
+  forwardRef,
+  HostListener,
+  Input,
+  OnDestroy,
+  Output,
   Renderer2,
   ViewContainerRef,
-  HostListener,
-  AfterViewInit,
-  Output,
-  EventEmitter,
 } from '@angular/core';
+
 import {
-  NG_VALUE_ACCESSOR,
-  NG_VALIDATORS,
-  ControlValueAccessor,
-  Validator,
   AbstractControl,
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
   ValidationErrors,
+  Validator,
 } from '@angular/forms';
+
 import { ColorInspector } from '../contracts/ColorInspector.enum';
 import { NgxInputColorComponent } from '../components/input-color.component';
 import { NgxColor } from '../utils/color-helper';
@@ -46,114 +48,198 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   @Input() simpleMode = false;
   @Input() outputType: OutputType = 'HEX';
   @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
-  private useAlphaChannel: boolean = true;
-  @Input('useAlphaChannel') set setUseAlphaChannel(val: boolean) {
-    this.useAlphaChannel = val == true;
+  private useAlphaChannel = true;
+  @Input('useAlphaChannel')
+  set setUseAlphaChannel(value: boolean) {
+    this.useAlphaChannel = value === true;
     if (!this.useAlphaChannel && this.color) {
       this.color.removeAlphaChannel();
-      this.color.getOutputResult(this.outputType).then((c) => {
-        this.emitChange(c);
-      });
+      void this.color.getOutputResult(this.outputType).then((value) => this.emitChange(value));
     }
   }
 
-  private boundInputHandler = (e: Event) => {
-    this.writeValue((e.target as HTMLInputElement).value);
-  };
-  private _targetInput?: HTMLInputElement;
-
-  @Input('ngxInputColor') set ngxInputColor(
-    el: HTMLInputElement | ElementRef<HTMLInputElement> | null | undefined | '',
+  /**
+   * Input target.
+   *
+   * Supported:
+   *
+   * <input ngxInputColor>
+   *
+   * or
+   *
+   * <div [ngxInputColor]="inputElement"></div>
+   *
+   * or
+   *
+   * <div [ngxInputColor]="inputRef"></div>
+   */
+  @Input('ngxInputColor')
+  set ngxInputColor(
+    element: HTMLInputElement | ElementRef<HTMLInputElement> | null | undefined | '',
   ) {
+    this.removeTargetInputListener();
+
     this.isHostInput = false;
-    if (el instanceof ElementRef) {
-      this._targetInput = el.nativeElement;
-    } else if (el instanceof HTMLInputElement) {
-      this.isHostInput = true;
-      this._targetInput = el;
+    this.explicitTargetInput = false;
+
+    if (element instanceof ElementRef) {
+      this._targetInput = element.nativeElement;
+      this.explicitTargetInput = true;
+    } else if (this.isInputElement(element)) {
+      this._targetInput = element;
+      this.explicitTargetInput = true;
     } else {
-      this._targetInput = undefined;
+      /**
+       * Bare directive:
+       *
+       * <input ngxInputColor>
+       *
+       * In this case the host itself is the target.
+       */
+      const host = this.el.nativeElement;
+
+      if (host instanceof HTMLInputElement) {
+        this._targetInput = host;
+        this.isHostInput = true;
+      } else {
+        this._targetInput = undefined;
+      }
     }
 
-    if (this._targetInput) {
-      this._targetInput.removeEventListener('input', this.boundInputHandler);
-      this._targetInput.addEventListener('input', this.boundInputHandler);
-    }
+    this.bindTargetInput();
   }
+
   @Output() change = new EventEmitter<string>();
+
   private color?: NgxColor;
   private pickerRef?: OverlayRef<NgxInputColorComponent>;
+  private _targetInput?: HTMLInputElement;
+  private explicitTargetInput = false;
   private isHostInput = false;
-  inValid: boolean = false;
-  protected _onChange = (value: string) => {};
-  protected _onTouched = () => {};
-  _onValidateChange = () => {};
+  private removeInputListener?: () => void;
+  private disabled = false;
+  private invalid = false;
+  protected _onChange: (value: string) => void = () => {};
+  protected _onTouched: () => void = () => {};
+  private _onValidateChange: () => void = () => {};
 
   constructor(
-    private el: ElementRef,
-    private renderer: Renderer2,
-    private viewContainerRef: ViewContainerRef,
-    private overlayService: OverlayService,
+    private readonly el: ElementRef<HTMLElement>,
+    private readonly renderer: Renderer2,
+    private readonly viewContainerRef: ViewContainerRef,
+    private readonly overlayService: OverlayService,
   ) {}
 
   ngAfterViewInit(): void {
-    if (this._targetInput && this._targetInput.tagName.toLowerCase() === 'input') {
+    /**
+     * The input binding may not have been processed in every
+     * possible usage scenario. Make sure a host input is detected.
+     */
+    if (!this._targetInput && this.isInputElement(this.el.nativeElement)) {
+      this._targetInput = this.el.nativeElement;
+      this.isHostInput = true;
+
+      this.bindTargetInput();
+    }
+
+    if (this._targetInput) {
       this.writeValue(this._targetInput.value);
     }
   }
+
   ngOnDestroy(): void {
+    this.removeTargetInputListener();
     this.destroyColorPicker();
   }
 
+  /**
+   * Open the custom color picker.
+   */
   @HostListener('click', ['$event'])
-  onClick(ev: Event) {
-    ev.stopPropagation();
-    ev.preventDefault();
+  onHostClick(event: Event): void {
+    if (this.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
     this.toggleColorPicker();
   }
 
-  writeValue(value: any): void {
+  /**
+   * Called by Angular Forms.
+   *
+   * IMPORTANT:
+   * writeValue must NEVER call _onChange().
+   */
+  writeValue(value: unknown): void {
+    if (value === null || value === undefined || value === '') {
+      this.color = undefined;
+      this.invalid = false;
+
+      this.syncView('');
+      this.notifyValidatorChange();
+
+      return;
+    }
+
     try {
-      this.color = value ? new NgxColor(value) : undefined;
+      const color = value instanceof NgxColor ? value : new NgxColor(String(value));
 
-      const colorStr = this.color?.toHexString() ?? '';
-
-      // اگر دایرکتیو روی input باشه (ControlValueAccessor)
-      if (this.isHostInput) {
-        const input = this.el.nativeElement as HTMLInputElement;
-        input.value = colorStr;
+      if (color.isValid === false) {
+        throw new Error('Invalid color');
       }
 
-      // اگر input خارجی مشخص شده
-      if (this._targetInput instanceof HTMLInputElement) {
-        this._targetInput.value = colorStr;
-      }
+      this.color = color;
+      this.invalid = false;
 
-      if (this.setInputBackgroundColor) {
-        this.renderer.setStyle(this.el.nativeElement, 'backgroundColor', colorStr);
-      }
+      const colorValue = this.getViewColor();
 
-      this.inValid = false;
-      this._onValidateChange();
-    } catch (e) {
-      this.color = new NgxColor('#000'); // مقدار پیش‌فرض
-      this.inValid = true;
+      this.syncView(colorValue);
+    } catch {
+      this.color = undefined;
+      this.invalid = true;
+
+      /**
+       * Do not replace an invalid value with black.
+       *
+       * Angular/form validation needs to know that the value
+       * is invalid instead of silently turning it into #000.
+       */
+      this.syncView('');
+
+      this.notifyValidatorChange();
     }
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: string) => void): void {
     this._onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this._onTouched = fn;
   }
 
   setDisabledState(disabled: boolean): void {
-    if (disabled) {
+    this.disabled = disabled;
+
+    /**
+     * Host element.
+     */
+    if (this.isInputElement(this.el.nativeElement)) {
       this.renderer.setProperty(this.el.nativeElement, 'disabled', disabled);
-    } else {
-      this.renderer.removeAttribute(this.el.nativeElement, 'disabled');
+    }
+
+    /**
+     * External target input.
+     */
+    if (this._targetInput && this._targetInput !== this.el.nativeElement) {
+      this.renderer.setProperty(this._targetInput, 'disabled', disabled);
+    }
+
+    if (disabled) {
+      this.destroyColorPicker();
     }
   }
 
@@ -161,14 +247,75 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     this._onValidateChange = fn;
   }
 
-  validate(control: AbstractControl): ValidationErrors | null {
-    if ((this.color && this.color.isValid === false) || this.inValid === true) {
-      return { invalid: true };
+  validate(_control: AbstractControl): ValidationErrors | null {
+    if (this.invalid) {
+      return {
+        invalid: true,
+      };
+    }
+    if (this.color?.isValid === false) {
+      return {
+        invalid: true,
+      };
     }
     return null;
   }
 
-  private toggleColorPicker() {
+  private bindTargetInput(): void {
+    if (!this._targetInput) {
+      return;
+    }
+    this.removeInputListener?.();
+    this.removeInputListener = this.renderer.listen(this._targetInput, 'input', (event: Event) => {
+      this.handleInputEvent(event);
+    });
+  }
+
+  private removeTargetInputListener(): void {
+    this.removeInputListener?.();
+    this.removeInputListener = undefined;
+  }
+
+  /**
+   * Handles native input changes.
+   *
+   * This is deliberately NOT implemented using writeValue(),
+   * because this is a user-originated value and therefore
+   * must propagate through ControlValueAccessor.
+   */
+  private handleInputEvent(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    try {
+      const color = value ? new NgxColor(value) : undefined;
+      if (color && color.isValid === false) {
+        this.color = undefined;
+        this.invalid = true;
+        this.notifyValidatorChange();
+        return;
+      }
+
+      this.color = color;
+      this.invalid = false;
+      this.syncHostBackground(value);
+      /**
+       * User change → Angular Forms.
+       */
+      this._onChange(value);
+      this.change.emit(value);
+      this._onTouched();
+      this.notifyValidatorChange();
+    } catch {
+      this.color = undefined;
+      this.invalid = true;
+      this.notifyValidatorChange();
+    }
+  }
+
+  private toggleColorPicker(): void {
+    if (this.disabled) {
+      return;
+    }
     if (this.pickerRef) {
       this.destroyColorPicker();
       return;
@@ -186,11 +333,13 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
         instance.outputType = this.outputType;
         instance.setTheme = this.theme;
         instance.setUseAlphaChannel = this.useAlphaChannel;
-        if (this.color?.isValid) instance.writeValue(this.color);
+        if (this.color?.isValid) {
+          instance.writeValue(this.color);
+        }
 
-        instance.change.subscribe((c: string) => {
-          this.color = new NgxColor(c);
-          this.emitChange(c);
+        instance.change.subscribe((value: string) => {
+          this.color = new NgxColor(value);
+          void this.emitChange(value);
         });
 
         // instance.closed.subscribe(() => ref.close());
@@ -201,31 +350,102 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     });
   }
 
-  private destroyColorPicker() {
+  private destroyColorPicker(): void {
     this.pickerRef?.close();
     this.pickerRef = undefined;
   }
 
-  private async emitChange(c: string) {
-    if (this.setInputBackgroundColor) {
-      this.renderer.setStyle(this.el.nativeElement, 'backgroundColor', c);
-    }
+  /**
+   * User-originated/custom-picker value.
+   *
+   * This is the ONLY place where _onChange is called.
+   */
+  private async emitChange(value: string): Promise<void> {
+    try {
+      const color = new NgxColor(value);
+      if (color.isValid === false) {
+        this.invalid = true;
+        this.notifyValidatorChange();
 
-    // اگر روی input باشیم، مقدار رو در input قرار بده
+        return;
+      }
+      this.color = color;
+      this.invalid = false;
+      const viewValue = this.getViewColor();
+      this.syncView(viewValue);
+      /**
+       * Do NOT dispatch another input event here.
+       */
+      this._onChange(viewValue);
+      this.change.emit(viewValue);
+      this._onTouched();
+      this.notifyValidatorChange();
+    } catch {
+      this.invalid = true;
+      this.notifyValidatorChange();
+    }
+  }
+
+  /**
+   * Synchronize all visual representations.
+   */
+  private syncView(value: string): void {
+    /**
+     * Host input value.
+     */
     if (this.isHostInput) {
       const input = this.el.nativeElement as HTMLInputElement;
-      input.value = c;
+      input.value = this.getNativeInputColor(value);
     }
 
-    // اگر targetInput وجود داره، در اونم مقدار ست کن
-    if (this._targetInput instanceof HTMLInputElement) {
-      this._targetInput.value = c;
-      const event = new Event('input', { bubbles: true });
-      this._targetInput.dispatchEvent(event);
+    /**
+     * External target input.
+     */
+    if (this._targetInput && this._targetInput !== this.el.nativeElement) {
+      this._targetInput.value = this.getNativeInputColor(value);
     }
+    /**
+     * Background of host element.
+     */
+    this.syncHostBackground(value);
+  }
 
-    this._onChange(c);
-    this.change.emit(c);
-    this._onTouched();
+  /**
+   * input[type=color] only accepts a 6-digit RGB hex value.
+   *
+   * Therefore even if the selected color contains alpha,
+   * the native color input receives #RRGGBB.
+   */
+  private getNativeInputColor(value: string): string {
+    if (!value) {
+      return '';
+    }
+    try {
+      const color = new NgxColor(value);
+
+      return color.toHexString();
+    } catch {
+      return '';
+    }
+  }
+
+  private getViewColor(): string {
+    return this.color?.toHexString() ?? '';
+  }
+
+  private syncHostBackground(value: string): void {
+    if (!this.setInputBackgroundColor) {
+      return;
+    }
+    const element = this.el.nativeElement;
+    this.renderer.setStyle(element, 'backgroundColor', value || null);
+  }
+
+  private notifyValidatorChange(): void {
+    this._onValidateChange();
+  }
+
+  private isInputElement(value: unknown): value is HTMLInputElement {
+    return value instanceof HTMLInputElement;
   }
 }

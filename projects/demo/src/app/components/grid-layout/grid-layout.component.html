@@ -1,0 +1,118 @@
+<div class="advanced-demo">
+  <!-- Grid -->
+  <div class="grid-container">
+    <ngx-grid-layout
+      #ngxGridLayout
+      [editMode]="gridSettings.editMode"
+      [options]="gridOptions"
+      (layoutChange)="onLayoutChange($event)">
+      @for (item of items(); track item.id) {
+        <ngx-grid-item [id]="item.id" [config]="item.config" [ngClass]="'item-' + item.type">
+          <div class="item-wrapper">
+            <div class="item-header">
+              <span class="item-icon">{{ item.icon }}</span>
+              <h4>{{ item.title }}</h4>
+            </div>
+            <div class="item-body">
+              <p>id={{ item.id }}</p>
+              {{ item.description }}
+            </div>
+            @if (gridSettings.editMode) {}
+            <button type="button" class="remove-btn" (click)="removeItem(item.id)">🗑️</button>
+          </div>
+        </ngx-grid-item>
+      }
+    </ngx-grid-layout>
+  </div>
+  <!-- پنل تنظیمات -->
+  <div class="settings-panel">
+    <h3>⚙️ Grid Setting</h3>
+
+    <div class="setting-group">
+      <label>
+        <input type="checkbox" [(ngModel)]="gridSettings.editMode" />
+        {{ gridSettings.editMode ? '🔓 Edit Mode' : '🔒 View Mode' }}
+      </label>
+    </div>
+    <button (click)="addRandomItem()">➕ Add Random Item</button>
+
+    <button (click)="resetToDefault()">🔄 Reset</button>
+
+    <div class="setting-group">
+      <label>Columns Count:</label>
+      <input type="range" [(ngModel)]="gridOptions.cols" min="6" max="24" step="2" />
+      <span>{{ gridOptions.cols }}</span>
+    </div>
+
+    <div class="setting-group">
+      <label>Row Height(px):</label>
+      <input type="range" [(ngModel)]="gridOptions.rowHeight" min="40" max="120" step="10" />
+      <span>{{ gridOptions.rowHeight }}</span>
+    </div>
+
+    <div class="setting-group">
+      <label>Space (gap):</label>
+      <input type="range" [(ngModel)]="gridOptions.gap" min="0" max="30" step="5" />
+      <span>{{ gridOptions.gap }}px</span>
+    </div>
+
+    <div class="demo-choice">
+      <button
+        type="button"
+        class="demo-choice-item"
+        [class.active]="gridOptions.flow === 'free'"
+        (click)="gridOptions.flow = 'free'">
+        Free
+      </button>
+      <button
+        type="button"
+        class="demo-choice-item"
+        [class.active]="gridOptions.flow === 'vertical'"
+        (click)="gridOptions.flow = 'vertical'">
+        Vertical
+      </button>
+      <button
+        type="button"
+        class="demo-choice-item"
+        [class.active]="gridOptions.flow === 'horizontal'"
+        (click)="gridOptions.flow = 'horizontal'">
+        Horizontal
+      </button>
+    </div>
+
+    @if (gridOptions.gridBackgroundConfig) {
+      <div class="setting-group">
+        <h4>🎨 Colors</h4>
+
+        <label>Border Color:</label>
+        <input
+          class="input-color"
+          type="color"
+          ngxInputColor
+          [(ngModel)]="gridOptions.gridBackgroundConfig.borderColor" />
+
+        <label>Gap Color:</label>
+        <input
+          class="input-color"
+          type="color"
+          ngxInputColor
+          [(ngModel)]="gridOptions.gridBackgroundConfig.gapColor" />
+
+        <label>Row Color:</label>
+        <input
+          class="input-color"
+          type="color"
+          ngxInputColor
+          [(ngModel)]="gridOptions.gridBackgroundConfig.rowColor" />
+
+        <label>Column Color:</label>
+        <input
+          class="input-color"
+          type="color"
+          ngxInputColor
+          [(ngModel)]="gridOptions.gridBackgroundConfig.columnColor" />
+      </div>
+    }
+    <button (click)="update()" class="preset-btn">Update</button>
+  </div>
+</div>

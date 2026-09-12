@@ -54,15 +54,15 @@ Nested menus (submenus) work exactly as shown above, just by putting `[ngxMenu]`
 
 ### `[ngxMenu]` directive
 
-| Input | Type | Description |
-| --- | --- | --- |
-| `ngxMenu` | `NgxMenu \| TemplateRef` | Reference to the menu to open |
+| Input       | Type                          | Description                                                                               |
+| ----------- | ----------------------------- | ----------------------------------------------------------------------------------------- |
+| `ngxMenu`   | `NgxMenu \| TemplateRef`      | Reference to the menu to open                                                             |
 | `placement` | `'top' \| 'bottom' \| 'auto'` | Opening direction; defaults to `'auto'` (picked automatically if there isn't enough room) |
 
 ### `<ngx-menu>`
 
-| Input | Type | Description |
-| --- | --- | --- |
+| Input   | Type     | Description                  |
+| ------- | -------- | ---------------------------- |
 | `class` | `string` | Extra CSS class on the panel |
 
 ### Styling

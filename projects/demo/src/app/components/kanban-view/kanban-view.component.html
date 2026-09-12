@@ -1,0 +1,35 @@
+<h6>KanbanView</h6>
+<div class="kanban-view" ngxDropListGroup>
+  <div class="list todo">
+    <div class="title">TODO</div>
+    <div class="inner" ngxDropList (drop)="onDrop($event)" [data]="todo()">
+      @for (item of todo(); track $index) {
+        <div class="card" ngxDraggable>{{ item }} - {{ $index + 1 }}</div>
+      }
+    </div>
+  </div>
+  <div class="list progress">
+    <div class="title">Progress</div>
+    <div class="inner" ngxDropList (drop)="onDrop($event)" [data]="progress()">
+      @for (item of progress(); track $index) {
+        <div class="card" ngxDraggable>{{ item }} - {{ $index + 1 }}</div>
+      }
+    </div>
+  </div>
+  <div class="list done">
+    <div class="title">Done</div>
+    <div class="inner" ngxDropList (drop)="onDrop($event)" [data]="done()">
+      @for (item of done(); track $index) {
+        <div class="card" ngxDraggable>{{ item }} - {{ $index + 1 }}</div>
+      }
+    </div>
+  </div>
+  <div class="list closed">
+    <div class="title">Closed</div>
+    <div class="inner" ngxDropList (drop)="onDrop($event)" [data]="stoped()">
+      @for (item of stoped(); track $index) {
+        <div class="card" ngxDraggable>{{ item }} - {{ $index + 1 }}</div>
+      }
+    </div>
+  </div>
+</div>

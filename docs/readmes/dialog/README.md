@@ -65,23 +65,23 @@ export class MyDialogComponent {
 
 ### `Dialog.open<T>(component, config?)`
 
-| `config` field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `data` | `T` | `{}` | Data passed to the component inside the dialog |
-| `allowCloseOnOutsideClick` | `boolean` | `false` | Close when clicking the backdrop |
-| `containerClass` | `string` | `'ngx-kit'` | Extra class on the container |
-| `header.enable` / `header.title` / `header.showCloseButton` | | | Default header settings |
-| `footer.enable` | `boolean` | | Show the default footer |
-| `width` / `minWidth` / `maxWidth` | `string` | | Horizontal sizing |
-| `height` / `minHeight` / `maxHeight` | `string` | | Vertical sizing |
-| `injector` | `Injector` | | Custom injector for the inner component |
+| `config` field                                              | Type       | Default     | Description                                    |
+| ----------------------------------------------------------- | ---------- | ----------- | ---------------------------------------------- |
+| `data`                                                      | `T`        | `{}`        | Data passed to the component inside the dialog |
+| `allowCloseOnOutsideClick`                                  | `boolean`  | `false`     | Close when clicking the backdrop               |
+| `containerClass`                                            | `string`   | `'ngx-kit'` | Extra class on the container                   |
+| `header.enable` / `header.title` / `header.showCloseButton` |            |             | Default header settings                        |
+| `footer.enable`                                             | `boolean`  |             | Show the default footer                        |
+| `width` / `minWidth` / `maxWidth`                           | `string`   |             | Horizontal sizing                              |
+| `height` / `minHeight` / `maxHeight`                        | `string`   |             | Vertical sizing                                |
+| `injector`                                                  | `Injector` |             | Custom injector for the inner component        |
 
 ### `NgxDialogRef`
 
-| Member | Description |
-| --- | --- |
-| `close(result?)` | Closes the dialog, optionally passing back a result |
-| `afterClosed: Observable<any>` | Emits `result` after the dialog closes |
+| Member                         | Description                                         |
+| ------------------------------ | --------------------------------------------------- |
+| `close(result?)`               | Closes the dialog, optionally passing back a result |
+| `afterClosed: Observable<any>` | Emits `result` after the dialog closes              |
 
 ## SSR note
 

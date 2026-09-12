@@ -1,7 +1,7 @@
-// =========================================================
-// NGX FORM FIELD
-// Material-like behavior with the custom 3-segment border
-// =========================================================
+/* =========================================================
+/ NGX FORM FIELD
+/ Material-like behavior with the custom 3-segment border
+/ =========================================================*/
 
 $field-height: 44px;
 $field-radius: 6px;
@@ -41,9 +41,9 @@ ngx-form-field {
   font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
-// =========================================================
-// FIELD
-// =========================================================
+/* =========================================================
+/ FIELD
+/ =========================================================*/
 
 .mx-form-field {
   position: relative;
@@ -59,9 +59,9 @@ ngx-form-field {
   isolation: isolate;
 }
 
-// =========================================================
-// BORDER SEGMENTS
-// =========================================================
+/* =========================================================
+/ BORDER SEGMENTS
+/ =========================================================*/
 
 .mx-form-field__before,
 .mx-form-field__label,
@@ -92,9 +92,9 @@ ngx-form-field {
   border-radius: 0 var(--mx-field-radius) var(--mx-field-radius) 0;
 }
 
-// =========================================================
-// PREFIX / SUFFIX
-// =========================================================
+/* =========================================================
+/ PREFIX / SUFFIX
+/ =========================================================*/
 
 .mx-form-field__prefix,
 .mx-form-field__suffix {
@@ -130,9 +130,9 @@ ngx-form-field {
   max-width: 100%;
 }
 
-// =========================================================
-// LABEL NOTCH
-// =========================================================
+/* =========================================================
+/ LABEL NOTCH
+/ =========================================================*/
 
 .mx-form-field__label {
   position: relative;
@@ -164,9 +164,9 @@ ngx-form-field {
     color 150ms ease;
 }
 
-// =========================================================
-// INPUT / TEXTAREA / SELECT
-// =========================================================
+/* =========================================================
+/ INPUT / TEXTAREA / SELECT
+/ =========================================================*/
 
 .mx-form-field > input,
 .mx-form-field > textarea,
@@ -227,15 +227,15 @@ ngx-form-field {
   opacity: 0.75;
 }
 
-// =========================================================
-// FLOATING LABEL
-// =========================================================
-//
-// The component owns "has-value" so this does not depend on
-// placeholder-shown. This is important for inputs without a
-// placeholder and for textarea/select.
-//
-// =========================================================
+/* =========================================================
+/ FLOATING LABEL
+/ =========================================================
+/
+/ The component owns "has-value" so this does not depend on
+/ placeholder-shown. This is important for inputs without a
+/ placeholder and for textarea/select.
+/
+/ =========================================================*/
 
 .mx-form-field:has(> input.has-value),
 .mx-form-field:has(> textarea.has-value),
@@ -252,9 +252,9 @@ ngx-form-field {
   }
 }
 
-// =========================================================
-// NOTCH / TRANSPARENT BACKGROUND
-// =========================================================
+/* =========================================================
+/ NOTCH / TRANSPARENT BACKGROUND
+/ =========================================================*/
 
 .mx-form-field:has(> input.has-value),
 .mx-form-field:has(> textarea.has-value),
@@ -267,9 +267,6 @@ ngx-form-field {
   }
 }
 
-// =========================================================
-// HOVER
-// =========================================================
 
 .mx-form-field:hover:not(:has(> input:disabled)):not(:has(> textarea:disabled)):not(
     :has(> select:disabled)
@@ -280,11 +277,6 @@ ngx-form-field {
     border-color: var(--mx-field-hover-color);
   }
 }
-
-// =========================================================
-// FOCUS
-// =========================================================
-
 .mx-form-field:focus-within {
   .mx-form-field__before,
   .mx-form-field__label,
@@ -297,9 +289,6 @@ ngx-form-field {
   }
 }
 
-// =========================================================
-// INVALID
-// =========================================================
 
 .mx-form-field.mx-form-field--invalid,
 .mx-form-field:has(> input.ng-invalid),
@@ -323,16 +312,13 @@ ngx-form-field {
   border-color: color-mix(in srgb, var(--mx-field-invalid-color) 20%, transparent);
 }
 
-// Do not show native invalid styling before interaction.
+
 .mx-form-field > input:user-invalid,
 .mx-form-field > textarea:user-invalid,
 .mx-form-field > select:user-invalid {
   color: var(--mx-field-text-color);
 }
 
-// =========================================================
-// DISABLED
-// =========================================================
 
 .mx-form-field.mx-form-field--disabled {
   opacity: 0.62;
@@ -345,9 +331,6 @@ ngx-form-field {
   }
 }
 
-// =========================================================
-// READONLY
-// =========================================================
 
 .mx-form-field.mx-form-field--readonly {
   .mx-form-field__label {
@@ -360,9 +343,7 @@ ngx-form-field {
   }
 }
 
-// =========================================================
-// AUTOFILL
-// =========================================================
+
 
 .mx-form-field input:-webkit-autofill,
 .mx-form-field input:-webkit-autofill:hover,
@@ -373,9 +354,7 @@ ngx-form-field {
   transition: background-color 99999s ease-in-out 0s;
 }
 
-// =========================================================
-// HINT / ERROR
-// =========================================================
+
 
 .mx-form-field__hint,
 .mx-form-field__error-list {
@@ -396,9 +375,6 @@ ngx-form-field {
   color: var(--mx-field-invalid-color);
 }
 
-// =========================================================
-// RTL
-// =========================================================
 
 [dir='rtl'] .mx-form-field__before {
   border-inline-start: var(--mx-field-border-width) solid var(--mx-field-border-color);
@@ -418,9 +394,9 @@ ngx-form-field {
   transform-origin: center;
 }
 
-// =========================================================
-// REDUCED MOTION
-// =========================================================
+/* =========================================================
+/ REDUCED MOTION
+/ =========================================================*/
 
 @media (prefers-reduced-motion: reduce) {
   .mx-form-field *,
@@ -429,9 +405,9 @@ ngx-form-field {
   }
 }
 
-// =========================================================
-// FORCED COLORS
-// =========================================================
+/* =========================================================
+/ FORCED COLORS
+/ =========================================================*/
 
 @media (forced-colors: active) {
   .mx-form-field__before,

@@ -1,0 +1,27 @@
+.kanban-view {
+  display: flex;
+  height: 80dvh;
+  margin: 10px;
+  .list {
+    border: 1px var(--border) solid;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    .title {
+      border-bottom: 1px var(--border) solid;
+      font-weight: 500;
+      padding: 10px;
+    }
+    .inner {
+      flex: 1 1 auto;
+      background-color: var(--surface);
+      overflow: auto;
+    }
+  }
+}
+
+.card {
+  box-shadow: 0px 0px 5px rgba(0, 0, 0.3);
+  background-color: var(--surface-2);
+  padding: 15px;
+}

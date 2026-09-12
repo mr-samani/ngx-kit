@@ -29,45 +29,66 @@ import {
   providers: [],
 })
 export class MessageComponent {
+
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: 'examples/message/message.ts', language: 'typescript' },
-    { label: 'HTML', path: 'examples/message/message.html', language: 'html' },
+    {
+      label: 'TS',
+      path: 'examples/message/message.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/message/message.html',
+      language: 'html',
+    },
   ];
 
   options = new MessageOptions();
+
   result?: MessageResult;
+
   constructor() {
     this.options.title = 'Message Title';
     this.options.text = 'Message Body';
     this.options.icon = 'success';
+
     this.options.useOverlay = true;
+
     this.options.showCloseButton = true;
     this.options.showCancelButton = true;
   }
 
-  ngOnInit(): void {}
-
-  openModal() {
-    MSG.show(this.options).afterClose.subscribe((result) => {
-      this.result = result;
-    });
+  openModal(): void {
+    MSG.show(this.options)
+      .afterClose
+      .subscribe(result => {
+        this.result = result;
+      });
   }
 
-  showLoading() {
-    let msg = MSG.fire({
+  showLoading(): void {
+
+    const message = MSG.fire({
       icon: 'loading',
       text: 'Please Wait...',
+
       showConfirmButton: false,
+      showCancelButton: false,
+      showDenyButton: false,
+
       allowEnterKey: false,
       allowEscapeKey: false,
       allowOutsideClick: false,
+
       showCloseButton: false,
     });
-    msg.afterClose.subscribe((r) => {
-      console.log(r);
+
+    message.afterClose.subscribe(result => {
+      console.log(result);
     });
+
     setTimeout(() => {
-      msg.close();
+      message.close();
     }, 5000);
   }
 }

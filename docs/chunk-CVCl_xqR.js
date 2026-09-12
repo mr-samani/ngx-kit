@@ -1,1 +1,0 @@
-import {y,g as we,aJ as Hd,bR as A}from'./main-FODANSV4.js';function w(t){t||(t=y(we));let i=new A(e=>{if(t.destroyed){e.next();return}return t.onDestroy(e.next.bind(e))});return e=>e.pipe(Hd(i))}export{w};

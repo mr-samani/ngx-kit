@@ -8,7 +8,9 @@ import { NgxInputTimePicker } from '../directives/time-picker.directive';
 @Component({
   standalone: true,
   imports: [FormsModule, NgxInputTimePicker],
-  template: `<input ngxInputTimePicker [(ngModel)]="value" [openOnCLick]="false" #dp="ngxInputTimePicker" />`,
+  template: `
+    <input ngxInputTimePicker [(ngModel)]="value" [openOnCLick]="false" #dp="ngxInputTimePicker" />
+  `,
 })
 class HostComponent {
   value: string | null = null;

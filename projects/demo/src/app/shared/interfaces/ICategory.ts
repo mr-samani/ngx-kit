@@ -1,7 +1,7 @@
-import { IComponent } from './IComponent';
+import { IAppMenu } from './IAppMenu';
 
 export interface ICategory {
   open?: boolean;
   name: string;
-  items: IComponent[];
+  items: IAppMenu[];
 }

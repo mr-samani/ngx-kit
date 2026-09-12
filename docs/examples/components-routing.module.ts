@@ -87,6 +87,36 @@ const routes: Routes = [
         loadComponent: () =>
           import('./drawer-menu/drawer-menu.component').then((c) => c.DrawerMenuComponent),
       },
+      {
+        path: 'virtual-scroll',
+        loadComponent: () =>
+          import('./virtual-scroll/virtual-scroll.component').then((c) => c.VirtualScrollComponent),
+      },
+      {
+        path: 'grid-layout',
+        loadComponent: () =>
+          import('./grid-layout/grid-layout.component').then((c) => c.GridLayoutComponent),
+      },
+      {
+        path: 'drag-resize',
+        loadComponent: () =>
+          import('./drag-resize/drag-resize.component').then((c) => c.DragResizeComponent),
+      },
+      {
+        path: 'kanban',
+        loadComponent: () =>
+          import('./kanban-view/kanban-view.component').then((c) => c.KanbanViewComponent),
+      },
+      {
+        path: 'drop-list',
+        loadComponent: () =>
+          import('./drop-list/drop-list.component').then((c) => c.DropListComponent),
+      },
+      {
+        path: 'b',
+        loadComponent: () =>
+          import('./webflow/builder-canvas.component').then((c) => c.BuilderCanvasComponent),
+      },
     ],
   },
 ];

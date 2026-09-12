@@ -188,10 +188,16 @@ export class NgxVirtualScrollViewport<T = unknown> {
   });
 
   protected readonly wrapperTransform = computed(() =>
-    this.axis() === 'horizontal' ? `translateX(${this.contentOffset()}px)` : `translateY(${this.contentOffset()}px)`
+    this.axis() === 'horizontal'
+      ? `translateX(${this.contentOffset()}px)`
+      : `translateY(${this.contentOffset()}px)`,
   );
-  protected readonly spacerWidth = computed(() => (this.axis() === 'horizontal' ? this.totalSize() : 1));
-  protected readonly spacerHeight = computed(() => (this.axis() === 'vertical' ? this.totalSize() : 1));
+  protected readonly spacerWidth = computed(() =>
+    this.axis() === 'horizontal' ? this.totalSize() : 1,
+  );
+  protected readonly spacerHeight = computed(() =>
+    this.axis() === 'vertical' ? this.totalSize() : 1,
+  );
 
   private resizeObserver?: ResizeObserver;
   private scrollingIdleTimer?: ReturnType<typeof setTimeout>;

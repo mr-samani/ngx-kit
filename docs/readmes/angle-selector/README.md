@@ -22,10 +22,10 @@ Or on a plain input:
 
 ## API
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Component theme |
-| `change` *(directive)* | `EventEmitter<number>` | | The new angle (in degrees) |
+| Input                  | Type                          | Default  | Description                |
+| ---------------------- | ----------------------------- | -------- | -------------------------- |
+| `theme`                | `'light' \| 'dark' \| 'auto'` | `'auto'` | Component theme            |
+| `change` _(directive)_ | `EventEmitter<number>`        |          | The new angle (in degrees) |
 
 The value is always a number between `0` and `360`.
 

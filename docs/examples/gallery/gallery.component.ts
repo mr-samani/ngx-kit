@@ -37,7 +37,11 @@ export class GalleryComponent {
       alt: 'Mountain lake',
       caption: 'Mountain lake',
     },
-    { src: 'https://picsum.photos/id/1024/1400/900', alt: 'Dog in nature', caption: 'Dog in nature' },
+    {
+      src: 'https://picsum.photos/id/1024/1400/900',
+      alt: 'Dog in nature',
+      caption: 'Dog in nature',
+    },
   ];
 
   constructor(private readonly viewer: NgxImageViewerService) {}

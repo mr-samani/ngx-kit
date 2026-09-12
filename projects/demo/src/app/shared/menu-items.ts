@@ -125,6 +125,108 @@ export const MENU_LIST: ICategory[] = [
         title: 'Virtual Scroll',
         url: '/components/virtual-scroll',
       },
+      {
+        title: 'Grid Layout',
+        description: 'Grid layout with resizable and draggable widgets',
+        url: '/components/grid-layout',
+      },
+      {
+        title: 'Drag and Resize',
+        url: '/components/drag-resize',
+
+        fragments: [
+          {
+            id: 'overview',
+            title: 'Overview',
+            description: 'Explore drag and resize capabilities.',
+            icon: '✦',
+          },
+          {
+            id: 'drag',
+            title: 'Basic Drag',
+            description: 'Simple draggable elements.',
+            icon: '✥',
+          },
+          {
+            id: 'resize',
+            title: 'Basic Resize',
+            description: 'Resize elements from every direction.',
+            icon: '↗',
+          },
+          {
+            id: 'combined',
+            title: 'Drag + Resize',
+            description: 'Move and resize simultaneously.',
+            icon: '⤢',
+          },
+          {
+            id: 'positions',
+            title: 'Position Modes',
+            description: 'Static, relative, absolute and fixed.',
+            icon: '▣',
+          },
+          {
+            id: 'boundary',
+            title: 'Boundary',
+            description: 'Keep elements inside a container.',
+            icon: '□',
+          },
+          {
+            id: 'handle',
+            title: 'Drag Handle',
+            description: 'Drag using a dedicated handle.',
+            icon: '☷',
+          },
+          {
+            id: 'scroll',
+            title: 'Scrolling',
+            description: 'Drag inside scrollable containers.',
+            icon: '↕',
+          },
+          {
+            id: 'rtl',
+            title: 'RTL / LTR',
+            description: 'Bidirectional layouts.',
+            icon: '⇄',
+          },
+          {
+            id: 'multiple',
+            title: 'Multiple Elements',
+            description: 'Real-world dashboard layout.',
+            icon: '▦',
+          },
+          {
+            id: 'resizepan',
+            title: 'Resize pan',
+            description: 'Resize side pan',
+            icon: '🔛',
+          },
+        ],
+      },
+      {
+        title: 'kanban',
+        description: '',
+        url: '/components/kanban',
+      },
+      {
+        title: 'Drop List',
+        description: '',
+        url: '/components/drop-list',
+        fragments: [
+          {
+            id: 'sortable',
+            title: 'Sortable list',
+          },
+          {
+            id: 'mixed',
+            title: 'Mixed',
+          },
+        ],
+      },
+      {
+        title: 'b',
+        url: '/components/b',
+      },
     ],
   },
 ];

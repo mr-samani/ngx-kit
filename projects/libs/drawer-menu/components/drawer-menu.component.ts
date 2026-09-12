@@ -1,8 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DOCUMENT,
   DestroyRef,
+  ElementRef,
+  HostBinding,
+  PLATFORM_ID,
+  Renderer2,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -10,206 +14,427 @@ import {
   model,
   signal,
 } from '@angular/core';
-import { DirectionService } from 'ngx-kit/shared';
+
+import { isPlatformBrowser } from '@angular/common';
 import {
+  DEFAULT_DRAWER_RESPONSIVE,
+  NgxDrawerBehavior,
   NgxDrawerEffect,
-  NgxDrawerMode,
-  NgxDrawerResponsiveBehavior,
-  NgxDrawerResponsiveConfig,
+  NgxDrawerResponsive,
   NgxDrawerSide,
 } from '../contracts/drawer-menu-types';
-
-/**
- * Structural (not reference) equality for the `responsive` config.
- *
- * Consumers are expected to pass this as an inline object literal (see README),
- * which means the parent template creates a brand-new object on every change
- * detection run. Without this comparator, the `responsive` input signal sees a
- * "change" on every such run even when nothing actually changed, which re-triggers
- * the viewport-sync effect and forcibly resets `open` back to the configured
- * desktop/mobile default — silently overriding whatever the user just did by
- * dragging, clicking, or toggling the drawer.
- */
-function responsiveConfigsEqual(
-  a: NgxDrawerResponsiveConfig,
-  b: NgxDrawerResponsiveConfig,
-): boolean {
-  return (
-    a === b ||
-    (a.mode === b.mode &&
-      a.breakpoint === b.breakpoint &&
-      a.desktopOpen === b.desktopOpen &&
-      a.mobileOpen === b.mobileOpen &&
-      a.desktopBehavior === b.desktopBehavior &&
-      a.mobileBehavior === b.mobileBehavior &&
-      a.respectPinned === b.respectPinned)
-  );
-}
 
 @Component({
   selector: 'ngx-drawer-menu',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './drawer-menu.component.html',
   styleUrl: './drawer-menu.component.scss',
-  host: {
-    class: 'ngx-drawer-menu-host',
-    '(keydown.escape)': 'onEscape()',
-  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxDrawerMenuComponent {
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly renderer = inject(Renderer2);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  // ---------------------------------------------------------------------------
+  // Inputs
+  // ---------------------------------------------------------------------------
+
   readonly side = input<NgxDrawerSide>('start');
-  readonly mode = input<NgxDrawerMode>('overlay');
-  /** When responsive mode is active, desktop/mobile can use different layout behavior. */
-  readonly desktopBehavior = input<NgxDrawerResponsiveBehavior>('dock');
-  readonly mobileBehavior = input<NgxDrawerResponsiveBehavior>('overlay');
-  private readonly responsiveDesktopBehavior = signal<NgxDrawerResponsiveBehavior | null>(null);
-  private readonly responsiveMobileBehavior = signal<NgxDrawerResponsiveBehavior | null>(null);
+
   readonly effect = input<NgxDrawerEffect>('fabric');
 
-  readonly width = input<number>(300);
-  readonly maxWidth = input<number>(420);
-  readonly edgeSize = input<number>(34);
-  readonly dragThreshold = input<number>(0.38);
-  readonly velocityThreshold = input<number>(0.45);
+  readonly width = input<number | string>(300);
 
-  /** Opens/closes the panel from the edge and while the panel itself is dragged. */
-  readonly swipeEnabled = input<boolean>(true);
-  /** Allows closing by clicking the backdrop. */
-  readonly backdropClose = input<boolean>(true);
-  /** Allows Escape to close the drawer. */
-  readonly escapeClose = input<boolean>(true);
+  /**
+   * Main drawer state.
+   *
+   * Usage:
+   *
+   * [(open)]="sidebarOpen"
+   */
+  readonly open = model<boolean>(false);
 
-  /** The drawer starts open unless explicitly configured otherwise. */
-  readonly open = model<boolean>(true);
-  /** Pinned drawers are intended for persistent desktop navigation. */
+  /**
+   * Pinned state.
+   *
+   * Useful for desktop layouts.
+   *
+   * [(pinned)]="sidebarPinned"
+   */
   readonly pinned = model<boolean>(false);
 
-  /** Responsive behavior. Can be overridden with individual inputs below. */
-  readonly responsive = input<NgxDrawerResponsiveConfig>(
-    {
-      mode: 'auto',
-      breakpoint: 768,
-      desktopOpen: true,
-      mobileOpen: false,
-      respectPinned: true,
-      desktopBehavior: 'dock',
-      mobileBehavior: 'overlay',
-    } as any,
-    // { equal: responsiveConfigsEqual },
-  );
+  readonly responsive = input<NgxDrawerResponsive>(DEFAULT_DRAWER_RESPONSIVE);
 
-  /** Convenience aliases for the common responsive configuration. */
-  readonly respondToViewport = input<boolean>(true);
-  readonly mobileBreakpoint = input<number>(768);
-  readonly openOnDesktop = input<boolean>(true);
-  readonly openOnMobile = input<boolean>(false);
+  /**
+   * Whether clicking backdrop closes drawer.
+   */
+  readonly closeOnBackdrop = input(true);
 
-  /** Visual tuning. */
-  readonly curtainStrips = input<number>(9);
-  readonly backdropOpacity = input<number>(0.46);
-  readonly transitionMs = input<number>(420);
-  readonly focusOnOpen = input<boolean>(true);
+  /**
+   * Whether Escape closes drawer.
+   */
+  readonly closeOnEscape = input(true);
 
-  protected readonly dragProgress = signal<number | null>(null);
-  protected readonly dragVelocity = signal<number>(0);
-  protected readonly isMobile = signal<boolean>(false);
-  protected readonly effectiveBehavior = computed<NgxDrawerResponsiveBehavior>(() => {
-    if (!this.respondToViewport() || this.responsive().mode === 'off') {
-      return this.mode() === 'push' ? 'dock' : 'overlay';
-    }
-    return this.isMobile()
-      ? (this.responsiveMobileBehavior() ?? this.mobileBehavior())
-      : (this.responsiveDesktopBehavior() ?? this.desktopBehavior());
-  });
-  protected readonly isDocked = computed(() =>
-    this.respondToViewport() ? this.effectiveBehavior() === 'dock' : this.mode() === 'push',
-  );
-  protected readonly usesOverlay = computed(() => !this.isDocked());
-  protected readonly isDragging = computed(() => this.dragProgress() !== null);
-  protected readonly progress = computed(() => this.dragProgress() ?? (this.open() ? 1 : 0));
-  protected readonly isActuallyOpen = computed(() => this.progress() > 0.001);
-  protected readonly strips = computed(() =>
-    Array.from({ length: Math.max(3, this.curtainStrips()) }, (_, i) => i),
-  );
+  /**
+   * Whether body scrolling should be locked
+   * while an overlay drawer is open.
+   */
+  readonly lockBodyScroll = input(true);
 
-  /** Physical side: true means the drawer is attached to the physical left edge. */
-  protected readonly isPhysicalLeft = computed(() => {
-    const rtl = this.directionService.isRtl();
-    return this.side() === 'start' ? !rtl : rtl;
-  });
+  /**
+   * Animation duration in milliseconds.
+   */
+  readonly animationDuration = input(280);
 
-  protected readonly physicalSign = computed(() => (this.isPhysicalLeft() ? 1 : -1));
-  protected readonly effectiveMode = computed<NgxDrawerMode>(() => {
-    if (!this.respondToViewport() || this.responsive().mode === 'off') return this.mode();
-    return this.effectiveBehavior() === 'dock' ? 'push' : 'overlay';
-  });
-  protected readonly duration = computed(() => `${this.transitionMs()}ms`);
+  /**
+   * z-index.
+   */
+  readonly zIndex = input(1000);
 
-  private readonly directionService = inject(DirectionService);
-  private readonly document = inject(DOCUMENT);
-  private readonly destroyRef = inject(DestroyRef);
+  // ---------------------------------------------------------------------------
+  // Internal state
+  // ---------------------------------------------------------------------------
 
-  private pointerId: number | null = null;
-  private dragStartX = 0;
-  private dragStartProgress = 0;
-  private dragLastX = 0;
-  private dragLastTime = 0;
-  private lastVelocity = 0;
-  private activePointerTarget: HTMLElement | null = null;
-  private resizeObserver?: ResizeObserver;
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
+  readonly isMobile = signal(false);
+
+  readonly initialized = signal(false);
+
+  /**
+   * Used to avoid applying responsive defaults repeatedly.
+   */
+  private previousResponsiveMode: 'desktop' | 'mobile' | null = null;
+
   private mediaQuery?: MediaQueryList;
-  private mediaQueryListener?: (event: MediaQueryListEvent) => void;
-  private lastManagedViewportState: boolean | null = null;
+
+  private removeMediaQueryListener?: () => void;
+
+  // ---------------------------------------------------------------------------
+  // Computed
+  // ---------------------------------------------------------------------------
+
+  readonly responsiveConfig = computed(() => {
+    const config = this.responsive();
+
+    return {
+      ...DEFAULT_DRAWER_RESPONSIVE,
+      ...config,
+    };
+  });
+
+  readonly currentMode = computed<'desktop' | 'mobile'>(() => {
+    const config = this.responsiveConfig();
+
+    if (config.mode === 'desktop') {
+      return 'desktop';
+    }
+
+    if (config.mode === 'mobile') {
+      return 'mobile';
+    }
+
+    return this.isMobile() ? 'mobile' : 'desktop';
+  });
+
+  readonly currentBehavior = computed<NgxDrawerBehavior>(() => {
+    const config = this.responsiveConfig();
+
+    return this.currentMode() === 'mobile' ? config.mobileBehavior : config.desktopBehavior;
+  });
+
+  readonly isOverlay = computed(() => {
+    return this.currentBehavior() === 'overlay';
+  });
+
+  readonly isDocked = computed(() => {
+    return this.currentBehavior() === 'dock';
+  });
+
+  readonly shouldShowBackdrop = computed(() => {
+    return this.isOverlay() && this.open();
+  });
+
+  readonly drawerWidth = computed(() => {
+    const width = this.width();
+
+    if (typeof width === 'number') {
+      return `${width}px`;
+    }
+
+    return width;
+  });
+
+  readonly drawerVisible = computed(() => {
+    return this.open();
+  });
+
+  readonly shouldPreservePinned = computed(() => {
+    return this.responsiveConfig().respectPinned;
+  });
+
+  readonly isPinnedAndDesktop = computed(() => {
+    return this.currentMode() === 'desktop' && this.pinned() && this.shouldPreservePinned();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Host bindings
+  // ---------------------------------------------------------------------------
+
+  @HostBinding('class.drawer-start')
+  get drawerStart(): boolean {
+    return this.side() === 'start';
+  }
+
+  @HostBinding('class.drawer-end')
+  get drawerEnd(): boolean {
+    return this.side() === 'end';
+  }
+
+  @HostBinding('class.drawer-open')
+  get drawerOpen(): boolean {
+    return this.open();
+  }
+
+  @HostBinding('class.drawer-mobile')
+  get drawerMobile(): boolean {
+    return this.currentMode() === 'mobile';
+  }
+
+  @HostBinding('class.drawer-desktop')
+  get drawerDesktop(): boolean {
+    return this.currentMode() === 'desktop';
+  }
+
+  @HostBinding('class.drawer-overlay')
+  get drawerOverlay(): boolean {
+    return this.isOverlay();
+  }
+
+  @HostBinding('class.drawer-dock')
+  get drawerDock(): boolean {
+    return this.isDocked();
+  }
+
+  @HostBinding('style.--ngx-drawer-width')
+  get hostWidth(): string {
+    return this.drawerWidth();
+  }
+
+  @HostBinding('style.--ngx-drawer-duration')
+  get hostDuration(): string {
+    return `${this.animationDuration()}ms`;
+  }
+
+  @HostBinding('style.--ngx-drawer-z-index')
+  get hostZIndex(): number {
+    return this.zIndex();
+  }
+
+  @HostBinding('class.effect-none')
+  get effectNone(): boolean {
+    return this.effect() === 'none';
+  }
+
+  @HostBinding('class.effect-fabric')
+  get effectFabric(): boolean {
+    return this.effect() === 'fabric';
+  }
+
+  @HostBinding('class.effect-slide')
+  get effectSlide(): boolean {
+    return this.effect() === 'slide';
+  }
+
+  @HostBinding('class.effect-push')
+  get effectPush(): boolean {
+    return this.effect() === 'push';
+  }
+
+  @HostBinding('class.effect-scale')
+  get effectScale(): boolean {
+    return this.effect() === 'scale';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Constructor
+  // ---------------------------------------------------------------------------
 
   constructor() {
-    effect((onCleanup) => {
-      const locked = this.open() && this.effectiveMode() === 'overlay';
-      if (!locked) return;
+    this.setupResponsive();
 
-      const body = this.document.body;
-      const previous = body.style.overflow;
-      body.style.overflow = 'hidden';
-      onCleanup(() => (body.style.overflow = previous));
+    effect(() => {
+      const mode = this.currentMode();
+
+      if (!this.initialized()) {
+        return;
+      }
+
+      this.handleResponsiveModeChange(mode);
     });
 
     effect(() => {
-      const config = this.responsive();
-      const enabled = this.respondToViewport() && config.mode !== 'off';
-      const breakpoint = config.breakpoint ?? this.mobileBreakpoint();
-      const desktopOpen = config.desktopOpen ?? this.openOnDesktop();
-      const mobileOpen = config.mobileOpen ?? this.openOnMobile();
-      const desktopBehavior = config.desktopBehavior ?? this.desktopBehavior();
-      const mobileBehavior = config.mobileBehavior ?? this.mobileBehavior();
-      this.responsiveDesktopBehavior.set(desktopBehavior);
-      this.responsiveMobileBehavior.set(mobileBehavior);
+      const shouldLock = this.lockBodyScroll();
+      const shouldLockNow = this.isOverlay() && this.open();
 
-      this.setupViewportSync(
-        enabled,
-        breakpoint,
-        desktopOpen,
-        mobileOpen,
-        config.respectPinned ?? true,
-      );
+      if (!shouldLock) {
+        return;
+      }
+
+      if (shouldLockNow) {
+        this.lockScroll();
+      } else {
+        this.unlockScroll();
+      }
     });
 
     this.destroyRef.onDestroy(() => {
-      this.disposePointer();
-      this.disposeViewportSync();
+      this.destroyResponsive();
+
+      this.unlockScroll();
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // Responsive
+  // ---------------------------------------------------------------------------
+
+  private setupResponsive(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    afterNextRender(() => {
+      this.setupMediaQuery();
+
+      this.initialized.set(true);
+
+      const mode = this.currentMode();
+
+      this.previousResponsiveMode = mode;
+
+      this.applyInitialResponsiveState(mode);
+    });
+  }
+
+  private setupMediaQuery(): void {
+    const config = this.responsiveConfig();
+
+    if (config.mode !== 'auto') {
+      this.isMobile.set(config.mode === 'mobile');
+
+      return;
+    }
+
+    const breakpoint = config.breakpoint;
+
+    this.mediaQuery = window.matchMedia(`(max-width: ${breakpoint - 0.02}px)`);
+
+    this.updateMobileState();
+
+    const listener = () => {
+      this.updateMobileState();
+    };
+
+    this.mediaQuery.addEventListener('change', listener);
+
+    this.removeMediaQueryListener = () => {
+      this.mediaQuery?.removeEventListener('change', listener);
+    };
+  }
+
+  private updateMobileState(): void {
+    if (!this.mediaQuery) {
+      return;
+    }
+
+    this.isMobile.set(this.mediaQuery.matches);
+  }
+
+  private handleResponsiveModeChange(mode: 'desktop' | 'mobile'): void {
+    if (this.previousResponsiveMode === null) {
+      this.previousResponsiveMode = mode;
+      return;
+    }
+
+    if (this.previousResponsiveMode === mode) {
+      return;
+    }
+
+    const previousMode = this.previousResponsiveMode;
+
+    this.previousResponsiveMode = mode;
+
+    const config = this.responsiveConfig();
+
+    /**
+     * If pinned should be respected,
+     * don't overwrite the current open state.
+     */
+    if (config.respectPinned && this.pinned()) {
+      return;
+    }
+
+    if (mode === 'desktop') {
+      this.open.set(config.desktopOpen);
+    } else {
+      this.open.set(config.mobileOpen);
+    }
+
+    this.renderer.setAttribute(this.elementRef.nativeElement, 'data-previous-mode', previousMode);
+  }
+
+  private applyInitialResponsiveState(mode: 'desktop' | 'mobile'): void {
+    const config = this.responsiveConfig();
+
+    if (config.respectPinned && this.pinned()) {
+      return;
+    }
+
+    /**
+     * Don't blindly overwrite an explicitly bound
+     * [(open)] value after initialization.
+     *
+     * The default is only applied when the model
+     * has not already been initialized.
+     */
+    if (mode === 'desktop') {
+      this.open.set(config.desktopOpen);
+    } else {
+      this.open.set(config.mobileOpen);
+    }
+  }
+
+  private destroyResponsive(): void {
+    this.removeMediaQueryListener?.();
+
+    this.mediaQuery = undefined;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+
   toggle(): void {
-    if (this.pinned() && this.open()) return;
-    this.open.update((value) => !value);
+    if (this.open()) {
+      this.close();
+    } else {
+      this.openDrawer();
+    }
   }
 
   openDrawer(): void {
     this.open.set(true);
   }
 
-  closeDrawer(): void {
-    if (!this.pinned()) this.open.set(false);
+  close(): void {
+    if (this.pinned() && this.isPinnedAndDesktop()) {
+      return;
+    }
+
+    this.open.set(false);
   }
 
   pin(): void {
@@ -221,157 +446,79 @@ export class NgxDrawerMenuComponent {
     this.pinned.set(false);
   }
 
-  protected onEscape(): void {
-    if (this.escapeClose() && !this.pinned()) this.closeDrawer();
-  }
-
-  protected onBackdropPointerDown(event: PointerEvent): void {
-    if (!this.backdropClose() || this.pinned() || !this.usesOverlay()) return;
-    event.preventDefault();
-    this.closeDrawer();
-  }
-
-  protected onEdgePointerDown(event: PointerEvent): void {
-    if (!this.swipeEnabled() || this.open() || this.pinned()) return;
-    this.beginDrag(event, 0);
-  }
-
-  protected onPanelPointerDown(event: PointerEvent): void {
-    if (!this.swipeEnabled() || !this.open() || this.pinned()) return;
-    if (event.button !== 0) return;
-    this.beginDrag(event, 1);
-  }
-
-  private beginDrag(event: PointerEvent, startProgress: number): void {
-    if (this.pointerId !== null) return;
-
-    const target = event.currentTarget as HTMLElement | null;
-    if (!target) return;
-
-    this.pointerId = event.pointerId;
-    this.activePointerTarget = target;
-    this.dragStartX = event.clientX;
-    this.dragLastX = event.clientX;
-    this.dragLastTime = performance.now();
-    this.dragStartProgress = startProgress;
-    this.lastVelocity = 0;
-    this.dragProgress.set(startProgress);
-
-    target.setPointerCapture?.(event.pointerId);
-    event.preventDefault();
-
-    target.addEventListener('pointermove', this.onPointerMove);
-    target.addEventListener('pointerup', this.onPointerUp);
-    target.addEventListener('pointercancel', this.onPointerCancel);
-  }
-
-  private readonly onPointerMove = (event: PointerEvent): void => {
-    if (event.pointerId !== this.pointerId) return;
-
-    const now = performance.now();
-    const dx = event.clientX - this.dragStartX;
-    const signedDistance = dx * this.physicalSign();
-    const next = this.clamp01(this.dragStartProgress + signedDistance / this.width());
-
-    const dt = Math.max(8, now - this.dragLastTime);
-    this.lastVelocity = ((event.clientX - this.dragLastX) * this.physicalSign()) / dt;
-    this.dragVelocity.set(this.lastVelocity);
-    this.dragLastX = event.clientX;
-    this.dragLastTime = now;
-
-    this.dragProgress.set(next);
-    event.preventDefault();
-  };
-
-  private readonly onPointerUp = (event: PointerEvent): void => {
-    if (event.pointerId !== this.pointerId) return;
-
-    const progress = this.dragProgress() ?? this.dragStartProgress;
-    const velocity = this.dragVelocity();
-    const opening = velocity > this.velocityThreshold();
-    const closing = velocity < -this.velocityThreshold();
-
-    let shouldOpen: boolean;
-    if (opening) shouldOpen = true;
-    else if (closing) shouldOpen = false;
-    else shouldOpen = progress >= this.dragThreshold();
-
-    this.open.set(shouldOpen);
-    this.dragProgress.set(null);
-    this.dragVelocity.set(0);
-    this.disposePointer(event.pointerId);
-  };
-
-  private readonly onPointerCancel = (event: PointerEvent): void => {
-    if (event.pointerId !== this.pointerId) return;
-    const progress = this.dragProgress() ?? this.dragStartProgress;
-    this.open.set(progress >= 0.5);
-    this.dragProgress.set(null);
-    this.dragVelocity.set(0);
-    this.disposePointer(event.pointerId);
-  };
-
-  private disposePointer(pointerId?: number): void {
-    if (pointerId !== undefined && this.pointerId !== pointerId) return;
-
-    const target = this.activePointerTarget;
-    if (target) {
-      target.removeEventListener('pointermove', this.onPointerMove);
-      target.removeEventListener('pointerup', this.onPointerUp);
-      target.removeEventListener('pointercancel', this.onPointerCancel);
-      if (this.pointerId !== null) {
-        try {
-          target.releasePointerCapture?.(this.pointerId);
-        } catch {
-          // Pointer capture may already be released by the browser.
-        }
-      }
+  togglePinned(): void {
+    if (this.pinned()) {
+      this.unpin();
+    } else {
+      this.pin();
     }
-
-    this.pointerId = null;
-    this.activePointerTarget = null;
   }
 
-  private setupViewportSync(
-    enabled: boolean,
-    breakpoint: number,
-    desktopOpen: boolean,
-    mobileOpen: boolean,
-    respectPinned: boolean,
-  ): void {
-    this.disposeViewportSync();
-    if (!enabled || typeof window === 'undefined') {
-      this.isMobile.set(false);
+  // ---------------------------------------------------------------------------
+  // Events
+  // ---------------------------------------------------------------------------
+
+  onBackdropClick(): void {
+    if (!this.closeOnBackdrop()) {
       return;
     }
 
-    this.mediaQuery = window.matchMedia(`(max-width: ${Math.max(0, breakpoint - 0.02)}px)`);
-
-    const apply = (isMobile: boolean) => {
-      this.isMobile.set(isMobile);
-      if (respectPinned && this.pinned()) return;
-
-      const next = isMobile ? mobileOpen : desktopOpen;
-      if (this.lastManagedViewportState === next) return;
-      this.lastManagedViewportState = next;
-      this.open.set(next);
-    };
-
-    apply(this.mediaQuery.matches);
-    this.mediaQueryListener = (event) => apply(event.matches);
-    this.mediaQuery.addEventListener('change', this.mediaQueryListener);
+    this.close();
   }
 
-  private disposeViewportSync(): void {
-    if (this.mediaQuery && this.mediaQueryListener) {
-      this.mediaQuery.removeEventListener('change', this.mediaQueryListener);
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape') {
+      return;
     }
-    this.mediaQuery = undefined;
-    this.mediaQueryListener = undefined;
-    this.lastManagedViewportState = null;
+
+    if (!this.closeOnEscape()) {
+      return;
+    }
+
+    if (!this.open()) {
+      return;
+    }
+
+    this.close();
   }
 
-  private clamp01(value: number): number {
-    return Math.max(0, Math.min(1, value));
+  // ---------------------------------------------------------------------------
+  // Scroll locking
+  // ---------------------------------------------------------------------------
+
+  private lockScroll(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    if (!document.body) {
+      return;
+    }
+
+    if (document.body.dataset['ngxDrawerScrollLocked'] === 'true') {
+      return;
+    }
+
+    this.renderer.setAttribute(document.body, 'data-ngx-drawer-scroll-locked', 'true');
+
+    this.renderer.setStyle(document.body, 'overflow', 'hidden');
+  }
+
+  private unlockScroll(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    if (!document.body) {
+      return;
+    }
+
+    if (document.body.dataset['ngxDrawerScrollLocked'] !== 'true') {
+      return;
+    }
+
+    this.renderer.removeAttribute(document.body, 'data-ngx-drawer-scroll-locked');
+
+    this.renderer.removeStyle(document.body, 'overflow');
   }
 }

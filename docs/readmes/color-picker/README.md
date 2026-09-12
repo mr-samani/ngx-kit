@@ -11,7 +11,10 @@ npm install ngx-kit
 ## Usage as a component
 
 ```html
-<ngx-input-color [(ngModel)]="color" [outputType]="'HEX'" [defaultInspector]="ColorInspector.Picker"></ngx-input-color>
+<ngx-input-color
+  [(ngModel)]="color"
+  [outputType]="'HEX'"
+  [defaultInspector]="ColorInspector.Picker"></ngx-input-color>
 ```
 
 `NgxInputColorComponent` is a full `ControlValueAccessor`, so it works with `ngModel`, `formControl`, and `formControlName`.
@@ -26,15 +29,15 @@ npm install ngx-kit
 
 ### `<ngx-input-color>` / `[ngxInputColor]`
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | `'auto'` follows the browser's `prefers-color-scheme` |
-| `simpleMode` | `boolean` | `false` | A more compact UI |
-| `outputType` | `'HEX' \| 'RGB' \| 'HSL' \| 'HSV' \| 'CMYK'` | `'HEX'` | Output string format |
-| `defaultInspector` | `ColorInspector` (`Picker \| RGB \| HSL \| CMYK`) | `Picker` | Which tab is open by default |
-| `useAlphaChannel` | `boolean` | `true` | Show/hide the alpha (transparency) channel |
-| `setInputBackgroundColor` *(directive only)* | `boolean` | `true` | Sets the input's own background to the selected color |
-| `change` *(output, directive only)* | `EventEmitter<string>` | | The new value whenever the color changes |
+| Input                                        | Type                                              | Default  | Description                                           |
+| -------------------------------------------- | ------------------------------------------------- | -------- | ----------------------------------------------------- |
+| `theme`                                      | `'light' \| 'dark' \| 'auto'`                     | `'auto'` | `'auto'` follows the browser's `prefers-color-scheme` |
+| `simpleMode`                                 | `boolean`                                         | `false`  | A more compact UI                                     |
+| `outputType`                                 | `'HEX' \| 'RGB' \| 'HSL' \| 'HSV' \| 'CMYK'`      | `'HEX'`  | Output string format                                  |
+| `defaultInspector`                           | `ColorInspector` (`Picker \| RGB \| HSL \| CMYK`) | `Picker` | Which tab is open by default                          |
+| `useAlphaChannel`                            | `boolean`                                         | `true`   | Show/hide the alpha (transparency) channel            |
+| `setInputBackgroundColor` _(directive only)_ | `boolean`                                         | `true`   | Sets the input's own background to the selected color |
+| `change` _(output, directive only)_          | `EventEmitter<string>`                            |          | The new value whenever the color changes              |
 
 ### Input/output formats
 

@@ -24,4 +24,6 @@ export interface NgxVirtualScrollMeasurement {
 }
 
 /** Escape hatch for consumers who need full control over layout detection. */
-export type NgxVirtualScrollMeasureFn = (probeElements: readonly Element[]) => NgxVirtualScrollMeasurement | null;
+export type NgxVirtualScrollMeasureFn = (
+  probeElements: readonly Element[],
+) => NgxVirtualScrollMeasurement | null;

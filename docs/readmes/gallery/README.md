@@ -39,17 +39,17 @@ openGallery() {
 
 ### `<ngx-image-viewer>`
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `images` | `NgxImageViewerItem[]` **(required)** | | `{ src, alt?, caption?, downloadFileName? }` |
-| `startIndex` | `number` | `0` | |
-| `toolbar` | `NgxImageViewerToolbarConfig` | all `true` | Each button can be toggled individually (see below) |
-| `minZoom` / `maxZoom` / `zoomStep` | `number` | `1` / `6` / `0.4` | |
+| Input                              | Type                                  | Default           | Description                                         |
+| ---------------------------------- | ------------------------------------- | ----------------- | --------------------------------------------------- |
+| `images`                           | `NgxImageViewerItem[]` **(required)** |                   | `{ src, alt?, caption?, downloadFileName? }`        |
+| `startIndex`                       | `number`                              | `0`               |                                                     |
+| `toolbar`                          | `NgxImageViewerToolbarConfig`         | all `true`        | Each button can be toggled individually (see below) |
+| `minZoom` / `maxZoom` / `zoomStep` | `number`                              | `1` / `6` / `0.4` |                                                     |
 
-| Output | Type | Description |
-| --- | --- | --- |
-| `indexChange` | `number` | The active image changed |
-| `closed` | `void` | The user clicked the close button or pressed Esc (the component itself doesn't close anything; that's left to the consumer) |
+| Output        | Type     | Description                                                                                                                 |
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `indexChange` | `number` | The active image changed                                                                                                    |
+| `closed`      | `void`   | The user clicked the close button or pressed Esc (the component itself doesn't close anything; that's left to the consumer) |
 
 ### `NgxImageViewerToolbarConfig`
 
@@ -57,14 +57,14 @@ openGallery() {
 
 ## Interactions
 
-| Gesture | Result |
-| --- | --- |
-| Mouse scroll | Zoom, relative to the point under the cursor (not the image center) |
-| Two-finger pinch (touch) | Zoom |
-| Drag with mouse or one finger (when zoomed) | Pan |
-| ← / → | Previous/next image |
-| + / - | Zoom in/out |
-| Esc | Emits `closed` |
+| Gesture                                     | Result                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------- |
+| Mouse scroll                                | Zoom, relative to the point under the cursor (not the image center) |
+| Two-finger pinch (touch)                    | Zoom                                                                |
+| Drag with mouse or one finger (when zoomed) | Pan                                                                 |
+| ← / →                                       | Previous/next image                                                 |
+| + / -                                       | Zoom in/out                                                         |
+| Esc                                         | Emits `closed`                                                      |
 
 ## Dark mode and RTL
 
