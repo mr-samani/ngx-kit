@@ -151,3 +151,41 @@ export function compact<T extends LayoutNode>(items: readonly T[], mode: Compact
 export function maxOccupiedRow(items: readonly LayoutNode[]): number {
   return items.reduce((max, i) => Math.max(max, i.config.y + i.config.h), 0);
 }
+
+/**
+ * Finds a cell for `config` that doesn't collide with any existing item.
+ * Tries the requested (x, y) first; if that's already occupied, scans
+ * forward in reading order (row by row, top to bottom, left to right — the
+ * caller is responsible for any RTL flipping when it turns this back into
+ * pixels) for the first gap large enough to fit it.
+ *
+ * This is what a newly-registered item (or one whose config changes to a
+ * position that's no longer free) should go through instead of silently
+ * overlapping whatever's already there: unlike a drag/resize, registering an
+ * item isn't a deliberate "make room for me" gesture, so relocating the new
+ * item to open space reads far better than shoving already-placed items
+ * around to accommodate it.
+ */
+export function findFreeSpot<T extends LayoutNode>(
+  items: readonly T[],
+  config: GridItemConfig,
+  cols: number,
+  excludeId?: string,
+): { x: number; y: number } {
+  const others = excludeId ? items.filter((i) => i.id !== excludeId) : items;
+  const fits = (x: number, y: number) => !others.some((i) => collides(i.config, { ...config, x, y }));
+
+  const startX = Math.max(0, Math.min(config.x, cols - config.w));
+  const startY = Math.max(0, config.y);
+  if (fits(startX, startY)) return { x: startX, y: startY };
+
+  // The row just past the current bottom is always fully empty, so this loop
+  // is guaranteed to find a fit no later than `maxY`.
+  const maxY = maxOccupiedRow(others) + 1;
+  for (let y = 0; y <= maxY; y++) {
+    for (let x = 0; x <= cols - config.w; x++) {
+      if (fits(x, y)) return { x, y };
+    }
+  }
+  return { x: startX, y: maxY + 1 };
+}

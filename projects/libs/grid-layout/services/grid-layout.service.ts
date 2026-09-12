@@ -7,7 +7,7 @@ import {
 } from '../options/grid-item-config';
 import { LayoutOutput } from '../options/layout-output';
 import { computeMetrics, leftToCol, placeItem, topToRow, GridMetrics } from '../utils/geometry';
-import { compact, maxOccupiedRow, moveItem, trySwap } from '../utils/compaction';
+import { compact, maxOccupiedRow, moveItem, trySwap, findFreeSpot } from '../utils/compaction';
 import { isRtl } from 'ngx-kit/drag-resize';
 
 export interface GridItemState {
@@ -109,18 +109,15 @@ export class GridLayoutService {
     this.settle();
     this.emit();
   }
-  /**
-   * Registers a new item, or refreshes the DOM element reference of one that's
-   * already tracked. Adding an item can shift the whole layout (compaction /
-   * push), so that path settles. Merely re-supplying the same element on an
-   * already-known id has no geometric effect, so it is a deliberate no-op —
-   * skipping it is what keeps a per-item `effect()` that calls this on every
-   * change-detection pass from re-triggering `settle()` indefinitely.
-   */
+
   registerItem(item: GridItemState): void {
     const existing = this.items().find((x) => x.id === item.id);
     if (!existing) {
-      this.items.update((xs) => [...xs, { ...item, config: normalizeGridItem(item.config) }]);
+      const normalized = normalizeGridItem(item.config);
+      const placed = this.options().allowOverlap
+        ? normalized
+        : { ...normalized, ...findFreeSpot(this.items(), normalized, this.columns()) };
+      this.items.update((xs) => [...xs, { ...item, config: placed }]);
       this.settle();
       return;
     }
@@ -130,19 +127,15 @@ export class GridLayoutService {
     );
   }
 
-  /**
-   * Updates an item's config. Only writes the signal and re-settles the layout
-   * when the *value* actually changed. Without this guard, any caller that
-   * supplies a structurally-equal but referentially-new config object (e.g. a
-   * template bound to a `computed()` layout) would cause an unconditional
-   * `items.set()` on every run — which produces new output objects, which
-   * feed back into that same new config reference, forever.
-   */
   updateItemConfig(id: string, config: GridItemConfig): void {
-    const normalized = normalizeGridItem(config);
     const existing = this.items().find((x) => x.id === id);
-    if (!existing || gridItemConfigsEqual(existing.config, normalized)) return;
-    this.items.update((xs) => xs.map((x) => (x.id === id ? { ...x, config: normalized } : x)));
+    if (!existing) return;
+    const normalized = normalizeGridItem(config);
+    const placed = this.options().allowOverlap
+      ? normalized
+      : { ...normalized, ...findFreeSpot(this.items(), normalized, this.columns(), id) };
+    if (gridItemConfigsEqual(existing.config, placed)) return;
+    this.items.update((xs) => xs.map((x) => (x.id === id ? { ...x, config: placed } : x)));
     this.settle();
   }
   unregisterItem(id: string): void {
