@@ -24,6 +24,8 @@ export class DialogDemo {
   ];
 
   showModal() {
-    Dialog.open(MyCostomDialog);
+    Dialog.open(MyCostomDialog, {
+      width: '70dvw',
+    });
   }
 }

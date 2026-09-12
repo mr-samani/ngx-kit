@@ -1,0 +1,25 @@
+.list-container {
+  gap: 5px;
+  overflow: auto;
+  &.horizontal {
+    height: 100px;
+    .ngx-virtual-scroll-viewport__wrapper {
+      display: flex;
+      flex-direction: row;
+    }
+  }
+  &:not(.horizontal) {
+    height: 400px;
+  }
+}
+.row {
+  height: 48px;
+  border: 1px rgb(166 166 166 / 51%) solid;
+  box-shadow: 0px 0px 20px rgb(122 122 122 / 20%);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin: 10px;
+  min-width: 200px;
+}

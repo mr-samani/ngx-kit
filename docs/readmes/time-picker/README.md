@@ -30,12 +30,7 @@ export const appConfig: ApplicationConfig = {
 ## Usage — popup attached to an input
 
 ```html
-<input
-  type="text"
-  formControlName="time"
-  ngxInputTimePicker
-  #dp="ngxInputTimePicker"
-/>
+<input type="text" formControlName="time" ngxInputTimePicker #dp="ngxInputTimePicker" />
 <button (click)="dp.toggle()">Open</button>
 ```
 
@@ -45,10 +40,9 @@ If the typed text isn't a valid time, the control gets a `{ invalid: true }` err
 
 ```html
 @if (form.get('time')?.hasError('invalid')) {
-  <div class="text-danger">Invalid time</div>
-}
-@if (form.get('time')?.hasError('required')) {
-  <div class="text-danger">Time is required</div>
+<div class="text-danger">Invalid time</div>
+} @if (form.get('time')?.hasError('required')) {
+<div class="text-danger">Time is required</div>
 }
 ```
 
@@ -62,33 +56,33 @@ If the typed text isn't a valid time, the control gets a `{ invalid: true }` err
 
 ### `[ngxInputTimePicker]`
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `openOnCLick` | `boolean` | `true` | Open the popup when the input itself is clicked |
-| `format` | `'12' \| '24'` | from config | |
+| Input         | Type           | Default     | Description                                     |
+| ------------- | -------------- | ----------- | ----------------------------------------------- |
+| `openOnCLick` | `boolean`      | `true`      | Open the popup when the input itself is clicked |
+| `format`      | `'12' \| '24'` | from config |                                                 |
 
-| Output | Type | Description |
-| --- | --- | --- |
+| Output   | Type                           | Description                           |
+| -------- | ------------------------------ | ------------------------------------- |
 | `change` | `EventEmitter<string \| null>` | Emitted when the user confirms a time |
 
-| Member | Description |
-| --- | --- |
+| Member     | Description                                  |
+| ---------- | -------------------------------------------- |
 | `toggle()` | Opens the popup if closed, closes it if open |
 
 ### `<ngx-time-picker>`
 
-| Input | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` (model, two-way) | `string` | `'12:00'` | Bind with `[(value)]` |
-| `format` | `'12' \| '24'` | from config | |
-| `minuteStep` | `number` | from config | |
-| `disabled` | `boolean` | `false` | |
-| `autoSwitchToMinute` | `boolean` | from config | Switch to minute-selection mode right after picking the hour |
+| Input                    | Type           | Default     | Description                                                  |
+| ------------------------ | -------------- | ----------- | ------------------------------------------------------------ |
+| `value` (model, two-way) | `string`       | `'12:00'`   | Bind with `[(value)]`                                        |
+| `format`                 | `'12' \| '24'` | from config |                                                              |
+| `minuteStep`             | `number`       | from config |                                                              |
+| `disabled`               | `boolean`      | `false`     |                                                              |
+| `autoSwitchToMinute`     | `boolean`      | from config | Switch to minute-selection mode right after picking the hour |
 
-| Output | Type | Description |
-| --- | --- | --- |
-| `change` | `EventEmitter<string \| null>` | Emitted when "OK" is pressed |
-| `cancel` | `EventEmitter<void>` | Emitted when "Cancel" is pressed |
+| Output   | Type                           | Description                      |
+| -------- | ------------------------------ | -------------------------------- |
+| `change` | `EventEmitter<string \| null>` | Emitted when "OK" is pressed     |
+| `cancel` | `EventEmitter<void>`           | Emitted when "Cancel" is pressed |
 
 ## Dark mode and RTL
 

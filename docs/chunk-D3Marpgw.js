@@ -1,0 +1,1 @@
+function f(n,t,c){let e=m(t,n.length-1),o=m(c,n.length-1);if(e===o)return;let l=n[e],u=o<e?-1:1;for(let i=e;i!==o;i+=u)n[i]=n[i+u];n[o]=l;}function h(n,t,c,e){let o=m(c,n.length-1),l=m(e,t.length);n.length&&t.splice(l,0,n.splice(o,1)[0]);}function m(n,t){return Math.max(0,Math.min(t,n))}export{f,h};

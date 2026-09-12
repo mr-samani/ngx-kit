@@ -46,22 +46,22 @@ result.afterClose.subscribe((r) => console.log(r));
 
 ### `MSG` (and its alias `Modal`)
 
-| Method | Signature | Description |
-| --- | --- | --- |
-| `show(options?)` | `IMessageOptions` | Full control |
+| Method                                                            | Signature                  | Description      |
+| ----------------------------------------------------------------- | -------------------------- | ---------------- |
+| `show(options?)`                                                  | `IMessageOptions`          | Full control     |
 | `info` / `success` / `warning` / `error` / `question` / `loading` | `(title, text?, options?)` | Common shortcuts |
 
 ### `IMessageOptions` (key fields)
 
-| Field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `title` / `text` / `html` | `string` | | Content (`html` is not sanitized — escaping is your responsibility) |
-| `icon` | `MessageIcon` | | Icon shown |
-| `showConfirmButton` / `showDenyButton` / `showCancelButton` | `boolean` | `true` / `false` / `false` | |
-| `confirmButtonText` / `denyButtonText` / `cancelButtonText` | `string` | `'OK'` / `'No'` / `'Cancel'` | |
-| `allowOutsideClick` / `allowEscapeKey` / `allowEnterKey` | `boolean` | `true` | How the message can be dismissed |
-| `showCloseButton` | `boolean` | `false` | The ✕ button |
-| `useOverlay` | `boolean` | | For when it's used inside another dialog (e.g. Angular Material), raises the display layer to the top |
+| Field                                                       | Type          | Default                      | Description                                                                                           |
+| ----------------------------------------------------------- | ------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `title` / `text` / `html`                                   | `string`      |                              | Content (`html` is not sanitized — escaping is your responsibility)                                   |
+| `icon`                                                      | `MessageIcon` |                              | Icon shown                                                                                            |
+| `showConfirmButton` / `showDenyButton` / `showCancelButton` | `boolean`     | `true` / `false` / `false`   |                                                                                                       |
+| `confirmButtonText` / `denyButtonText` / `cancelButtonText` | `string`      | `'OK'` / `'No'` / `'Cancel'` |                                                                                                       |
+| `allowOutsideClick` / `allowEscapeKey` / `allowEnterKey`    | `boolean`     | `true`                       | How the message can be dismissed                                                                      |
+| `showCloseButton`                                           | `boolean`     | `false`                      | The ✕ button                                                                                          |
+| `useOverlay`                                                | `boolean`     |                              | For when it's used inside another dialog (e.g. Angular Material), raises the display layer to the top |
 
 If several messages are open at once, Escape/Enter only affect the **last (topmost) message**, not all of them.
 

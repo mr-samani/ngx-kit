@@ -1,17 +1,10 @@
 :host {
   display: block;
-  min-block-size: calc(100dvh - 58px);
 }
 
 ::ng-deep ngx-drawer-menu {
   display: block;
-  min-block-size: calc(100dvh - 58px);
-}
-
-.content {
-  padding: 1.25rem 1.5rem;
-  min-block-size: calc(100dvh - 58px);
-  box-sizing: border-box;
+  height: calc(100dvh - 68px);
 }
 
 .mobile-menu-toggle {
@@ -29,7 +22,7 @@
   margin-block-end: 1rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .mobile-menu-toggle {
     display: inline-flex;
   }

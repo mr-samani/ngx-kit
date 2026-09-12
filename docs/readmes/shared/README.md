@@ -103,11 +103,11 @@ Deep-merges two config objects (for the `provideXxx({...})` pattern used through
 
 These can be used directly, but they're mostly designed as building blocks for other components (like `color-picker`, `box-shadow`):
 
-| Component | Selector | Description |
-| --- | --- | --- |
-| `SliderComponent` | `slider` | Single-value slider, `ControlValueAccessor`, `[min]`/`[max]`/`[step]` |
-| `RangeSliderComponent` | `range-slider` | Range slider (two thumbs) |
-| `SaturationComponent` | internal (color-picker) | 2D saturation/lightness picker panel |
+| Component              | Selector                | Description                                                           |
+| ---------------------- | ----------------------- | --------------------------------------------------------------------- |
+| `SliderComponent`      | `slider`                | Single-value slider, `ControlValueAccessor`, `[min]`/`[max]`/`[step]` |
+| `RangeSliderComponent` | `range-slider`          | Range slider (two thumbs)                                             |
+| `SaturationComponent`  | internal (color-picker) | 2D saturation/lightness picker panel                                  |
 
 ## Dark mode and RTL
 
