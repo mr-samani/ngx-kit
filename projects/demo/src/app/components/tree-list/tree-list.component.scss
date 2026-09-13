@@ -1,0 +1,33 @@
+/*---------- highlight json --------------------------*/
+::ng-deep {
+  pre.tree-view {
+    padding: 5px;
+    margin: 5px;
+    overflow: auto;
+    direction: ltr;
+    text-align: left;
+
+    .string {
+      color: #00b561;
+    }
+
+    .number {
+      color: darkorange;
+    }
+
+    .boolean {
+      color: blue;
+    }
+
+    .null {
+      color: magenta;
+    }
+
+    .key {
+      color: #d50027;
+      font-weight: bold;
+    }
+  }
+}
+
+/*-------------- end of highlight json ---------------*/

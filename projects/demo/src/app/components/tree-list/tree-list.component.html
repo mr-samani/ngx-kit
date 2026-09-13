@@ -1,0 +1,16 @@
+<div class="demo-grid">
+  <label class="demo-field">
+    <span class="demo-field-label">Filter</span>
+
+    <input
+      type="text"
+      name="filter"
+      id="filter"
+      placeholder="Search in name or type ..."
+      class="search-box"
+      (keyup)="filterTree()"
+      [(ngModel)]="filter" />
+  </label>
+</div>
+
+<pre class="tree-view" id="treeView" [innerHTML]="result"></pre>

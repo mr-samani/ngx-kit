@@ -12,6 +12,8 @@ export * from './utils/string';
 export * from './utils/confetti';
 export * from './utils/sequential-guid';
 export * from './utils/merge-deep';
+export * from './utils/filter-tree-list';
+
 
 export * from './contracts/IPosition';
 

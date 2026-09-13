@@ -124,6 +124,10 @@ const routes: Routes = [
             (c) => c.InfiniteScrollComponent,
           ),
       },
+      {
+        path: 'tree-list',
+        loadComponent: () => import('./tree-list/tree-list.component').then((c) => c.DemoTreeList),
+      },
     ],
   },
 ];

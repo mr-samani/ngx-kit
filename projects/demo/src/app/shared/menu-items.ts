@@ -231,6 +231,12 @@ export const MENU_LIST: ICategory[] = [
         title: 'Infinite Scroll',
         url: '/components/infinite-scroll',
       },
+      {
+        title: 'Tree List',
+        description:
+          'Filters a hierarchical tree while preserving the branches that contain matching nodes.',
+        url: '/components/tree-list',
+      },
     ],
   },
 ];
