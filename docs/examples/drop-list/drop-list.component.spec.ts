@@ -1,20 +1,22 @@
 /* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
 import { DropListComponent } from './drop-list.component';
+import { NgxDraggable, NgxDropList } from 'ngx-kit/drag-resize';
+import { provideRouter } from '@angular/router';
 
 describe('DropListComponent', () => {
   let component: DropListComponent;
   let fixture: ComponentFixture<DropListComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ DropListComponent ]
-    })
-    .compileComponents();
-  }));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DropListComponent, NgxDropList, NgxDraggable],
+      providers: [provideRouter([])],
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DropListComponent);

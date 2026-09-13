@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, type OnInit } from '@angular/core';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
@@ -21,7 +21,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     ScrollingModule,
   ],
 })
-export class VirtualScrollComponent {
+export class VirtualScrollComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
@@ -36,5 +36,8 @@ export class VirtualScrollComponent {
   ];
 
   maximum = 1000000;
-  items: string[] = Array.from<number>({ length: this.maximum }).map((_, i) => `Item ${i + 1}`);
+  items: string[] = [];
+  ngOnInit(): void {
+    this.items = Array.from<number>({ length: this.maximum }).map((_, i) => `Item ${i + 1}`);
+  }
 }
