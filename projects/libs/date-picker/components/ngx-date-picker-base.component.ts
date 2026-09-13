@@ -12,13 +12,16 @@ export abstract class NgxDatePickerBase {
   protected _locale = 'en';
   protected dateAdapterRegistry = inject(DateAdapterRegistry);
   adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this._locale);
-
+  // Todo: change to signal
   currYear!: number;
+  // Todo: change to signal
   currMonth!: number;
+  // Todo: change to signal
   currentWeek!: number;
 
   months: string[] = [];
   weeks: string[] = [];
+  // Todo: change to signal
   viewDays: DateViewDay[] = [];
   viewMonths: DateViewMonth[] = [];
   viewYears: DateViewYear[] = [];

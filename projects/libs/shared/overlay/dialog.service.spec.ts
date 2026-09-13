@@ -52,6 +52,8 @@ describe('OverlayService', () => {
       document.body.innerHTML = '';
     }
     vi.restoreAllMocks();
+
+    document.querySelectorAll('dialog').forEach((el) => el.remove());
   });
 
   // ---------------------------
@@ -339,7 +341,7 @@ describe('OverlayService', () => {
   // ---------------------------
   // BACKDROP CLICK
   // ---------------------------
-  it('should view dialog in viewport', () => {
+  it('should view dialog in viewport', async () => {
     const anchor = document.createElement('button');
     document.body.appendChild(anchor);
     anchor.style.cssText = `
@@ -353,14 +355,14 @@ describe('OverlayService', () => {
       alignment: 'center',
       placement: 'bottom',
     });
-    setTimeout(() => {
-      const dialogRect = document.querySelector('dialog')?.getBoundingClientRect();
-      // console.log(dialogRect);
-      expect(dialogRect?.top).toBeGreaterThan(0);
-      expect(dialogRect?.right).toBeGreaterThan(0);
-      expect(dialogRect?.bottom).toBeGreaterThan(0);
-      expect(dialogRect?.left).toBeGreaterThan(0);
-    }, 100);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const dialogRect = document.querySelector('dialog')?.getBoundingClientRect();
+    console.log(dialogRect);
+    expect(dialogRect?.top).toBeGreaterThan(0);
+    expect(dialogRect?.right).toBeGreaterThan(0);
+    expect(dialogRect?.bottom).toBeGreaterThan(0);
+    expect(dialogRect?.left).toBeGreaterThan(0);
   });
   // ---------------------------
   // viewContainerRef

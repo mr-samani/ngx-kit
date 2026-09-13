@@ -77,32 +77,40 @@ export class GregorianAdapter implements IDateAdapter {
     return new Date(year, month, 0).getDate();
   }
 
-  // TODO
   /**
    * month start with zero
    * @param date
    * @returns
    */
   getDate(date: CalendarDate): Date {
-    let str = date.year + '-' + (date.month ? date.month + 1 : 1) + '-' + (date.day ?? 1);
-    str = str
-      .split('-')
-      .map((i) => {
-        return i.length < 2 ? '0' + i : i;
-      })
-      .join('-');
-    if (date.hours || date.minutes || date.seconds || date.milliseconds) {
-      str +=
-        ' ' +
-        (date.hours ?? 0) +
-        ':' +
-        (date.minutes ?? 0) +
-        ':' +
-        (date.seconds ?? 0) +
-        ':' +
-        (date.milliseconds ?? 0);
-    }
-    return new Date(str);
+    // let str = date.year + '-' + (date.month ? date.month + 1 : 1) + '-' + (date.day ?? 1);
+    // str = str
+    //   .split('-')
+    //   .map((i) => {
+    //     return i.length < 2 ? '0' + i : i;
+    //   })
+    //   .join('-');
+    // if (date.hours || date.minutes || date.seconds || date.milliseconds) {
+    //   str +=
+    //     ' ' +
+    //     (date.hours ?? 0) +
+    //     ':' +
+    //     (date.minutes ?? 0) +
+    //     ':' +
+    //     (date.seconds ?? 0) +
+    //     ':' +
+    //     (date.milliseconds ?? 0);
+    // }
+    // return new Date(str);
+    return new Date(
+      date.year,
+      date.month ?? 0,
+      date.day ?? 1,
+      date.hours ?? 0,
+      date.minutes ?? 0,
+      date.seconds ?? 0,
+      date.milliseconds ?? 0,
+    );
   }
 
   formatDate(date: CalendarDate, format: FormatType) {

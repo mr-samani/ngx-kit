@@ -38,6 +38,7 @@ describe('NgxCalendarComponent', () => {
 
     fixture.componentRef.setInput('locale', 'en');
     fixture.componentRef.setInput('events', []);
+    fixture.componentRef.setInput('resizeAndMovable', true);
 
     fixture.detectChanges();
   });
@@ -322,6 +323,7 @@ describe('NgxCalendarComponent', () => {
   // ===========================================================================
 
   function mockDayColumnGeometry(): HTMLElement {
+    fixture.detectChanges();
     const column = fixture.nativeElement.querySelector('.day-column') as HTMLElement;
 
     expect(column).toBeTruthy();

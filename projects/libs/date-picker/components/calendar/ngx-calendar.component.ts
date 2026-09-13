@@ -117,12 +117,13 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   @Output() eventsChange = new EventEmitter<MsEvents[]>();
 
   selected?: Date;
+  // Todo: change to signal
   anchorDate!: Date;
 
   eventViewItems: { event: MsEventViewer; start: Date; end: Date }[] = [];
   monthEventSegments: CalendarMonthEventSegment[] = [];
   monthEventRows: CalendarMonthEventSegment[][] = Array.from({ length: MONTH_ROW_COUNT }, () => []);
-
+  // Todo: change to signal
   weekDays: CalendarDayColumn[] = [];
   allDayByColumn: CalendarTimedEvent[][] = [];
   timeSlots = Array.from({ length: 48 }, (_, i) => i * 30);

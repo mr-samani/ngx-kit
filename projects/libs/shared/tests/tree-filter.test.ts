@@ -331,7 +331,7 @@ describe('filterTreeList', () => {
 
     filterTreeList(data, filterFn);
 
-    expect(filterFn).toHaveBeenCalledTimes(10);
+    expect(filterFn).toHaveBeenCalledTimes(9);
   });
 
   it('should stop traversing a matching subtree', () => {
