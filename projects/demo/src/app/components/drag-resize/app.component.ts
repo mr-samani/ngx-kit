@@ -27,7 +27,7 @@ import {
         [options]="options()"
         (layoutChange)="onLayout($event)">
         @for (item of items(); track item.id) {
-          <ngx-grid-item [itemId]="item.id!" [config]="item">
+          <ngx-grid-item [id]="item.id!" [config]="item">
             <article class="card">
               <strong>{{ item.id }}</strong>
               <small>{{ item.x }}, {{ item.y }} · {{ item.w }}×{{ item.h }}</small>

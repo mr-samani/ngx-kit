@@ -5,6 +5,8 @@ import {
   computed,
   input,
   inject,
+  model,
+  signal,
 } from '@angular/core';
 
 import { MX_FORM_FIELD } from '../tokens/form-field.token';
@@ -40,4 +42,9 @@ export class NgxFormField {
   readonly hintVisible = computed(() => !this.invalid());
 
   readonly errorVisible = computed(() => this.invalid());
+
+  readonly value = model();
+
+  readonly errorMessages = input<string[]>();
+  readonly rows = input<number>();
 }

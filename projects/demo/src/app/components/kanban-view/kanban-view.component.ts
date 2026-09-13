@@ -19,11 +19,11 @@ export class KanbanViewComponent implements OnInit {
   done = signal<string[]>([]);
   stoped = signal<string[]>([]);
 
-  constructor() {
+  constructor() {}
+
+  ngOnInit() {
     this.todo.set(Array.from({ length: 10 }).map((m, i) => (m = 'item ' + i)));
   }
-
-  ngOnInit() {}
 
   onDrop(ev: IDropEvent) {
     console.log('on drop', ev);

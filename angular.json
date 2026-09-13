@@ -96,7 +96,10 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "setupFiles": ["projects/demo/test-setup.ts"]
+          }
         }
       }
     },
@@ -122,7 +125,10 @@
           "defaultConfiguration": "production"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "setupFiles": ["projects/libs/test-setup.ts"]
+          }
         }
       }
     }

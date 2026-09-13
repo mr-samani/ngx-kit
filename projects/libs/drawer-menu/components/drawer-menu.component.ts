@@ -322,7 +322,7 @@ export class NgxDrawerMenuComponent {
   private setupMediaQuery(): void {
     const config = this.responsiveConfig();
 
-    if (config.mode !== 'auto') {
+    if (config.mode !== 'auto' || this.isBrowser) {
       this.isMobile.set(config.mode === 'mobile');
 
       return;

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { IAppMenu } from '@demo/shared/interfaces/IAppMenu';
 import { MENU_LIST } from '@demo/shared/menu-items';
 import { filter, map, startWith } from 'rxjs';
@@ -8,7 +8,7 @@ import { filter, map, startWith } from 'rxjs';
 @Component({
   selector: 'app-side-nav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterModule],
   templateUrl: './side-nav.html',
   styleUrl: './side-nav.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
