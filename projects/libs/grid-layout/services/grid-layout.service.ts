@@ -333,7 +333,11 @@ export class GridLayoutService {
       const leftPx = r.left + out.moveLeft - containerRect.left;
       x = leftToCol(leftPx, w, m, true);
     } else {
-      if (out.moveLeft) x += Math.round(out.moveLeft / (m.colWidth + gap));
+      //if (out.moveLeft) x += Math.round(out.moveLeft / (m.colWidth + gap));
+      if (out.moveLeft) {
+        const rightEdge = item.config.x + item.config.w;
+        x = rightEdge - w;
+      }
     }
     if (out.moveTop) y += Math.round(out.moveTop / (m.rowHeight + gap));
     return this.clamp({ ...item.config, x, y, w, h });

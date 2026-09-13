@@ -9,6 +9,9 @@ import {
   Output,
   Renderer2,
   inject,
+  input,
+  model,
+  output,
   signal,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
@@ -28,33 +31,33 @@ const DEFAULT_KEYBOARD_STEP = 8;
   providers: [{ provide: NGX_DRAGGABLE, useExisting: NgxDraggable }],
   host: {
     '[style.touch-action]': '"none"',
-    '[attr.tabindex]': 'disabled ? null : 0',
+    '[attr.tabindex]': 'disabled() ? null : 0',
     '[attr.aria-grabbed]': 'dragging()',
     class: 'ngx-draggable',
   },
 })
 export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
-  @Input() disabled = false;
+  readonly disabled = model<boolean>(false);
   /** Element whose rect constrains the drag. Now actually enforced. */
-  @Input() boundary?: HTMLElement;
-  @Input() dragRootElement = '';
+  readonly boundary = input<HTMLElement>();
+  readonly dragRootElement = input<string>('');
   /** CSS selector for a drag handle. When set, only pointerdowns inside it start a drag. */
-  @Input() dragHandle = '';
+  readonly dragHandle = input<string>('');
   /** Restrict movement to a single axis. */
-  @Input() lockAxis: DragAxis;
+  readonly lockAxis = input<DragAxis>();
   /** Minimum pointer travel (px) before a drag starts, so clicks still register normally. */
-  @Input() dragThreshold = 3;
+  readonly dragThreshold = input<number>(3);
   /** Pixel step used when dragging via the keyboard (arrow keys, focus required). */
-  @Input() keyboardStep = DEFAULT_KEYBOARD_STEP;
+  readonly keyboardStep = input<number>(DEFAULT_KEYBOARD_STEP);
   /** Auto-scroll the nearest scrollable ancestor while dragging near its edge. */
-  @Input() autoScroll = true;
+  readonly autoScroll = input<boolean>(true);
   @Input('data') set data(v: T) {
     this._ref.data = v;
   }
 
-  @Output() readonly dragStart = new EventEmitter<IPosition>();
-  @Output() readonly dragMove = new EventEmitter<IPosition>();
-  @Output() readonly dragEnd = new EventEmitter<IPosition>();
+  readonly dragStart = output<IPosition>();
+  readonly dragMove = output<IPosition>();
+  readonly dragEnd = output<IPosition>();
 
   readonly _ref = new DragRef<T>();
   readonly dragging = signal(false);
@@ -80,11 +83,11 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this._ref.el = this.dragRootElement
-      ? (this.host.nativeElement.closest(this.dragRootElement) ?? this.host.nativeElement)
+    this._ref.el = this.dragRootElement()
+      ? (this.host.nativeElement.closest(this.dragRootElement()) ?? this.host.nativeElement)
       : this.host.nativeElement;
-    this._ref.boundary = this.boundary;
-    this._ref.lockAxis = this.lockAxis;
+    this._ref.boundary = this.boundary();
+    this._ref.lockAxis = this.lockAxis();
     this._ref.dropListGroup = this.group?._ref;
     this._ref.init();
     this._ref.withDropList(this.list?._ref ?? null);
@@ -114,7 +117,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
 
   private pointerDown(e: PointerEvent): void {
     if (
-      this.disabled ||
+      this.disabled() ||
       e.button !== 0 ||
       // this.isInteractive(e.target) ||
       !this.isOnHandle(e.target)
@@ -124,8 +127,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.down = true;
     this.pointerId = e.pointerId;
     this.start = { x: e.clientX, y: e.clientY };
-    this._ref.boundary = this.boundary;
-    this._ref.lockAxis = this.lockAxis;
+    this._ref.boundary = this.boundary();
+    this._ref.lockAxis = this.lockAxis();
     this._ref.pointerDown(this.start);
     this.removeMove = this.renderer.listen(this.doc, 'pointermove', (ev: PointerEvent) =>
       this.pointerMove(ev),
@@ -141,13 +144,16 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   private pointerMove(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
     const p = { x: e.clientX, y: e.clientY };
-    if (!this.dragging() && Math.hypot(p.x - this.start.x, p.y - this.start.y) < this.dragThreshold)
+    if (
+      !this.dragging() &&
+      Math.hypot(p.x - this.start.x, p.y - this.start.y) < this.dragThreshold()
+    )
       return;
     if (!this.dragging()) {
       this._ref.startDrag(p);
       this.dragging.set(true);
       this.service.begin(this._ref);
-      if (this.autoScroll) this.scroller.start(this._ref.el);
+      if (this.autoScroll()) this.scroller.start(this._ref.el);
       this.dragStart.emit(p);
     }
     this._ref.dragMove(p);
@@ -162,11 +168,11 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
         this._ref.withDropList(target);
         target.createPlaceholder(this._ref);
 
-        if (this.autoScroll) {
+        if (this.autoScroll()) {
           this.scroller.stop();
           this.scroller.start(target.el);
         }
-      } else if (this.autoScroll) {
+      } else if (this.autoScroll()) {
         this.scroller.stop();
       }
     }
@@ -175,7 +181,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     // is read live, so the placeholder and auto-scroll are both reflected.
     this._ref.dropList?.sortItem(this._ref, p);
 
-    if (this.autoScroll) this.scroller.update(p.x, p.y);
+    if (this.autoScroll()) this.scroller.update(p.x, p.y);
     this.dragMove.emit(p);
   }
 
@@ -209,8 +215,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
 
   /** Arrow-key movement for keyboard/assistive-tech users. Shift multiplies the step by 4. */
   private keyDown(e: KeyboardEvent): void {
-    if (this.disabled) return;
-    const step = this.keyboardStep * (e.shiftKey ? 4 : 1);
+    if (this.disabled()) return;
+    const step = this.keyboardStep() * (e.shiftKey ? 4 : 1);
     const deltas: Record<string, IPosition> = {
       ArrowLeft: { x: -step, y: 0 },
       ArrowRight: { x: step, y: 0 },
@@ -222,8 +228,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       e.preventDefault();
       if (!this.dragging()) {
         this._ref.pointerDown({ x: 0, y: 0 });
-        this._ref.boundary = this.boundary;
-        this._ref.lockAxis = this.lockAxis;
+        this._ref.boundary = this.boundary();
+        this._ref.lockAxis = this.lockAxis();
         this._ref.startDrag({ x: 0, y: 0 });
         this.dragging.set(true);
         this.service.begin(this._ref);
@@ -248,8 +254,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   }
 
   private isOnHandle(target: EventTarget | null): boolean {
-    if (!this.dragHandle) return true;
-    return target instanceof HTMLElement && !!target.closest(this.dragHandle);
+    if (!this.dragHandle()) return true;
+    return target instanceof HTMLElement && !!target.closest(this.dragHandle());
   }
 
   private isInteractive(target: EventTarget | null): boolean {

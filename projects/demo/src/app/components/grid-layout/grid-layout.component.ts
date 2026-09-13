@@ -27,7 +27,7 @@ export interface SampleLayout {
 export class GridLayoutComponent implements OnInit {
   ngxGridLayout = viewChild<NgxGridLayoutComponent>('ngxGridLayout');
   gridSettings = {
-    editMode: true,
+    editMode: false,
     pushOnDrag: true,
   };
 

@@ -1,12 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output,
-  signal,
-} from '@angular/core';
+import { Directive, ElementRef, HostListener, input, model, output, signal } from '@angular/core';
 import {
   IResizableOutput,
   LogicalResizeDirection,
@@ -26,21 +18,22 @@ const KEYBOARD_STEP = 8;
   },
 })
 export class NgxResizable {
-  @Input() disabled = false;
-  @Input() minWidth = 20;
-  @Input() minHeight = 20;
-  @Input() maxWidth = Infinity;
-  @Input() maxHeight = Infinity;
-  @Input() directions: LogicalResizeDirection[] = [...ALL_DIRECTIONS];
-  @Input() grid?: number | { x: number; y: number };
-  /** Element whose rect constrains the resize. Previously accepted nowhere on this directive. */
-  @Input() boundary?: HTMLElement;
-  /** Pixel step used when resizing via the keyboard (arrow keys, focus required). */
-  @Input() keyboardStep = KEYBOARD_STEP;
+  disabled = model<boolean>(false);
+  readonly minWidth = model<number>(20);
+  readonly minHeight = model<number>(20);
+  readonly maxWidth = model<number>(Infinity);
+  readonly maxHeight = model<number>(Infinity);
+  readonly directions = input<LogicalResizeDirection[]>([...ALL_DIRECTIONS]);
+  readonly grid = input<number | { x: number; y: number }>();
 
-  @Output() readonly resizeStart = new EventEmitter<IResizableOutput>();
-  @Output() readonly resizeMove = new EventEmitter<IResizableOutput>();
-  @Output() readonly resizeEnd = new EventEmitter<IResizableOutput>();
+  /** Element whose rect constrains the resize. Previously accepted nowhere on this directive. */
+  readonly boundary = input<HTMLElement>();
+  /** Pixel step used when resizing via the keyboard (arrow keys, focus required). */
+  readonly keyboardStep = input<number>(KEYBOARD_STEP);
+
+  readonly resizeStart = output<IResizableOutput>();
+  readonly resizeMove = output<IResizableOutput>();
+  readonly resizeEnd = output<IResizableOutput>();
 
   readonly resizing = signal(false);
   private direction: ResizeDirection = 'se';
@@ -59,7 +52,7 @@ export class NgxResizable {
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(e: PointerEvent): void {
-    if (this.disabled || e.button !== 0) {
+    if (this.disabled() || e.button !== 0) {
       return;
     }
 
@@ -144,12 +137,12 @@ export class NgxResizable {
 
   @HostListener('keydown', ['$event'])
   onHandleKeyDown(e: KeyboardEvent): void {
-    if (this.disabled) {
+    if (this.disabled()) {
       return;
     }
 
     const rtl = isRtl(this.el.nativeElement);
-    const step = this.keyboardStep * (e.shiftKey ? 4 : 1);
+    const step = this.keyboardStep() * (e.shiftKey ? 4 : 1);
     let dw = 0;
     let dh = 0;
     if (e.key === 'ArrowRight') {
@@ -167,11 +160,11 @@ export class NgxResizable {
     e.preventDefault();
     const rect = this.el.nativeElement.getBoundingClientRect();
     const width = this.clampGrid(
-      Math.max(this.minWidth, Math.min(this.maxWidth, rect.width + dw)),
+      Math.max(this.minWidth(), Math.min(this.maxWidth(), rect.width + dw)),
       'x',
     );
     const height = this.clampGrid(
-      Math.max(this.minHeight, Math.min(this.maxHeight, rect.height + dh)),
+      Math.max(this.minHeight(), Math.min(this.maxHeight(), rect.height + dh)),
       'y',
     );
     this.el.nativeElement.style.width = `${width}px`;
@@ -223,9 +216,9 @@ export class NgxResizable {
       height -= dy;
     }
 
-    width = this.clampGrid(Math.max(this.minWidth, Math.min(this.maxWidth, width)), 'x');
+    width = this.clampGrid(Math.max(this.minWidth(), Math.min(this.maxWidth(), width)), 'x');
 
-    height = this.clampGrid(Math.max(this.minHeight, Math.min(this.maxHeight, height)), 'y');
+    height = this.clampGrid(Math.max(this.minHeight(), Math.min(this.maxHeight(), height)), 'y');
 
     /**
      * Calculate the intended visual position.
@@ -251,7 +244,7 @@ export class NgxResizable {
      */
     if (this.boundary) {
       const clamped = clampResizeWithinBoundary(
-        this.boundary.getBoundingClientRect(),
+        this.boundary()?.getBoundingClientRect(),
         this.start,
         width,
         height,
@@ -334,7 +327,7 @@ export class NgxResizable {
   }
 
   private clampGrid(value: number, axis: 'x' | 'y'): number {
-    const grid = typeof this.grid === 'number' ? this.grid : this.grid?.[axis];
+    const grid = typeof this.grid() === 'number' ? this.grid : (this.grid() as any)?.[axis];
     if (!grid || grid <= 0) {
       return value;
     }
@@ -351,7 +344,7 @@ export class NgxResizable {
   private resolvedDirections(): ResizeDirection[] {
     const rtl = isRtl(this.el.nativeElement);
     const set = new Set<ResizeDirection>();
-    for (const direction of this.directions) {
+    for (const direction of this.directions()) {
       set.add(resolveLogicalDirection(direction, rtl) as ResizeDirection);
     }
     return [...set];
