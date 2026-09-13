@@ -1,5 +1,6 @@
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../calendar-date';
+import type { FormatType } from '../consts';
 import { ChineseConverter } from '../converters/chinese-converter.helper';
 import { IDateAdapter } from '../IAdapter';
 
@@ -98,7 +99,7 @@ export class ChineseAdapter implements IDateAdapter {
     return jsDate;
   }
 
-  formatDate(date: CalendarDate, format: string): string | null {
+  formatDate(date: CalendarDate, format: FormatType): string | null {
     if (!date) return null;
 
     const jsDate = this.getDate(date);

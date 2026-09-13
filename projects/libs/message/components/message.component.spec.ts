@@ -8,7 +8,7 @@ describe('NgxMessageComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [NgxMessageComponent],
+      imports: [NgxMessageComponent],
     });
     fixture = TestBed.createComponent(NgxMessageComponent);
     component = fixture.componentInstance;

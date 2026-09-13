@@ -3,6 +3,7 @@ import { Jalali } from '../converters/jalali-converter.helper';
 import { DatePickerView } from '../../models/view';
 import { IDateAdapter } from '../IAdapter';
 import { CalendarDate } from '../calendar-date';
+import { FormatType } from '../consts';
 
 export class JalaliAdapter implements IDateAdapter {
   // shanbeh
@@ -149,7 +150,7 @@ export class JalaliAdapter implements IDateAdapter {
     return d;
   }
 
-  formatDate(date: CalendarDate, format: string) {
+  formatDate(date: CalendarDate, format: FormatType) {
     if (!date) {
       return '';
     }

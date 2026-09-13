@@ -372,15 +372,14 @@ describe('OverlayService', () => {
         component: MockComponent,
         viewContainerRef: undefined as any,
       }),
-    ).toThrow('ViewContainerRef is required to render dialog content.');
+    ).toThrow('ViewContainerRef is required to render overlay content.');
   });
 
   // ---------------------------
   // Resize window
   // ---------------------------
-  it('should call globalResizeListener on window resize', () => {
-    const spy = vi.spyOn(service as any, 'repositionAll');
-    const spy2 = vi.spyOn(service as any, 'globalResizeListener');
+  it('should call onGlobalResize on window resize', () => {
+    const spy2 = vi.spyOn(service as any, 'onGlobalResize');
     const anchor = document.createElement('button');
     var ref = service.open({
       anchor: anchor,
@@ -391,6 +390,55 @@ describe('OverlayService', () => {
     window.dispatchEvent(new Event('resize'));
 
     expect(spy2).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalled();
+  });
+
+  it('should coalesce multiple resize events into one reposition', async () => {
+    const repositionSpy = vi.spyOn(service as any, 'repositionAll');
+
+    const anchor = document.createElement('button');
+
+    service.open({
+      anchor,
+      viewContainerRef,
+      component: MockComponent,
+    });
+
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
+
+    expect(repositionSpy).not.toHaveBeenCalled();
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+
+    expect(repositionSpy).toHaveBeenCalledOnce();
+  });
+
+  it('should reposition only on animation frame after window resize', async () => {
+    vi.useFakeTimers();
+
+    const repositionSpy = vi.spyOn(service as any, 'repositionAll');
+
+    const anchor = document.createElement('button');
+
+    service.open({
+      anchor,
+      viewContainerRef,
+      component: MockComponent,
+    });
+
+    window.dispatchEvent(new Event('resize'));
+
+    expect(repositionSpy).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(16);
+
+    expect(repositionSpy).toHaveBeenCalledOnce();
+
+    vi.useRealTimers();
   });
 });

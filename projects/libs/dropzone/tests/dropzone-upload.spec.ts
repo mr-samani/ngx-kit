@@ -146,6 +146,7 @@ describe('NgxDropzoneComponent upload flow', () => {
     service.subjects.get('a.txt')!.error(new Error('network'));
 
     expect(items()[0].status).toBe('error');
+    fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.ngx-dropzone-retry')).not.toBeNull();
   });
 });

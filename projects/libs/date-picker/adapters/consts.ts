@@ -25,3 +25,9 @@ export function getLocals(): string[] {
 
   return adapters.map((m) => m.locale);
 }
+
+export type DateFormatPreset = 'full' | 'long' | 'medium' | 'short';
+
+export type DateFormat = string;
+
+export type FormatType = DateFormatPreset | DateFormat;

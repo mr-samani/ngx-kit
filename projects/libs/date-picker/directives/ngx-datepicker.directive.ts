@@ -27,6 +27,7 @@ import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { NgxDatePickerConfig } from '../components/config';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
+import { FormatType } from '../adapters/consts';
 
 @Directive({
   selector: '[ngxInputDatePicker]',
@@ -71,7 +72,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   /**
    * display format in input
    */
-  @Input() displayFormat: string = 'yyyy/MM/dd';
+  @Input() displayFormat: FormatType = 'yyyy/MM/dd';
 
   private min: Date | null = null;
   /** The minimum valid date. */

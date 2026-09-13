@@ -1,5 +1,4 @@
 // Date and Time Patterns
-
 import { CalendarDate } from '../adapters/calendar-date';
 
 // yy = 2-digit year; yyyy = full year
@@ -27,7 +26,15 @@ export function genFormatDate(
   if (!date) {
     return '';
   }
+  const namedPatterns: Record<string, string> = {
+    full: 'MMMM d, yyyy',
+    long: 'MMMM d, yyyy',
+    medium: 'MMM d, yyyy',
+    short: 'M/d/yy',
+  };
 
+  pattern = namedPatterns[pattern] ?? pattern;
+  
   const day = date.day ?? 0;
   const month = date.month ?? 0;
   const year = date.year ?? 0;

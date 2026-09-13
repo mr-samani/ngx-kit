@@ -36,7 +36,7 @@ import { NgxMessageService } from '../services/message.service';
 export class NgxMessageComponent implements OnInit, AfterViewInit {
   icon?: SafeHtml;
   showIcon = signal(true);
-  options!: IMessageOptions;
+  options: IMessageOptions = NGX_MESSAGE_DEFAULT_OPTIONS;
   confetti = viewChild<ElementRef<HTMLDivElement>>('confetti');
   index = 0;
 

@@ -40,7 +40,7 @@ export class OverlayService implements OnDestroy {
 
     if (!viewContainerRef) {
       throw new Error('ViewContainerRef is required to render overlay content.');
-    }
+     }
 
     this.attachGlobalListeners();
 

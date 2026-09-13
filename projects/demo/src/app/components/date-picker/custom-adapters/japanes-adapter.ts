@@ -1,4 +1,4 @@
-import { CalendarDate, IDateAdapter } from 'ngx-kit/date-picker';
+import { CalendarDate, IDateAdapter, type FormatType } from 'ngx-kit/date-picker';
 import { DatePickerView } from 'ngx-kit/date-picker/models/view';
 
 export class JapanesAdapter implements IDateAdapter {
@@ -43,7 +43,7 @@ export class JapanesAdapter implements IDateAdapter {
   getDate(date: CalendarDate): Date {
     throw new Error('Method not implemented.');
   }
-  formatDate(date: CalendarDate, format: string): string | null {
+  formatDate(date: CalendarDate, format: FormatType): string | null {
     throw new Error('Method not implemented.');
   }
   getStartOf(date: Date | null, t: DatePickerView): Date | null {

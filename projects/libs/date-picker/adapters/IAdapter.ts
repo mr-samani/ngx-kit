@@ -1,5 +1,6 @@
 import { DatePickerView } from '../models/view';
 import { CalendarDate } from './calendar-date';
+import { FormatType } from './consts';
 
 export interface IDateAdapter {
   get longMonths(): string[];
@@ -53,7 +54,7 @@ export interface IDateAdapter {
 
   getDate(date: CalendarDate): Date;
 
-  formatDate(date: CalendarDate, format: string): string | null;
+  formatDate(date: CalendarDate, format: FormatType): string | null;
 
   getStartOf(date: Date | null, t: DatePickerView): Date | null;
   getLastOf(date: Date | null, t: DatePickerView): Date | null;

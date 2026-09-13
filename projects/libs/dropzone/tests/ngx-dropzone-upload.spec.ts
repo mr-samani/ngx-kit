@@ -36,7 +36,7 @@ describe('NgxDropzoneHttpUploadService', () => {
     expect(request.request.method).toBe('POST');
 
     const body = request.request.body as FormData;
-    expect(body.get('document')).toBe(file);
+    expect(body.get('document')).toStrictEqual(file);
     expect(body.get('tenantId')).toBe('42');
     expect(body.get('public')).toBe('true');
 
