@@ -26,6 +26,8 @@ export const FOCUSABLE_SELECTOR = [
 export const DIALOG_OVERLAY_CLASSNAME = 'ngx-ui-overlay';
 export const OVERLAY_HOST_CLASSNAME = 'ngx-ui-overlay-host';
 
+const BASE_Z_INDEX = 1000;
+
 interface OverlayInstance<T = unknown> {
   host: HTMLElement;
   backdrop: HTMLElement;
@@ -33,6 +35,8 @@ interface OverlayInstance<T = unknown> {
   anchor?: HTMLElement;
   point?: { x: number; y: number };
   placementConfig: PlacementConfig;
+  /** resolved: true only if requested AND the browser actually supports it */
+  usePopover: boolean;
   componentRef?: ComponentRef<T>;
   embeddedView?: EmbeddedViewRef<unknown>;
   appRef?: {
@@ -57,9 +61,11 @@ export class OverlayService {
   private readonly overlayStack: OverlayInstance[] = [];
   private globalListenersAttached = false;
   private layoutRaf: number | null = null;
+
   private get isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
   }
+
   open<T>(options: OverlayOptions<T>): OverlayRef<T> {
     if (!this.isBrowser) {
       return OverlayRef.noop<T>();
@@ -75,6 +81,7 @@ export class OverlayService {
       placement,
       alignment,
       margin,
+      usePopover,
     } = options;
     if (!viewContainerRef) {
       throw new Error('[OverlayService] ViewContainerRef is required.');
@@ -88,8 +95,9 @@ export class OverlayService {
       placement,
       alignment,
       margin,
+      this.resolveUsePopover(usePopover),
     );
-    this.overlayStack.push(instance);
+    this.pushInstance(instance);
     this.renderHost(instance);
     configure?.(
       instance.componentRef!.instance,
@@ -104,8 +112,18 @@ export class OverlayService {
     if (!this.isBrowser) {
       return OverlayRef.noop();
     }
-    const { anchor, point, template, appRef, configure, onClosed, placement, alignment, margin } =
-      options;
+    const {
+      anchor,
+      point,
+      template,
+      appRef,
+      configure,
+      onClosed,
+      placement,
+      alignment,
+      margin,
+      usePopover,
+    } = options;
     const instance = this.createTemplateInstance(
       anchor,
       point,
@@ -115,8 +133,9 @@ export class OverlayService {
       placement,
       alignment,
       margin,
+      this.resolveUsePopover(usePopover),
     );
-    this.overlayStack.push(instance);
+    this.pushInstance(instance);
     this.renderHost(instance);
     const ref = new OverlayRef(instance.element, instance.cleanup, undefined, template);
     configure?.(instance, ref);
@@ -144,11 +163,12 @@ export class OverlayService {
     component: any,
     viewContainerRef: ViewContainerRef,
     onClosed: (() => void) | undefined,
-    placement?: PlacementConfig['placement'],
-    alignment?: PlacementConfig['alignment'],
-    margin?: number,
+    placement: PlacementConfig['placement'] | undefined,
+    alignment: PlacementConfig['alignment'] | undefined,
+    margin: number | undefined,
+    usePopover: boolean,
   ): OverlayInstance<T> {
-    const host = this.createHostElement();
+    const host = this.createHostElement(usePopover);
     const backdrop = this.createBackdropElement();
     const element = this.createOverlayElement();
 
@@ -163,6 +183,7 @@ export class OverlayService {
       anchor,
       point,
       placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
+      usePopover,
       componentRef,
       onClosed,
       previousActiveElement: this.getActiveElement(),
@@ -180,11 +201,12 @@ export class OverlayService {
     template: TemplateRef<unknown>,
     appRef: any,
     onClosed: (() => void) | undefined,
-    placement?: PlacementConfig['placement'],
-    alignment?: PlacementConfig['alignment'],
-    margin?: number,
+    placement: PlacementConfig['placement'] | undefined,
+    alignment: PlacementConfig['alignment'] | undefined,
+    margin: number | undefined,
+    usePopover: boolean,
   ): OverlayInstance {
-    const host = this.createHostElement();
+    const host = this.createHostElement(usePopover);
     const backdrop = this.createBackdropElement();
     const element = this.createOverlayElement();
     host.appendChild(backdrop);
@@ -199,6 +221,7 @@ export class OverlayService {
       anchor,
       point,
       placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
+      usePopover,
       embeddedView: view,
       appRef,
       onClosed,
@@ -211,17 +234,51 @@ export class OverlayService {
     return instance;
   }
 
+  private pushInstance(instance: OverlayInstance): void {
+    this.overlayStack.push(instance);
+    // Only matters as a fallback for browsers without the Popover API -
+    // real popovers stack by top-layer show order regardless of z-index.
+    instance.host.style.zIndex = String(BASE_Z_INDEX + this.overlayStack.length);
+  }
+
   // ---------------------------------------------------------------------------
   // DOM
   // ---------------------------------------------------------------------------
-  private createHostElement(): HTMLElement {
+
+  private createHostElement(usePopover: boolean): HTMLElement {
     const host = this.document.createElement('div');
     host.className = OVERLAY_HOST_CLASSNAME;
     host.setAttribute('data-ngx-overlay', '');
     host.style.position = 'fixed';
     host.style.inset = '0';
-    host.style.zIndex = '1000';
+    // Neutralize the browser's default `[popover]` UA stylesheet
+    // (margin: auto; width/height: fit-content; border: solid; padding: .25em;
+    // background: Canvas; overflow: auto) so the host reliably fills the
+    // viewport whether or not it ends up being a real popover.
+    host.style.margin = '0';
+    host.style.padding = '0';
+    host.style.border = 'none';
+    host.style.width = '100%';
+    host.style.height = '100%';
+    host.style.maxWidth = 'none';
+    host.style.maxHeight = 'none';
+    host.style.overflow = 'visible';
+    host.style.background = 'transparent';
+    host.style.color = 'inherit';
+    host.style.zIndex = String(BASE_Z_INDEX);
     host.style.pointerEvents = 'auto';
+
+    // Popover goes on the ROOT element, not the inner panel. This puts the
+    // whole overlay (backdrop + panel) in the top layer as a single unit,
+    // so stacking "just works" above everything on the page - including
+    // ancestors with `overflow: hidden`, `transform`, or their own z-index
+    // stacking contexts, which regular `position: fixed` cannot escape.
+    // The inner `element` stays a normal `position: fixed` div and keeps
+    // computing against the viewport, so all the placement math is unchanged.
+    if (usePopover) {
+      host.setAttribute('popover', 'manual');
+    }
+
     return host;
   }
 
@@ -247,14 +304,21 @@ export class OverlayService {
     element.style.maxWidth = 'calc(100vw - 16px)';
     element.style.maxHeight = 'calc(100vh - 16px)';
     element.style.outline = 'none';
+    element.style.border = 'none';
+    element.style.padding = '0';
+    element.style.margin = '0';
     element.style.overflow = 'auto';
     element.style.transformOrigin = 'left top';
-
     return element;
   }
 
   private renderHost(instance: OverlayInstance): void {
     this.document.body.appendChild(instance.host);
+    // Must show the popover (enter the top layer) BEFORE we ever measure
+    // `instance.element`'s rect - while a popover host is closed it's
+    // `display: none`, and everything inside it (including the panel)
+    // would measure as a 0x0 box.
+    this.showHostPopover(instance);
     instance.element.style.visibility = 'hidden';
     instance.element.style.position = 'fixed';
     instance.element.style.top = '0';
@@ -288,10 +352,58 @@ export class OverlayService {
       instance.embeddedView.destroy();
       instance.embeddedView = undefined;
     }
+    this.hideHostPopover(instance);
     instance.host.remove();
     instance.onClosed?.();
-    this.detachGlobalListerners();
+    // Only tear down the shared/global listeners once *every* overlay is
+    // closed - previously this ran unconditionally on every close, which
+    // silently broke Escape/outside-click/reposition for any overlays that
+    // were still open underneath.
+    if (this.overlayStack.length === 0) {
+      this.detachGlobalListeners();
+    }
     this.restoreFocus(instance.previousActiveElement);
+  }
+
+  // ---------------------------------------------------------------------------
+  // popover helpers
+  // ---------------------------------------------------------------------------
+
+  private resolveUsePopover(requested: boolean | undefined): boolean {
+    return (requested ?? true) && this.supportsPopover();
+  }
+
+  private showHostPopover(instance: OverlayInstance): void {
+    if (!instance.usePopover) {
+      return;
+    }
+    try {
+      instance.host.showPopover();
+    } catch {
+      // Already open, or environment doesn't fully support it - ignore.
+    }
+  }
+
+  private hideHostPopover(instance: OverlayInstance): void {
+    if (!instance.usePopover) {
+      return;
+    }
+    try {
+      if (instance.host.matches(':popover-open')) {
+        instance.host.hidePopover();
+      }
+    } catch {
+      // Not open, or already removed from the DOM - ignore.
+    }
+  }
+
+  private supportsPopover(): boolean {
+    return (
+      typeof HTMLElement !== 'undefined' &&
+      'popover' in HTMLElement.prototype &&
+      typeof HTMLElement.prototype.showPopover === 'function' &&
+      typeof HTMLElement.prototype.hidePopover === 'function'
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -302,8 +414,11 @@ export class OverlayService {
     if (!this.isBrowser || this.globalListenersAttached) {
       return;
     }
+    // Flip the flag synchronously to avoid a race: if two overlays open in
+    // the same tick, the second call must see the flag already set instead
+    // of scheduling a second (duplicate) round of addEventListener calls.
+    this.globalListenersAttached = true;
     setTimeout(() => {
-      this.globalListenersAttached = true;
       this.document.addEventListener('keydown', this.onDocumentKeydown);
       this.document.addEventListener('click', this.onDocumentClick);
       this.document.addEventListener('contextmenu', this.onDocumentContextMenu);
@@ -312,7 +427,7 @@ export class OverlayService {
     }, 0);
   }
 
-  private detachGlobalListerners(): void {
+  private detachGlobalListeners(): void {
     if (!this.isBrowser || !this.globalListenersAttached) {
       return;
     }
@@ -503,9 +618,14 @@ export class OverlayService {
     overlay.style.top = `${Math.round(top)}px`;
     overlay.style.left = `${Math.round(left)}px`;
     overlay.style.right = 'auto';
+    overlay.style.bottom = 'auto';
     overlay.style.visibility = 'visible';
     overlay.classList.toggle('tips-below', placeBelow);
     overlay.classList.toggle('tips-above', !placeBelow);
+    // NOTE: showPopover() is intentionally NOT called here. It already
+    // happened once in renderHost(); calling it again on every reposition
+    // (scroll/resize) throws InvalidStateError since the popover is
+    // already open.
   }
 
   private getAnchorRect(instance: OverlayInstance): DOMRect {

@@ -19,6 +19,13 @@ export interface BaseOverlayOptions<T = any> {
   placement?: Placement;
   alignment?: Alignment;
   margin?: number;
+  /**
+   * Whether to render this overlay using the native Popover API (top-layer
+   * rendering, escapes clipping/stacking-context issues of ancestors).
+   * Falls back automatically to a manual z-index based overlay when the
+   * browser doesn't support the Popover API. Defaults to `true`.
+   */
+  usePopover?: boolean;
   configure?: (instance: T, ref: OverlayRef<T>) => void;
   onClosed?: () => void;
 }
