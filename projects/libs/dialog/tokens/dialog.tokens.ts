@@ -1,6 +1,6 @@
 import { InjectionToken, Type } from '@angular/core';
-import { NgxDialogConfig } from './ngx-dialog-config';
-import { NgxDialogRef } from './ngx-dialog-ref';
+import { NgxDialogConfig } from '../configs/dialog-config';
+import { NgxDialogRef } from '../configs/dialog-ref';
 
 export const DIALOG_DATA = new InjectionToken<any>('NGX_DIALOG_DATA');
 export const DIALOG_REF = new InjectionToken<NgxDialogRef<any>>('NGX_DIALOG_REF');

@@ -1,5 +1,5 @@
 import { Directive, ElementRef, inject, input, OnDestroy, OnInit } from '@angular/core';
-import { DIALOG_REF } from '../dialog.tokens';
+import { DIALOG_REF } from '../tokens/dialog.tokens';
 
 export type NgxDialogFooterAlign = 'start' | 'end' | 'center' | 'space-between' | 'space-around';
 
@@ -16,7 +16,7 @@ export type NgxDialogFooterAlign = 'start' | 'end' | 'center' | 'space-between' 
   },
   exportAs: 'ngxDialogFooter',
 })
-export class NgxDialogFooterDirective implements OnInit, OnDestroy {
+export class NgxDialogFooter implements OnInit, OnDestroy {
   readonly align = input<NgxDialogFooterAlign>('end');
 
   private readonly el = inject(ElementRef<HTMLElement>);

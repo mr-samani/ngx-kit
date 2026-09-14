@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { moveItemInArray, NgxDraggable, NgxDropList, type IDropEvent } from 'ngx-kit/drag-resize';
+import { moveItemInArray, NgxDraggable, NgxDropList, IDropEvent } from 'ngx-kit/drag-resize';
 
 @Component({
   selector: 'app-drop-list',

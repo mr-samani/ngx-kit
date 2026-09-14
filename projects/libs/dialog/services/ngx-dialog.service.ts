@@ -1,11 +1,9 @@
 import { Injectable, Injector, Type, computed, inject, signal } from '@angular/core';
-import { Observable, map } from 'rxjs';
 import { OverlayService, OverlayOptions } from 'ngx-kit/core';
-
-import { NgxDialogConfig } from './ngx-dialog-config';
-import { NgxDialogRef } from './ngx-dialog-ref';
-import { NgxDialogComponent } from './ngx-dialog.component';
-import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_DATA, DIALOG_REF } from './dialog.tokens';
+import { NgxDialogConfig } from '../configs/dialog-config';
+import { NgxDialogRef } from '../configs/dialog-ref';
+import { NgxDialogComponent } from '../components/ngx-dialog.component';
+import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_DATA, DIALOG_REF } from '../tokens/dialog.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class NgxDialogService {

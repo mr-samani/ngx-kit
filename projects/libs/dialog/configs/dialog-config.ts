@@ -1,5 +1,5 @@
 import { Injector } from '@angular/core';
-import { NgxDialogFooterAlign } from './directives/footer.directive';
+import { NgxDialogFooterAlign } from '../directives/footer.directive';
 
 export type NgxDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 

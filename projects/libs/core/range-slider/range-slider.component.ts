@@ -11,7 +11,7 @@ import {
   Output,
   ViewChild,
   forwardRef,
-  type OnInit,
+  OnInit,
 } from '@angular/core';
 import { getOffsetPosition } from '../utils/get-offset-position';
 import { startDragSession } from '../utils/drag-session';

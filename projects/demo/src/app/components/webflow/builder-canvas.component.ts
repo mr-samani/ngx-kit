@@ -6,8 +6,8 @@ import {
   DropzoneContainerDirective,
   FlowDropIndicatorComponent,
   FlowTreeService,
-  type DragEndEvent,
-  type ResizeMoveEvent,
+  DragEndEvent,
+  ResizeMoveEvent,
 } from 'ngx-kit/webflow';
 
 /**

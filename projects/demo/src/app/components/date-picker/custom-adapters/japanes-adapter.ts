@@ -1,4 +1,4 @@
-import { CalendarDate, IDateAdapter, type FormatType } from 'ngx-kit/date-picker';
+import { CalendarDate, IDateAdapter, FormatType } from 'ngx-kit/date-picker';
 import { DatePickerView } from 'ngx-kit/date-picker/models/view';
 
 export class JapanesAdapter implements IDateAdapter {

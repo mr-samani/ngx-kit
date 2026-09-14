@@ -2,7 +2,7 @@ import { genFormatDate } from '../../helpers/date-format.helper';
 import { DatePickerView } from '../../models/view';
 import { IDateAdapter } from '../IAdapter';
 import { CalendarDate } from '../calendar-date';
-import type { FormatType } from '../consts';
+import { FormatType } from '../consts';
 
 export class GregorianAdapter implements IDateAdapter {
   startOfWeek = 0;

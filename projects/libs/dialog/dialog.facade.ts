@@ -1,8 +1,7 @@
 import { Type } from '@angular/core';
-import { Observable } from 'rxjs';
-import { NgxDialogConfig } from './ngx-dialog-config';
-import { NgxDialogRef } from './ngx-dialog-ref';
-import { NgxDialogService } from './ngx-dialog.service';
+import { NgxDialogConfig } from './configs/dialog-config';
+import { NgxDialogRef } from './configs/dialog-ref';
+import { NgxDialogService } from './services/ngx-dialog.service';
 
 const NOT_INITIALIZED_MESSAGE =
   '[ngx-kit/dialog] Dialog.* was called before provideNgxDialog() ran. ' +

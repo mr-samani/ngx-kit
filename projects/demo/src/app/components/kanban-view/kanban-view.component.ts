@@ -4,7 +4,7 @@ import {
   NgxDropList,
   NgxDropListGroup,
   transferArrayItem,
-  type IDropEvent,
+  IDropEvent,
 } from 'ngx-kit/drag-resize';
 
 @Component({

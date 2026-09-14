@@ -1,25 +1,25 @@
 import { CommonModule, isPlatformServer } from '@angular/common';
 import { NgModule, Optional, PLATFORM_ID, SkipSelf, inject } from '@angular/core';
-import { NgxDialogBodyDirective } from './directives/body.directive';
-import { NgxDialogFooterDirective } from './directives/footer.directive';
-import { NgxDialogHeaderDirective } from './directives/header.directive';
-import { NgxDialogComponent } from './ngx-dialog.component';
+import { NgxDialogBody } from './directives/body.directive';
+import { NgxDialogFooter } from './directives/footer.directive';
+import { NgxDialogHeader } from './directives/header.directive';
+import { NgxDialogComponent } from './components/ngx-dialog.component';
 import { Dialog as DialogFacade } from './dialog.facade';
-import { NgxDialogService } from './ngx-dialog.service';
+import { NgxDialogService } from './services/ngx-dialog.service';
 
 @NgModule({
   declarations: [],
   imports: [
     NgxDialogComponent,
-    NgxDialogHeaderDirective,
-    NgxDialogFooterDirective,
-    NgxDialogBodyDirective,
+    NgxDialogHeader,
+    NgxDialogFooter,
+    NgxDialogBody,
   ],
   exports: [
     NgxDialogComponent,
-    NgxDialogHeaderDirective,
-    NgxDialogFooterDirective,
-    NgxDialogBodyDirective,
+    NgxDialogHeader,
+    NgxDialogFooter,
+    NgxDialogBody,
   ],
   providers: [NgxDialogService],
 })

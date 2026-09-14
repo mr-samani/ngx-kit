@@ -1,6 +1,6 @@
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../calendar-date';
-import type { FormatType } from '../consts';
+import { FormatType } from '../consts';
 import { ChineseConverter } from '../converters/chinese-converter.helper';
 import { IDateAdapter } from '../IAdapter';
 

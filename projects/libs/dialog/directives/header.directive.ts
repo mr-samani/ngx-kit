@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Directive, ElementRef, inject, input, OnInit } from '@angular/core';
-import { DIALOG_REF } from '../dialog.tokens';
+import { DIALOG_REF } from '../tokens/dialog.tokens';
 
 const CLOSE_ICON_SVG =
   '<svg width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true">' +
@@ -13,7 +13,7 @@ const CLOSE_ICON_SVG =
   host: { class: 'dialog-header' },
   exportAs: 'ngxDialogHeader',
 })
-export class NgxDialogHeaderDirective implements OnInit {
+export class NgxDialogHeader implements OnInit {
   readonly showCloseButton = input(true);
 
   private readonly el = inject(ElementRef<HTMLElement>);

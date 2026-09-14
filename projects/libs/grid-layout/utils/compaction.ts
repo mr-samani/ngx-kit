@@ -1,5 +1,5 @@
 import { GridItemConfig } from '../options/grid-item-config';
-import type { CompactMode } from '../options/options';
+import { CompactMode } from '../options/options';
 import { LayoutNode, collides, getFirstCollision } from './collision';
 
 export interface MoveOptions {

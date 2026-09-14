@@ -1,5 +1,5 @@
 import { DestroyRef, Directive, ElementRef, Renderer2, effect, inject } from '@angular/core';
-import { DIALOG_REF } from '../dialog.tokens';
+import { DIALOG_REF } from '../tokens/dialog.tokens';
 
 /**
  * Why this can't be pure CSS flexbox: the header/body/footer elements are
@@ -18,7 +18,7 @@ import { DIALOG_REF } from '../dialog.tokens';
   host: { class: 'dialog-body' },
   exportAs: 'ngxDialogBody',
 })
-export class NgxDialogBodyDirective {
+export class NgxDialogBody {
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
   private readonly dialogRef = inject(DIALOG_REF);

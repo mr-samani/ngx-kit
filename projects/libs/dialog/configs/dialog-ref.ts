@@ -20,7 +20,7 @@ export class NgxDialogRef<R = any> {
   /** Emits the result exactly once, after the dialog has been fully torn down. */
   readonly afterClosed: Observable<R | undefined> = this._afterClosed.asObservable();
 
-  /** @internal set by the layout directives; read by NgxDialogBodyDirective to size itself. */
+  /** @internal set by the layout directives; read by NgxDialogBody to size itself. */
   readonly headerEl = signal<HTMLElement | null>(null);
   /** @internal */
   readonly footerEl = signal<HTMLElement | null>(null);

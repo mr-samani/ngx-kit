@@ -1,6 +1,5 @@
 # ngx-kit/dialog
 
-Modal/dialog built on the browser's native `<dialog>` — no manual overlay, no third-party library.
 
 ## Install
 

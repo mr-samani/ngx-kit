@@ -1,7 +1,6 @@
-import { IPosition, IResizableOutput, NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
-import { Component, computed, inject, signal, type OnDestroy, type OnInit } from '@angular/core';
+import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
+import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { IAppMenu } from '@demo/shared/interfaces/IAppMenu';
 import { ActivatedRoute } from '@angular/router';
 
 type Direction = 'ltr' | 'rtl';

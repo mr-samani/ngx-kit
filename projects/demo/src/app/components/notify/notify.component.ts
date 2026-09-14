@@ -6,8 +6,7 @@ import {
   Notify,
   NgxNotifyType,
   NgxNotifyOptions,
-  NgxNotifyPositionType,
-  type NgxNotifyPayload,
+  NgxNotifyPayload,
 } from 'ngx-kit/notify';
 import {
   ExampleShowcaseComponent,

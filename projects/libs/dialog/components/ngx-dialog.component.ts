@@ -1,8 +1,8 @@
 import { NgComponentOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, computed, inject } from '@angular/core';
-import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_REF } from './dialog.tokens';
-import { NgxDialogFooterDirective } from './directives/footer.directive';
-import { NgxDialogHeaderDirective } from './directives/header.directive';
+import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_REF } from '../tokens/dialog.tokens';
+import { NgxDialogFooter } from '../directives/footer.directive';
+import { NgxDialogHeader } from '../directives/header.directive';
 
 /**
  * The dialog "panel" shell. It no longer owns the backdrop, centering,
@@ -17,7 +17,7 @@ import { NgxDialogHeaderDirective } from './directives/header.directive';
 @Component({
   selector: 'ngx-dialog-panel',
   standalone: true,
-  imports: [NgComponentOutlet, NgxDialogHeaderDirective, NgxDialogFooterDirective],
+  imports: [NgComponentOutlet, NgxDialogHeader, NgxDialogFooter],
   templateUrl: './ngx-dialog.component.html',
   styleUrl: './ngx-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
