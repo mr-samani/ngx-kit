@@ -1,15 +1,19 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
+  ApplicationRef,
   ComponentRef,
   EmbeddedViewRef,
+  EnvironmentInjector,
   Injectable,
+  Injector,
   PLATFORM_ID,
   TemplateRef,
   ViewContainerRef,
+  createComponent,
   inject,
 } from '@angular/core';
 
-import { OverlayOptions, TemplateOptions } from './overlay-options';
+import { Alignment, OverlayOptions, Placement, TemplateOptions } from './overlay-options';
 import { OverlayRef } from './overlay-ref';
 import { PlacementConfig } from './placement-config';
 import { DirectionService } from '../services/direction.service';
@@ -35,9 +39,19 @@ interface OverlayInstance<T = unknown> {
   anchor?: HTMLElement;
   point?: { x: number; y: number };
   placementConfig: PlacementConfig;
-  /** resolved: true only if requested AND the browser actually supports it */
+
   usePopover: boolean;
+  closeOnEscape: boolean;
+  closeOnOutsideClick: boolean;
+  canClose?: () => boolean;
+  autoFocus: boolean;
+  restoreFocus: boolean;
+  lockBodyScroll: boolean;
+
   componentRef?: ComponentRef<T>;
+  /** true when `componentRef` was attached directly to the ApplicationRef
+   *  (no ViewContainerRef supplied) and therefore needs an explicit detach. */
+  attachedToAppRef?: boolean;
   embeddedView?: EmbeddedViewRef<unknown>;
   appRef?: {
     attachView(view: EmbeddedViewRef<unknown>): void;
@@ -58,12 +72,23 @@ export class OverlayService {
   private readonly document = inject(DOCUMENT);
   private readonly directionService = inject(DirectionService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly applicationRef = inject(ApplicationRef);
+  private readonly environmentInjector = inject(EnvironmentInjector);
   private readonly overlayStack: OverlayInstance[] = [];
   private globalListenersAttached = false;
   private layoutRaf: number | null = null;
 
+  private bodyScrollLockCount = 0;
+  private previousBodyOverflow: string | null = null;
+  private previousBodyPaddingRight: string | null = null;
+
   private get isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
+  }
+
+  /** Number of overlays currently open. */
+  get openCount(): number {
+    return this.overlayStack.length;
   }
 
   open<T>(options: OverlayOptions<T>): OverlayRef<T> {
@@ -71,34 +96,11 @@ export class OverlayService {
       return OverlayRef.noop<T>();
     }
 
-    const {
-      anchor,
-      point,
-      component,
-      viewContainerRef,
-      configure,
-      onClosed,
-      placement,
-      alignment,
-      margin,
-      usePopover,
-    } = options;
-    if (!viewContainerRef) {
-      throw new Error('[OverlayService] ViewContainerRef is required.');
-    }
-    const instance = this.createComponentInstance<T>(
-      anchor,
-      point,
-      component,
-      viewContainerRef,
-      onClosed,
-      placement,
-      alignment,
-      margin,
-      this.resolveUsePopover(usePopover),
-    );
+    const { component, viewContainerRef, configure, onClosed } = options;
+    const instance = this.createComponentInstance<T>(options, component, viewContainerRef);
     this.pushInstance(instance);
     this.renderHost(instance);
+    instance.onClosed = onClosed;
     configure?.(
       instance.componentRef!.instance,
       new OverlayRef(instance.element, instance.cleanup, instance.componentRef),
@@ -112,31 +114,11 @@ export class OverlayService {
     if (!this.isBrowser) {
       return OverlayRef.noop();
     }
-    const {
-      anchor,
-      point,
-      template,
-      appRef,
-      configure,
-      onClosed,
-      placement,
-      alignment,
-      margin,
-      usePopover,
-    } = options;
-    const instance = this.createTemplateInstance(
-      anchor,
-      point,
-      template,
-      appRef,
-      onClosed,
-      placement,
-      alignment,
-      margin,
-      this.resolveUsePopover(usePopover),
-    );
+    const { template, appRef, configure, onClosed } = options;
+    const instance = this.createTemplateInstance(options, template, appRef ?? this.applicationRef);
     this.pushInstance(instance);
     this.renderHost(instance);
+    instance.onClosed = onClosed;
     const ref = new OverlayRef(instance.element, instance.cleanup, undefined, template);
     configure?.(instance, ref);
     this.scheduleInitialLayout(instance);
@@ -158,34 +140,56 @@ export class OverlayService {
   // ---------------------------------------------------------------------------
 
   private createComponentInstance<T>(
-    anchor: HTMLElement,
-    point: { x: number; y: number } | undefined,
-    component: any,
-    viewContainerRef: ViewContainerRef,
-    onClosed: (() => void) | undefined,
-    placement: PlacementConfig['placement'] | undefined,
-    alignment: PlacementConfig['alignment'] | undefined,
-    margin: number | undefined,
-    usePopover: boolean,
+    options: OverlayOptions<T>,
+    component: OverlayOptions<T>['component'],
+    viewContainerRef: ViewContainerRef | undefined,
   ): OverlayInstance<T> {
-    const host = this.createHostElement(usePopover);
-    const backdrop = this.createBackdropElement();
-    const element = this.createOverlayElement();
+    const host = this.createHostElement(options);
+    const backdrop = this.createBackdropElement(options);
+    const element = this.createOverlayElement(options);
 
     host.appendChild(backdrop);
     host.appendChild(element);
-    const componentRef = viewContainerRef.createComponent<T>(component);
+
+    let componentRef: ComponentRef<T>;
+    let attachedToAppRef = false;
+    if (viewContainerRef) {
+      componentRef = options.injector
+        ? viewContainerRef.createComponent<T>(component, { injector: options.injector })
+        : viewContainerRef.createComponent<T>(component);
+    } else {
+      // No host ViewContainerRef available (e.g. a global service opening an
+      // overlay outside of any component template) - create and attach the
+      // component directly against the application, like a root component.
+      componentRef = createComponent<T>(component, {
+        environmentInjector: this.environmentInjector,
+        elementInjector: options.injector,
+      });
+      this.applicationRef.attachView(componentRef.hostView);
+      attachedToAppRef = true;
+    }
     element.appendChild(componentRef.location.nativeElement);
+
     const instance: OverlayInstance<T> = {
       host,
       backdrop,
       element,
-      anchor,
-      point,
-      placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
-      usePopover,
+      anchor: options.anchor,
+      point: options.point,
+      placementConfig: this.resolvePlacementConfig(
+        options.placement,
+        options.alignment,
+        options.margin,
+      ),
+      usePopover: this.resolveUsePopover(options),
+      closeOnEscape: options.closeOnEscape ?? true,
+      closeOnOutsideClick: options.closeOnOutsideClick ?? true,
+      canClose: options.canClose,
+      autoFocus: options.autoFocus ?? true,
+      restoreFocus: options.restoreFocus ?? true,
+      lockBodyScroll: options.lockBodyScroll ?? false,
       componentRef,
-      onClosed,
+      attachedToAppRef,
       previousActiveElement: this.getActiveElement(),
       rafId: null,
       focusTimeoutId: null,
@@ -196,19 +200,16 @@ export class OverlayService {
   }
 
   private createTemplateInstance(
-    anchor: HTMLElement | undefined,
-    point: { x: number; y: number } | undefined,
+    options: TemplateOptions,
     template: TemplateRef<unknown>,
-    appRef: any,
-    onClosed: (() => void) | undefined,
-    placement: PlacementConfig['placement'] | undefined,
-    alignment: PlacementConfig['alignment'] | undefined,
-    margin: number | undefined,
-    usePopover: boolean,
+    appRef: {
+      attachView(view: EmbeddedViewRef<unknown>): void;
+      detachView(view: EmbeddedViewRef<unknown>): void;
+    },
   ): OverlayInstance {
-    const host = this.createHostElement(usePopover);
-    const backdrop = this.createBackdropElement();
-    const element = this.createOverlayElement();
+    const host = this.createHostElement(options);
+    const backdrop = this.createBackdropElement(options);
+    const element = this.createOverlayElement(options);
     host.appendChild(backdrop);
     host.appendChild(element);
     const view = template.createEmbeddedView({});
@@ -218,13 +219,22 @@ export class OverlayService {
       host,
       backdrop,
       element,
-      anchor,
-      point,
-      placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
-      usePopover,
+      anchor: options.anchor,
+      point: options.point,
+      placementConfig: this.resolvePlacementConfig(
+        options.placement,
+        options.alignment,
+        options.margin,
+      ),
+      usePopover: this.resolveUsePopover(options),
+      closeOnEscape: options.closeOnEscape ?? true,
+      closeOnOutsideClick: options.closeOnOutsideClick ?? true,
+      canClose: options.canClose,
+      autoFocus: options.autoFocus ?? true,
+      restoreFocus: options.restoreFocus ?? true,
+      lockBodyScroll: options.lockBodyScroll ?? false,
       embeddedView: view,
       appRef,
-      onClosed,
       previousActiveElement: this.getActiveElement(),
       rafId: null,
       focusTimeoutId: null,
@@ -239,13 +249,17 @@ export class OverlayService {
     // Only matters as a fallback for browsers without the Popover API -
     // real popovers stack by top-layer show order regardless of z-index.
     instance.host.style.zIndex = String(BASE_Z_INDEX + this.overlayStack.length);
+    if (instance.lockBodyScroll) {
+      this.lockBodyScroll();
+    }
   }
 
   // ---------------------------------------------------------------------------
   // DOM
   // ---------------------------------------------------------------------------
 
-  private createHostElement(usePopover: boolean): HTMLElement {
+  private createHostElement(options: { usePopover?: boolean }): HTMLElement {
+    const usePopover = this.resolveUsePopover(options);
     const host = this.document.createElement('div');
     host.className = OVERLAY_HOST_CLASSNAME;
     host.setAttribute('data-ngx-overlay', '');
@@ -282,21 +296,40 @@ export class OverlayService {
     return host;
   }
 
-  private createBackdropElement(): HTMLElement {
+  private createBackdropElement(options: { backdropClass?: string | string[] }): HTMLElement {
     const backdrop = this.document.createElement('div');
     backdrop.className = 'ngx-ui-overlay-backdrop';
     backdrop.style.position = 'absolute';
     backdrop.style.inset = '0';
     backdrop.style.pointerEvents = 'auto';
     backdrop.style.background = 'transparent';
+    this.addClasses(backdrop, options.backdropClass);
     return backdrop;
   }
 
-  private createOverlayElement(): HTMLElement {
+  private createOverlayElement(options: {
+    panelClass?: string | string[];
+    role?: string;
+    ariaModal?: boolean;
+    ariaLabel?: string;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
+  }): HTMLElement {
     const element = this.document.createElement('div');
     element.className = DIALOG_OVERLAY_CLASSNAME;
-    element.setAttribute('role', 'dialog');
-    element.setAttribute('aria-modal', 'true');
+    element.setAttribute('role', options.role ?? 'dialog');
+    if (options.ariaModal ?? true) {
+      element.setAttribute('aria-modal', 'true');
+    }
+    if (options.ariaLabel) {
+      element.setAttribute('aria-label', options.ariaLabel);
+    }
+    if (options.ariaLabelledby) {
+      element.setAttribute('aria-labelledby', options.ariaLabelledby);
+    }
+    if (options.ariaDescribedby) {
+      element.setAttribute('aria-describedby', options.ariaDescribedby);
+    }
     element.setAttribute('tabindex', '-1');
     element.style.position = 'fixed';
     element.style.pointerEvents = 'auto';
@@ -309,7 +342,20 @@ export class OverlayService {
     element.style.margin = '0';
     element.style.overflow = 'auto';
     element.style.transformOrigin = 'left top';
+    this.addClasses(element, options.panelClass);
     return element;
+  }
+
+  private addClasses(element: HTMLElement, classes: string | string[] | undefined): void {
+    if (!classes) {
+      return;
+    }
+    const list = Array.isArray(classes) ? classes : classes.split(' ');
+    for (const c of list) {
+      if (c.trim()) {
+        element.classList.add(c.trim());
+      }
+    }
   }
 
   private renderHost(instance: OverlayInstance): void {
@@ -344,6 +390,9 @@ export class OverlayService {
       instance.focusTimeoutId = null;
     }
     if (instance.componentRef) {
+      if (instance.attachedToAppRef) {
+        this.applicationRef.detachView(instance.componentRef.hostView);
+      }
       instance.componentRef.destroy();
       instance.componentRef = undefined;
     }
@@ -354,6 +403,9 @@ export class OverlayService {
     }
     this.hideHostPopover(instance);
     instance.host.remove();
+    if (instance.lockBodyScroll) {
+      this.unlockBodyScroll();
+    }
     instance.onClosed?.();
     // Only tear down the shared/global listeners once *every* overlay is
     // closed - previously this ran unconditionally on every close, which
@@ -362,15 +414,17 @@ export class OverlayService {
     if (this.overlayStack.length === 0) {
       this.detachGlobalListeners();
     }
-    this.restoreFocus(instance.previousActiveElement);
+    if (instance.restoreFocus) {
+      this.restoreFocus(instance.previousActiveElement);
+    }
   }
 
   // ---------------------------------------------------------------------------
   // popover helpers
   // ---------------------------------------------------------------------------
 
-  private resolveUsePopover(requested: boolean | undefined): boolean {
-    return (requested ?? true) && this.supportsPopover();
+  private resolveUsePopover(options: { usePopover?: boolean }): boolean {
+    return (options.usePopover ?? true) && this.supportsPopover();
   }
 
   private showHostPopover(instance: OverlayInstance): void {
@@ -404,6 +458,41 @@ export class OverlayService {
       typeof HTMLElement.prototype.showPopover === 'function' &&
       typeof HTMLElement.prototype.hidePopover === 'function'
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // body scroll lock
+  // ---------------------------------------------------------------------------
+
+  private lockBodyScroll(): void {
+    this.bodyScrollLockCount++;
+    if (this.bodyScrollLockCount > 1) {
+      return;
+    }
+    const body = this.document.body;
+    this.previousBodyOverflow = body.style.overflow;
+    this.previousBodyPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - this.document.documentElement.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      const currentPaddingRight = parseFloat(window.getComputedStyle(body).paddingRight) || 0;
+      body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
+    }
+  }
+
+  private unlockBodyScroll(): void {
+    if (this.bodyScrollLockCount === 0) {
+      return;
+    }
+    this.bodyScrollLockCount--;
+    if (this.bodyScrollLockCount > 0) {
+      return;
+    }
+    const body = this.document.body;
+    body.style.overflow = this.previousBodyOverflow ?? '';
+    body.style.paddingRight = this.previousBodyPaddingRight ?? '';
+    this.previousBodyOverflow = null;
+    this.previousBodyPaddingRight = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -445,6 +534,9 @@ export class OverlayService {
       return;
     }
     if (event.key === 'Escape') {
+      if (!instance.closeOnEscape || (instance.canClose && !instance.canClose())) {
+        return;
+      }
       event.preventDefault();
       instance.cleanup();
       return;
@@ -469,6 +561,9 @@ export class OverlayService {
     if (instance.anchor && instance.anchor.contains(target)) {
       return;
     }
+    if (!instance.closeOnOutsideClick || (instance.canClose && !instance.canClose())) {
+      return;
+    }
     instance.cleanup();
   };
 
@@ -487,6 +582,9 @@ export class OverlayService {
       return;
     }
     if (instance.element.contains(event.target as Node)) {
+      return;
+    }
+    if (!instance.closeOnOutsideClick || (instance.canClose && !instance.canClose())) {
       return;
     }
     instance.cleanup();
@@ -521,6 +619,9 @@ export class OverlayService {
     instance.rafId = this.requestAnimationFrame(() => {
       instance.rafId = null;
       this.positionOverlay(instance);
+      if (!instance.autoFocus) {
+        return;
+      }
       instance.focusTimeoutId = setTimeout(() => {
         instance.focusTimeoutId = null;
         this.focusInitialElement(instance);
@@ -582,15 +683,22 @@ export class OverlayService {
     const overlayRect = overlay.getBoundingClientRect();
     const { placement, alignment, margin } = instance.placementConfig;
     const isRTL = this.directionService.isRtl();
-    const spaceBelow = viewportHeight - anchorRect.bottom;
-    const spaceAbove = anchorRect.top;
-    const placeBelow =
-      placement === 'bottom' || (placement === 'auto' && spaceBelow >= overlayRect.height + margin);
+
     let top: number;
-    if (placeBelow) {
-      top = anchorRect.bottom + margin;
+    if (placement === 'center') {
+      top = anchorRect.top + anchorRect.height / 2 - overlayRect.height / 2;
     } else {
-      top = anchorRect.top - overlayRect.height - margin;
+      const spaceBelow = viewportHeight - anchorRect.bottom;
+      const placeBelow =
+        placement === 'bottom' ||
+        (placement === 'auto' && spaceBelow >= overlayRect.height + margin);
+      if (placeBelow) {
+        top = anchorRect.bottom + margin;
+      } else {
+        top = anchorRect.top - overlayRect.height - margin;
+      }
+      overlay.classList.toggle('tips-below', placeBelow);
+      overlay.classList.toggle('tips-above', !placeBelow);
     }
     if (top + overlayRect.height > viewportHeight - margin) {
       top = viewportHeight - overlayRect.height - margin;
@@ -598,6 +706,7 @@ export class OverlayService {
     if (top < margin) {
       top = margin;
     }
+
     let left: number;
     switch (alignment) {
       case 'center':
@@ -620,8 +729,6 @@ export class OverlayService {
     overlay.style.right = 'auto';
     overlay.style.bottom = 'auto';
     overlay.style.visibility = 'visible';
-    overlay.classList.toggle('tips-below', placeBelow);
-    overlay.classList.toggle('tips-above', !placeBelow);
     // NOTE: showPopover() is intentionally NOT called here. It already
     // happened once in renderHost(); calling it again on every reposition
     // (scroll/resize) throws InvalidStateError since the popover is
@@ -639,8 +746,8 @@ export class OverlayService {
   }
 
   private resolvePlacementConfig(
-    placement?: PlacementConfig['placement'],
-    alignment?: PlacementConfig['alignment'],
+    placement?: Placement,
+    alignment?: Alignment,
     margin?: number,
   ): PlacementConfig {
     return {

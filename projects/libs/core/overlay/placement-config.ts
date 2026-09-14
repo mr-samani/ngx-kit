@@ -1,5 +1,7 @@
+import type { Alignment, Placement } from './overlay-options';
+
 export interface PlacementConfig {
-  placement: 'top' | 'bottom' | 'auto';
-  alignment: 'start' | 'center' | 'end';
+  placement: Placement;
+  alignment: Alignment;
   margin: number;
 }
