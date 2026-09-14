@@ -29,7 +29,7 @@ import { PickerComponent } from '../inspectors/picker/picker.component';
 import { CmykComponent } from '../inspectors/cmyk/cmyk.component';
 import { HslComponent } from '../inspectors/hsl/hsl.component';
 import { RgbComponent } from '../inspectors/rgb/rgb.component';
-import { BrowserService } from 'ngx-kit/shared';
+import { BrowserService } from 'ngx-kit/core';
 declare const EyeDropper: any;
 
 @Component({

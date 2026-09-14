@@ -18,7 +18,7 @@ import {
   ValidationErrors,
   Validator,
 } from '@angular/forms';
-import { OverlayRef, OverlayService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { NgxDateRange } from '../models/range';
 import { NgxDatePickerConfig } from '../components/config';

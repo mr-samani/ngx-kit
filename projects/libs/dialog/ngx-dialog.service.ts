@@ -14,7 +14,7 @@ import { NgxDialogConfig } from './ngx-dialog-config';
 import { NgxDialogRef } from './ngx-dialog-ref';
 import { NgxDialogComponent } from './ngx-dialog.component';
 import { DIALOG_DATA, DIALOG_REF } from './dialog.tokens';
-import { randomStrnig } from 'ngx-kit/shared';
+import { randomStrnig } from 'ngx-kit/core';
 
 @Injectable()
 export class NgxOverlayService {

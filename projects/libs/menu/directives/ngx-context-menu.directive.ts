@@ -1,5 +1,5 @@
 import { Directive, OnDestroy, input, ApplicationRef, ElementRef } from '@angular/core';
-import { OverlayRef, OverlayService, OverlayInstance } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService, OverlayInstance } from 'ngx-kit/core';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
 
 @Directive({

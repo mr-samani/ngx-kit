@@ -6,7 +6,7 @@ import {
   input,
   ApplicationRef,
 } from '@angular/core';
-import { OverlayRef, OverlayService, OverlayInstance, Alignment, Placement } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService, OverlayInstance, Alignment, Placement } from 'ngx-kit/core';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
 
 @Directive({

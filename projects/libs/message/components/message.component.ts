@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
 import { NGX_MESSAGE_CONFIGS, NGX_MESSAGE_DEFAULT_OPTIONS } from '../models/tokens';
 import { ICONS } from '../models/icons';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { makeConfetti } from 'ngx-kit/shared';
+import { makeConfetti } from 'ngx-kit/core';
 import { NgxMessageService } from '../services/message.service';
 
 @Component({

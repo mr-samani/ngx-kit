@@ -30,7 +30,7 @@ import {
   TableField,
 } from '../../types/table-field.types';
 import { NgxPagination } from '../pagination/pagination';
-import { DirectionService } from 'ngx-kit/shared';
+import { DirectionService } from 'ngx-kit/core';
 
 /**
  * جدول داده‌ی جنریک و Type-Safe.

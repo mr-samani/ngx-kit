@@ -24,9 +24,9 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { parseBoxShadowToPx, stringifyBoxShadow } from '../utils/box-shadow';
-import { IPosition, getOffsetPosition, startDragSession } from 'ngx-kit/shared';
+import { IPosition, getOffsetPosition, startDragSession } from 'ngx-kit/core';
 import { NgxInputColor } from 'ngx-kit/color-picker';
-import { BrowserService } from 'ngx-kit/shared';
+import { BrowserService } from 'ngx-kit/core';
 
 @Component({
   selector: 'ngx-box-shadow',

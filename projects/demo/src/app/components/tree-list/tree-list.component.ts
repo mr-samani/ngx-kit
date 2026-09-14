@@ -1,7 +1,7 @@
 import { Component, type OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { TreeModel } from './tree.model';
-import { filterTreeList } from 'ngx-kit/shared';
+import { filterTreeList } from 'ngx-kit/core';
 
 @Component({
   selector: 'app-filter-tree-list',

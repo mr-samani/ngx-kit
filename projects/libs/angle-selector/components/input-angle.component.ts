@@ -8,18 +8,15 @@ import {
   OnInit,
   inject,
   signal,
-  effect,
   DestroyRef,
-  WritableSignal,
   forwardRef,
   ChangeDetectionStrategy,
   input,
   ChangeDetectorRef,
-  Input,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { BrowserService } from 'ngx-kit/shared';
+import { BrowserService } from 'ngx-kit/core';
 import { Subject, fromEvent, merge, tap, map, filter, switchMap, takeUntil, repeat } from 'rxjs';
 
 @Component({

@@ -1,6 +1,6 @@
 # ngx-kit/menu
 
-Dropdown menu and context (right-click) menu, with smart positioning relative to an anchor (via `ngx-kit/shared`'s `OverlayService`).
+Dropdown menu and context (right-click) menu, with smart positioning relative to an anchor (via `ngx-kit/core`'s `OverlayService`).
 
 ## Install
 
@@ -82,4 +82,4 @@ ngx-menu {
 
 ## Dark mode and RTL
 
-Both are supported automatically (via `ngx-kit/shared`'s `OverlayService`/`DirectionService` and `light-dark()`); no extra work needed.
+Both are supported automatically (via `ngx-kit/core`'s `OverlayService`/`DirectionService` and `light-dark()`); no extra work needed.

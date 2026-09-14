@@ -1,4 +1,4 @@
-# ngx-kit/shared
+# ngx-kit/core
 
 Shared utilities and services that the rest of the `ngx-kit` packages are built on: overlay/dialog management, page-direction (RTL/LTR) detection, browser-preference detection, and a few reusable base components (slider, range slider, color-saturation panel).
 
@@ -24,7 +24,7 @@ Import the base styles (which enable dark mode via `color-scheme`) once, app-wid
 The engine behind everything floating in the library (menus, dialogs, the color/gradient/angle picker popups). Renders an Angular component inside a native `<dialog>` (`showModal()`) and positions it relative to an anchor.
 
 ```ts
-import { OverlayService } from 'ngx-kit/shared';
+import { OverlayService } from 'ngx-kit/core';
 
 const overlay = inject(OverlayService);
 const viewContainerRef = inject(ViewContainerRef);
@@ -72,7 +72,7 @@ browser.prefersDarkMode; // boolean — read once at service construction time
 Replaces the problematic `@HostListener('document:mousemove', ...)` pattern, which keeps a listener attached to `document` for the entire lifetime of the component — even when nothing is being dragged (a real performance issue on pages with many simultaneous instances). This function only adds a listener for the duration of an actual drag and removes it itself; `touchmove` is handled with `{passive: false}`, so dragging on mobile doesn't also scroll the page.
 
 ```ts
-import { startDragSession } from 'ngx-kit/shared';
+import { startDragSession } from 'ngx-kit/core';
 
 let stop: (() => void) | undefined;
 
@@ -111,7 +111,7 @@ These can be used directly, but they're mostly designed as building blocks for o
 
 ## Dark mode and RTL
 
-Both rely directly on `ngx-kit/shared`:
+Both rely directly on `ngx-kit/core`:
 
 - **Dark mode**: uses the native CSS `light-dark()` function. For it to work, `color-scheme: light dark` (or `only light`/`only dark` to force it manually) must be set on `:root` — this happens automatically when you import `ngx-kit/styles/all.css`. To force a theme manually (independent of the OS's `prefers-color-scheme`), set `data-ngx-theme="dark"` or `"light"` on `<html>`/`<body>`.
 - **RTL**: enabled via `dir="rtl"` on `<html>`; the whole library uses CSS logical properties (`inset-inline-start`, etc.), so no separate styling is needed.

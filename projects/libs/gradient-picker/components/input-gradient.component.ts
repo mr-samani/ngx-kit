@@ -28,7 +28,7 @@ import {
   parseGradient,
 } from '../utils/build-gradient';
 import { DefaultGradients } from '../contracts/default-gradients';
-import { BrowserService, RangeSliderComponent } from 'ngx-kit/shared';
+import { BrowserService, RangeSliderComponent } from 'ngx-kit/core';
 import { NgxInputColor } from 'ngx-kit/color-picker';
 import { NgxInputAngle } from 'ngx-kit/angle-selector';
 import { CommonModule } from '@angular/common';

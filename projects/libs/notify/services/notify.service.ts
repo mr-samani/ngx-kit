@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { NgxNotifyOptions } from '../models/notify-options';
 import { INotifyEnd, NgxNotifyPayload, NgxNotifyType } from '../models/notify.model';
-import { WINDOW } from 'ngx-kit/shared';
+import { WINDOW } from 'ngx-kit/core';
 import { NGX_NOTIFY_CONFIG } from '../models/notify-config';
 import { NgxNotificationComponent } from '../components/notification.component';
 

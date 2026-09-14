@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SliderComponent } from 'ngx-kit/shared';
+import { SliderComponent } from 'ngx-kit/core';
 import {
   NgxCropRect,
   NgxImageEditorAdjustments,

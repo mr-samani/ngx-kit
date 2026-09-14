@@ -14,7 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BrowserService } from 'ngx-kit/shared';
+import { BrowserService } from 'ngx-kit/core';
 import {
   AbstractControl,
   ControlValueAccessor,

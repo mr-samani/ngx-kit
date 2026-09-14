@@ -25,7 +25,7 @@ import { ColorInspector } from '../contracts/ColorInspector.enum';
 import { NgxInputColorComponent } from '../components/input-color.component';
 import { NgxColor } from '../utils/color-helper';
 import { OutputType } from '../contracts/OutputType';
-import { OverlayRef, OverlayService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/core';
 
 @Directive({
   selector: '[ngxInputColor]',

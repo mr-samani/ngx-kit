@@ -12,7 +12,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { startDragSession } from 'ngx-kit/shared';
+import { startDragSession } from 'ngx-kit/core';
 import {
   NGX_IMAGE_VIEWER_DEFAULT_TOOLBAR,
   NgxImageViewerItem,

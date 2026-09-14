@@ -23,7 +23,7 @@ import {
 } from '@angular/forms';
 import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepicker.component';
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
-import { OverlayRef, OverlayService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { NgxDatePickerConfig } from '../components/config';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';

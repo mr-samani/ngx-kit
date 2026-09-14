@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, input, TemplateRef, viewChild } from '@angular/core';
-import { OverlayRef } from 'ngx-kit/shared';
+import { OverlayRef } from 'ngx-kit/core';
 import { MenuContext, NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
 
 @Component({

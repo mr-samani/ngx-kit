@@ -21,7 +21,7 @@ import {
 } from '@angular/forms';
 import { NgxInputGradientComponent } from '../components/input-gradient.component';
 import { isValidGradient, parseGradient } from '../utils/build-gradient';
-import { OverlayRef, OverlayService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/core';
 
 @Directive({
   selector: '[ngxInputGradient]',

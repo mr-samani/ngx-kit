@@ -21,7 +21,7 @@ import {
   ValidationErrors,
   Validator,
 } from '@angular/forms';
-import { OverlayRef, OverlayService } from 'ngx-kit/shared';
+import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { NgxInputTimePickerComponent } from '../components/time-picker/time-picker';
 import { NGX_TIME_PICKER_CONFIG } from '../types/config';
 import { normalizeTime } from '../utils/normalize';
