@@ -1,11 +1,6 @@
 :host {
-  --ngx-color-bg: #fff;
-  --ngx-color-text: #000;
-}
-
-:host-context(.dark) {
-  --ngx-color-bg: #222;
-  --ngx-color-text: #fff;
+  --ngx-color-bg: light-dark(#fff, #222);
+  --ngx-color-text: light-dark(#000, #fff);
 }
 
 .ngx-input-gradient-picker {

@@ -37,20 +37,11 @@ import { Subject, fromEvent, merge, tap, map, filter, switchMap, takeUntil, repe
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.dark]': 'theme=="dark"',
     '[style.--ngx-size]': 'size()+"px"',
   },
 })
 export class NgxAngleSelectorComponent implements OnInit, AfterViewInit, ControlValueAccessor {
   browserService = inject(BrowserService);
-  theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
-  @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
-    if (!val || val == 'auto') {
-      this.theme = this.browserService.prefersDarkMode ? 'dark' : 'light';
-    } else {
-      this.theme = val;
-    }
-  }
   size = input<number>(90);
   private minAngle = signal<number>(0);
   private maxAngle = signal<number>(360);

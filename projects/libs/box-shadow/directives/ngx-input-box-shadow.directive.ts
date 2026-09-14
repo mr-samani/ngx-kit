@@ -53,7 +53,7 @@ export class NgxInputBoxShadow implements OnDestroy, ControlValueAccessor, Valid
   @HostListener('click', ['$event']) onClick(ev: Event) {
     ev.stopPropagation();
     ev.preventDefault();
-    this.toggleColorPicker();
+    this.toggle();
   }
 
   registerOnChange(fn: any): void {
@@ -84,7 +84,7 @@ export class NgxInputBoxShadow implements OnDestroy, ControlValueAccessor, Valid
     this.value = value;
   }
 
-  toggleColorPicker() {
+  toggle() {
     if (this.pickerRef) {
       this.destroyPicker();
       return;

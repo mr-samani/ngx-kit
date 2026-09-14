@@ -29,6 +29,7 @@ import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 
 @Directive({
   selector: '[ngxInputColor]',
+  exportAs: 'ngxInputColor',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -47,7 +48,6 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   @Input() defaultInspector: ColorInspector = ColorInspector.Picker;
   @Input() simpleMode = false;
   @Input() outputType: OutputType = 'HEX';
-  @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
   private useAlphaChannel = true;
   @Input('useAlphaChannel')
   set setUseAlphaChannel(value: boolean) {
@@ -164,7 +164,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     event.preventDefault();
     event.stopPropagation();
 
-    this.toggleColorPicker();
+    this.toggle();
   }
 
   /**
@@ -312,7 +312,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     }
   }
 
-  private toggleColorPicker(): void {
+  toggle(): void {
     if (this.disabled) {
       return;
     }
@@ -331,7 +331,6 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
         instance.defaultInspector = this.defaultInspector;
         instance.simpleMode = this.simpleMode;
         instance.outputType = this.outputType;
-        instance.setTheme = this.theme;
         instance.setUseAlphaChannel = this.useAlphaChannel;
         if (this.color?.isValid) {
           instance.writeValue(this.color);

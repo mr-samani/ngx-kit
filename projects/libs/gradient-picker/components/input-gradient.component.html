@@ -32,7 +32,6 @@
               class="color"
               [style.backgroundColor]="rangeValues[selectedIndex].color"
               [ngxInputColor]="inputColor"
-              [theme]="theme"
               [ngModel]="rangeValues[selectedIndex].color"
               [simpleMode]="true"
               (change)="generateGradient($event)"></span>
@@ -55,7 +54,6 @@
               type="text"
               [(ngModel)]="rotation"
               ngxInputAngle
-              [theme]="theme"
               (change)="generateGradient()"
               name="rotation"
               [disabled]="type == 'radial'" />

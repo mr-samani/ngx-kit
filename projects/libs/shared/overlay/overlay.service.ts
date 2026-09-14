@@ -1,31 +1,70 @@
-import { Injectable, OnDestroy, inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import {
+  ComponentRef,
+  EmbeddedViewRef,
+  Injectable,
+  PLATFORM_ID,
+  TemplateRef,
+  ViewContainerRef,
+  inject,
+} from '@angular/core';
+
 import { OverlayOptions, TemplateOptions } from './overlay-options';
 import { OverlayRef } from './overlay-ref';
 import { PlacementConfig } from './placement-config';
-import { OverlayInstance } from './overlay-instance';
 import { DirectionService } from '../services/direction.service';
-export const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+export const FOCUSABLE_SELECTOR = [
+  'button:not([disabled])',
+  '[href]',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
 export const DIALOG_OVERLAY_CLASSNAME = 'ngx-ui-overlay';
+export const OVERLAY_HOST_CLASSNAME = 'ngx-ui-overlay-host';
 
-@Injectable({ providedIn: 'root' })
-export class OverlayService implements OnDestroy {
-  private readonly overlayStacks: OverlayInstance[] = [];
+interface OverlayInstance<T = unknown> {
+  host: HTMLElement;
+  backdrop: HTMLElement;
+  element: HTMLElement;
+  anchor?: HTMLElement;
+  point?: { x: number; y: number };
+  placementConfig: PlacementConfig;
+  componentRef?: ComponentRef<T>;
+  embeddedView?: EmbeddedViewRef<unknown>;
+  appRef?: {
+    attachView(view: EmbeddedViewRef<unknown>): void;
+    detachView(view: EmbeddedViewRef<unknown>): void;
+  };
 
-  private listenersAttached = false;
-  private resizeRafPending = false;
+  onClosed?: () => void;
+  previousActiveElement: HTMLElement | null;
+  rafId: number | null;
+  focusTimeoutId: ReturnType<typeof setTimeout> | null;
+  cleanup: () => void;
+}
 
-  private readonly doc = inject(DOCUMENT);
-  private readonly abortController = new AbortController();
+@Injectable({
+  providedIn: 'root',
+})
+export class OverlayService {
+  private readonly document = inject(DOCUMENT);
   private readonly directionService = inject(DirectionService);
-
-  ngOnDestroy(): void {
-    this.closeAll();
-    this.abortController.abort();
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly overlayStack: OverlayInstance[] = [];
+  private globalListenersAttached = false;
+  private layoutRaf: number | null = null;
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
   }
-
   open<T>(options: OverlayOptions<T>): OverlayRef<T> {
+    if (!this.isBrowser) {
+      return OverlayRef.noop<T>();
+    }
+
     const {
       anchor,
       point,
@@ -37,56 +76,125 @@ export class OverlayService implements OnDestroy {
       alignment,
       margin,
     } = options;
-
     if (!viewContainerRef) {
-      throw new Error('ViewContainerRef is required to render overlay content.');
-     }
-
-    this.attachGlobalListeners();
-
-    const element = this.createDialogElement();
-    const componentRef = viewContainerRef.createComponent(component);
-
-    if (componentRef.location.nativeElement) {
-      element.appendChild(componentRef.location.nativeElement);
+      throw new Error('[OverlayService] ViewContainerRef is required.');
     }
+    const instance = this.createComponentInstance<T>(
+      anchor,
+      point,
+      component,
+      viewContainerRef,
+      onClosed,
+      placement,
+      alignment,
+      margin,
+    );
+    this.overlayStack.push(instance);
+    this.renderHost(instance);
+    configure?.(
+      instance.componentRef!.instance,
+      new OverlayRef(instance.element, instance.cleanup, instance.componentRef),
+    );
+    this.scheduleInitialLayout(instance);
+    this.attachGlobalListeners();
+    return new OverlayRef(instance.element, instance.cleanup, instance.componentRef);
+  }
 
-    const instance: OverlayInstance = {
+  openTemplate(options: TemplateOptions): OverlayRef<any> {
+    if (!this.isBrowser) {
+      return OverlayRef.noop();
+    }
+    const { anchor, point, template, appRef, configure, onClosed, placement, alignment, margin } =
+      options;
+    const instance = this.createTemplateInstance(
+      anchor,
+      point,
+      template,
+      appRef,
+      onClosed,
+      placement,
+      alignment,
+      margin,
+    );
+    this.overlayStack.push(instance);
+    this.renderHost(instance);
+    const ref = new OverlayRef(instance.element, instance.cleanup, undefined, template);
+    configure?.(instance, ref);
+    this.scheduleInitialLayout(instance);
+    this.attachGlobalListeners();
+    return ref;
+  }
+
+  closeAll(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+    [...this.overlayStack].forEach((instance) => {
+      instance.cleanup();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // instance creation
+  // ---------------------------------------------------------------------------
+
+  private createComponentInstance<T>(
+    anchor: HTMLElement,
+    point: { x: number; y: number } | undefined,
+    component: any,
+    viewContainerRef: ViewContainerRef,
+    onClosed: (() => void) | undefined,
+    placement?: PlacementConfig['placement'],
+    alignment?: PlacementConfig['alignment'],
+    margin?: number,
+  ): OverlayInstance<T> {
+    const host = this.createHostElement();
+    const backdrop = this.createBackdropElement();
+    const element = this.createOverlayElement();
+
+    host.appendChild(backdrop);
+    host.appendChild(element);
+    const componentRef = viewContainerRef.createComponent<T>(component);
+    element.appendChild(componentRef.location.nativeElement);
+    const instance: OverlayInstance<T> = {
+      host,
+      backdrop,
       element,
       anchor,
       point,
       placementConfig: this.resolvePlacementConfig(placement, alignment, margin),
       componentRef,
       onClosed,
+      previousActiveElement: this.getActiveElement(),
       rafId: null,
       focusTimeoutId: null,
       cleanup: () => {},
     };
     instance.cleanup = () => this.destroyInstance(instance);
-
-    this.overlayStacks.push(instance);
-    element.showModal();
-
-    const ref = new OverlayRef(element, instance.cleanup, componentRef);
-    configure?.(componentRef.instance, ref);
-
-    this.scheduleInitialLayout(instance);
-
-    return ref;
+    return instance;
   }
 
-  openTemplate(options: TemplateOptions): OverlayRef<any> {
-    const { anchor, point, template, appRef, configure, onClosed, placement, alignment, margin } =
-      options;
-
-    this.attachGlobalListeners();
-
-    const element = this.createDialogElement();
+  private createTemplateInstance(
+    anchor: HTMLElement | undefined,
+    point: { x: number; y: number } | undefined,
+    template: TemplateRef<unknown>,
+    appRef: any,
+    onClosed: (() => void) | undefined,
+    placement?: PlacementConfig['placement'],
+    alignment?: PlacementConfig['alignment'],
+    margin?: number,
+  ): OverlayInstance {
+    const host = this.createHostElement();
+    const backdrop = this.createBackdropElement();
+    const element = this.createOverlayElement();
+    host.appendChild(backdrop);
+    host.appendChild(element);
     const view = template.createEmbeddedView({});
     appRef.attachView(view);
     element.append(...view.rootNodes);
-
     const instance: OverlayInstance = {
+      host,
+      backdrop,
       element,
       anchor,
       point,
@@ -94,31 +202,321 @@ export class OverlayService implements OnDestroy {
       embeddedView: view,
       appRef,
       onClosed,
+      previousActiveElement: this.getActiveElement(),
       rafId: null,
       focusTimeoutId: null,
       cleanup: () => {},
     };
     instance.cleanup = () => this.destroyInstance(instance);
-
-    this.overlayStacks.push(instance);
-    element.showModal();
-
-    const ref = new OverlayRef(element, instance.cleanup, undefined, template);
-    configure?.(instance, ref);
-
-    this.scheduleInitialLayout(instance);
-
-    return ref;
+    return instance;
   }
 
-  closeAll(): void {
-    // اسنپ‌شات می‌گیریم چون cleanup حین اجرا آرایه‌ی اصلی رو تغییر می‌ده
-    [...this.overlayStacks].forEach((instance) => instance.cleanup());
+  // ---------------------------------------------------------------------------
+  // DOM
+  // ---------------------------------------------------------------------------
+  private createHostElement(): HTMLElement {
+    const host = this.document.createElement('div');
+    host.className = OVERLAY_HOST_CLASSNAME;
+    host.setAttribute('data-ngx-overlay', '');
+    host.style.position = 'fixed';
+    host.style.inset = '0';
+    host.style.zIndex = '1000';
+    host.style.pointerEvents = 'auto';
+    return host;
   }
 
-  // ---------------------------------------------------------------------
+  private createBackdropElement(): HTMLElement {
+    const backdrop = this.document.createElement('div');
+    backdrop.className = 'ngx-ui-overlay-backdrop';
+    backdrop.style.position = 'absolute';
+    backdrop.style.inset = '0';
+    backdrop.style.pointerEvents = 'auto';
+    backdrop.style.background = 'transparent';
+    return backdrop;
+  }
+
+  private createOverlayElement(): HTMLElement {
+    const element = this.document.createElement('div');
+    element.className = DIALOG_OVERLAY_CLASSNAME;
+    element.setAttribute('role', 'dialog');
+    element.setAttribute('aria-modal', 'true');
+    element.setAttribute('tabindex', '-1');
+    element.style.position = 'fixed';
+    element.style.pointerEvents = 'auto';
+    element.style.boxSizing = 'border-box';
+    element.style.maxWidth = 'calc(100vw - 16px)';
+    element.style.maxHeight = 'calc(100vh - 16px)';
+    element.style.outline = 'none';
+    element.style.overflow = 'auto';
+    element.style.transformOrigin = 'left top';
+
+    return element;
+  }
+
+  private renderHost(instance: OverlayInstance): void {
+    this.document.body.appendChild(instance.host);
+    instance.element.style.visibility = 'hidden';
+    instance.element.style.position = 'fixed';
+    instance.element.style.top = '0';
+    instance.element.style.left = '0';
+  }
+
+  // ---------------------------------------------------------------------------
   // lifecycle
-  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  private destroyInstance(instance: OverlayInstance): void {
+    const index = this.overlayStack.indexOf(instance);
+    if (index === -1) {
+      return;
+    }
+    this.overlayStack.splice(index, 1);
+    if (instance.rafId !== null) {
+      this.cancelAnimationFrame(instance.rafId);
+      instance.rafId = null;
+    }
+    if (instance.focusTimeoutId !== null) {
+      clearTimeout(instance.focusTimeoutId);
+      instance.focusTimeoutId = null;
+    }
+    if (instance.componentRef) {
+      instance.componentRef.destroy();
+      instance.componentRef = undefined;
+    }
+    if (instance.embeddedView && instance.appRef) {
+      instance.appRef.detachView(instance.embeddedView);
+      instance.embeddedView.destroy();
+      instance.embeddedView = undefined;
+    }
+    instance.host.remove();
+    instance.onClosed?.();
+    this.detachGlobalListerners();
+    this.restoreFocus(instance.previousActiveElement);
+  }
+
+  // ---------------------------------------------------------------------------
+  // global listeners
+  // ---------------------------------------------------------------------------
+
+  private attachGlobalListeners(): void {
+    if (!this.isBrowser || this.globalListenersAttached) {
+      return;
+    }
+    setTimeout(() => {
+      this.globalListenersAttached = true;
+      this.document.addEventListener('keydown', this.onDocumentKeydown);
+      this.document.addEventListener('click', this.onDocumentClick);
+      this.document.addEventListener('contextmenu', this.onDocumentContextMenu);
+      this.document.addEventListener('scroll', this.onDocumentScroll, true);
+      window.addEventListener('resize', this.onWindowResize);
+    }, 0);
+  }
+
+  private detachGlobalListerners(): void {
+    if (!this.isBrowser || !this.globalListenersAttached) {
+      return;
+    }
+    this.globalListenersAttached = false;
+    this.document.removeEventListener('keydown', this.onDocumentKeydown);
+    this.document.removeEventListener('click', this.onDocumentClick);
+    this.document.removeEventListener('contextmenu', this.onDocumentContextMenu);
+    this.document.removeEventListener('scroll', this.onDocumentScroll, true);
+    window.removeEventListener('resize', this.onWindowResize);
+  }
+
+  private readonly onDocumentKeydown = (event: KeyboardEvent): void => {
+    const instance = this.getLastInstance();
+    if (!instance) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      instance.cleanup();
+      return;
+    }
+    if (event.key === 'Tab') {
+      this.trapFocus(event, instance);
+    }
+  };
+
+  private readonly onDocumentClick = (event: MouseEvent): void => {
+    const instance = this.getLastInstance();
+    if (!instance) {
+      return;
+    }
+    const target = event.target as Node | null;
+    if (!target) {
+      return;
+    }
+    if (instance.element.contains(target)) {
+      return;
+    }
+    if (instance.anchor && instance.anchor.contains(target)) {
+      return;
+    }
+    instance.cleanup();
+  };
+
+  private readonly onDocumentContextMenu = (event: MouseEvent): void => {
+    const instance = this.getLastInstance();
+    if (!instance) {
+      return;
+    }
+    if (instance.point && instance.anchor && instance.anchor.contains(event.target as Node)) {
+      event.preventDefault();
+      instance.point = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+      this.scheduleReposition();
+      return;
+    }
+    if (instance.element.contains(event.target as Node)) {
+      return;
+    }
+    instance.cleanup();
+  };
+
+  private readonly onDocumentScroll = (): void => {
+    this.scheduleReposition();
+  };
+
+  private readonly onWindowResize = (): void => {
+    this.scheduleReposition();
+  };
+
+  private scheduleReposition(): void {
+    if (this.layoutRaf !== null) {
+      return;
+    }
+    this.layoutRaf = this.requestAnimationFrame(() => {
+      this.layoutRaf = null;
+      const instances = [...this.overlayStack];
+      for (const instance of instances) {
+        this.positionOverlay(instance);
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // focus
+  // ---------------------------------------------------------------------------
+
+  private scheduleInitialLayout(instance: OverlayInstance): void {
+    instance.rafId = this.requestAnimationFrame(() => {
+      instance.rafId = null;
+      this.positionOverlay(instance);
+      instance.focusTimeoutId = setTimeout(() => {
+        instance.focusTimeoutId = null;
+        this.focusInitialElement(instance);
+      }, 0);
+    });
+  }
+
+  private focusInitialElement(instance: OverlayInstance): void {
+    const focusable = instance.element.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+    focusable?.focus() ?? instance.element.focus();
+  }
+
+  private trapFocus(event: KeyboardEvent, instance: OverlayInstance): void {
+    const elements = Array.from(instance.element.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    if (!elements.length) {
+      event.preventDefault();
+      instance.element.focus();
+      return;
+    }
+    const first = elements[0];
+    const last = elements[elements.length - 1];
+    const active = this.getActiveElement();
+    if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+      return;
+    }
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus();
+    }
+  }
+
+  private restoreFocus(element: HTMLElement | null): void {
+    if (element && element.isConnected) {
+      setTimeout(() => {
+        element.focus();
+      }, 0);
+    }
+  }
+
+  private getActiveElement(): HTMLElement | null {
+    const active = this.document.activeElement;
+    return active instanceof HTMLElement ? active : null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // positioning
+  // ---------------------------------------------------------------------------
+
+  private positionOverlay(instance: OverlayInstance): void {
+    if (!instance.host.isConnected || !instance.element.isConnected) {
+      return;
+    }
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const anchorRect = this.getAnchorRect(instance);
+    const overlay = instance.element;
+    const overlayRect = overlay.getBoundingClientRect();
+    const { placement, alignment, margin } = instance.placementConfig;
+    const isRTL = this.directionService.isRtl();
+    const spaceBelow = viewportHeight - anchorRect.bottom;
+    const spaceAbove = anchorRect.top;
+    const placeBelow =
+      placement === 'bottom' || (placement === 'auto' && spaceBelow >= overlayRect.height + margin);
+    let top: number;
+    if (placeBelow) {
+      top = anchorRect.bottom + margin;
+    } else {
+      top = anchorRect.top - overlayRect.height - margin;
+    }
+    if (top + overlayRect.height > viewportHeight - margin) {
+      top = viewportHeight - overlayRect.height - margin;
+    }
+    if (top < margin) {
+      top = margin;
+    }
+    let left: number;
+    switch (alignment) {
+      case 'center':
+        left = anchorRect.left + anchorRect.width / 2 - overlayRect.width / 2;
+        break;
+      case 'end':
+        left = isRTL ? anchorRect.left : anchorRect.right - overlayRect.width;
+        break;
+      case 'start':
+      default:
+        left = isRTL ? anchorRect.right - overlayRect.width : anchorRect.left;
+        break;
+    }
+    left = Math.min(
+      Math.max(left, margin),
+      Math.max(margin, viewportWidth - overlayRect.width - margin),
+    );
+    overlay.style.top = `${Math.round(top)}px`;
+    overlay.style.left = `${Math.round(left)}px`;
+    overlay.style.right = 'auto';
+    overlay.style.visibility = 'visible';
+    overlay.classList.toggle('tips-below', placeBelow);
+    overlay.classList.toggle('tips-above', !placeBelow);
+  }
+
+  private getAnchorRect(instance: OverlayInstance): DOMRect {
+    if (instance.point) {
+      return new DOMRect(instance.point.x, instance.point.y, 0, 0);
+    }
+    if (instance.anchor && instance.anchor.isConnected) {
+      return instance.anchor.getBoundingClientRect();
+    }
+    return new DOMRect(window.innerWidth / 2, window.innerHeight / 2, 0, 0);
+  }
 
   private resolvePlacementConfig(
     placement?: PlacementConfig['placement'],
@@ -132,246 +530,26 @@ export class OverlayService implements OnDestroy {
     };
   }
 
-  private createDialogElement(): HTMLDialogElement {
-    const element = this.doc.createElement('dialog');
-    element.className = DIALOG_OVERLAY_CLASSNAME;
-    const style = element.style;
-    style.position = 'absolute';
-    style.outline = 'none';
-    style.padding = '0';
-    style.margin = '0';
-    style.border = 'none';
-    style.background = 'transparent';
-    style.maxWidth = '100vw';
-    style.maxHeight = '100vh';
-    style.overflow = 'visible';
-    style.visibility = 'hidden';
+  // ---------------------------------------------------------------------------
+  // utilities
+  // ---------------------------------------------------------------------------
 
-    this.doc.body.appendChild(element);
-    return element;
+  private getLastInstance(): OverlayInstance | undefined {
+    return this.overlayStack[this.overlayStack.length - 1];
   }
 
-  private scheduleInitialLayout(instance: OverlayInstance): void {
-    instance.rafId = requestAnimationFrame(() => {
-      instance.rafId = null;
-      this.positionDialog(instance);
-    });
-
-    instance.focusTimeoutId = setTimeout(() => {
-      instance.focusTimeoutId = null;
-      const focusable = instance.element.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-      focusable?.focus();
-    }, 0);
-  }
-
-  private destroyInstance(instance: OverlayInstance): void {
-    const index = this.overlayStacks.indexOf(instance);
-    if (index === -1) return; // جلوگیری از پاک‌سازی دوباره
-
-    this.overlayStacks.splice(index, 1);
-
-    // لغو کارهای زمان‌بندی‌شده‌ای که هنوز اجرا نشدن (نشتی حافظه در نسخه‌ی قبلی)
-    if (instance.rafId !== null) cancelAnimationFrame(instance.rafId);
-    if (instance.focusTimeoutId !== null) clearTimeout(instance.focusTimeoutId);
-
-    if (instance.componentRef) {
-      instance.componentRef.location.nativeElement?.remove();
-      instance.componentRef.destroy();
+  private requestAnimationFrame(callback: FrameRequestCallback): number {
+    if (typeof window.requestAnimationFrame === 'function') {
+      return window.requestAnimationFrame(callback);
     }
-
-    if (instance.embeddedView && instance.appRef) {
-      instance.appRef.detachView(instance.embeddedView);
-      instance.embeddedView.destroy();
-    }
-
-    // قبل از remove()، دیالوگ رو با متد استاندارد close() می‌بندیم؛ این کار دو
-    // فایده داره که با remove() ساده به دست نمی‌اومدن:
-    // ۱) فوکوس به‌صورت خودکار به همون المنتی که قبل از باز شدن دیالوگ فوکوس
-    //    داشت برمی‌گرده (رفتار استاندارد close() روی <dialog>) — با remove()
-    //    ساده این اتفاق نمی‌افته و فوکوس معمولاً روی body گم می‌شه.
-    // ۲) رویداد 'close' استاندارد شلیک می‌شه، برای کدی که ممکنه به اون گوش بده.
-    // در try/catch گذاشتیمش چون در محیط تست (jsdom) این متدها mock هستن و ممکنه
-    // رفتار متفاوتی داشته باشن.
-    try {
-      if (instance.element.open) instance.element.close();
-    } catch {
-      /* noop */
-    }
-
-    instance.element.remove();
-    instance.onClosed?.();
+    return window.setTimeout(() => callback(Date.now()), 16) as unknown as number;
   }
 
-  // ---------------------------------------------------------------------
-  // global listeners (فقط یک‌بار در کل عمر سرویس attach می‌شن)
-  // ---------------------------------------------------------------------
-
-  private attachGlobalListeners(): void {
-    if (this.listenersAttached) return;
-    this.listenersAttached = true;
-
-    const { signal } = this.abortController;
-
-    this.doc.addEventListener('keydown', this.onGlobalKeyDown, { signal });
-    window.addEventListener('resize', this.onGlobalResize, { signal, passive: true });
-    this.doc.addEventListener('click', this.onGlobalPointerEvent, { signal });
-    this.doc.addEventListener('contextmenu', this.onGlobalPointerEvent, { signal });
-  }
-
-  private readonly onGlobalKeyDown = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape') return;
-    this.getLastDialog()?.cleanup();
-  };
-
-  private readonly onGlobalResize = (): void => {
-    // چند رویداد resize پشت‌سرهم فقط یک reposition واقعی اجرا می‌کنن
-    if (this.resizeRafPending) return;
-    this.resizeRafPending = true;
-    requestAnimationFrame(() => {
-      this.resizeRafPending = false;
-      this.repositionAll();
-    });
-  };
-
-  private readonly onGlobalPointerEvent = (e: MouseEvent): void => {
-    this.handleClickOnBackdrop(e);
-  };
-
-  private handleClickOnBackdrop(event: MouseEvent): void {
-    const lastDialog = this.getLastDialog();
-    if (!lastDialog || !lastDialog.element.open) return;
-    // کلیک باید دقیقاً روی خودِ دیالوگ (بک‌دراپ) باشه، نه محتوای داخلش
-    if (event.target !== lastDialog.element) return;
-
-    // اگه فرم داخل دیالوگه، با کلیک بیرون بسته نشه
-    if (lastDialog.element.querySelector('form')) return;
-
-    const rect = lastDialog.element.getBoundingClientRect();
-    const clickWasInsideDialog =
-      rect.top <= event.clientY &&
-      event.clientY <= rect.bottom &&
-      rect.left <= event.clientX &&
-      event.clientX <= rect.right;
-
-    const anchRect = lastDialog.anchor.getBoundingClientRect();
-    const clickWasInsideAnchor =
-      anchRect.top <= event.clientY &&
-      event.clientY <= anchRect.bottom &&
-      anchRect.left <= event.clientX &&
-      event.clientX <= anchRect.right;
-
-    if (!clickWasInsideDialog) {
-      if (event.type == 'contextmenu' && lastDialog.point && clickWasInsideAnchor) {
-        event.preventDefault();
-        lastDialog.point = {
-          x: event.clientX,
-          y: event.clientY,
-        };
-        this.positionDialog(lastDialog);
-      } else {
-        lastDialog.cleanup();
-      }
-    }
-  }
-
-  private getLastDialog(): OverlayInstance | undefined {
-    return this.overlayStacks[this.overlayStacks.length - 1];
-  }
-
-  // ---------------------------------------------------------------------
-  // positioning
-  // ---------------------------------------------------------------------
-
-  private repositionAll(): void {
-    this.overlayStacks.forEach((instance) => {
-      if (instance.element.isConnected) {
-        this.positionDialog(instance);
-      }
-    });
-  }
-
-  private positionDialog(instance: OverlayInstance): void {
-    const { anchor, element: dialog, placementConfig, point } = instance;
-    const { placement, alignment, margin } = placementConfig;
-
-    if (!dialog.isConnected) return;
-
-    let anchorRect: DOMRect;
-    if (point) {
-      anchorRect = new DOMRect(point.x, point.y, 0, 0);
+  private cancelAnimationFrame(id: number): void {
+    if (typeof window.cancelAnimationFrame === 'function') {
+      window.cancelAnimationFrame(id);
     } else {
-      anchorRect = anchor.getBoundingClientRect();
+      clearTimeout(id as unknown as ReturnType<typeof setTimeout>);
     }
-    const dialogRect = dialog.getBoundingClientRect();
-
-    const vw = Math.min(document.body.clientWidth, window.innerWidth);
-    const vh = Math.min(document.body.clientHeight, window.innerHeight);
-    const isRTL = this.directionService.isRtl();
-
-    let top = 0;
-    let left: number | 'auto' = 'auto';
-    let right: number | 'auto' = 'auto';
-
-    const spaceBelow = vh - anchorRect.bottom;
-    const spaceAbove = anchorRect.top;
-    let verticalPos: 'above' | 'bottom' = 'above';
-
-    if (
-      placement === 'bottom' ||
-      (placement === 'auto' && spaceBelow >= dialogRect.height + margin)
-    ) {
-      top = anchorRect.bottom + margin;
-      verticalPos = 'above';
-      if (top + dialogRect.height > vh - margin) {
-        top = vh - dialogRect.height - margin;
-        verticalPos = 'bottom';
-      }
-    } else {
-      top = anchorRect.top - dialogRect.height - margin;
-      verticalPos = 'bottom';
-      if (top > spaceAbove) {
-        top = anchorRect.top + anchorRect.height + margin;
-        verticalPos = 'above';
-      }
-    }
-
-    if (alignment === 'center') {
-      left = anchorRect.left + anchorRect.width / 2 - dialogRect.width / 2;
-    } else if (alignment === 'start') {
-      if (isRTL) {
-        right = vw - anchorRect.right;
-      } else {
-        left = anchorRect.left;
-      }
-    } else if (alignment === 'end') {
-      // انتهای دیالوگ باید با انتهای anchor یکی باشه؛ با استفاده از پراپرتی
-      // CSS «right» (به‌جای کم‌کردن دستیِ عرض از «left») این کار درست و مستقل
-      // از این‌که عرض دیالوگ چقدره انجام می‌شه (قبلاً این خط باگ داشت و دیالوگ
-      // رو بعد از anchor می‌ذاشت، نه هم‌تراز با لبه‌ی انتهاییِ آن).
-      if (isRTL) {
-        left = anchorRect.left;
-      } else {
-        right = vw - anchorRect.right;
-      }
-    }
-    if (left !== 'auto') {
-      left = Math.min(Math.max(left, margin), vw - dialogRect.width - margin);
-    }
-    if (right !== 'auto') {
-      right = Math.min(Math.max(right, margin), vw - dialogRect.width - margin);
-    }
-
-    if (top < 0) {
-      top = 0;
-    }
-
-    dialog.className = `${DIALOG_OVERLAY_CLASSNAME} tips-${verticalPos}`;
-    dialog.style.top = `${top + window.scrollY}px`;
-    dialog.style.left = left !== 'auto' ? `${left + window.scrollX}px` : 'auto';
-    dialog.style.right = right !== 'auto' ? `${right + window.scrollX}px` : 'auto';
-    dialog.style.transformOrigin = verticalPos == 'above' ? 'left top' : 'left bottom';
-    // dialog.style.transform = 'none';
-    dialog.style.visibility = 'visible';
-    dialog.style.animation = 'menu-enter 120ms cubic-bezier(0, 0, 0.2, 1)';
   }
 }

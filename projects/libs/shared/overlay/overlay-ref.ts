@@ -2,17 +2,21 @@ import { ComponentRef, TemplateRef } from '@angular/core';
 
 export class OverlayRef<T> {
   constructor(
-    private readonly dialogEl: HTMLDialogElement,
-    private readonly teardownFn: () => void,
-    public readonly componentRef?: ComponentRef<T>,
-    public readonly templateRef?: TemplateRef<T>,
+    private readonly element: HTMLElement | null,
+    private readonly closeFn: () => void,
+    readonly componentRef?: ComponentRef<T>,
+    readonly template?: TemplateRef<unknown>,
   ) {}
 
   close(): void {
-    this.teardownFn();
+    this.closeFn();
   }
 
-  get nativeElement(): HTMLElement {
-    return this.dialogEl;
+  get nativeElement(): HTMLElement | null {
+    return this.element;
+  }
+
+  static noop<T>(): OverlayRef<T> {
+    return new OverlayRef<T>(null, () => {});
   }
 }

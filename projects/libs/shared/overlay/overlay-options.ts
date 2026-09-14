@@ -12,7 +12,7 @@ export interface Point {
 export type Placement = 'top' | 'bottom' | 'auto';
 export type Alignment = 'start' | 'center' | 'end';
 
-export interface BaseOverlayOptions<T> {
+export interface BaseOverlayOptions<T = any> {
   anchor: HTMLElement;
   /** pointer for context menu */
   point?: Point;

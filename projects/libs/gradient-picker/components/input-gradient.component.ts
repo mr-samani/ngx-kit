@@ -50,23 +50,12 @@ import { CommonModule } from '@angular/common';
       useExisting: NgxInputGradientComponent,
     },
   ],
-  host: {
-    '[class.dark]': 'theme=="dark"',
-  },
   imports: [CommonModule, FormsModule, RangeSliderComponent, NgxInputColor, NgxInputAngle],
 })
 export class NgxInputGradientComponent
   implements OnInit, OnDestroy, ControlValueAccessor, Validator
 {
   browserService = inject(BrowserService);
-  theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
-  @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
-    if (!val || val == 'auto') {
-      this.theme = this.browserService.prefersDarkMode ? 'dark' : 'light';
-    } else {
-      this.theme = val;
-    }
-  }
   @Output() change = new EventEmitter<string>();
 
   defaultGradients: string[] = [];

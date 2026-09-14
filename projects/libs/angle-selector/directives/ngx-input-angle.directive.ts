@@ -39,7 +39,6 @@ import { NgxAngleSelectorComponent } from '../components/input-angle.component';
   ],
 })
 export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator {
-  @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
   size = input<number>(90);
   openOnCLick = input<boolean>(true);
   @Output() change = new EventEmitter<number>();
@@ -149,9 +148,7 @@ export class NgxInputAngle implements OnDestroy, ControlValueAccessor, Validator
       margin: 2,
       configure: (instance, ref) => {
         instance.size = this.size;
-        instance.setTheme = this.theme;
         instance.writeValue(this.value);
-
         instance.change.subscribe((c: number) => {
           this.value = c;
           this.emitChange(c);

@@ -1,19 +1,11 @@
 :host {
-  --ngx-color-bg: #e5e5e5;
-  --ngx-color-text: #000;
-  --border-color: #c8c8c8;
+  --ngx-color-bg: light-dark(#e5e5e5, #222222);
+  --ngx-color-text: light-dark(#000, #fff);
+  --border-color: light-dark(#c8c8c8, #3a3a3a);
   --ngx-size: 100px;
   --handle-color: #007ac6;
-  --tick-color: #444444;
-  --inner-shadow-color: #000000a3;
-}
-
-:host-context(.dark) {
-  --ngx-color-bg: #222222;
-  --ngx-color-text: #fff;
-  --border-color: #3a3a3a;
-  --tick-color: #595959;
-  --inner-shadow-color: #000;
+  --tick-color: light-dark(#444444, #595959);
+  --inner-shadow-color: light-dark(#000000a3, #000);
 }
 
 .ngx-input-angle-selector {

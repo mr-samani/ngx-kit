@@ -182,7 +182,6 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
         instance.maxDate = this.max;
         instance.updateConfig(this.config);
         instance.writeValue(this.value);
-
         instance.change.subscribe((c: Date) => {
           this.value = c;
           this.emitChange(c);

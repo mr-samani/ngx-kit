@@ -50,9 +50,6 @@ declare const EyeDropper: any;
     },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '[class.dark]': 'theme=="dark"',
-  },
   imports: [
     CommonModule,
     FormsModule,
@@ -65,14 +62,6 @@ declare const EyeDropper: any;
 })
 export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   browserService = inject(BrowserService);
-  theme: 'light' | 'dark' = this.browserService.prefersDarkMode ? 'dark' : 'light';
-  @Input('theme') set setTheme(val: 'light' | 'dark' | 'auto') {
-    if (!val || val == 'auto') {
-      this.theme = this.browserService.prefersDarkMode ? 'dark' : 'light';
-    } else {
-      this.theme = val;
-    }
-  }
 
   /** Minifi UI  */
   @Input() simpleMode = false;

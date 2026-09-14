@@ -36,7 +36,6 @@ import { OverlayRef, OverlayService } from 'ngx-kit/shared';
 })
 export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueAccessor, Validator {
   @Input() setInputBackground = true;
-  @Input() theme: 'light' | 'dark' | 'auto' = 'auto';
   private _targetInput?: HTMLInputElement;
   @Input('ngxInputColor') set ngxInputColor(
     el: HTMLInputElement | ElementRef<HTMLInputElement> | null | undefined | '',
@@ -79,7 +78,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
   @HostListener('click', ['$event']) onClick(ev: Event) {
     ev.stopPropagation();
     ev.preventDefault();
-    this.toggleColorPicker();
+    this.toggle();
   }
   ngAfterViewInit(): void {
     if (this._targetInput && this._targetInput.tagName.toLowerCase() === 'input') {
@@ -126,7 +125,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
     }
   }
 
-  toggleColorPicker() {
+  toggle() {
     if (this.pickerRef) {
       this.destroyPicker();
       return;
@@ -139,7 +138,6 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
       alignment: 'start',
       placement: 'auto',
       configure: (instance, ref) => {
-        instance.setTheme = this.theme;
         instance.writeValue(this.value);
 
         instance.change.subscribe((c: string) => {
