@@ -1,5 +1,15 @@
-<div class="ngx-dialog-overlay" (click)="onOverlayClicked($event)">
-  <div class="ngx-dialog" (click)="onDialogClicked($event)" #ngxDialog>
-    <ng-container *ngComponentOutlet="component"></ng-container>
+@if (config.header?.enable) {
+  <div ngxDialogHeader [showCloseButton]="config.header?.showCloseButton ?? true">
+    {{ config.header?.title }}
   </div>
-</div>
+}
+
+<ng-container *ngComponentOutlet="content" />
+
+@if (config.footer?.enable) {
+  <div ngxDialogFooter [align]="config.footer?.align ?? 'end'">
+    <button type="button" class="ngx-dialog-default-close-btn" (click)="dialogRef.close()">
+      {{ config.footer?.closeText ?? 'Close' }}
+    </button>
+  </div>
+}

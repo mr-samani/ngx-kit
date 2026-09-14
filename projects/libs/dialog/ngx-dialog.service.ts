@@ -1,115 +1,97 @@
-import {
-  ApplicationRef,
-  ComponentRef,
-  createComponent,
-  EmbeddedViewRef,
-  EnvironmentInjector,
-  Injectable,
-  Injector,
-  Provider,
-  runInInjectionContext,
-  Type,
-} from '@angular/core';
+import { Injectable, Injector, Type, computed, inject, signal } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { OverlayService, OverlayOptions } from 'ngx-kit/core';
+
 import { NgxDialogConfig } from './ngx-dialog-config';
 import { NgxDialogRef } from './ngx-dialog-ref';
 import { NgxDialogComponent } from './ngx-dialog.component';
-import { DIALOG_DATA, DIALOG_REF } from './dialog.tokens';
-import { randomStrnig } from 'ngx-kit/core';
+import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_DATA, DIALOG_REF } from './dialog.tokens';
 
-@Injectable()
-export class NgxOverlayService {
-  dialogComponentRefs: ComponentRef<NgxDialogComponent>[] = [];
-  _defaultOptions: NgxDialogConfig | undefined;
-  constructor(
-    private appRef: ApplicationRef,
-    private injector: Injector,
-    private envInjector: EnvironmentInjector,
-  ) {}
+@Injectable({ providedIn: 'root' })
+export class NgxDialogService {
+  private readonly overlay = inject(OverlayService);
+  private readonly injector = inject(Injector);
 
-  public open(component: Type<any>, config?: NgxDialogConfig): NgxDialogRef {
-    const dialogRef = this._open(component, config);
-    return dialogRef;
-  }
+  private readonly _openRefs = signal<NgxDialogRef<any>[]>([]);
+  /** Every currently open dialog, oldest first. */
+  readonly openDialogs = this._openRefs.asReadonly();
+  /** How many dialogs are currently open. */
+  readonly openCount = computed(() => this._openRefs().length);
 
-  private _open(component: Type<any>, config?: NgxDialogConfig): NgxDialogRef {
-    config = { ...(this._defaultOptions || new NgxDialogConfig()), ...config };
-    const map = new WeakMap();
-    map.set(NgxDialogConfig, config);
+  /**
+   * Opens `content` inside a dialog panel and returns a ref you can use to
+   * close it and read the result back (`afterClosed`).
+   */
+  open<R = any, DataType = any>(
+    content: Type<any>,
+    config?: Partial<NgxDialogConfig<DataType>>,
+  ): NgxDialogRef<R> {
+    const resolvedConfig = new NgxDialogConfig<DataType>(config);
+    const dialogRef = new NgxDialogRef<R>();
+    dialogRef.beforeClose = resolvedConfig.beforeClose;
 
-    const dialogRef = new NgxDialogRef();
-    dialogRef.id = this.getDialogId;
-    map.set(NgxDialogRef, dialogRef);
-
-    const sub = dialogRef.afterClosed.subscribe(() => {
-      // close the dialog
-      this.removeDialogComponentFromBody(dialogRef.id);
-      sub.unsubscribe();
-    });
-
-    // ✅ ساخت Injector اختصاصی با DestroyRef
     const componentInjector = Injector.create({
       providers: [
-        NgxDialogRef,
-        { provide: DIALOG_DATA, useValue: config.data },
-        { provide: DIALOG_REF, useValue: dialogRef, multi: false },
+        { provide: DIALOG_DATA, useValue: resolvedConfig.data },
+        { provide: DIALOG_REF, useValue: dialogRef },
+        { provide: DIALOG_CONFIG, useValue: resolvedConfig },
+        { provide: DIALOG_CONTENT, useValue: content },
       ],
-      parent: config?.injector ? config.injector : this.envInjector,
+      parent: resolvedConfig.injector ?? this.injector,
     });
 
-    const componentRef: ComponentRef<NgxDialogComponent> = runInInjectionContext(
-      componentInjector,
-      () =>
-        createComponent(NgxDialogComponent, {
-          elementInjector: componentInjector,
-          environmentInjector: this.envInjector,
-        }),
-    );
+    const disableClose = resolvedConfig.disableClose ?? false;
 
-    this.appRef.attachView(componentRef.hostView);
-    this.appendDialogComponentToBody(componentRef, config);
-    componentRef.instance.config = config;
-    componentRef.instance.component = component;
-    //componentRef.instance._dialogRef = dialogRef;
-    this.dialogComponentRefs.push(componentRef);
+    const overlayRef = this.overlay.open<NgxDialogComponent>({
+      // Dialogs aren't anchored to a trigger element - they float centered
+      // over the viewport - so `anchor` is intentionally omitted.
+      // `viewContainerRef` is also omitted: NgxDialogService.open() must be
+      // callable from anywhere (another service, a guard, ...), not only
+      // from inside a component template, so OverlayService falls back to
+      // attaching the panel component directly to the ApplicationRef.
+      component: NgxDialogComponent,
+      injector: componentInjector,
+      placement: 'center',
+      alignment: 'center',
+      margin: 16,
+      role: resolvedConfig.role ?? 'dialog',
+      ariaModal: true,
+      ariaLabel: resolvedConfig.ariaLabel,
+      ariaLabelledby: resolvedConfig.ariaLabelledby,
+      ariaDescribedby: resolvedConfig.ariaDescribedby,
+      usePopover: resolvedConfig.usePopover ?? true,
+      closeOnEscape: disableClose ? false : (resolvedConfig.closeOnEscape ?? true),
+      closeOnOutsideClick: disableClose ? false : (resolvedConfig.closeOnOutsideClick ?? false),
+      canClose: () => dialogRef.beforeClose?.() ?? true,
+      restoreFocus: resolvedConfig.restoreFocus ?? true,
+      autoFocus: resolvedConfig.autoFocus ?? true,
+      lockBodyScroll: resolvedConfig.lockBodyScroll ?? true,
+      backdropClass: resolvedConfig.backdropClass,
+      panelClass: resolvedConfig.panelClass,
+      configure: (_instance, ref) => this.applySizing(ref.nativeElement, resolvedConfig),
+      onClosed: () => {
+        this._openRefs.update((refs) => refs.filter((r) => r !== dialogRef));
+        dialogRef._finalizeClose();
+      },
+    } satisfies OverlayOptions<NgxDialogComponent>);
+
+    dialogRef._attachOverlayRef(overlayRef);
+    this._openRefs.update((refs) => [...refs, dialogRef]);
     return dialogRef;
   }
 
-  private removeDialogComponentFromBody(id?: string): void {
-    if (!id) {
-      return;
-    }
-    const index = this.dialogComponentRefs.findIndex((x) => x.instance._dialogRef.id == id);
-    if (index > -1 && this.dialogComponentRefs[index]) {
-      this.appRef.detachView(this.dialogComponentRefs[index].hostView);
-      this.dialogComponentRefs[index].destroy();
-      this.dialogComponentRefs.splice(index, 1);
-    }
+  /** Closes every currently open dialog (ignores `disableClose`/guards - use sparingly, e.g. on logout). */
+  closeAll(): void {
+    [...this._openRefs()].forEach((ref) => ref.close());
   }
 
-  private appendDialogComponentToBody(
-    componentRef: ComponentRef<NgxDialogComponent>,
-    config: NgxDialogConfig,
-  ) {
-    const domElem = (componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
-    if (config.containerClass) {
-      for (let c of config.containerClass.split(' ')) {
-        if (c.trim()) domElem.classList.add(c);
-      }
-    }
-    document.body.appendChild(domElem);
-  }
-
-  closeAll() {
-    for (let index = 0; index < this.dialogComponentRefs.length; index++) {
-      if (this.dialogComponentRefs[index]) {
-        this.appRef.detachView(this.dialogComponentRefs[index].hostView);
-        this.dialogComponentRefs[index].destroy();
-      }
-    }
-    this.dialogComponentRefs = [];
-  }
-
-  private get getDialogId() {
-    return randomStrnig(10, true);
+  private applySizing(el: HTMLElement | null, config: NgxDialogConfig): void {
+    if (!el) return;
+    if (config.width) el.style.width = config.width;
+    if (config.minWidth) el.style.minWidth = config.minWidth;
+    if (config.maxWidth) el.style.maxWidth = config.maxWidth;
+    if (config.height) el.style.height = config.height;
+    if (config.minHeight) el.style.minHeight = config.minHeight;
+    if (config.maxHeight) el.style.maxHeight = config.maxHeight;
   }
 }

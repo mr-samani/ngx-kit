@@ -1,51 +1,52 @@
-import { AfterViewInit, Directive, ElementRef, inject, Renderer2 } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, Renderer2, effect, inject } from '@angular/core';
 import { DIALOG_REF } from '../dialog.tokens';
 
+/**
+ * Why this can't be pure CSS flexbox: the header/body/footer elements are
+ * *grandchildren* of the dialog panel (panel -> `*ngComponentOutlet`'s host
+ * element -> header/body/footer), not direct children, because the content
+ * component that hosts them is arbitrary and we don't control its own host
+ * styling. `display:flex;flex-direction:column` on the panel therefore can't
+ * size the body against the header/footer through that extra layer, so we
+ * measure and set an explicit `max-height` instead, driven by a
+ * `ResizeObserver` on the panel (not a `window:resize` listener, so it also
+ * reacts to the dialog itself changing size, e.g. via `config.size`).
+ */
 @Directive({
-  standalone: false,
   selector: 'ngx-dialog-body,[ngxDialogBody]',
-  host: {
-    class: 'dialog-body',
-  },
+  standalone: true,
+  host: { class: 'dialog-body' },
   exportAs: 'ngxDialogBody',
 })
-export class NgxDialogBodyDirective implements AfterViewInit {
-  height?: number;
+export class NgxDialogBodyDirective {
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly renderer = inject(Renderer2);
+  private readonly dialogRef = inject(DIALOG_REF);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private _dialogRef = inject(DIALOG_REF);
-  constructor(
-    public _el: ElementRef<HTMLElement>,
-    private _renderer: Renderer2,
-  ) {
-    this._dialogRef.body = this._el;
+  constructor() {
+    this.dialogRef._setBodyElement(this.el.nativeElement);
+    this.destroyRef.onDestroy(() => this.dialogRef._setBodyElement(null));
+
+    effect((onCleanup) => {
+      const panel = this.dialogRef.panelEl();
+      if (!panel || typeof ResizeObserver === 'undefined') {
+        return;
+      }
+      const recompute = (): void => this.recomputeHeight(panel);
+      const observer = new ResizeObserver(recompute);
+      observer.observe(panel);
+      recompute();
+      onCleanup(() => observer.disconnect());
+    });
   }
 
-  ngAfterViewInit(): void {
-    this.onWindowResize();
-    if (this._dialogRef.dialog && this._dialogRef.dialog.nativeElement) {
-      new ResizeObserver(() => {
-        this.onWindowResize();
-      }).observe(this._dialogRef.dialog.nativeElement);
+  private recomputeHeight(panel: HTMLElement): void {
+    const headerHeight = this.dialogRef.headerEl()?.offsetHeight ?? 0;
+    const footerHeight = this.dialogRef.footerEl()?.offsetHeight ?? 0;
+    const available = panel.clientHeight - headerHeight - footerHeight;
+    if (available > 0) {
+      this.renderer.setStyle(this.el.nativeElement, 'max-height', `${available}px`);
     }
-  }
-
-  // @HostListener('window:resize', ['$event'])
-  onWindowResize(ev?: Event) {
-    if (!window) return;
-    let headerH = 0;
-    let footerH = 0;
-    let dialogH = window.innerHeight;
-    if (this._dialogRef.header) {
-      headerH = this._dialogRef.header.nativeElement.offsetHeight;
-    }
-    if (this._dialogRef.footer) {
-      footerH = this._dialogRef.footer.nativeElement.offsetHeight;
-    }
-    if (this._dialogRef.dialog && this._dialogRef.dialog.nativeElement.offsetHeight < dialogH) {
-      dialogH = this._dialogRef.dialog.nativeElement.offsetHeight;
-    }
-    this.height = dialogH - headerH - footerH;
-    this._renderer.setStyle(this._el.nativeElement, 'max-height', this.height + 'px');
-    // console.log(this.height, ':', 'windowHeight', dialogH, 'h', headerH, 'f', footerH);
   }
 }

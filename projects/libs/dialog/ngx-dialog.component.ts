@@ -1,84 +1,41 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  inject,
-  OnDestroy,
-  OnInit,
-  Type,
-  ViewChild,
-} from '@angular/core';
-import { Subject } from 'rxjs';
-import { NgxDialogConfig } from './ngx-dialog-config';
-import { DIALOG_REF } from './dialog.tokens';
+import { NgComponentOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject } from '@angular/core';
+import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_REF } from './dialog.tokens';
+import { NgxDialogFooterDirective } from './directives/footer.directive';
+import { NgxDialogHeaderDirective } from './directives/header.directive';
 
+/**
+ * The dialog "panel" shell. It no longer owns the backdrop, centering,
+ * focus trap, Escape handling or outside-click handling - all of that now
+ * lives in `OverlayService`, which this component is rendered inside of.
+ * This is intentionally a thin, fully signal-driven shell: no
+ * `AfterViewInit`, no manual `ChangeDetectorRef.detectChanges()`, no
+ * imperative style writes. Angular schedules change detection automatically
+ * whenever a signal read from the template changes, including in zoneless
+ * apps.
+ */
 @Component({
-  standalone: false,
+  selector: 'ngx-dialog-panel',
+  standalone: true,
+  imports: [NgComponentOutlet, NgxDialogHeaderDirective, NgxDialogFooterDirective],
   templateUrl: './ngx-dialog.component.html',
-  styleUrls: ['./ngx-dialog.component.scss'],
+  styleUrl: './ngx-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'ngx-dialog-panel',
+    '[class]': 'sizeClass()',
+  },
 })
-export class NgxDialogComponent implements OnInit, AfterViewInit, OnDestroy {
-  config?: NgxDialogConfig;
-  component!: Type<any>;
-  private readonly _onClose = new Subject<void>();
-  public onClose = this._onClose.asObservable();
-  @ViewChild('ngxDialog') ngxDialog?: ElementRef<HTMLElement>;
+export class NgxDialogComponent {
+  protected readonly dialogRef = inject(DIALOG_REF);
+  protected readonly config = inject(DIALOG_CONFIG);
+  protected readonly content = inject(DIALOG_CONTENT);
 
-  _dialogRef = inject(DIALOG_REF);
-  private cd = inject(ChangeDetectorRef);
-  constructor() {}
+  protected readonly sizeClass = computed(() =>
+    this.config.size ? `ngx-dialog-size-${this.config.size}` : '',
+  );
 
-  ngOnInit(): void {}
-
-  ngAfterViewInit(): void {
-    this._dialogRef.dialog = this.ngxDialog;
-    this.setStyle();
-    this.cd.detectChanges();
-  }
-
-  ngOnDestroy(): void {}
-
-  onOverlayClicked(evt: MouseEvent): void {
-    if (this.config?.allowCloseOnOutsideClick) {
-      this._dialogRef.close();
-    }
-  }
-
-  onDialogClicked(evt: MouseEvent): void {
-    evt.stopPropagation();
-  }
-
-  close(): void {
-    this._onClose.next();
-  }
-
-  setStyle() {
-    if (this.ngxDialog) {
-      if (this.config?.width) {
-        this.ngxDialog.nativeElement.style.width = this.config.width;
-      }
-      if (this.config?.maxWidth) {
-        this.ngxDialog.nativeElement.style.maxWidth = this.config.maxWidth;
-      } else {
-        this.ngxDialog.nativeElement.style.maxWidth = '100%';
-      }
-      if (this.config?.minWidth) {
-        this.ngxDialog.nativeElement.style.minWidth = this.config.minWidth;
-      }
-      if (this.config?.height) {
-        this.ngxDialog.nativeElement.style.height = this.config.height;
-      }
-      if (this.config?.maxHeight) {
-        this.ngxDialog.nativeElement.style.maxHeight = this.config.maxHeight;
-      } else {
-        this.ngxDialog.nativeElement.style.maxHeight = '100%';
-      }
-      if (this.config?.minHeight) {
-        this.ngxDialog.nativeElement.style.minHeight = this.config.minHeight;
-      }
-    }
+  constructor() {
+    this.dialogRef._setPanelElement(inject(ElementRef<HTMLElement>).nativeElement);
   }
 }

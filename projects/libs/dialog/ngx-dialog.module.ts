@@ -4,31 +4,31 @@ import { NgxDialogBodyDirective } from './directives/body.directive';
 import { NgxDialogFooterDirective } from './directives/footer.directive';
 import { NgxDialogHeaderDirective } from './directives/header.directive';
 import { NgxDialogComponent } from './ngx-dialog.component';
-import { NgxOverlayService } from './ngx-dialog.service';
 import { Dialog as DialogFacade } from './dialog.facade';
+import { NgxDialogService } from './ngx-dialog.service';
 
 @NgModule({
-  declarations: [
+  declarations: [],
+  imports: [
     NgxDialogComponent,
     NgxDialogHeaderDirective,
     NgxDialogFooterDirective,
     NgxDialogBodyDirective,
   ],
-  imports: [CommonModule],
   exports: [
     NgxDialogComponent,
     NgxDialogHeaderDirective,
     NgxDialogFooterDirective,
     NgxDialogBodyDirective,
   ],
-  providers: [NgxOverlayService],
+  providers: [NgxDialogService],
 })
 export class NgxDialogModule {
   private readonly platformId = inject(PLATFORM_ID);
 
   constructor(
     @Optional() @SkipSelf() parentModule: NgxDialogModule | null,
-    service: NgxOverlayService,
+    service: NgxDialogService,
   ) {
     if (parentModule) {
       return;
