@@ -35,7 +35,7 @@ export class DragRef<T = unknown> {
 
   private moveDx = 0;
   private moveDy = 0;
-
+  private scrollCompensation = { x: 0, y: 0 };
   private preview?: HTMLElement;
   private previewOffsetX = 0;
   private previewOffsetY = 0;
@@ -73,6 +73,7 @@ export class DragRef<T = unknown> {
     this.lastPointer = { ...pointer };
     this.moveDx = 0;
     this.moveDy = 0;
+    this.scrollCompensation = { x: 0, y: 0 };
 
     this.originDropList = this.dropList;
     this.originIndex = this.dropList?.getItemIndex(this) ?? -1;
@@ -203,6 +204,7 @@ export class DragRef<T = unknown> {
     this.el.style.transform = this.previousTransform;
     this.el.style.visibility = this.sourceVisibility;
     this.el.style.pointerEvents = this.sourcePointerEvents;
+    this.scrollCompensation = { x: 0, y: 0 };
 
     this.endDrag();
   }
@@ -226,13 +228,35 @@ export class DragRef<T = unknown> {
   getPlaceholderElement(): HTMLElement | undefined {
     return this.placeholder?.element;
   }
+
+  /**
+   * صدا زده می‌شود هر بار که container یا window در حین درگ اسکرول شود
+   * (چه توسط auto-scroll خودمان، چه با wheel/اسکرول‌بار دستی کاربر).
+   * transform را فوراً تصحیح می‌کند تا عنصر زیر پوینتر بماند.
+   */
+  notifyScroll(dx: number, dy: number): void {
+    if (!this.isDragging()) return;
+    this.scrollCompensation = {
+      x: this.scrollCompensation.x + dx,
+      y: this.scrollCompensation.y + dy,
+    };
+    if (this.dropList) {
+      this.updatePreview();
+    } else {
+      this.applyTransform();
+    }
+  }
+
   private applyTransform(): void {
     const base =
       this.previousTransform && this.previousTransform !== 'none'
         ? this.previousTransform + ' '
         : '';
 
-    this.el.style.transform = `${base}translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
+    const tx = this.moveDx + this.scrollCompensation.x;
+    const ty = this.moveDy + this.scrollCompensation.y;
+
+    this.el.style.transform = `${base}translate3d(${tx}px, ${ty}px, 0)`;
   }
   private updatePreview(): void {
     if (!this.preview) return;

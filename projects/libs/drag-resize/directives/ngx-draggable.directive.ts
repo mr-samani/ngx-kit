@@ -1,12 +1,10 @@
 import {
   Directive,
   ElementRef,
-  EventEmitter,
   InjectionToken,
   Input,
   OnDestroy,
   OnInit,
-  Output,
   Renderer2,
   inject,
   input,
@@ -20,7 +18,7 @@ import { NGX_DROPLIST } from './ngx-drop-list.directive';
 import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
 import { DragRef, DragAxis } from '../drag-ref';
 import { IPosition } from '../contracts/IPosition';
-import { AutoScroller } from '../utils/auto-scroll';
+import { AutoScroller, findScrollableAncestor, getScrollPosition } from '../utils/auto-scroll';
 
 export const NGX_DRAGGABLE = new InjectionToken<NgxDraggable>('ngx-draggable');
 
@@ -71,12 +69,17 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   private down = false;
   private start = { x: 0, y: 0 };
   private pointerId = -1;
+  private lastPointer: IPosition = { x: 0, y: 0 };
   private removeDown?: () => void;
   private removeMove?: () => void;
   private removeUp?: () => void;
   private removeKeydown?: () => void;
   private removeEscape?: () => void;
-
+  private scrollTarget: HTMLElement | Window = window;
+  private lastScroll = { left: 0, top: 0 };
+  private lastWindowScroll = { left: 0, top: 0 };
+  private removeContainerScroll?: () => void;
+  private removeWindowScroll?: () => void;
   constructor(
     private readonly host: ElementRef<HTMLElement>,
     private readonly renderer: Renderer2,
@@ -140,22 +143,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       if (ev.key === 'Escape' && this.dragging()) this.cancel();
     });
   }
-
-  private pointerMove(e: PointerEvent): void {
-    if (!this.down || e.pointerId !== this.pointerId) return;
-    const p = { x: e.clientX, y: e.clientY };
-    if (
-      !this.dragging() &&
-      Math.hypot(p.x - this.start.x, p.y - this.start.y) < this.dragThreshold()
-    )
-      return;
-    if (!this.dragging()) {
-      this._ref.startDrag(p);
-      this.dragging.set(true);
-      this.service.begin(this._ref);
-      if (this.autoScroll()) this.scroller.start(this._ref.el);
-      this.dragStart.emit(p);
-    }
+  private applyDragUpdate(p: IPosition): void {
     this._ref.dragMove(p);
 
     const target = this.service.findDropList(p, this._ref.dropList);
@@ -168,23 +156,80 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
         this._ref.withDropList(target);
         target.createPlaceholder(this._ref);
 
-        if (this.autoScroll()) {
-          this.scroller.stop();
-          this.scroller.start(target.el);
-        }
+        if (this.autoScroll()) this.scroller.retarget(target.el);
       } else if (this.autoScroll()) {
         this.scroller.stop();
       }
     }
 
-    // Sorting uses the pointer against the currently active list. Its geometry
-    // is read live, so the placeholder and auto-scroll are both reflected.
     this._ref.dropList?.sortItem(this._ref, p);
-
-    if (this.autoScroll()) this.scroller.update(p.x, p.y);
     this.dragMove.emit(p);
   }
+  /** فراخوانی می‌شود دقیقاً وقتی drag واقعاً شروع می‌شود (چه با موس، چه با کیبورد). */
+  private startScrollTracking(): void {
+    this.scrollTarget = findScrollableAncestor(this._ref.el);
+    this.lastScroll = getScrollPosition(this.scrollTarget);
+    this.lastWindowScroll = { left: window.scrollX, top: window.scrollY };
 
+    if (this.scrollTarget !== window) {
+      this.removeContainerScroll = this.renderer.listen(this.scrollTarget, 'scroll', () =>
+        this.handleContainerScroll(),
+      );
+    }
+    // همیشه window رو هم جدا گوش می‌دیم؛ چون ممکنه container محلی نداشته باشیم
+    // ولی خودِ صفحه اسکرول بشه.
+    this.removeWindowScroll = this.renderer.listen('window', 'scroll', () =>
+      this.handleWindowScroll(),
+    );
+  }
+
+  private handleContainerScroll(): void {
+    const pos = getScrollPosition(this.scrollTarget);
+    const dx = pos.left - this.lastScroll.left;
+    const dy = pos.top - this.lastScroll.top;
+    this.lastScroll = pos;
+    this._ref.notifyScroll(dx, dy);
+  }
+
+  private handleWindowScroll(): void {
+    const left = window.scrollX;
+    const top = window.scrollY;
+    const dx = left - this.lastWindowScroll.left;
+    const dy = top - this.lastWindowScroll.top;
+    this.lastWindowScroll = { left, top };
+    this._ref.notifyScroll(dx, dy);
+  }
+
+  private stopScrollTracking(): void {
+    this.removeContainerScroll?.();
+    this.removeWindowScroll?.();
+    this.removeContainerScroll = this.removeWindowScroll = undefined;
+  }
+
+  private pointerMove(e: PointerEvent): void {
+    if (!this.down || e.pointerId !== this.pointerId) return;
+    const p = { x: e.clientX, y: e.clientY };
+    this.lastPointer = p;
+    if (
+      !this.dragging() &&
+      Math.hypot(p.x - this.start.x, p.y - this.start.y) < this.dragThreshold()
+    )
+      return;
+    if (!this.dragging()) {
+      this._ref.startDrag(p);
+      this.dragging.set(true);
+      this.service.begin(this._ref);
+      this.startScrollTracking();
+      if (this.autoScroll()) {
+        this.scroller.start(this._ref.el, () => this.applyDragUpdate(this.lastPointer));
+      }
+      this.dragStart.emit(p);
+    }
+
+    this.applyDragUpdate(p);
+
+    if (this.autoScroll()) this.scroller.update(p.x, p.y);
+  }
   private pointerUp(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
     if (this.dragging()) {
@@ -207,6 +252,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.dragging.set(false);
     this.down = false;
     this.scroller.stop();
+    this.stopScrollTracking();
     this.removeMove?.();
     this.removeUp?.();
     this.removeEscape?.();
@@ -233,6 +279,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
         this._ref.startDrag({ x: 0, y: 0 });
         this.dragging.set(true);
         this.service.begin(this._ref);
+        this.startScrollTracking();
         this.dragStart.emit({ x: 0, y: 0 });
       }
       this._ref.nudge(delta.x, delta.y);
@@ -245,6 +292,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       this.service.end(this._ref);
       this.dragEnd.emit(this._ref.pointer);
       this.dragging.set(false);
+      this.stopScrollTracking();
     } else if (e.key === 'Escape' && this.dragging()) {
       e.preventDefault();
       this._ref.cancelDrag();
