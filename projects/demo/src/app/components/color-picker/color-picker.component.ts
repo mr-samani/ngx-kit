@@ -5,12 +5,13 @@ import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-color-picker',
   templateUrl: './color-picker.component.html',
   styleUrls: ['./color-picker.component.scss'],
-  imports: [FormsModule, NgxInputColor, ExampleShowcaseComponent],
+  imports: [CommonModule, FormsModule, NgxInputColor, ExampleShowcaseComponent],
 })
 export class ColorPickerComponent implements OnInit {
   protected readonly sourceFiles: ExampleSourceFile[] = [
@@ -23,8 +24,6 @@ export class ColorPickerComponent implements OnInit {
   ];
 
   color = 'pink';
-
-  theme: 'light' | 'dark' | 'auto' = 'auto';
   outputType: OutputType = 'HEX';
   simpleMode = false;
   inspector: ColorInspector = ColorInspector.Picker;

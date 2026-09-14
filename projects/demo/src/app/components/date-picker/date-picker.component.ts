@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Injector, OnInit, signal, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+
 import {
   getLocals,
   NgxDatePickerConfig,
@@ -15,7 +16,9 @@ import {
   NgxInputDateRangePicker,
   provideDateAdapters,
 } from 'ngx-kit/date-picker';
+
 import { JapanesAdapter } from './custom-adapters/japanes-adapter';
+
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
@@ -41,16 +44,27 @@ import {
     }),
   ],
 })
-export class DatePickerComponent implements OnInit {
+export class DatePickerComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: 'examples/date-picker/date-picker.component.ts', language: 'typescript' },
-    { label: 'HTML', path: 'examples/date-picker/date-picker.component.html', language: 'html' },
+    {
+      label: 'TS',
+      path: 'examples/date-picker/date-picker.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/date-picker/date-picker.component.html',
+      language: 'html',
+    },
   ];
 
-  locale: string = 'fa';
+  locale = 'fa';
+
   availableLocals = getLocals();
-  minDate?: Date; // = new Date('2023-03-02');
-  maxDate?: Date; // = new Date('2023-03-17');
+
+  minDate?: Date;
+
+  maxDate?: Date;
 
   config = signal<NgxDatePickerConfig>({
     todayButton: true,
@@ -58,29 +72,28 @@ export class DatePickerComponent implements OnInit {
   });
 
   form: FormGroup;
+
   inlineDate = viewChild<NgxInputDatePicker>('inlineDate');
+
   inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
 
   today = new Date();
+
   dateRange = [
     this.today,
-    new Date(
-      `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 5}`,
-    ),
+    new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate() + 5),
   ];
+
   constructor(fb: FormBuilder) {
     this.form = fb.group({
-      date: ['', [Validators.required]],
+      date: ['', Validators.required],
     });
-    // console.log('availableLocals', this.availableLocals);
-    console.log('dateRange', this.dateRange);
   }
 
-  ngOnInit(): void {}
-  updateConfig() {
-    const inline = this.inlineDate();
-    const input = this.inputDate();
-    inline?.updateConfig(this.config());
-    input?.updateConfig(this.config());
+  updateConfig(): void {
+    const config = this.config();
+
+    this.inlineDate()?.updateConfig(config);
+    this.inputDate()?.updateConfig(config);
   }
 }

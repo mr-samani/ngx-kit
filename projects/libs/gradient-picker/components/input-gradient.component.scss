@@ -74,7 +74,8 @@
   }
   .ngx-input-group {
     display: flex;
-    .ngx-input-prefix {
+    .ngx-input-prefix,
+    .ngx-input-group-text {
       width: 14px;
       margin-left: -28px;
       margin-top: 6px;
