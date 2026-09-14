@@ -24,12 +24,18 @@ export function computeMetrics(containerWidth: number, options: IGridLayoutOptio
   const padding = options.padding ?? 0;
   const contentWidth = Math.max(0, containerWidth - padding * 2);
   const colWidth = Math.max(1, (contentWidth - gap * (cols - 1)) / cols);
-  const rowHeight = options.rowHeight === 'fit' ? Math.max(1, colWidth) : Math.max(1, options.rowHeight);
+  const rowHeight =
+    options.rowHeight === 'fit' ? Math.max(1, colWidth) : Math.max(1, options.rowHeight);
   return { contentWidth, colWidth, rowHeight, gap, padding };
 }
 
 /** Physical CSS `left` (px, relative to the grid surface's content box) for a logical column. */
-export function colToLeft(colIndex: number, spanCols: number, m: GridMetrics, rtl: boolean): number {
+export function colToLeft(
+  colIndex: number,
+  spanCols: number,
+  m: GridMetrics,
+  rtl: boolean,
+): number {
   if (!rtl) return m.padding + colIndex * (m.colWidth + m.gap);
   const widthPx = spanCols * m.colWidth + (spanCols - 1) * m.gap;
   const rightEdge = m.padding + colIndex * (m.colWidth + m.gap);
@@ -61,7 +67,11 @@ export function topToRow(topPx: number, m: GridMetrics): number {
 }
 
 /** Places an item's pixel box (left/top/width/height) inside the grid surface, RTL-aware. */
-export function placeItem(config: GridItemConfig, m: GridMetrics, rtl: boolean): { left: number; top: number; width: number; height: number } {
+export function placeItem(
+  config: GridItemConfig,
+  m: GridMetrics,
+  rtl: boolean,
+): { left: number; top: number; width: number; height: number } {
   return {
     left: colToLeft(config.x, config.w, m, rtl),
     top: rowToTop(config.y, m),

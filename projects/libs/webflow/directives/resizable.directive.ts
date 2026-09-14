@@ -1,6 +1,14 @@
 import {
-  Directive, ElementRef, EventEmitter, Input, Output,
-  Renderer2, inject, NgZone, OnDestroy, signal
+  Directive,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  Renderer2,
+  inject,
+  NgZone,
+  OnDestroy,
+  signal,
 } from '@angular/core';
 import { ResizeHandlePosition, ResizeMoveEvent } from '../models/types';
 
@@ -51,7 +59,9 @@ export class ResizableDirective implements OnDestroy {
 
   constructor() {
     this.zone.runOutsideAngular(() => {
-      this.unlisten = this.renderer.listen(this.el, 'pointerdown', (e: PointerEvent) => this.onDown(e));
+      this.unlisten = this.renderer.listen(this.el, 'pointerdown', (e: PointerEvent) =>
+        this.onDown(e),
+      );
     });
   }
 
@@ -72,7 +82,9 @@ export class ResizableDirective implements OnDestroy {
 
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     this.resizing.set(true);
-    this.zone.run(() => this.flowResizeStart.emit({ id: this.ngxResizableId, handle: this.handle }));
+    this.zone.run(() =>
+      this.flowResizeStart.emit({ id: this.ngxResizableId, handle: this.handle }),
+    );
 
     const move = (ev: PointerEvent) => this.onMove(ev);
     const up = (ev: PointerEvent) => this.onUp(ev, move, up);
@@ -88,12 +100,19 @@ export class ResizableDirective implements OnDestroy {
 
     let w = this.startW;
     let ht = this.startH;
-    let ox = 0, oy = 0;
+    let ox = 0,
+      oy = 0;
 
     if (h.includes('e')) w = this.startW + dx;
-    if (h.includes('w')) { w = this.startW - dx; ox = dx; }
+    if (h.includes('w')) {
+      w = this.startW - dx;
+      ox = dx;
+    }
     if (h.includes('s')) ht = this.startH + dy;
-    if (h.includes('n')) { ht = this.startH - dy; oy = dy; }
+    if (h.includes('n')) {
+      ht = this.startH - dy;
+      oy = dy;
+    }
 
     w = Math.max(this.ngxResizableMinWidth, w);
     ht = Math.max(this.ngxResizableMinHeight, ht);
@@ -106,30 +125,43 @@ export class ResizableDirective implements OnDestroy {
         if (!this.pending) return;
         this.zone.run(() => {
           this.flowResizeMove.emit({
-            id: this.ngxResizableId, handle: this.handle,
-            width: this.pending!.w, height: this.pending!.h,
-            offsetX: this.pending!.ox, offsetY: this.pending!.oy,
+            id: this.ngxResizableId,
+            handle: this.handle,
+            width: this.pending!.w,
+            height: this.pending!.h,
+            offsetX: this.pending!.ox,
+            offsetY: this.pending!.oy,
           });
         });
       });
     }
   }
 
-  private onUp(e: PointerEvent, move: (ev: PointerEvent) => void, up: (ev: PointerEvent) => void): void {
+  private onUp(
+    e: PointerEvent,
+    move: (ev: PointerEvent) => void,
+    up: (ev: PointerEvent) => void,
+  ): void {
     const handleEl = e.target as HTMLElement;
     handleEl.removeEventListener('pointermove', move as EventListener);
     handleEl.removeEventListener('pointerup', up as EventListener);
     handleEl.removeEventListener('pointercancel', up as EventListener);
 
-    if (this.rafId !== null) { cancelAnimationFrame(this.rafId); this.rafId = null; }
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
     this.resizing.set(false);
 
     if (this.pending) {
       this.zone.run(() => {
         this.flowResizeEnd.emit({
-          id: this.ngxResizableId, handle: this.handle,
-          width: this.pending!.w, height: this.pending!.h,
-          offsetX: this.pending!.ox, offsetY: this.pending!.oy,
+          id: this.ngxResizableId,
+          handle: this.handle,
+          width: this.pending!.w,
+          height: this.pending!.h,
+          offsetX: this.pending!.ox,
+          offsetY: this.pending!.oy,
         });
       });
     }

@@ -11,7 +11,11 @@ export function collides(a: GridItemConfig, b: GridItemConfig): boolean {
 }
 
 /** First item (other than `self`) whose cells overlap `config`, or null. */
-export function getFirstCollision<T extends LayoutNode>(items: readonly T[], selfId: string, config: GridItemConfig): T | null {
+export function getFirstCollision<T extends LayoutNode>(
+  items: readonly T[],
+  selfId: string,
+  config: GridItemConfig,
+): T | null {
   for (const item of items) {
     if (item.id === selfId) continue;
     if (collides(item.config, config)) return item;
@@ -20,6 +24,10 @@ export function getFirstCollision<T extends LayoutNode>(items: readonly T[], sel
 }
 
 /** All items whose cells overlap `config`, excluding `selfId`. */
-export function getAllCollisions<T extends LayoutNode>(items: readonly T[], selfId: string, config: GridItemConfig): T[] {
+export function getAllCollisions<T extends LayoutNode>(
+  items: readonly T[],
+  selfId: string,
+  config: GridItemConfig,
+): T[] {
   return items.filter((item) => item.id !== selfId && collides(item.config, config));
 }

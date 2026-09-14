@@ -6,17 +6,26 @@
 const TOLERANCE = 0.5;
 
 /** Clamps a proposed vertical delta so the element's rect stays inside the boundary rect. */
-export function checkBoundY(selfRect: DOMRect, boundaryRect: DOMRect | undefined, offsetY: number): number {
+export function checkBoundY(
+  selfRect: DOMRect,
+  boundaryRect: DOMRect | undefined,
+  offsetY: number,
+): number {
   if (!boundaryRect) return offsetY;
   const newTop = selfRect.top + offsetY;
   const newBottom = selfRect.bottom + offsetY;
   if (newTop < boundaryRect.top + TOLERANCE) return offsetY + (boundaryRect.top - newTop);
-  if (newBottom > boundaryRect.bottom - TOLERANCE) return offsetY - (newBottom - boundaryRect.bottom);
+  if (newBottom > boundaryRect.bottom - TOLERANCE)
+    return offsetY - (newBottom - boundaryRect.bottom);
   return offsetY;
 }
 
 /** Clamps a proposed horizontal delta so the element's rect stays inside the boundary rect. */
-export function checkBoundX(selfRect: DOMRect, boundaryRect: DOMRect | undefined, offsetX: number): number {
+export function checkBoundX(
+  selfRect: DOMRect,
+  boundaryRect: DOMRect | undefined,
+  offsetX: number,
+): number {
   if (!boundaryRect) return offsetX;
   const newLeft = selfRect.left + offsetX;
   const newRight = selfRect.right + offsetX;

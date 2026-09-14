@@ -43,13 +43,8 @@ Object.defineProperty(window, 'IntersectionObserver', {
   value: MockIntersectionObserver,
 });
 
-
-
-
 class MockResizeObserver implements ResizeObserver {
-  constructor(
-    private readonly callback: ResizeObserverCallback,
-  ) {}
+  constructor(private readonly callback: ResizeObserverCallback) {}
 
   observe(_target: Element, _options?: ResizeObserverOptions): void {}
 

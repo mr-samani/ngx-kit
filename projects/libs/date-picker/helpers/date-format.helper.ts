@@ -34,7 +34,7 @@ export function genFormatDate(
   };
 
   pattern = namedPatterns[pattern] ?? pattern;
-  
+
   const day = date.day ?? 0;
   const month = date.month ?? 0;
   const year = date.year ?? 0;

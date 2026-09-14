@@ -40,33 +40,27 @@ export class DragDropService {
     this.activeDrag.set(null);
   }
 
-  findDropList(
-    point: { x: number; y: number },
-    current?: DropListRef | null,
-  ): DropListRef | null {
-    const candidates = this.dropLists()
-      .filter((list) => {
-        const r = list.el?.getBoundingClientRect();
-        return (
-          !!r &&
-          point.x >= r.left &&
-          point.x <= r.right &&
-          point.y >= r.top &&
-          point.y <= r.bottom
-        );
-      });
+  findDropList(point: { x: number; y: number }, current?: DropListRef | null): DropListRef | null {
+    const candidates = this.dropLists().filter((list) => {
+      const r = list.el?.getBoundingClientRect();
+      return (
+        !!r && point.x >= r.left && point.x <= r.right && point.y >= r.top && point.y <= r.bottom
+      );
+    });
 
     // Staying over the current list should always win.
     if (current && candidates.includes(current)) return current;
 
     // Never jump into an unrelated list just because it overlaps the pointer.
     // Prefer the smallest matching connected container (useful for nested lists).
-    return candidates
-      .filter((list) => !current || current.isConnectedTo(list))
-      .sort((a, b) => {
-        const ra = a.el.getBoundingClientRect();
-        const rb = b.el.getBoundingClientRect();
-        return ra.width * ra.height - rb.width * rb.height;
-      })[0] ?? null;
+    return (
+      candidates
+        .filter((list) => !current || current.isConnectedTo(list))
+        .sort((a, b) => {
+          const ra = a.el.getBoundingClientRect();
+          const rb = b.el.getBoundingClientRect();
+          return ra.width * ra.height - rb.width * rb.height;
+        })[0] ?? null
+    );
   }
 }

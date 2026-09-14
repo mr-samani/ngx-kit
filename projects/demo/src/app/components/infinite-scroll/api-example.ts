@@ -11,11 +11,11 @@ export class ExampleComponent {
     this.loading.set(true);
 
     // Replace this section with your API/data source.
-    Promise.resolve(this.fetchPage(direction)).then(result => {
+    Promise.resolve(this.fetchPage(direction)).then((result) => {
       if (direction === 'up') {
-        this.items.update(current => [...result.items, ...current]);
+        this.items.update((current) => [...result.items, ...current]);
       } else {
-        this.items.update(current => [...current, ...result.items]);
+        this.items.update((current) => [...current, ...result.items]);
       }
 
       this.endOfList.set(result.endOfList);

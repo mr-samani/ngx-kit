@@ -23,9 +23,7 @@ When a drag starts inside a drop list:
 ```html
 <div NgxDropList (drop)="onDrop($event)">
   @for (item of items; track item.id) {
-    <article NgxDraggable [data]="item">
-      {{ item.name }}
-    </article>
+  <article NgxDraggable [data]="item">{{ item.name }}</article>
   }
 </div>
 ```

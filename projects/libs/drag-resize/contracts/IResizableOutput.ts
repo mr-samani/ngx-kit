@@ -7,13 +7,7 @@ export type ResizeDirection = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
  * so a single template works unchanged in both LTR and RTL layouts.
  */
 export type LogicalResizeDirection =
-  | ResizeDirection
-  | 'n-start'
-  | 'n-end'
-  | 's-start'
-  | 's-end'
-  | 'start'
-  | 'end';
+  ResizeDirection | 'n-start' | 'n-end' | 's-start' | 's-end' | 'start' | 'end';
 
 export interface IResizableOutput {
   width: number;

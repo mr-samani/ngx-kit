@@ -29,7 +29,6 @@ import {
   providers: [],
 })
 export class MessageComponent {
-
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
@@ -59,15 +58,12 @@ export class MessageComponent {
   }
 
   openModal(): void {
-    MSG.show(this.options)
-      .afterClose
-      .subscribe(result => {
-        this.result = result;
-      });
+    MSG.show(this.options).afterClose.subscribe((result) => {
+      this.result = result;
+    });
   }
 
   showLoading(): void {
-
     const message = MSG.fire({
       icon: 'loading',
       text: 'Please Wait...',
@@ -83,7 +79,7 @@ export class MessageComponent {
       showCloseButton: false,
     });
 
-    message.afterClose.subscribe(result => {
+    message.afterClose.subscribe((result) => {
       console.log(result);
     });
 

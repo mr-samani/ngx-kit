@@ -41,7 +41,7 @@ Use `[dir]="'rtl'"` or `options.rtl = 'auto'`. Logical `x=0` is always the start
 
 > **Note on `[config]="item"` above:** `layout()` is a `computed()` that maps the
 > internal item list to a fresh array of fresh objects on every recompute, so
-> each item gets a *new* config object reference whenever anything in the grid
+> each item gets a _new_ config object reference whenever anything in the grid
 > changes — even if the values are identical. `NgxGridItemComponent` and
 > `GridLayoutService` are written to tolerate this (they compare configs by
 > value before writing to any signal), so this pattern is safe to use as-is.

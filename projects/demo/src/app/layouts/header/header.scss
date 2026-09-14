@@ -1,4 +1,3 @@
-
 /* =========================================================
    TOPBAR
    ========================================================= */
@@ -13,11 +12,7 @@
 
   border-bottom: 1px solid var(--border);
 
-  background: color-mix(
-    in srgb,
-    var(--surface) 92%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
 
   backdrop-filter: blur(18px);
 
@@ -46,15 +41,9 @@
   font-size: 11px;
   font-weight: 800;
 
-  background:
-    linear-gradient(
-      135deg,
-      #7c6cff,
-      #5147d9
-    );
+  background: linear-gradient(135deg, #7c6cff, #5147d9);
 
-  box-shadow:
-    0 6px 16px rgba(99, 91, 255, 0.3);
+  box-shadow: 0 6px 16px rgba(99, 91, 255, 0.3);
 }
 
 .brand-text {
@@ -93,8 +82,7 @@
 
   background: var(--success);
 
-  box-shadow:
-    0 0 0 4px rgba(24, 166, 106, 0.1);
+  box-shadow: 0 0 0 4px rgba(24, 166, 106, 0.1);
 }
 
 .topbar-actions {
@@ -158,13 +146,11 @@
   font-weight: 600;
 }
 
-
-
-.main-nav{
+.main-nav {
   display: flex;
   gap: 5px;
   margin: 0 5px;
-  a{
+  a {
     text-decoration: none;
   }
 }

@@ -57,11 +57,11 @@ import {
   `,
   styles: [
     `
-    .mm{
-      background: red;
-      width:230px;
-      height: 230px;
-    }
+      .mm {
+        background: red;
+        width: 230px;
+        height: 230px;
+      }
       .flow-canvas {
         position: relative;
         display: flex;
@@ -122,18 +122,17 @@ import {
     `,
   ],
 })
-export class BuilderCanvasComponent implements OnInit{
+export class BuilderCanvasComponent implements OnInit {
   readonly tree = inject(FlowTreeService);
-
 
   ngOnInit(): void {
     this.tree.root().children.push({
-      id:'123',
-      isContainer:true,
-      type:'dd',
-      axis:'column',
-      children:[]
-    })
+      id: '123',
+      isContainer: true,
+      type: 'dd',
+      axis: 'column',
+      children: [],
+    });
   }
   onDragEnd(e: DragEndEvent): void {
     if (e.drop) {

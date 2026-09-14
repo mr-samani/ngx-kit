@@ -73,11 +73,7 @@ export class PositionalSortStrategy {
       for (const node of Array.from(this.container.children)) {
         if (node === placeholder) return position;
 
-        if (
-          node instanceof HTMLElement &&
-          itemElements.has(node) &&
-          node !== this.dragging?.el
-        ) {
+        if (node instanceof HTMLElement && itemElements.has(node) && node !== this.dragging?.el) {
           position++;
         }
       }
@@ -223,8 +219,7 @@ export class PositionalSortStrategy {
 
     const target = best.rect;
     const sameRow =
-      y >= target.top - target.height * 0.35 &&
-      y <= target.bottom + target.height * 0.35;
+      y >= target.top - target.height * 0.35 && y <= target.bottom + target.height * 0.35;
 
     const before = sameRow
       ? this.rtl

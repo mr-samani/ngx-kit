@@ -1,5 +1,12 @@
 import {
-  Directive, ElementRef, Input, NgZone, OnDestroy, OnInit, Renderer2, inject
+  Directive,
+  ElementRef,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  inject,
 } from '@angular/core';
 import { DragDropService } from '../services/drag-drop.service';
 import { DropPositionService } from '../services/drop-position.service';

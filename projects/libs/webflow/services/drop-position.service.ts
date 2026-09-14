@@ -66,9 +66,7 @@ export class DropPositionService {
     let zone: DropZone;
 
     const insideCore =
-      isContainer &&
-      rx > NEST_CORE && rx < 1 - NEST_CORE &&
-      ry > NEST_CORE && ry < 1 - NEST_CORE;
+      isContainer && rx > NEST_CORE && rx < 1 - NEST_CORE && ry > NEST_CORE && ry < 1 - NEST_CORE;
 
     if (insideCore) {
       zone = 'inside';
@@ -92,15 +90,21 @@ export class DropPositionService {
   /** رسم خط/کادر راهنما - فقط نوشتن به یک signal، بدون لمس بقیهٔ DOM */
   private paintIndicator(rect: DOMRect, zone: DropZone): void {
     const asRect: Rect = {
-      top: rect.top, left: rect.left, width: rect.width, height: rect.height,
-      right: rect.right, bottom: rect.bottom,
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      right: rect.right,
+      bottom: rect.bottom,
     };
 
     if (zone === 'inside') {
       this._indicator.set({
         visible: true,
         orientation: null,
-        x: 0, y: 0, length: 0,
+        x: 0,
+        y: 0,
+        length: 0,
         highlightRect: asRect,
       });
       return;
@@ -131,7 +135,12 @@ export class DropPositionService {
     this.lastTargetId = null;
     this.lastZone = null;
     this._indicator.set({
-      visible: false, orientation: null, x: 0, y: 0, length: 0, highlightRect: null,
+      visible: false,
+      orientation: null,
+      x: 0,
+      y: 0,
+      length: 0,
+      highlightRect: null,
     });
   }
 

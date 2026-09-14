@@ -8,11 +8,7 @@ export class PlaceHolderRef {
 
   private _visible = false;
 
-  attach(
-    container: HTMLElement,
-    source: HTMLElement,
-    reference?: Node | null,
-  ): HTMLElement {
+  attach(container: HTMLElement, source: HTMLElement, reference?: Node | null): HTMLElement {
     if (!this.element) {
       // Keep the same tag/attributes as the dragged item so selectors such as
       // ".list > article" and grid/flex item rules continue to apply.

@@ -110,7 +110,6 @@ describe('NgxInfiniteScroll', () => {
     });
   });
 
-
   // ---------------------------------------------------------------------------
   // Sentinels
   // ---------------------------------------------------------------------------
@@ -135,9 +134,6 @@ describe('NgxInfiniteScroll', () => {
       expect(document.querySelector('[data-ngx-infinite-scroll-sentinel="bottom"]')).toBeNull();
     });
   });
-
-
-
 
   // ---------------------------------------------------------------------------
   // Trigger / outputs
@@ -172,14 +168,12 @@ describe('NgxInfiniteScroll', () => {
       (directive as any).trigger('down');
       expect(host.onScrolledDown).toHaveBeenCalledOnce();
     });
-
   });
 
   // ---------------------------------------------------------------------------
   // Minimum interval
   // ---------------------------------------------------------------------------
   describe('minimum interval', () => {
-
     it('should allow a trigger after min interval has elapsed', () => {
       host.direction = 'down';
       host.minInterval = 100;
@@ -200,7 +194,6 @@ describe('NgxInfiniteScroll', () => {
   // Immediate check
   // ---------------------------------------------------------------------------
   describe('immediate check', () => {
-  
     it('should not schedule a check when immediate check is disabled', () => {
       const scheduleSpy = vi.spyOn(directive as any, 'scheduleCheck');
       host.immediateCheck = false;

@@ -427,7 +427,7 @@ describe('OverlayService', () => {
     window.dispatchEvent(new Event('resize'));
     window.dispatchEvent(new Event('resize'));
 
-   // expect(repositionSpy).not.toHaveBeenCalled();
+    // expect(repositionSpy).not.toHaveBeenCalled();
 
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     await new Promise((resolve) => setTimeout(resolve, 500));

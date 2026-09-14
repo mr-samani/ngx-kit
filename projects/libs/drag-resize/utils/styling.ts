@@ -31,14 +31,8 @@ export function copyComputedStyleTree(source: HTMLElement, target: HTMLElement):
   const count = Math.min(sourceChildren.length, targetChildren.length);
 
   for (let i = 0; i < count; i++) {
-    if (
-      sourceChildren[i] instanceof HTMLElement &&
-      targetChildren[i] instanceof HTMLElement
-    ) {
-      copyComputedStyleTree(
-        sourceChildren[i] as HTMLElement,
-        targetChildren[i] as HTMLElement,
-      );
+    if (sourceChildren[i] instanceof HTMLElement && targetChildren[i] instanceof HTMLElement) {
+      copyComputedStyleTree(sourceChildren[i] as HTMLElement, targetChildren[i] as HTMLElement);
     }
   }
 }

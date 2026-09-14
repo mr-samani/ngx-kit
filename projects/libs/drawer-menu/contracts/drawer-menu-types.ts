@@ -2,21 +2,11 @@
 export type NgxDrawerSide = 'start' | 'end';
 
 /** Visual physics used by the drawer while opening/closing. */
-export type NgxDrawerEffect =
-  | 'none'
-  | 'fabric'
-  | 'slide'
-  | 'push'
-  | 'scale';
+export type NgxDrawerEffect = 'none' | 'fabric' | 'slide' | 'push' | 'scale';
 
-export type NgxDrawerBehavior =
-  | 'dock'
-  | 'overlay';
+export type NgxDrawerBehavior = 'dock' | 'overlay';
 
-export type NgxDrawerResponsiveMode =
-  | 'auto'
-  | 'desktop'
-  | 'mobile';
+export type NgxDrawerResponsiveMode = 'auto' | 'desktop' | 'mobile';
 
 export interface NgxDrawerResponsive {
   /**

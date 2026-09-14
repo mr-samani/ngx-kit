@@ -173,7 +173,8 @@ export function findFreeSpot<T extends LayoutNode>(
   excludeId?: string,
 ): { x: number; y: number } {
   const others = excludeId ? items.filter((i) => i.id !== excludeId) : items;
-  const fits = (x: number, y: number) => !others.some((i) => collides(i.config, { ...config, x, y }));
+  const fits = (x: number, y: number) =>
+    !others.some((i) => collides(i.config, { ...config, x, y }));
 
   const startX = Math.max(0, Math.min(config.x, cols - config.w));
   const startY = Math.max(0, config.y);

@@ -1,5 +1,5 @@
 export interface TreeModel {
-    name:     string;
-    type:     string;
-    children?: TreeModel[];
+  name: string;
+  type: string;
+  children?: TreeModel[];
 }

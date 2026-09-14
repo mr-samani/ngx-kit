@@ -6,11 +6,11 @@ export type FlowAxis = 'row' | 'column';
 
 /** موقعیت درج نسبت به آیتمی که ماوس روی آن است */
 export type DropZone =
-  | 'before'   // قبل از آیتم، در همان محور چیدمان (مثلاً چپِ آیتم اگر ردیف است)
-  | 'after'    // بعد از آیتم، در همان محور چیدمان
-  | 'above'    // بالای آیتم؛ یعنی ایجاد ردیف/خط جدید قبل از آن
-  | 'below'    // پایین آیتم؛ ایجاد ردیف/خط جدید بعد از آن
-  | 'inside';  // نِست‌شدن به‌عنوان فرزند (وقتی آیتم هدف یک container باشد)
+  | 'before' // قبل از آیتم، در همان محور چیدمان (مثلاً چپِ آیتم اگر ردیف است)
+  | 'after' // بعد از آیتم، در همان محور چیدمان
+  | 'above' // بالای آیتم؛ یعنی ایجاد ردیف/خط جدید قبل از آن
+  | 'below' // پایین آیتم؛ ایجاد ردیف/خط جدید بعد از آن
+  | 'inside'; // نِست‌شدن به‌عنوان فرزند (وقتی آیتم هدف یک container باشد)
 
 export interface DropResult {
   targetId: string;
@@ -56,9 +56,7 @@ export interface DragEndEvent {
   drop: DropResult | null;
 }
 
-export type ResizeHandlePosition =
-  | 'n' | 's' | 'e' | 'w'
-  | 'ne' | 'nw' | 'se' | 'sw';
+export type ResizeHandlePosition = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 export interface ResizeMoveEvent {
   id: string;

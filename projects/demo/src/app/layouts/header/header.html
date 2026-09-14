@@ -33,25 +33,22 @@
         {{ showCode() ? 'Hide code' : 'Show code' }}
       </span>
     </button> -->
- 
-           <div class="segmented">
 
-            <button
-              type="button"
-              [class.active]="!direction.isRtl()"
-              (click)="direction.setDirection('ltr')">
-              LTR
-            </button>
+    <div class="segmented">
+      <button
+        type="button"
+        [class.active]="!direction.isRtl()"
+        (click)="direction.setDirection('ltr')">
+        LTR
+      </button>
 
-            <button
-              type="button"
-              [class.active]="direction.isRtl()"
-              (click)="direction.setDirection('rtl')">
-              RTL
-            </button>
-
-          </div>
-
+      <button
+        type="button"
+        [class.active]="direction.isRtl()"
+        (click)="direction.setDirection('rtl')">
+        RTL
+      </button>
+    </div>
 
     <button type="button" class="icon-button" (click)="darkMode.toggleDarkMode()">
       {{ darkMode.isDarkMode() ? '☀' : '☾' }}

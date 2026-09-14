@@ -267,7 +267,6 @@ ngx-form-field {
   }
 }
 
-
 .mx-form-field:hover:not(:has(> input:disabled)):not(:has(> textarea:disabled)):not(
     :has(> select:disabled)
   ) {
@@ -288,7 +287,6 @@ ngx-form-field {
     color: var(--mx-field-active-color);
   }
 }
-
 
 .mx-form-field.mx-form-field--invalid,
 .mx-form-field:has(> input.ng-invalid),
@@ -312,13 +310,11 @@ ngx-form-field {
   border-color: color-mix(in srgb, var(--mx-field-invalid-color) 20%, transparent);
 }
 
-
 .mx-form-field > input:user-invalid,
 .mx-form-field > textarea:user-invalid,
 .mx-form-field > select:user-invalid {
   color: var(--mx-field-text-color);
 }
-
 
 .mx-form-field.mx-form-field--disabled {
   opacity: 0.62;
@@ -331,7 +327,6 @@ ngx-form-field {
   }
 }
 
-
 .mx-form-field.mx-form-field--readonly {
   .mx-form-field__label {
     color: var(--mx-field-label-color);
@@ -343,8 +338,6 @@ ngx-form-field {
   }
 }
 
-
-
 .mx-form-field input:-webkit-autofill,
 .mx-form-field input:-webkit-autofill:hover,
 .mx-form-field input:-webkit-autofill:focus {
@@ -353,8 +346,6 @@ ngx-form-field {
 
   transition: background-color 99999s ease-in-out 0s;
 }
-
-
 
 .mx-form-field__hint,
 .mx-form-field__error-list {
@@ -374,7 +365,6 @@ ngx-form-field {
 .mx-form-field__error-list {
   color: var(--mx-field-invalid-color);
 }
-
 
 [dir='rtl'] .mx-form-field__before {
   border-inline-start: var(--mx-field-border-width) solid var(--mx-field-border-color);

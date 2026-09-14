@@ -1,6 +1,16 @@
 import {
-  Directive, ElementRef, EventEmitter, Input, Output,
-  Renderer2, effect, inject, signal, NgZone, OnDestroy, HostBinding
+  Directive,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  Renderer2,
+  effect,
+  inject,
+  signal,
+  NgZone,
+  OnDestroy,
+  HostBinding,
 } from '@angular/core';
 import { DragDropService } from '../services/drag-drop.service';
 import { DropPositionService } from '../services/drop-position.service';
@@ -49,10 +59,14 @@ export class DraggableDirective implements OnDestroy {
   readonly dragging = signal(false);
 
   @HostBinding('class.ngx-dragging')
-  get draggingClass() { return this.dragging(); }
+  get draggingClass() {
+    return this.dragging();
+  }
 
   @HostBinding('style.touchAction')
-  get touchAction() { return 'none'; }
+  get touchAction() {
+    return 'none';
+  }
 
   private startX = 0;
   private startY = 0;
@@ -65,7 +79,7 @@ export class DraggableDirective implements OnDestroy {
   constructor() {
     this.zone.runOutsideAngular(() => {
       this.cleanupFns.push(
-        this.renderer.listen(this.el, 'pointerdown', (e: PointerEvent) => this.onPointerDown(e))
+        this.renderer.listen(this.el, 'pointerdown', (e: PointerEvent) => this.onPointerDown(e)),
       );
     });
   }
@@ -97,8 +111,12 @@ export class DraggableDirective implements OnDestroy {
         id: this.ngxDraggableId,
         pointerId: e.pointerId,
         originRect: {
-          top: rect.top, left: rect.left, width: rect.width, height: rect.height,
-          right: rect.right, bottom: rect.bottom,
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+          right: rect.right,
+          bottom: rect.bottom,
         },
       });
     });
@@ -126,7 +144,7 @@ export class DraggableDirective implements OnDestroy {
         this.renderer.setStyle(
           this.el,
           'transform',
-          `translate3d(${this.pendingTransform.x}px, ${this.pendingTransform.y}px, 0)`
+          `translate3d(${this.pendingTransform.x}px, ${this.pendingTransform.y}px, 0)`,
         );
       });
     }
@@ -134,7 +152,11 @@ export class DraggableDirective implements OnDestroy {
     // نتیجهٔ zone فعلی (اگر کانتینر آن را محاسبه کرده) در سرویس در دسترس است.
   }
 
-  private onPointerUp(e: PointerEvent, move: (ev: PointerEvent) => void, up: (ev: PointerEvent) => void): void {
+  private onPointerUp(
+    e: PointerEvent,
+    move: (ev: PointerEvent) => void,
+    up: (ev: PointerEvent) => void,
+  ): void {
     this.el.removeEventListener('pointermove', move as EventListener);
     this.el.removeEventListener('pointerup', up as EventListener);
     this.el.removeEventListener('pointercancel', up as EventListener);

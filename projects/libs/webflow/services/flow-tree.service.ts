@@ -24,7 +24,11 @@ export interface FlowNode {
 @Injectable({ providedIn: 'root' })
 export class FlowTreeService {
   private readonly _root = signal<FlowNode>({
-    id: 'root', type: 'root', axis: 'column', isContainer: true, children: [],
+    id: 'root',
+    type: 'root',
+    axis: 'column',
+    isContainer: true,
+    children: [],
   });
 
   readonly root = computed(() => this._root());
@@ -58,7 +62,11 @@ function findAndRemove(node: FlowNode, id: string): { tree: FlowNode; node: Flow
   const newChildren = node.children.map((c) => {
     if (removed) return c;
     const res = findAndRemove(c, id);
-    if (res.node) { removed = res.node; changed = true; return res.tree; }
+    if (res.node) {
+      removed = res.node;
+      changed = true;
+      return res.tree;
+    }
     return c;
   });
 
@@ -66,7 +74,10 @@ function findAndRemove(node: FlowNode, id: string): { tree: FlowNode; node: Flow
 }
 
 function insertRelativeTo(
-  node: FlowNode, targetId: string, zone: DropResult['zone'], toInsert: FlowNode
+  node: FlowNode,
+  targetId: string,
+  zone: DropResult['zone'],
+  toInsert: FlowNode,
 ): FlowNode | null {
   const idx = node.children.findIndex((c) => c.id === targetId);
 
@@ -79,7 +90,11 @@ function insertRelativeTo(
       return { ...node, children };
     }
     const insertAt = zone === 'before' || zone === 'above' ? idx : idx + 1;
-    const children = [...node.children.slice(0, insertAt), toInsert, ...node.children.slice(insertAt)];
+    const children = [
+      ...node.children.slice(0, insertAt),
+      toInsert,
+      ...node.children.slice(insertAt),
+    ];
     return { ...node, children };
   }
 
