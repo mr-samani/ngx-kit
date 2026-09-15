@@ -123,7 +123,10 @@
       justify-content: space-around;
     }
   }
-
+  .ngx-dialog-backdrop {
+    background: light-dark(#4747478c, #27262673) !important;
+    backdrop-filter: blur(1px);
+  }
   .ngx-dialog-fullscreen {
     width: 100dvw !important;
     height: 100dvh !important;

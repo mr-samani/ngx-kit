@@ -13,6 +13,7 @@ export class MyCustomDialog {
   openDialog() {
     Dialog.open(MyCustomDialog, {
       width: '50dvw',
+      height: '50dvh',
       data: {
         counter: (this.data?.counter ?? 0) + 1,
       },
