@@ -12,7 +12,7 @@ export class MyCustomDialog {
   data = inject<{ counter: number }>(DIALOG_DATA);
   openDialog() {
     Dialog.open(MyCustomDialog, {
-      width: '768px',
+      width: '50dvw',
       data: {
         counter: (this.data?.counter ?? 0) + 1,
       },

@@ -25,7 +25,8 @@ export class DialogDemo {
 
   showModal() {
     Dialog.open(MyCustomDialog, {
-      width: '1200px',
+      maxWidth: '1200px',
+      width: '70dvw',
     });
   }
 }

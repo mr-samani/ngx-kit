@@ -100,13 +100,13 @@ export class OverlayService {
     const instance = this.createComponentInstance<T>(options, component, viewContainerRef);
     this.pushInstance(instance);
     this.renderHost(instance);
+    this.attachGlobalListeners();
     instance.onClosed = onClosed;
     configure?.(
       instance.componentRef!.instance,
       new OverlayRef(instance.element, instance.cleanup, instance.componentRef),
     );
     this.scheduleInitialLayout(instance);
-    this.attachGlobalListeners();
     return new OverlayRef(instance.element, instance.cleanup, instance.componentRef);
   }
 
@@ -118,11 +118,11 @@ export class OverlayService {
     const instance = this.createTemplateInstance(options, template, appRef ?? this.applicationRef);
     this.pushInstance(instance);
     this.renderHost(instance);
+    this.attachGlobalListeners();
     instance.onClosed = onClosed;
     const ref = new OverlayRef(instance.element, instance.cleanup, undefined, template);
     configure?.(instance, ref);
     this.scheduleInitialLayout(instance);
-    this.attachGlobalListeners();
     return ref;
   }
 
@@ -567,6 +567,9 @@ export class OverlayService {
     if (!instance.closeOnOutsideClick || (instance.canClose && !instance.canClose())) {
       return;
     }
+    if (event.target !== instance.backdrop) {
+      return;
+    }
     instance.cleanup();
   };
 
@@ -588,6 +591,9 @@ export class OverlayService {
       return;
     }
     if (!instance.closeOnOutsideClick || (instance.canClose && !instance.canClose())) {
+      return;
+    }
+    if (event.target !== instance.backdrop) {
       return;
     }
     instance.cleanup();

@@ -29,8 +29,6 @@ export class NgxDialogService {
     content: Type<any>,
     config?: Partial<NgxDialogConfig<DataType>>,
   ): NgxDialogRef<R> {
-    debugger;
-
     const resolvedConfig = { ...this.defaultConfig, ...config };
     const dialogRef = new NgxDialogRef<R>();
     dialogRef.beforeClose = resolvedConfig.beforeClose;
