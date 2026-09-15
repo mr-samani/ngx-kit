@@ -113,11 +113,6 @@ const routes: Routes = [
           import('./drop-list/drop-list.component').then((c) => c.DropListComponent),
       },
       {
-        path: 'b',
-        loadComponent: () =>
-          import('./webflow/builder-canvas.component').then((c) => c.BuilderCanvasComponent),
-      },
-      {
         path: 'infinite-scroll',
         loadComponent: () =>
           import('./infinite-scroll/infinite-scroll.component').then(
