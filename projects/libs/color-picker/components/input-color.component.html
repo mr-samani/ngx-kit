@@ -1,17 +1,17 @@
 <div
   class="ngx-input-color-picker"
   (click)="stopPropagation($event)"
-  [class.simple-mode]="simpleMode">
-  @if (!simpleMode) {
+  [class.simple-mode]="simpleMode()">
+  @if (!simpleMode()) {
     <div
       class="ngx-color-preview"
-      [ngStyle]="{ '--ngx-selected-color': rgbaColor }"
+      [ngStyle]="{ '--ngx-selected-color': rgbaColor() }"
       [class.is-dark-color]="isDarkColor">
-      <div class="rgbacode">{{ outputColor | uppercase }}</div>
-      @if (outputType !== 'HEX') {
-        <div class="hexacode">{{ hexColor | uppercase }}</div>
+      <div class="rgbacode">{{ outputColor() | uppercase }}</div>
+      @if (outputType() !== 'HEX') {
+        <div class="hexacode">{{ hexColor() | uppercase }}</div>
       }
-      <div class="colorname">{{ name }}</div>
+      <div class="colorname">{{ name() }}</div>
       <div class="color"></div>
     </div>
   }
@@ -44,29 +44,36 @@
         </button>
       }
     </div>
-    @switch (+defaultInspector) {
+    @switch (+defaultInspector()) {
       @case (ColorInspector.Picker) {
         <app-picker
-          [color]="color"
+          [color]="color()"
           (colorChange)="initColor($event)"
-          [simpleMode]="simpleMode"
-          [useAlphaChannel]="useAlphaChannel"></app-picker>
+          [simpleMode]="simpleMode()"
+          [useAlphaChannel]="useAlphaChannel()"></app-picker>
       }
       @case (ColorInspector.HSL) {
         <app-hsl
-          [color]="color"
+          [color]="color()"
           (colorChange)="initColor($event)"
-          [useAlphaChannel]="useAlphaChannel"></app-hsl>
+          [useAlphaChannel]="useAlphaChannel()"></app-hsl>
       }
       @case (ColorInspector.RGB) {
         <app-rgb
-          [color]="color"
+          [color]="color()"
           (colorChange)="initColor($event)"
-          [useAlphaChannel]="useAlphaChannel"></app-rgb>
+          [useAlphaChannel]="useAlphaChannel()"></app-rgb>
       }
       @case (ColorInspector.CMYK) {
-        <app-cmyk [color]="color" (colorChange)="initColor($event)"></app-cmyk>
+        <app-cmyk [color]="color()" (colorChange)="initColor($event)"></app-cmyk>
       }
+    }
+    @if (showPresets() && !simpleMode()) {
+      <div class="presets-colors">
+        @for (item of presetColors(); track $index) {
+          <button type="button" [style.background]="item" (click)="selectColor(item)"></button>
+        }
+      </div>
     }
   </div>
 </div>

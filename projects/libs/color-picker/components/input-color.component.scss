@@ -1,11 +1,6 @@
 :host {
-  --ngx-color-bg: #fff;
-  --ngx-color-text: #000;
-}
-
-:host-context(.dark) {
-  --ngx-color-bg: #222;
-  --ngx-color-text: #fff;
+  --ngx-color-bg: light-dark(#fff, #222);
+  --ngx-color-text: light-dark(#000, #fff);
 }
 
 .ngx-input-color-picker {
@@ -153,5 +148,22 @@
         background: #f0f0f048;
       }
     }
+  }
+}
+
+.presets-colors {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  max-height: 200px;
+  overflow: auto;
+  gap: 5px;
+  margin-top: 10px;
+  button {
+    all: unset;
+    width: 26px;
+    height: 26px;
+    border-radius: 100%;
+    cursor: pointer;
   }
 }

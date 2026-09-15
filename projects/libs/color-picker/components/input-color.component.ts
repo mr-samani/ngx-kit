@@ -1,14 +1,13 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  EventEmitter,
+  effect,
   forwardRef,
   inject,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
+  input,
+  model,
+  output,
+  signal,
 } from '@angular/core';
 import { ColorFormats } from '../contracts/ColorFormats.enum';
 import { NgxColor } from '../utils/color-helper';
@@ -29,7 +28,7 @@ import { PickerComponent } from '../inspectors/picker/picker.component';
 import { CmykComponent } from '../inspectors/cmyk/cmyk.component';
 import { HslComponent } from '../inspectors/hsl/hsl.component';
 import { RgbComponent } from '../inspectors/rgb/rgb.component';
-import { BrowserService } from 'ngx-kit/core';
+import { NGX_INPUT_COLOR_CONFIG } from '../tokens/input-color.token';
 declare const EyeDropper: any;
 
 @Component({
@@ -60,35 +59,21 @@ declare const EyeDropper: any;
     RgbComponent,
   ],
 })
-export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
-  browserService = inject(BrowserService);
-
+export class NgxInputColorComponent implements ControlValueAccessor, Validator {
+  protected readonly configs = inject(NGX_INPUT_COLOR_CONFIG);
   /** Minifi UI  */
-  @Input() simpleMode = false;
+  readonly simpleMode = input(this.configs.simpleMode ?? false);
+  readonly outputType = input<OutputType>(this.configs.outputType ?? 'HEX');
+  readonly defaultInspector = model<ColorInspector>(
+    this.configs.defaultInspector ?? ColorInspector.Picker,
+  );
+  readonly useAlphaChannel = input<boolean>(this.configs.useAlphaChannel ?? true);
 
-  @Input() outputType: OutputType = 'HEX';
-
-  /**
-   * default inspectors
-   * - ColorInspector.Picker
-   * - ColorInspector.RGB
-   * - ColorInspector.HSL
-   *
-   * @alias defaultInspector
-   */
-  @Input() defaultInspector: ColorInspector = ColorInspector.Picker;
-
-  useAlphaChannel: boolean = true;
-  @Input('useAlphaChannel') set setUseAlphaChannel(val: boolean) {
-    this.useAlphaChannel = val == true;
-    if (!this.useAlphaChannel) {
-      this.color.removeAlphaChannel();
-      this.emitChange();
-    }
-  }
+  readonly showPresets = input(this.configs.showPresets ?? true);
+  readonly presetColors = input(this.configs.presetColors ?? []);
 
   /** Emitted when the color value changes */
-  @Output() change = new EventEmitter<string>();
+  colorChange = output<string>();
 
   /** @ignore */
   format: ColorFormats = ColorFormats.HSVA;
@@ -96,19 +81,19 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
   isDarkColor = true;
 
   /** @ignore */
-  rgbaColor = 'rgba(0, 0, 0, 1)';
+  rgbaColor = signal('rgba(0, 0, 0, 1)');
   /** @ignore */
-  hexColor = '#000000';
-  outputColor = '';
+  hexColor = signal('#000000');
+  outputColor = signal('');
 
   /** @ignore */
-  name = 'black';
+  name = signal('black');
 
   /** @ignore */
-  isSupportedEyeDrop: boolean;
+  isSupportedEyeDrop = 'EyeDropper' in (window ?? {});
 
   /** @ignore */
-  color: NgxColor = new NgxColor();
+  color = signal(new NgxColor());
 
   /** @ignore */
   isDisabled = false;
@@ -119,14 +104,16 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
   /**@ignore */
   private _onValidateChange = () => {};
 
-  constructor(private cd: ChangeDetectorRef) {
-    this.isSupportedEyeDrop = 'EyeDropper' in window;
+  constructor() {
+    effect(() => {
+      const useAlphaChannel = this.useAlphaChannel() == true;
+      if (!useAlphaChannel) {
+        this.color().removeAlphaChannel();
+        this.emitChange();
+      }
+    });
   }
 
-  /** @ignore */
-  ngOnInit(): void {}
-  /** @ignore */
-  ngOnDestroy(): void {}
   public get ColorFormats(): typeof ColorFormats {
     return ColorFormats;
   }
@@ -151,7 +138,7 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
   }
   /** @ignore */
   validate(control: AbstractControl): ValidationErrors | null {
-    if (this.color && this.color.isValid === false) {
+    if (this.color() && this.color().isValid === false) {
       return { invalid: true };
     }
     return null;
@@ -173,11 +160,14 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
     if (this.isSupportedEyeDrop) {
       let t = new EyeDropper().open();
       t.then(async (result: { sRGBHex: string }) => {
-        this.hexColor = result.sRGBHex;
-        this.initColor(new NgxColor(this.hexColor));
-        this.cd.detectChanges();
+        this.hexColor.set(result.sRGBHex);
+        this.initColor(new NgxColor(this.hexColor()));
       });
     }
+  }
+
+  selectColor(c: string) {
+    this.initColor(new NgxColor(c));
   }
 
   /**
@@ -186,12 +176,12 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
    */
   async initColor(c?: NgxColor) {
     if (!c) return;
-    this.color = c;
-    this.rgbaColor = this.color.toRgbString();
-    this.hexColor = this.color.toHexString();
-    this.outputColor = await this.color.getOutputResult(this.outputType);
-    this.isDarkColor = this.color.isDark();
-    this.name = await this.color.name();
+    this.color.set(c);
+    this.rgbaColor.set(this.color().toRgbString());
+    this.hexColor.set(this.color().toHexString());
+    this.outputColor.set(await this.color().getOutputResult(this.outputType()));
+    this.isDarkColor = this.color().isDark();
+    this.name.set(await this.color().name());
     this.emitChange();
   }
 
@@ -202,8 +192,8 @@ export class NgxInputColorComponent implements OnInit, OnDestroy, ControlValueAc
 
   /** @ignore */
   async emitChange() {
-    this.outputColor = await this.color.getOutputResult(this.outputType);
-    this._onChange(this.outputColor);
-    this.change.emit(this.outputColor);
+    this.outputColor.set(await this.color().getOutputResult(this.outputType()));
+    this._onChange(this.outputColor());
+    this.colorChange.emit(this.outputColor());
   }
 }

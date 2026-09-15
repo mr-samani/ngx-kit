@@ -1,12 +1,17 @@
 import {
   AfterViewInit,
   Directive,
+  effect,
   ElementRef,
   EventEmitter,
   forwardRef,
   HostListener,
+  inject,
+  input,
   Input,
+  model,
   OnDestroy,
+  output,
   Output,
   Renderer2,
   ViewContainerRef,
@@ -26,6 +31,7 @@ import { NgxInputColorComponent } from '../components/input-color.component';
 import { NgxColor } from '../utils/color-helper';
 import { OutputType } from '../contracts/OutputType';
 import { OverlayRef, OverlayService } from 'ngx-kit/core';
+import { NGX_INPUT_COLOR_CONFIG } from '../tokens/input-color.token';
 
 @Directive({
   selector: '[ngxInputColor]',
@@ -45,18 +51,21 @@ import { OverlayRef, OverlayService } from 'ngx-kit/core';
 })
 export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAccessor, Validator {
   @Input() setInputBackgroundColor = true;
-  @Input() defaultInspector: ColorInspector = ColorInspector.Picker;
-  @Input() simpleMode = false;
-  @Input() outputType: OutputType = 'HEX';
-  private useAlphaChannel = true;
-  @Input('useAlphaChannel')
-  set setUseAlphaChannel(value: boolean) {
-    this.useAlphaChannel = value === true;
-    if (!this.useAlphaChannel && this.color) {
-      this.color.removeAlphaChannel();
-      void this.color.getOutputResult(this.outputType).then((value) => this.emitChange(value));
-    }
-  }
+
+  protected readonly configs = inject(NGX_INPUT_COLOR_CONFIG);
+  /** Minifi UI  */
+  readonly simpleMode = input(this.configs.simpleMode ?? false);
+  readonly outputType = input<OutputType>(this.configs.outputType ?? 'HEX');
+  readonly defaultInspector = model<ColorInspector>(
+    this.configs.defaultInspector ?? ColorInspector.Picker,
+  );
+  readonly useAlphaChannel = input<boolean>(this.configs.useAlphaChannel ?? true);
+
+  readonly showPresets = input(this.configs.showPresets ?? true);
+  readonly presetColors = input(this.configs.presetColors ?? []);
+
+  /** Emitted when the color value changes */
+  colorChange = output<string>();
 
   /**
    * Input target.
@@ -128,7 +137,15 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     private readonly renderer: Renderer2,
     private readonly viewContainerRef: ViewContainerRef,
     private readonly overlayService: OverlayService,
-  ) {}
+  ) {
+    effect(() => {
+      const useAlphaChannel = this.useAlphaChannel() == true;
+      if (!this.useAlphaChannel && this.color) {
+        this.color.removeAlphaChannel();
+        void this.color.getOutputResult(this.outputType()).then((value) => this.emitChange(value));
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     /**
@@ -328,15 +345,19 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
       alignment: 'start',
       placement: 'auto',
       configure: (instance, ref) => {
-        instance.defaultInspector = this.defaultInspector;
-        instance.simpleMode = this.simpleMode;
-        instance.outputType = this.outputType;
-        instance.setUseAlphaChannel = this.useAlphaChannel;
+        ref.componentRef?.setInput('defaultInspector', this.defaultInspector());
+        ref.componentRef?.setInput('defaultInspector', this.defaultInspector());
+        ref.componentRef?.setInput('simpleMode', this.simpleMode());
+        ref.componentRef?.setInput('outputType', this.outputType());
+        ref.componentRef?.setInput('setUseAlphaChannel', this.useAlphaChannel());
+        ref.componentRef?.setInput('showPresets', this.showPresets());
+        ref.componentRef?.setInput('presetColors', this.presetColors());
+
         if (this.color?.isValid) {
           instance.writeValue(this.color);
         }
 
-        instance.change.subscribe((value: string) => {
+        instance.colorChange.subscribe((value: string) => {
           this.color = new NgxColor(value);
           void this.emitChange(value);
         });
