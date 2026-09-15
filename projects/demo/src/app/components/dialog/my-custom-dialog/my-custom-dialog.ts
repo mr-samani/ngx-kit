@@ -16,6 +16,9 @@ export class MyCustomDialog {
       data: {
         counter: (this.data?.counter ?? 0) + 1,
       },
+      header: {
+        showMaximizeButton: false,
+      },
     });
   }
 }

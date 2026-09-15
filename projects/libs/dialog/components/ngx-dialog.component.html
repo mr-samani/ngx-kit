@@ -1,5 +1,8 @@
 @if (config.header?.enable) {
-  <div ngxDialogHeader [showCloseButton]="config.header?.showCloseButton ?? true">
+  <div
+    ngxDialogHeader
+    [showCloseButton]="config.header?.showCloseButton ?? true"
+    [showMaximizeButton]="config.header?.showMaximizeButton ?? true">
     {{ config.header?.title }}
   </div>
 }

@@ -33,6 +33,7 @@ const DEFAULT_KEYBOARD_STEP = 8;
     '[attr.tabindex]': 'disabled() ? null : 0',
     '[attr.aria-grabbed]': 'dragging()',
     class: 'ngx-draggable',
+    '[class.disable-drag]': 'disabled()',
   },
 })
 export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {

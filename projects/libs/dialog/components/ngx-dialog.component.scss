@@ -13,7 +13,7 @@
   background-color: var(--panel-bg, var(--ngx-dialog-bg));
   color: var(--side-config-fg, var(--ngx-dialog-fg));
   animation: ngxDialogZoomIn 180ms cubic-bezier(0.25, 0.8, 0.25, 1);
-  max-height: calc(100dvh - 30px);
+  max-height: 100dvh;
 }
 
 :host(.ngx-dialog-size-sm) {
@@ -64,10 +64,12 @@
       height: 100%;
       display: flex;
       align-items: center;
+    }
+    &:not(.disable-drag) .dialog-header-title {
       cursor: move;
     }
 
-    .close-btn {
+    .ngx-dialog-action-btn {
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
@@ -76,11 +78,17 @@
       border: none;
       cursor: pointer;
       color: inherit;
-      padding: 6px;
+      padding: 1px;
       border-radius: 6px;
+      width: 24px;
+      height: 24px;
+      background: light-dark(#efeff1, #2b2b33);
+      svg {
+        width: 100%;
+      }
     }
-    .close-btn:hover {
-      background: #80808026;
+    .ngx-dialog-action-btn:hover {
+      background: light-dark(#e2e2e6, #34343d);
     }
   }
 
@@ -116,16 +124,17 @@
     }
   }
 
-  .ngx-dialog-default-close-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    background: light-dark(#efeff1, #2b2b33);
-    color: inherit;
-  }
-  .ngx-dialog-default-close-btn:hover {
-    background: light-dark(#e2e2e6, #34343d);
+  .ngx-dialog-fullscreen {
+    width: 100dvw !important;
+    height: 100dvh !important;
+    inset: 0 !important;
+    max-height: unset !important;
+    max-width: unset !important;
+    transform: none !important;
+    top: 0px !important;
+    right: 0px !important;
+    bottom: 0px !important;
+    left: 0px !important;
   }
 }
 

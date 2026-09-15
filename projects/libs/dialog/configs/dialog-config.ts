@@ -7,6 +7,7 @@ export interface NgxDialogHeaderConfig {
   enable?: boolean;
   title?: string;
   showCloseButton?: boolean;
+  showMaximizeButton?: boolean;
 }
 
 export interface NgxDialogFooterConfig {
@@ -45,7 +46,11 @@ export class NgxDialogConfig<DataType = any> {
   /** Extra class(es) on the backdrop element behind the panel. */
   backdropClass?: string | string[] = 'ngx-dialog-backdrop';
 
-  header?: NgxDialogHeaderConfig = { enable: false, showCloseButton: true };
+  header?: NgxDialogHeaderConfig = {
+    enable: false,
+    showCloseButton: true,
+    showMaximizeButton: true,
+  };
   footer?: NgxDialogFooterConfig = { enable: false, align: 'end' };
 
   /** Close when clicking outside the panel. Default: false (modal by default). */
