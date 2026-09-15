@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Dialog, NgxDialogModule } from 'ngx-kit/dialog';
 
 @Component({
-  selector: 'app-my-costom-dialog',
+  selector: 'app-my-custom-dialog',
   imports: [NgxDialogModule],
   templateUrl: './my-costom-dialog.html',
   styleUrl: './my-costom-dialog.scss',

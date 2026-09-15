@@ -1,4 +1,12 @@
-import { DestroyRef, Directive, ElementRef, Renderer2, effect, inject } from '@angular/core';
+import {
+  DestroyRef,
+  Directive,
+  ElementRef,
+  HostListener,
+  Renderer2,
+  effect,
+  inject,
+} from '@angular/core';
 import { DIALOG_REF } from '../tokens/dialog.tokens';
 
 /**
@@ -27,13 +35,13 @@ export class NgxDialogBody {
   constructor() {
     this.dialogRef._setBodyElement(this.el.nativeElement);
     this.destroyRef.onDestroy(() => this.dialogRef._setBodyElement(null));
-
     effect((onCleanup) => {
       const panel = this.dialogRef.panelEl();
       if (!panel || typeof ResizeObserver === 'undefined') {
         return;
       }
       const recompute = (): void => this.recomputeHeight(panel);
+
       const observer = new ResizeObserver(recompute);
       observer.observe(panel);
       recompute();
@@ -44,7 +52,9 @@ export class NgxDialogBody {
   private recomputeHeight(panel: HTMLElement): void {
     const headerHeight = this.dialogRef.headerEl()?.offsetHeight ?? 0;
     const footerHeight = this.dialogRef.footerEl()?.offsetHeight ?? 0;
-    const available = panel.clientHeight - headerHeight - footerHeight;
+    const panelHeight = Math.min(panel.clientHeight, window.innerHeight);
+    const available = panelHeight - headerHeight - footerHeight;
+    console.log('available', available);
     if (available > 0) {
       this.renderer.setStyle(this.el.nativeElement, 'max-height', `${available}px`);
     }

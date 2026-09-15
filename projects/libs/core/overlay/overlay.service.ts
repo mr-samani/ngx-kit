@@ -334,8 +334,8 @@ export class OverlayService {
     element.style.position = 'fixed';
     element.style.pointerEvents = 'auto';
     element.style.boxSizing = 'border-box';
-    element.style.maxWidth = 'calc(100vw - 16px)';
-    element.style.maxHeight = 'calc(100vh - 16px)';
+    element.style.maxWidth = '100dvw'; // 'calc(100vw - 16px)';
+    element.style.maxHeight = '100dvw'; // 'calc(100vh - 16px)';
     element.style.outline = 'none';
     element.style.border = 'none';
     element.style.padding = '0';
