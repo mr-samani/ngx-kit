@@ -6,6 +6,7 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
+  effect,
   inject,
   input,
   model,
@@ -38,9 +39,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   readonly disabled = model<boolean>(false);
   /** Element whose rect constrains the drag. Now actually enforced. */
   readonly boundary = input<HTMLElement>();
-  readonly dragRootElement = input<string>('');
+  readonly dragRootElement = model<string>('');
   /** CSS selector for a drag handle. When set, only pointerdowns inside it start a drag. */
-  readonly dragHandle = input<string>('');
+  readonly dragHandle = model<string>('');
   /** Restrict movement to a single axis. */
   readonly lockAxis = input<DragAxis>();
   /** Minimum pointer travel (px) before a drag starts, so clicks still register normally. */
@@ -83,7 +84,13 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   constructor(
     private readonly host: ElementRef<HTMLElement>,
     private readonly renderer: Renderer2,
-  ) {}
+  ) {
+    effect(() => {
+      this._ref.el = this.dragRootElement()
+        ? (this.host.nativeElement.closest(this.dragRootElement()) ?? this.host.nativeElement)
+        : this.host.nativeElement;
+    });
+  }
 
   ngOnInit(): void {
     this._ref.el = this.dragRootElement()

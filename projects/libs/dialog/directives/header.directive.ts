@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Directive, ElementRef, inject, input, OnInit } from '@angular/core';
 import { DIALOG_REF } from '../tokens/dialog.tokens';
+import { NgxDraggable } from 'ngx-kit/drag-resize';
 
 const CLOSE_ICON_SVG =
   '<svg width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" aria-hidden="true">' +
@@ -10,6 +11,7 @@ const CLOSE_ICON_SVG =
 @Directive({
   selector: 'ngx-dialog-header,[ngxDialogHeader]',
   standalone: true,
+  hostDirectives: [NgxDraggable],
   host: { class: 'dialog-header' },
   exportAs: 'ngxDialogHeader',
 })
@@ -20,7 +22,11 @@ export class NgxDialogHeader implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly dialogRef = inject(DIALOG_REF);
 
+  private readonly drag = inject(NgxDraggable);
+
   ngOnInit(): void {
+    this.drag.dragRootElement.set('.ngx-ui-overlay');
+    this.drag.dragHandle.set('.dialog-header-title');
     // Wrap the existing (Angular-rendered) header content in a title span by
     // MOVING the actual DOM nodes, not by re-serializing/re-parsing
     // `innerHTML`. The original implementation did

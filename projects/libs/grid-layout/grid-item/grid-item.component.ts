@@ -11,7 +11,6 @@ import {
   signal,
   OnInit,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GridLayoutService } from '../services/grid-layout.service';
 import { GridItemConfig } from '../options/grid-item-config';
 import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
