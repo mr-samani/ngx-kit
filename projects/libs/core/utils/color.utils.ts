@@ -1,5 +1,15 @@
-// List of all CSS color names and their hex values (W3C + extended)
-export const colorNames: Record<string, string> = {
+const COLOR_FUNCTION_REGEX = /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(\s*[^)]*\)/gi;
+
+const HEX_COLOR_REGEX = /#[a-f\d]{3,4}(?:[a-f\d]{2}){0,2}\b/gi;
+
+/**
+ * CSS named colors.
+ *
+ * Includes all standard CSS color keywords plus:
+ * - transparent
+ * - currentcolor
+ */
+export const CSS_COLOR_NAMES: Record<string, string> = {
   aliceblue: '#f0f8ff',
   antiquewhite: '#faebd7',
   aqua: '#00ffff',
@@ -149,3 +159,128 @@ export const colorNames: Record<string, string> = {
   yellow: '#ffff00',
   yellowgreen: '#9acd32',
 };
+
+/**
+ * Extract all CSS colors from an arbitrary CSS string.
+ *
+ * Supports:
+ * - Hex: #fff, #ffff, #ffffff, #ffffffff
+ * - rgb()
+ * - rgba()
+ * - hsl()
+ * - hsla()
+ * - hwb()
+ * - lab()
+ * - lch()
+ * - oklab()
+ * - oklch()
+ * - color()
+ * - CSS named colors
+ * - transparent
+ * - currentcolor
+ *
+ * Works with values such as:
+ *
+ *   box-shadow: 0 0 10px red, 0 0 20px #00ff00;
+ *   linear-gradient(red, rgba(0, 0, 0, .5));
+ *   radial-gradient(circle, blue 0%, transparent 100%);
+ *   conic-gradient(from 90deg, yellow, #ff0000);
+ */
+export function extractCssColors(value: string | null | undefined): string[] {
+  if (!value) {
+    return [];
+  }
+
+  const colors: string[] = [];
+  const seen = new Set<string>();
+
+  const addColor = (color: string): void => {
+    const normalized = color.trim();
+
+    if (!normalized) {
+      return;
+    }
+
+    const key = normalized.toLowerCase();
+
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    colors.push(normalized);
+  };
+
+  // ---------------------------------------------------------
+  // 1. Hex colors
+  // ---------------------------------------------------------
+
+  for (const match of value.matchAll(HEX_COLOR_REGEX)) {
+    addColor(match[0]);
+  }
+
+  // ---------------------------------------------------------
+  // 2. CSS color functions
+  // ---------------------------------------------------------
+
+  for (const match of value.matchAll(COLOR_FUNCTION_REGEX)) {
+    const candidate = match[0];
+
+    if (isValidCssColor(candidate)) {
+      addColor(candidate);
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 3. Named colors
+  // ---------------------------------------------------------
+
+  /**
+   * We intentionally extract words instead of putting all named
+   * colors into one huge regex.
+   */
+  const words = value.match(/\b[a-z][a-z0-9-]*\b/gi) ?? [];
+
+  for (const word of words) {
+    const normalized = word.toLowerCase();
+
+    if (!CSS_COLOR_NAMES[normalized]) {
+      continue;
+    }
+
+    if (isValidCssColor(word)) {
+      addColor(word);
+    }
+  }
+
+  return colors;
+}
+
+/**
+ * Uses the browser's CSS parser to validate a color.
+ *
+ * This is much safer than trying to validate every possible
+ * CSS color syntax manually.
+ */
+function isValidCssColor(value: string): boolean {
+  if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function') {
+    return CSS.supports('color', value);
+  }
+
+  // SSR / Node fallback.
+  return isFallbackCssColor(value);
+}
+
+/**
+ * Minimal validation for environments without CSS.supports(),
+ * such as SSR or Node tests.
+ */
+function isFallbackCssColor(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+
+  if (CSS_COLOR_NAMES[normalized]) {
+    return true;
+  }
+
+  return /^#[a-f\d]{3,4}(?:[a-f\d]{2}){0,2}$/i.test(normalized);
+}

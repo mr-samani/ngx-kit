@@ -1,5 +1,5 @@
 import { ColorInspector } from '../contracts/ColorInspector.enum';
-import type { OutputType } from '../contracts/OutputType';
+import  { OutputType } from '../contracts/OutputType';
 import { PRESETS_COLORS } from '../utils/presets-colors';
 
 export class NgxInputColorConfig {

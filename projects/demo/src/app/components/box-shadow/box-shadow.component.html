@@ -2,16 +2,11 @@
   title="Box Shadow"
   [files]="sourceFiles"
   readmePath="readmes/box-shadow/README.md">
-  <input
-    type="text"
-    ngxInputBoxShadow
-    [(ngModel)]="boxShadow"
-    name="boxshadow"
-    class="form-control" />
 
-  <div class="card" [style.box-shadow]="boxShadow"></div>
 
-  <p>inline:</p>
-  <ngx-box-shadow [(ngModel)]="boxShadow" name="bxsh" class="form-control" theme="auto" />
-  <p>{{ boxShadow }}</p>
+
+  <div class="card" [style.box-shadow]="boxShadow()"></div>
+
+  <ngx-box-shadow [(ngModel)]="boxShadow" name="bxsh" />
+  <p>{{ boxShadow() }}</p>
 </app-example-showcase>

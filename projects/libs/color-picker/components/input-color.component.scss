@@ -6,12 +6,10 @@
 .ngx-input-color-picker {
   width: 270px;
   max-width: 100%;
-  border-radius: 15px;
   overflow: hidden;
   direction: ltr;
   font-family: arial, tahoma;
   border: 1px #86868659 solid;
-  box-shadow: 0 0 20px #7a7a7a21;
   .ngx-c-inner {
     padding: 12px;
     background: var(--ngx-color-bg);

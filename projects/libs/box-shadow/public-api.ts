@@ -1,4 +1,3 @@
-export * from './components/box-shadow.component';
-export * from './directives/ngx-input-box-shadow.directive';
-
 export * from './contracts/BoxShadowValue';
+
+export * from './components/shadow-list/box-shadow';

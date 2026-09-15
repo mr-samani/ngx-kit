@@ -15,10 +15,10 @@ import {
   rgbToHsv,
   rgbToHsvString,
 } from './conversion';
-import { colorNames } from './css-color-names';
 import { CMYK, HSLA, HSVA, RGBA } from '../contracts/color-interface';
 import { OutputType } from '../contracts/OutputType';
 import { ColorInput } from '../contracts/ColorInput';
+import { CSS_COLOR_NAMES } from 'ngx-kit/core';
 export class NgxColor {
   private _rgb: RGBA = { r: 0, g: 0, b: 0, a: 1 };
   private _name: string = '';
@@ -55,8 +55,8 @@ export class NgxColor {
     }
     if (typeof input === 'string') {
       const name = input.trim().toLowerCase();
-      if (colorNames[name]) {
-        this._rgb = hexToRgb(colorNames[name]);
+      if (CSS_COLOR_NAMES[name]) {
+        this._rgb = hexToRgb(CSS_COLOR_NAMES[name]);
         this._name = name;
         return;
       } else if (/^#?[0-9a-f]{3,8}$/i.test(name)) {
@@ -97,7 +97,7 @@ export class NgxColor {
   async name() {
     if (this._name) return this._name;
     const hex = this.toHexString();
-    for (const [n, h] of Object.entries(colorNames)) {
+    for (const [n, h] of Object.entries(CSS_COLOR_NAMES)) {
       if (h.toLowerCase() === hex.toLowerCase()) return n;
     }
     return '';

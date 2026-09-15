@@ -12,6 +12,7 @@ export * from './utils/confetti';
 export * from './utils/sequential-guid';
 export * from './utils/merge-deep';
 export * from './utils/filter-tree-list';
+export * from './utils/color.utils';
 
 export * from './contracts/IPosition';
 

@@ -185,10 +185,7 @@ export class NgxInputColorComponent implements ControlValueAccessor, Validator {
     this.emitChange();
   }
 
-  /** @ignore */
-  stopPropagation(ev: Event) {
-    ev.stopPropagation();
-  }
+ 
 
   /** @ignore */
   async emitChange() {

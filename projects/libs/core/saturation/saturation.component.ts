@@ -9,7 +9,6 @@ import {
   ViewChild,
   forwardRef,
 } from '@angular/core';
-import { getOffsetPosition } from '../utils/get-offset-position';
 import {
   NG_VALUE_ACCESSOR,
   ControlValueAccessor,
@@ -19,6 +18,7 @@ import {
 } from '@angular/forms';
 import { IPosition } from '../contracts/IPosition';
 import { startDragSession } from '../utils/drag-session';
+import { getOffsetPosition } from '../utils/get-offset-position';
 
 @Component({
   selector: 'saturation',

@@ -1,7 +1,4 @@
-<div
-  class="ngx-input-color-picker"
-  (click)="stopPropagation($event)"
-  [class.simple-mode]="simpleMode()">
+<div class="ngx-input-color-picker" [class.simple-mode]="simpleMode()">
   @if (!simpleMode()) {
     <div
       class="ngx-color-preview"

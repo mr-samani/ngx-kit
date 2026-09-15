@@ -27,7 +27,8 @@ export class GradientPickerComponent implements OnInit {
   ];
 
   //gradient = ' radial-gradient(circle, rgb(230, 218, 218) 0%, rgb(39, 64, 70) 100%)'; // 'linear-gradient(90deg, #2A9FD3 0%, #8B1ACF 100%)';
-  gradient = 'linear-gradient(90deg, #2A9FD3 0%, #8B1ACF 100%)';
+  // gradient = 'linear-gradient(90deg, #2A9FD3 0%, #8B1ACF 100%)';
+  gradient = 'linear-gradient(90deg, yellow 0%, #8B1ACF 100%)';
   constructor() {}
 
   ngOnInit() {}

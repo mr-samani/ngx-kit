@@ -1,0 +1,59 @@
+.list-box {
+  max-width: 320px;
+  max-height: 250px;
+  overflow: auto;
+  border-top: 1px #75757524 solid;
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+  
+  .list-item {
+    all: unset;
+    outline: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    line-height: 1;
+    font-size: 10px;
+    height: 28px;
+    overflow: hidden;
+    border-bottom: 1px #4a5b7342 solid;
+    border-radius: 5px;
+    span {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    &.active {
+      border: 1px #005eff solid;
+      background-color: #005eff;
+    }
+  }
+}
+.action-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 4px;
+  border-radius: 6px;
+  height: 24px;
+  background: light-dark(#efeff1, #2b2b33);
+  svg {
+    width: 24px;
+    height: 100%;
+  }
+
+  &:hover {
+    background: light-dark(#e2e2e6, #34343d);
+  }
+}
+.add-btn {
+  font-size: inherit;
+  padding: 5px 20px;
+}
