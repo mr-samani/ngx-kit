@@ -335,13 +335,16 @@ export class OverlayService {
     element.style.pointerEvents = 'auto';
     element.style.boxSizing = 'border-box';
     element.style.maxWidth = '100dvw'; // 'calc(100vw - 16px)';
-    element.style.maxHeight = '100dvw'; // 'calc(100vh - 16px)';
+    element.style.maxHeight = '100dvh'; // 'calc(100vh - 16px)';
     element.style.outline = 'none';
     element.style.border = 'none';
     element.style.padding = '0';
     element.style.margin = '0';
     element.style.overflow = 'auto';
     element.style.transformOrigin = 'left top';
+    element.style.background = 'none';
+    element.style.boxShadow = '0 0 20px light-dark(#79797955, #020202bd)';
+    element.style.borderRadius = 'var(--ngx-dialog-corner-radius,1rem)';
     this.addClasses(element, options.panelClass);
     return element;
   }

@@ -55,7 +55,14 @@ const routes: Routes = [
       },
       {
         path: 'dialog',
-        providers: [provideNgxDialog()],
+        providers: [
+          provideNgxDialog({
+            closeOnOutsideClick: true,
+            closeOnEscape: true,
+            disableClose: false,
+            usePopover: false,
+          }),
+        ],
         loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
       },
       {

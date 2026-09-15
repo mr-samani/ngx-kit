@@ -4,7 +4,6 @@ export * from './saturation/saturation.component';
 
 export * from './slider/slider.component';
 
-export * from './utils/merge-config';
 export * from './utils/get-offset-position';
 export * from './utils/drag-session';
 export * from './utils/window';

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Dialog } from 'ngx-kit/dialog';
-import { MyCostomDialog } from './my-costom-dialog/my-costom-dialog';
+import { MyCustomDialog } from './my-custom-dialog/my-custom-dialog';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
@@ -10,22 +10,22 @@ import {
   selector: 'app-dialog',
   templateUrl: './dialog.html',
   styleUrl: './dialog.scss',
-  imports: [ ExampleShowcaseComponent],
+  imports: [ExampleShowcaseComponent],
 })
 export class DialogDemo {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/dialog/dialog.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/dialog/dialog.html', language: 'html' },
     {
-      label: 'my-costom-dialog.ts',
-      path: 'examples/dialog/my-costom-dialog/my-costom-dialog.ts',
+      label: 'my-custom-dialog.ts',
+      path: 'examples/dialog/my-custom-dialog/my-custom-dialog.ts',
       language: 'typescript',
     },
   ];
 
   showModal() {
-    Dialog.open(MyCostomDialog, {
-      width: '70dvw',
+    Dialog.open(MyCustomDialog, {
+      width: '1200px',
     });
   }
 }

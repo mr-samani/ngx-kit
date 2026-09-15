@@ -1,8 +1,6 @@
 import {
-  ENVIRONMENT_INITIALIZER,
   EnvironmentProviders,
   PLATFORM_ID,
-  Provider,
   inject,
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
@@ -10,11 +8,16 @@ import {
 import { isPlatformServer } from '@angular/common';
 import { NgxDialogService } from './services/ngx-dialog.service';
 import { Dialog } from './dialog.facade';
+import { NgxDialogConfig } from './configs/dialog-config';
+import { NGX_DIALOG_CONFIG, NGX_DIALOG_DEFAULT_CONFIG } from './tokens/dialog.tokens';
 
-export function provideNgxDialog(): EnvironmentProviders {
+export function provideNgxDialog(config?: NgxDialogConfig): EnvironmentProviders {
   return makeEnvironmentProviders([
+    {
+      provide: NGX_DIALOG_CONFIG,
+      useValue: { ...NGX_DIALOG_DEFAULT_CONFIG, ...(config || {}) },
+    },
     NgxDialogService,
-
     provideEnvironmentInitializer(() => {
       if (isPlatformServer(inject(PLATFORM_ID))) {
         return;

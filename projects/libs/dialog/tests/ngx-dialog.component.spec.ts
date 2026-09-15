@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_REF } from '../tokens/dialog.tokens';
+import { NGX_DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_REF } from '../tokens/dialog.tokens';
 import { NgxDialogConfig } from '../configs/dialog-config';
 import { NgxDialogComponent } from '../components/ngx-dialog.component';
 import { NgxDialogRef } from '../configs/dialog-ref';
@@ -20,7 +20,7 @@ describe('NgxDialogComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DIALOG_REF, useValue: dialogRef },
-        { provide: DIALOG_CONFIG, useValue: new NgxDialogConfig(config) },
+        { provide: NGX_DIALOG_CONFIG, useValue: new NgxDialogConfig(config) },
         { provide: DIALOG_CONTENT, useValue: TestContentComponent },
       ],
     });

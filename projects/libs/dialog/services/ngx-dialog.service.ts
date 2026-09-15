@@ -2,7 +2,12 @@ import { Injectable, Injector, Type, computed, inject, signal } from '@angular/c
 import { OverlayService, OverlayOptions } from 'ngx-kit/core';
 import { NgxDialogRef } from '../configs/dialog-ref';
 import { NgxDialogConfig } from '../configs/dialog-config';
-import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_DATA, DIALOG_REF } from '../tokens/dialog.tokens';
+import {
+  NGX_DIALOG_CONFIG,
+  DIALOG_CONTENT,
+  DIALOG_DATA,
+  DIALOG_REF,
+} from '../tokens/dialog.tokens';
 import { NgxDialogComponent } from '../components/ngx-dialog.component';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +20,7 @@ export class NgxDialogService {
   readonly openDialogs = this._openRefs.asReadonly();
   /** How many dialogs are currently open. */
   readonly openCount = computed(() => this._openRefs().length);
-
+  readonly defaultConfig = inject(NGX_DIALOG_CONFIG);
   /**
    * Opens `content` inside a dialog panel and returns a ref you can use to
    * close it and read the result back (`afterClosed`).
@@ -24,7 +29,9 @@ export class NgxDialogService {
     content: Type<any>,
     config?: Partial<NgxDialogConfig<DataType>>,
   ): NgxDialogRef<R> {
-    const resolvedConfig = new NgxDialogConfig<DataType>(config);
+    debugger;
+
+    const resolvedConfig = { ...this.defaultConfig, ...config };
     const dialogRef = new NgxDialogRef<R>();
     dialogRef.beforeClose = resolvedConfig.beforeClose;
 
@@ -32,7 +39,7 @@ export class NgxDialogService {
       providers: [
         { provide: DIALOG_DATA, useValue: resolvedConfig.data },
         { provide: DIALOG_REF, useValue: dialogRef },
-        { provide: DIALOG_CONFIG, useValue: resolvedConfig },
+        { provide: NGX_DIALOG_CONFIG, useValue: resolvedConfig },
         { provide: DIALOG_CONTENT, useValue: content },
       ],
       parent: resolvedConfig.injector ?? this.injector,
@@ -45,7 +52,7 @@ export class NgxDialogService {
       injector: componentInjector,
       placement: 'center',
       alignment: 'center',
-      margin: 16,
+      margin: 0,
       role: resolvedConfig.role ?? 'dialog',
       ariaModal: true,
       ariaLabel: resolvedConfig.ariaLabel,
