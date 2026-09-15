@@ -113,15 +113,15 @@ export const DefaultGradients: GradientStop[][] = [
     { id: '2', value: 100, color: '#753a88' },
   ],
 
-  // Mint
-  [
-    { id: '1', value: 0, color: '#76b852' },
-    { id: '2', value: 100, color: '#8dc26f' },
-  ],
+  // // Mint
+  // [
+  //   { id: '1', value: 0, color: '#76b852' },
+  //   { id: '2', value: 100, color: '#8dc26f' },
+  // ],
 
-  // Cloud
-  [
-    { id: '1', value: 0, color: '#bdc3c7' },
-    { id: '2', value: 100, color: '#2c3e50' },
-  ],
+  // // Cloud
+  // [
+  //   { id: '1', value: 0, color: '#bdc3c7' },
+  //   { id: '2', value: 100, color: '#2c3e50' },
+  // ],
 ];
