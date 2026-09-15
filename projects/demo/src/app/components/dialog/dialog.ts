@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Dialog, NgxDialogModule } from 'ngx-kit/dialog';
+import { Dialog } from 'ngx-kit/dialog';
 import { MyCostomDialog } from './my-costom-dialog/my-costom-dialog';
 import {
   ExampleShowcaseComponent,
@@ -10,7 +10,7 @@ import {
   selector: 'app-dialog',
   templateUrl: './dialog.html',
   styleUrl: './dialog.scss',
-  imports: [NgxDialogModule, ExampleShowcaseComponent],
+  imports: [ ExampleShowcaseComponent],
 })
 export class DialogDemo {
   protected readonly sourceFiles: ExampleSourceFile[] = [

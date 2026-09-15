@@ -1,9 +1,9 @@
 import { Injectable, Injector, Type, computed, inject, signal } from '@angular/core';
 import { OverlayService, OverlayOptions } from 'ngx-kit/core';
-import { NgxDialogConfig } from '../configs/dialog-config';
 import { NgxDialogRef } from '../configs/dialog-ref';
-import { NgxDialogComponent } from '../components/ngx-dialog.component';
+import { NgxDialogConfig } from '../configs/dialog-config';
 import { DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_DATA, DIALOG_REF } from '../tokens/dialog.tokens';
+import { NgxDialogComponent } from '../components/ngx-dialog.component';
 
 @Injectable({ providedIn: 'root' })
 export class NgxDialogService {
@@ -41,12 +41,6 @@ export class NgxDialogService {
     const disableClose = resolvedConfig.disableClose ?? false;
 
     const overlayRef = this.overlay.open<NgxDialogComponent>({
-      // Dialogs aren't anchored to a trigger element - they float centered
-      // over the viewport - so `anchor` is intentionally omitted.
-      // `viewContainerRef` is also omitted: NgxDialogService.open() must be
-      // callable from anywhere (another service, a guard, ...), not only
-      // from inside a component template, so OverlayService falls back to
-      // attaching the panel component directly to the ApplicationRef.
       component: NgxDialogComponent,
       injector: componentInjector,
       placement: 'center',

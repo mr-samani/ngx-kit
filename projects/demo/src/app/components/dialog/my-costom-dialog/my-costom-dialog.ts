@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Dialog, NgxDialogModule } from 'ngx-kit/dialog';
+import { Dialog } from 'ngx-kit/dialog';
+import { NgxDialogModule } from 'ngx-kit/dialog';
 
 @Component({
   selector: 'app-my-custom-dialog',

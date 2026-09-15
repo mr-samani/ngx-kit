@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Components } from './components';
+import { provideNgxDialog } from 'ngx-kit/dialog';
 
 const routes: Routes = [
   {
@@ -54,6 +55,7 @@ const routes: Routes = [
       },
       {
         path: 'dialog',
+        providers: [provideNgxDialog()],
         loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
       },
       {
