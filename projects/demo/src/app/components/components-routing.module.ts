@@ -60,7 +60,6 @@ const routes: Routes = [
             closeOnOutsideClick: true,
             closeOnEscape: true,
             disableClose: false,
-            usePopover: false,
           }),
         ],
         loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
