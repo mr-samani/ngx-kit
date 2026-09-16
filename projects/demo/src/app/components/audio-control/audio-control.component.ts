@@ -24,6 +24,13 @@ export class DemoAudioControlComponent implements OnInit {
       language: 'html',
     },
   ];
+
+  fileList = [
+    'audio/CottonEyeJoe.ogg',
+    "audio/It's_a_Long,_Long_Way_to_Tipperary_(1915).ogg",
+    'audio/La_Partida.ogg',
+    'audio/The_Entertainer_-_Scott_Joplin.ogg',
+  ];
   constructor() {}
 
   ngOnInit() {}

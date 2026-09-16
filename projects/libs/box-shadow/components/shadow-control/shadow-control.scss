@@ -1,6 +1,6 @@
 :host {
-  --ngx-color-bg: light-dark(#fff, #222);
-  --ngx-color-text: light-dark(#000, #fff);
+  --ngx-shadowbox-bg: light-dark(#fff, #222);
+  --ngx-shadowbox-text: light-dark(#000, #fff);
 }
 .ngx-shadow-control {
   width: 270px;
@@ -9,8 +9,8 @@
   direction: ltr;
   font-family: arial, tahoma;
   border: 1px #86868659 solid;
-  background: var(--ngx-color-bg);
-  color: var(--ngx-color-text);
+  background: var(--ngx-shadowbox-bg);
+  color: var(--ngx-shadowbox-text);
 }
 .card-sample {
   border-radius: 5px;
