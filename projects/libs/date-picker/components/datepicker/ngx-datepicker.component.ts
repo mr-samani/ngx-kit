@@ -5,8 +5,10 @@ import {
   inject,
   input,
   Input,
+  model,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
 import { NgxDatePickerConfig } from '../config';
@@ -81,13 +83,13 @@ export class NgxInputDatePickerComponent
     }
   }
 
-  @Input() view: DatePickerView = 'day';
+  readonly view = model<DatePickerView>('day');
 
   @Output() change = new EventEmitter<Date | null>();
 
   selected?: CalendarDate;
 
-  calendarHeader = '';
+  readonly calendarHeader = signal('');
   isDisabled = false;
 
   weekDays: { min: string; name: string }[] = [];
@@ -114,9 +116,9 @@ export class NgxInputDatePickerComponent
       this.gotoToday();
     } else {
       let l = this.adapter.toLocale(this.selected.date);
-      this.currYear = l.year;
-      this.currMonth = l.month ?? 1;
-      this.renderِDatePicker(this.view);
+      this.currYear.set(l.year);
+      this.currMonth.set(l.month ?? 1);
+      this.renderِDatePicker(this.view());
     }
   }
   writeValue(value: any): void {
@@ -166,57 +168,58 @@ export class NgxInputDatePickerComponent
   override renderِDatePicker(view: DatePickerView) {
     super.renderِDatePicker(view, this.selected, [], () => {
       let d = this.selected?.date;
-      this.calendarHeader =
-        (d && this.adapter.formatDate(this.adapter.toLocale(d), 'EEEE - d MMMM, yyyy')) ?? '';
+      this.calendarHeader.set(
+        (d && this.adapter.formatDate(this.adapter.toLocale(d), 'EEEE - d MMMM, yyyy')) ?? '',
+      );
     });
   }
 
   gotoToday() {
     let today = this.adapter.today();
     this.selected = today;
-    this.currYear = today.year;
-    this.currMonth = today.month ?? 1;
-    this.calendarHeader = this.adapter.formatDate(today, 'EEEE, d MMMM, yyyy') ?? '';
+    this.currYear.set(today.year);
+    this.currMonth.set(today.month ?? 1);
+    this.calendarHeader.set(this.adapter.formatDate(today, 'EEEE, d MMMM, yyyy') ?? '');
     this.changeView('day');
   }
 
   changeView(v: DatePickerView) {
-    this.view = v;
-    this.renderِDatePicker(this.view);
+    this.view.set(v);
+    this.renderِDatePicker(this.view());
   }
 
   next() {
-    if (this.view === 'year') {
-      this.currYear += 20;
-    } else if (this.view === 'month') {
-      this.currYear++;
+    if (this.view() === 'year') {
+      this.currYear.update((u) => (u += 20));
+    } else if (this.view() === 'month') {
+      this.currYear.update((u) => u++);
     } else {
-      this.currMonth++;
+      this.currMonth.update((u) => u++);
     }
-    if (this.currMonth < 0 || this.currMonth > 11) {
-      let date = new Date(this.currYear, this.currMonth);
-      this.currYear = date.getFullYear();
-      this.currMonth = date.getMonth();
+    if (this.currMonth() < 0 || this.currMonth() > 11) {
+      let date = new Date(this.currYear(), this.currMonth());
+      this.currYear.set(date.getFullYear());
+      this.currMonth.set(date.getMonth());
     }
 
-    this.renderِDatePicker(this.view);
+    this.renderِDatePicker(this.view());
   }
 
   previous() {
-    if (this.view === 'year') {
-      this.currYear -= 20;
-    } else if (this.view === 'month') {
-      this.currYear--;
+    if (this.view() === 'year') {
+      this.currYear.update((u) => (u -= 20));
+    } else if (this.view() === 'month') {
+      this.currYear.update((u) => u--);
     } else {
-      this.currMonth--;
+      this.currMonth.update((u) => u--);
     }
-    if (this.currMonth < 0 || this.currMonth > 11) {
-      let date = new Date(this.currYear, this.currMonth);
-      this.currYear = date.getFullYear();
-      this.currMonth = date.getMonth();
+    if (this.currMonth() < 0 || this.currMonth() > 11) {
+      let date = new Date(this.currYear(), this.currMonth());
+      this.currYear.set(date.getFullYear());
+      this.currMonth.set(date.getMonth());
     }
 
-    this.renderِDatePicker(this.view);
+    this.renderِDatePicker(this.view());
   }
 
   selectDay(ev: Event, item: DateViewDay) {
@@ -224,8 +227,8 @@ export class NgxInputDatePickerComponent
     if (item.active) {
       this.selected = {
         locale: this._locale,
-        year: this.currYear,
-        month: this.currMonth,
+        year: this.currYear(),
+        month: this.currMonth(),
         day: item.day,
         date: item.date,
       };
@@ -235,14 +238,14 @@ export class NgxInputDatePickerComponent
   selectMonth(ev: Event, item: DateViewMonth) {
     ev.stopPropagation();
     if (item.active) {
-      this.currMonth = item.month;
+      this.currMonth.set(item.month);
       this.changeView('day');
     }
   }
   selectYear(ev: Event, item: DateViewYear) {
     ev.stopPropagation();
     if (item.active) {
-      this.currYear = item.year;
+      this.currYear.set(item.year);
       this.changeView('month');
     }
   }

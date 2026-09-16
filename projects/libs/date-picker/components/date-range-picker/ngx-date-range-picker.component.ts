@@ -6,8 +6,10 @@ import {
   inject,
   input,
   Input,
+  model,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -71,7 +73,7 @@ export class NgxDateRangePickerComponent
     if (!sameDate(next, this.minDate)) {
       this.minDate = next;
       this._validatorOnChange();
-      this.renderِDatePicker(this.view);
+      this.renderِDatePicker(this.view());
     }
   }
 
@@ -80,11 +82,11 @@ export class NgxDateRangePickerComponent
     if (!sameDate(next, this.maxDate)) {
       this.maxDate = next;
       this._validatorOnChange();
-      this.renderِDatePicker(this.view);
+      this.renderِDatePicker(this.view());
     }
   }
 
-  @Input() view: DatePickerView = 'day';
+  readonly view = model<DatePickerView>('day');
 
   @Output() rangeChange = new EventEmitter<NgxDateRange<Date>>();
   @Output() change = new EventEmitter<NgxDateRange<Date>>();
@@ -93,7 +95,7 @@ export class NgxDateRangePickerComponent
   hoverDate: Date | null = null;
 
   weekDays: { min: string; name: string }[] = [];
-  calendarHeader = '';
+  readonly calendarHeader = signal('');
 
   protected _onChange = (_value: NgxDateRange<Date>) => {};
   protected _onTouched = () => {};
@@ -157,19 +159,20 @@ export class NgxDateRangePickerComponent
   override renderِDatePicker(view: DatePickerView) {
     super.renderِDatePicker(view, undefined, [], () => {
       this.applyRangeState();
-      const start = this.range.start;
-      const end = this.range.end;
-      const startText = start
-        ? this.adapter.formatDate(this.adapter.toLocale(start), 'EEEE, d MMMM, yyyy')
-        : '';
-      const endText = end
-        ? this.adapter.formatDate(this.adapter.toLocale(end), 'EEEE, d MMMM, yyyy')
-        : '';
-
-      this.calendarHeader = endText
-        ? `${startText} – ${endText}`
-        : startText || 'Select date range';
     });
+  }
+
+  updateHeader() {
+    const start = this.range.start || this.hoverDate;
+    const end = this.range.end || this.hoverDate;
+    const startText = start
+      ? this.adapter.formatDate(this.adapter.toLocale(start), 'yyyy/MM/dd')
+      : '';
+    const endText = end ? this.adapter.formatDate(this.adapter.toLocale(end), 'yyyy/MM/dd') : '';
+
+    this.calendarHeader.set(
+      endText ? `${startText} – ${endText}` : startText || 'Select date range',
+    );
   }
 
   private init() {
@@ -180,21 +183,21 @@ export class NgxDateRangePickerComponent
 
     const anchor = this.range.end || this.range.start || this.adapter.getDate(this.adapter.today());
     const locale = this.adapter.toLocale(anchor);
-    this.currYear = locale.year;
-    this.currMonth = locale.month ?? 0;
-    this.renderِDatePicker(this.view);
+    this.currYear.set(locale.year);
+    this.currMonth.set(locale.month ?? 0);
+    this.renderِDatePicker(this.view());
   }
 
   changeView(view: DatePickerView) {
-    this.view = view;
+    this.view.set(view);
     this.renderِDatePicker(view);
   }
 
   gotoToday() {
     const today = this.adapter.today();
     const date = today.date ?? this.adapter.getDate(today);
-    this.currYear = today.year;
-    this.currMonth = today.month ?? 0;
+    this.currYear.set(today.year);
+    this.currMonth.set(today.month ?? 0);
 
     // Keep an existing completed range; today is only a navigation shortcut.
     if (!this.range.start || this.range.end) {
@@ -205,37 +208,37 @@ export class NgxDateRangePickerComponent
     this.changeView('day');
   }
   next() {
-    if (this.view === 'year') {
-      this.currYear += 20;
-    } else if (this.view === 'month') {
-      this.currYear++;
+    if (this.view() === 'year') {
+      this.currYear.update((u) => (u += 20));
+    } else if (this.view() === 'month') {
+      this.currYear.update((u) => u++);
     } else {
-      this.currMonth++;
+      this.currMonth.update((u) => u++);
     }
-    if (this.currMonth < 0 || this.currMonth > 11) {
-      let date = new Date(this.currYear, this.currMonth);
-      this.currYear = date.getFullYear();
-      this.currMonth = date.getMonth();
+    if (this.currMonth() < 0 || this.currMonth() > 11) {
+      let date = new Date(this.currYear(), this.currMonth());
+      this.currYear.set(date.getFullYear());
+      this.currMonth.set(date.getMonth());
     }
 
-    this.renderِDatePicker(this.view);
+    this.renderِDatePicker(this.view());
   }
 
   previous() {
-    if (this.view === 'year') {
-      this.currYear -= 20;
-    } else if (this.view === 'month') {
-      this.currYear--;
+    if (this.view() === 'year') {
+      this.currYear.update((u) => (u -= 20));
+    } else if (this.view() === 'month') {
+      this.currYear.update((u) => u--);
     } else {
-      this.currMonth--;
+      this.currMonth.update((u) => u--);
     }
-    if (this.currMonth < 0 || this.currMonth > 11) {
-      let date = new Date(this.currYear, this.currMonth);
-      this.currYear = date.getFullYear();
-      this.currMonth = date.getMonth();
+    if (this.currMonth() < 0 || this.currMonth() > 11) {
+      let date = new Date(this.currYear(), this.currMonth());
+      this.currYear.set(date.getFullYear());
+      this.currMonth.set(date.getMonth());
     }
 
-    this.renderِDatePicker(this.view);
+    this.renderِDatePicker(this.view());
   }
   selectDay(event: Event, item: DateViewDay) {
     event.stopPropagation();
@@ -265,7 +268,7 @@ export class NgxDateRangePickerComponent
   selectMonth(event: Event, item: DateViewMonth) {
     event.stopPropagation();
     if (item.active) {
-      this.currMonth = item.month;
+      this.currMonth.set(item.month);
       this.changeView('day');
     }
   }
@@ -273,7 +276,7 @@ export class NgxDateRangePickerComponent
   selectYear(event: Event, item: DateViewYear) {
     event.stopPropagation();
     if (item.active) {
-      this.currYear = item.year;
+      this.currYear.set(item.year);
       this.changeView('month');
     }
   }
@@ -312,6 +315,7 @@ export class NgxDateRangePickerComponent
 
       item.selected = !!item.rangeStart || !!item.rangeEnd;
     }
+    this.updateHeader();
   }
 
   private emitValue() {

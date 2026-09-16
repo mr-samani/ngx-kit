@@ -3,7 +3,7 @@ import { IDateAdapter } from '../adapters/IAdapter';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents, MsEventViewer } from '../models/events';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
-import { inject } from '@angular/core';
+import { inject, signal } from '@angular/core';
 import { CalendarView, DatePickerView } from '../models/view';
 import { DateViewDay, DateViewMonth, DateViewWeek, DateViewYear } from '../models/date';
 import { convertNumberToTime } from '../helpers/time.helper';
@@ -12,12 +12,10 @@ export abstract class NgxDatePickerBase {
   protected _locale = 'en';
   protected dateAdapterRegistry = inject(DateAdapterRegistry);
   adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this._locale);
-  // Todo: change to signal
-  currYear!: number;
-  // Todo: change to signal
-  currMonth!: number;
-  // Todo: change to signal
-  currentWeek!: number;
+
+  currYear = signal(0);
+  currMonth = signal(0);
+  currentWeek = signal(0);
 
   months: string[] = [];
   weeks: string[] = [];
@@ -26,7 +24,7 @@ export abstract class NgxDatePickerBase {
   viewMonths: DateViewMonth[] = [];
   viewYears: DateViewYear[] = [];
   viewWeeks: DateViewWeek[] = [];
-  displayMonth = '';
+  readonly displayMonth = signal('');
 
   minDate: Date | null = null;
   maxDate: Date | null = null;
@@ -49,7 +47,7 @@ export abstract class NgxDatePickerBase {
         break;
     }
 
-    this.displayMonth = this.months[this.currMonth] ?? '';
+    this.displayMonth.set(this.months[this.currMonth()] ?? '');
 
     if (callback) callback();
   }
@@ -71,20 +69,20 @@ export abstract class NgxDatePickerBase {
         break;
     }
 
-    this.displayMonth = this.months[this.currMonth] ?? '';
+    this.displayMonth.set(this.months[this.currMonth()] ?? '');
 
     if (callback) callback();
   }
 
   renderYear() {
     this.viewYears = [];
-    const s = this.currYear - 10;
-    const e = this.currYear + 10;
+    const s = this.currYear() - 10;
+    const e = this.currYear() + 10;
 
     for (let i = s; i < e; i++) {
       this.viewYears.push({
         year: i,
-        selected: i === this.currYear,
+        selected: i === this.currYear(),
         active: this.checkActiveYear(i),
       });
     }
@@ -97,8 +95,8 @@ export abstract class NgxDatePickerBase {
       this.viewMonths.push({
         month: i,
         displayMonth: this.months[i],
-        selected: i === this.currMonth,
-        active: this.checkActiveMonth(this.currYear, i),
+        selected: i === this.currMonth(),
+        active: this.checkActiveMonth(this.currYear(), i),
       });
     }
   }
@@ -157,17 +155,17 @@ export abstract class NgxDatePickerBase {
   renderDay(selected?: CalendarDate, events?: MsEvents[]) {
     this.viewDays = [];
 
-    const firstDayOfMonth = this.adapter.firstDayofMonth(this.currYear, this.currMonth);
-    const lastDateOfMonth = this.adapter.lastDateofMonth(this.currYear, this.currMonth);
-    const lastDayOfMonth = this.adapter.lastDayofMonth(this.currYear, this.currMonth);
-    const lastDateOfLastMonth = this.adapter.lastDateofLastMonth(this.currYear, this.currMonth);
+    const firstDayOfMonth = this.adapter.firstDayofMonth(this.currYear(), this.currMonth());
+    const lastDateOfMonth = this.adapter.lastDateofMonth(this.currYear(), this.currMonth());
+    const lastDayOfMonth = this.adapter.lastDayofMonth(this.currYear(), this.currMonth());
+    const lastDateOfLastMonth = this.adapter.lastDateofLastMonth(this.currYear(), this.currMonth());
 
     for (let i = firstDayOfMonth; i > 0; i--) {
       const day = lastDateOfLastMonth - i + 1;
       const date = this.adapter.getDate({
         locale: this._locale,
-        year: this.currYear,
-        month: this.currMonth - 1,
+        year: this.currYear(),
+        month: this.currMonth() - 1,
         day,
       });
 
@@ -184,12 +182,12 @@ export abstract class NgxDatePickerBase {
     for (let day = 1; day <= lastDateOfMonth; day++) {
       const today = this.adapter.today();
       const isToday =
-        day === today.day && this.currMonth === today.month && this.currYear === today.year;
+        day === today.day && this.currMonth() === today.month && this.currYear() === today.year;
 
       const date = this.adapter.getDate({
         locale: this._locale,
-        year: this.currYear,
-        month: this.currMonth,
+        year: this.currYear(),
+        month: this.currMonth(),
         day,
       });
 
@@ -199,8 +197,8 @@ export abstract class NgxDatePickerBase {
         isToday,
         selected:
           day === selected?.day &&
-          selected.month === this.currMonth &&
-          selected.year === this.currYear,
+          selected.month === this.currMonth() &&
+          selected.year === this.currYear(),
         date,
         events: this.getEvents(date, events),
       });
@@ -210,8 +208,8 @@ export abstract class NgxDatePickerBase {
       const day = i - lastDayOfMonth + 1;
       const date = this.adapter.getDate({
         locale: this._locale,
-        year: this.currYear,
-        month: this.currMonth + 1,
+        year: this.currYear(),
+        month: this.currMonth() + 1,
         day,
       });
 
