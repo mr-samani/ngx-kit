@@ -9,7 +9,7 @@
   --ngx-audio-control-slider: light-dark(#ddd, #4d5d7b);
   --ngx-audio-control-primary: light-dark(#007bff, #007bff);
   --ngx-audio-control-primary-fg: light-dark(#f8f8f8, #f8f8f8);
-  --ngx-audio-control-shadow: light-dark(#00000042, #5b5b5b1a);
+  --ngx-audio-control-shadow: light-dark(#0000006e, #0000006e);
   --ngx-audio-control-error: light-dark(#e40505, #ff0000d3);
 }
 
@@ -21,12 +21,12 @@ svg {
   stroke-linejoin: round;
 }
 
-.audio-player,
+.media-player,
 .play-list {
   background-color: var(--ngx-audio-control-bg);
   border-radius: 10px;
   padding: 10px;
-  box-shadow: 0 2px 6px var(--ngx-audio-control-shadow);
+  box-shadow: 0px 0px 6px 0px var(--ngx-audio-control-shadow);
 
   position: relative;
   overflow: hidden;

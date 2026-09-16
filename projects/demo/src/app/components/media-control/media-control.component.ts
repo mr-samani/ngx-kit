@@ -27,14 +27,15 @@ export class DemoMediaControlComponent {
 
   /** Native audio playlist — same fast path as the old audio-control demo. */
   protected readonly audioPlaylist: NgxMediaSource[] = [
-   // { src: 'audio/Free_Test_Data_500KB_MP3.mp3' },
-    { src: 'audio/CottonEyeJoe.ogg', title: 'Cotton Eye Joe', type: 'audio/ogg' },
-    { src: 'audio/La_Partida.ogg', title: 'La Partida', type: 'audio/ogg' },
     {
       src: "audio/It's_a_Long,_Long_Way_to_Tipperary_(1915).ogg",
       title: "It's a Long, Long Way to Tipperary (1915)",
       type: 'audio/ogg',
     },
+    // { src: 'audio/Free_Test_Data_500KB_MP3.mp3' },
+    { src: 'audio/CottonEyeJoe.ogg', title: 'Cotton Eye Joe', type: 'audio/ogg' },
+    { src: 'audio/La_Partida.ogg', title: 'La Partida', type: 'audio/ogg' },
+
     {
       src: 'audio/The_Entertainer_-_Scott_Joplin.ogg',
       title: 'The Entertainer - Scott Joplin',

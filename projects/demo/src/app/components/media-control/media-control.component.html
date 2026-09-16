@@ -4,18 +4,17 @@
   readmePath="readmes/media-control/README.md">
   <h3>Audio (type="audio")</h3>
   <ngx-media-control
+    class="audio-player"
     type="audio"
     [sources]="audioPlaylist"
     [download]="true"
     (trackChange)="onTrackChange($event)"
-    (error)="onError($event)">
-  </ngx-media-control>
+    (error)="onError($event)"></ngx-media-control>
 
   <h3>Video (type="video") — fullscreen / PiP shown when supported</h3>
   <ngx-media-control
     type="video"
     [sources]="videoSource"
     [showList]="false"
-    (error)="onError($event)">
-  </ngx-media-control>
+    (error)="onError($event)"></ngx-media-control>
 </app-example-showcase>
