@@ -1,0 +1,107 @@
+name: Publish Library to npm
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch: # امکان اجرای دستی از تب Actions
+
+permissions:
+  contents: write # لازم برای ساخت تگ و Release
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (با تاریخچه کامل تگ‌ها)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine if version changed
+        id: check
+        run: |
+          LOCAL_VERSION=$(node -p "require('./projects/libs/package.json').version")
+          echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git rev-parse "v$LOCAL_VERSION" >/dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build library
+        if: steps.check.outputs.changed == 'true'
+        run: npm run build:lib #npx ng build ngx-kit --configuration production
+
+
+      - name: Publish to npm
+        if: steps.check.outputs.changed == 'true'
+        run: |
+            if [ -f "./dist/ngx-kit/package.json" ]; then
+              name=$(node -p "require('./dist/ngx-kit/package.json').name")
+              echo "Publishing $name from ./dist/ngx-kit ..."
+              npm publish "./dist/ngx-kit" --access public
+            fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create git tag (فقط اگر از پوش برنچ main تریگر شده)
+        if: steps.check.outputs.changed == 'true' && github.ref_type == 'branch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ steps.check.outputs.version }}"
+          git push origin "v${{ steps.check.outputs.version }}"
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.check.outputs.version }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------
+  # اختیاری: پابلیش هم‌زمان روی GitHub Packages
+  # نکته مهم: نام اسکوپ پکیج باید دقیقاً برابر یوزرنیم/سازمان گیت‌هاب باشد.
+  # الان اسکوپ npm شما "@ngx-kit" است ولی یوزر گیت‌هاب "mr-samani" است،
+  # پس این job با اسکوپ فعلی خطا می‌دهد مگر یکی از این دو کار را انجام دهی:
+  #  ۱) یک سازمان گیت‌هاب به نام ngx-kit بسازی و ریپو را زیر آن ببری
+  #  ۲) یا نام پکیج‌های GitHub Packages را به @mr-samani/... تغییر دهی
+  # تا وقتی این را حل نکردی، بهتر است این job را غیرفعال (comment) نگه داری.
+  # ---------------------------------------------------------------
+  # publish-github-packages:
+  #   needs: publish
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     packages: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         registry-url: 'https://npm.pkg.github.com'
+  #     - run: npm ci
+  #     - run: npx ng build ngx-kit --configuration production
+  #     - run: |
+  #         for dir in dist/ngx-kit/*/; do
+  #           if [ -f "$dir/package.json" ]; then
+  #             npm publish "$dir"
+  #           fi
+  #         done
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
