@@ -132,10 +132,10 @@ const routes: Routes = [
         loadComponent: () => import('./tree-list/tree-list.component').then((c) => c.DemoTreeList),
       },
       {
-        path: 'audio-control',
+        path: 'media-control',
         loadComponent: () =>
-          import('./audio-control/audio-control.component').then(
-            (c) => c.DemoAudioControlComponent,
+          import('./media-control/media-control.component').then(
+            (c) => c.DemoMediaControlComponent,
           ),
       },
     ],

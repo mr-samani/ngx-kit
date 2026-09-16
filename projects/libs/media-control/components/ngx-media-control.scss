@@ -1,4 +1,5 @@
 :host {
+  display: inline-block;
   width: 500px;
   --ngx-audio-control-bg: light-dark(#fff, #222);
   --ngx-audio-control-text: light-dark(#000, #f4f5f7);
@@ -206,4 +207,20 @@ button:focus {
   text-overflow: ellipsis;
   width: 100%;
   display: block;
+}
+
+/* --- additions for video mode -------------------------------------- */
+.media-player.video-mode {
+  .video-host {
+    position: relative;
+    width: 100%;
+    background: #000;
+    aspect-ratio: 16 / 9;
+
+    ::ng-deep .ngx-media-video-element {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  }
 }
