@@ -12,7 +12,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { BoxShadow } from '../../contracts/BoxShadowValue';
 import { NgxInputColor } from 'ngx-kit/color-picker';
-import { formatBoxShadowToCSS } from 'ngx-kit/box-shadow/utils/box-shadow-parser';
+import { formatBoxShadowToCSS } from '../../utils/box-shadow-parser';
 import { getOffsetPosition } from 'ngx-kit/core';
 
 @Component({
