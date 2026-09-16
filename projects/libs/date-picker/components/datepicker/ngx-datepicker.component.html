@@ -32,7 +32,7 @@
         stroke-linecap="round"
         stroke-linejoin="round" />
     </svg>
-    {{ calendarHeader }}
+    {{ calendarHeader() }}
   </div>
   <div class="sub-header">
     <div class="icons">
@@ -45,12 +45,12 @@
     </div>
     <span class="current-date">
       <span (click)="changeView('year')">
-        {{ currYear }}
+        {{ currYear() }}
         <ng-template
           [ngTemplateOutlet]="config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
       </span>
       <span (click)="changeView('month')">
-        {{ displayMonth }}
+        {{ displayMonth() }}
         <ng-template
           [ngTemplateOutlet]="config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
       </span>
@@ -63,7 +63,7 @@
     </div>
   </div>
   <div class="calendar">
-    @if (view === 'day') {
+    @if (view() === 'day') {
       <ul class="weeks">
         @for (w of weekDays; track $index) {
           <li [title]="w.name">
@@ -82,7 +82,7 @@
           </li>
         }
       </ul>
-    } @else if (view === 'month') {
+    } @else if (view() === 'month') {
       <ul class="months">
         @for (item of viewMonths; track $index; let i = $index) {
           <li
@@ -94,7 +94,7 @@
           </li>
         }
       </ul>
-    } @else if (view === 'year') {
+    } @else if (view() === 'year') {
       <ul class="years">
         @for (item of viewYears; track $index) {
           <li

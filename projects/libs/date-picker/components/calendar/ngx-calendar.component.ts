@@ -196,7 +196,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
         break;
     }
 
-    this.displayMonth = this.months[this.currMonth] ?? '';
+    this.displayMonth.set(this.months[this.currMonth()] ?? '');
     queueMicrotask(() => this.calcCellSize());
   }
 
@@ -206,8 +206,8 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   private syncAnchorToLocale() {
     const localeDate = this.adapter.toLocale(this.anchorDate);
-    this.currYear = localeDate.year;
-    this.currMonth = localeDate.month ?? 0;
+    this.currYear.set(localeDate.year);
+    this.currMonth.set(localeDate.month ?? 0);
     this.months = this.adapter.longMonths;
     this.weeks = this.adapter.longDays;
   }
@@ -470,15 +470,15 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   private renderEventView() {
     const monthStart = this.adapter.getDate({
       locale: this._locale,
-      year: this.currYear,
-      month: this.currMonth,
+      year: this.currYear(),
+      month: this.currMonth(),
       day: 1,
     });
     const monthEnd = this.adapter.getDate({
       locale: this._locale,
-      year: this.currYear,
-      month: this.currMonth,
-      day: this.adapter.lastDateofMonth(this.currYear, this.currMonth),
+      year: this.currYear(),
+      month: this.currMonth(),
+      day: this.adapter.lastDateofMonth(this.currYear(), this.currMonth()),
     });
 
     this.eventViewItems = this.renderEventSources()

@@ -172,7 +172,11 @@
     &.range-end::before {
       border-radius: 0 20px 20px 0;
     }
-
+    &:nth-last-child(1 of .in-range-preview) {
+      &::before {
+        border-radius: 0 20px 20px 0;
+      }
+    }
     &.range-start.range-end::before {
       border-radius: 20px;
     }
@@ -251,21 +255,30 @@
   }
 }
 
-:host-context([dir='rtl']) {
-  .days li.range-start::before {
-    border-radius: 0 20px 20px 0;
-  }
+::ng-deep {
+  [dir='rtl'] {
+    ngx-date-range-picker {
+      .days li.range-start::before {
+        border-radius: 0 20px 20px 0 !important;
+      }
 
-  .days li.range-end::before {
-    border-radius: 20px 0 0 20px;
-  }
+      .days li.range-end::before {
+        border-radius: 20px 0 0 20px !important;
+      }
+      .days li:nth-last-child(1 of .in-range-preview) {
+        &::before {
+          border-radius: 20px 0 0 20px !important;
+        }
+      }
 
-  .days li.range-start.range-end::before {
-    border-radius: 20px;
-  }
+      .days li.range-start.range-end::before {
+        border-radius: 20px !important;
+      }
 
-  #prev,
-  #next {
-    transform: rotate(180deg);
+      #prev,
+      #next {
+        transform: rotate(180deg) !important;
+      }
+    }
   }
 }

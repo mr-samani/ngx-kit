@@ -18,7 +18,7 @@ export class JalaliAdapter implements IDateAdapter {
       'اردیبهشت',
       'خرداد',
       'تیر',
-      'مرداد',
+      'مردادا',
       'شهریور',
       'مهر',
       'آبان',

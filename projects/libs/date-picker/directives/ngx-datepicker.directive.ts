@@ -61,8 +61,9 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   adapter!: IDateAdapter;
   private _locale: string = 'en';
   @Input() set locale(val: string) {
-    this._locale = val;
+    this._locale = val || 'en';
     this.adapter = this.dateAdapterRegistry.resolve(this._locale);
+    this._formatValue(this.value);
   }
 
   protected _onChange = (value: Date | null | undefined) => {};
@@ -231,7 +232,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   }
 
   /** Formats a value and sets it on the input element. */
-  protected _formatValue(value: Date | null, setChange = false) {
+  protected _formatValue(value: Date | null | undefined, setChange = false) {
     let val = '';
     if (value && this.adapter) {
       let o = this.adapter.toLocale(value);
