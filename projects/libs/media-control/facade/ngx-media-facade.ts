@@ -1,7 +1,7 @@
 import { computed, DestroyRef, inject, Injectable, NgZone, signal } from '@angular/core';
 import { NgxMediaEngineFactory } from '../engines/media-engine-factory';
 import { NgxMediaEngine, NgxMediaKind } from '../engines/media-engine.interface';
-import { NgxMediaSource } from '../contracts/media-source';
+import { NgxMediaSource, mediaSourcesEqual } from '../contracts/media-source';
 import { initialMediaState, NgxMediaState } from '../contracts/media-state';
 import { NgxMediaError } from '../contracts/media-error';
 import { NgxMediaSessionBridge } from './media-session';
@@ -57,8 +57,20 @@ export class NgxMediaFacade {
   }
 
   setPlaylist(sources: NgxMediaSource[], startIndex = 0, autoLoad = true): void {
+    const clampedIndex = Math.min(Math.max(startIndex, 0), Math.max(sources.length - 1, 0));
+    // Defense-in-depth against reload loops: if a caller (typically a
+    // component effect reacting to an input that got a content-equal but
+    // reference-different array) asks for the playlist we already have
+    // loaded, do nothing. Reloading identical content would destroy and
+    // recreate the engine, re-fetch the media, and fire a fresh batch of
+    // state events for zero actual change — exactly what produces the
+    // "thousands of repeated requests" symptom if something upstream
+    // recomputes an equivalent array on every change-detection tick.
+    if (mediaSourcesEqual(this._playlist(), sources) && clampedIndex === this._currentIndex()) {
+      return;
+    }
     this._playlist.set(sources);
-    this._currentIndex.set(Math.min(Math.max(startIndex, 0), Math.max(sources.length - 1, 0)));
+    this._currentIndex.set(clampedIndex);
     if (autoLoad && sources.length > 0) {
       void this.loadCurrent();
     }
@@ -86,7 +98,10 @@ export class NgxMediaFacade {
       this.bindMediaSession();
       if (playAfter) await this.play();
     } catch (err) {
-      const mediaError = err instanceof NgxMediaError ? err : new NgxMediaError('UNKNOWN', 'Failed to load media.', err);
+      const mediaError =
+        err instanceof NgxMediaError
+          ? err
+          : new NgxMediaError('UNKNOWN', 'Failed to load media.', err);
       this._error.set(mediaError);
     }
   }
@@ -96,7 +111,9 @@ export class NgxMediaFacade {
       await this.engine?.play();
       this.mediaSession.setPlaybackState('playing');
     } catch (err) {
-      this._error.set(err instanceof NgxMediaError ? err : new NgxMediaError('UNKNOWN', 'Play failed.', err));
+      this._error.set(
+        err instanceof NgxMediaError ? err : new NgxMediaError('UNKNOWN', 'Play failed.', err),
+      );
     }
   }
 
@@ -140,6 +157,7 @@ export class NgxMediaFacade {
   }
 
   async next(): Promise<void> {
+    debugger;
     const list = this._playlist();
     if (list.length === 0) return;
     const next = (this._currentIndex() + 1) % list.length;
@@ -156,7 +174,8 @@ export class NgxMediaFacade {
   /** Lazily creates the Web Audio graph — never touched unless a consumer asks for it. */
   getWebAudioGraph(): NgxWebAudioGraph {
     const el = this.mediaElement();
-    if (!el) throw new NgxMediaError('MEDIA', 'No active media element to attach a Web Audio graph to.');
+    if (!el)
+      throw new NgxMediaError('MEDIA', 'No active media element to attach a Web Audio graph to.');
     if (!this.webAudio) this.webAudio = new NgxWebAudioGraph(el);
     return this.webAudio;
   }

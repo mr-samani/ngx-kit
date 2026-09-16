@@ -129,6 +129,36 @@ Swapping the engine implementation never touches the component.
 
 ## 11. WASM decoders
 
+**Is there an npm package you can install today to try this?** Yes —
+[`@ffmpeg/ffmpeg`](https://www.npmjs.com/package/@ffmpeg/ffmpeg) is the
+general-purpose answer (handles 3GP, WMA, AMR, FLV, and effectively
+anything FFmpeg reads). For narrower needs there are also small pure-WASM
+decoders like `opus-decoder`/`mpg123-decoder` if you specifically only need
+one codec and want a much smaller download than FFmpeg's ~25MB core.
+
+```
+npm install @ffmpeg/ffmpeg @ffmpeg/util @ffmpeg/core
+```
+
+A complete, copy-pasteable decoder built on it is in
+`examples/ffmpeg-transcode-decoder.example.ts` (outside the library's own
+source tree on purpose, so the library itself never depends on `@ffmpeg/*`
+— see below). It transcodes the unsupported source into `wav`/`mp4`
+in-memory and hands the result to `NativeMediaEngine`, reusing all of the
+native engine's playback/seek/event handling instead of reimplementing it.
+Copy that file into your app (e.g. `src/app/decoders/`) and register it:
+
+```ts
+import { provideNgxMediaDecoder } from 'ngx-kit/media-control';
+import { FfmpegTranscodeDecoder } from './decoders/ffmpeg-transcode-decoder.example';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideNgxMediaDecoder(FfmpegTranscodeDecoder)],
+});
+```
+
+
+
 `NgxWasmDecoderBase` (in `decoders/wasm-decoder.base.ts`) is the harness: it
 lazily `import()`s your codec module (and optionally runs it in a `Worker`)
 on first real use, so nothing WASM-related ever enters the default bundle.

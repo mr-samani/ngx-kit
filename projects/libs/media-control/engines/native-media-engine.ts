@@ -241,8 +241,10 @@ export class NativeMediaEngine implements NgxMediaEngine {
     }
   }
 
-  assertNotDestroyed() {
-    // TODO
+  private assertNotDestroyed(): void {
+    if (this.destroyed) {
+      throw new NgxMediaError('DESTROYED', 'Media engine has already been destroyed.');
+    }
   }
 }
 

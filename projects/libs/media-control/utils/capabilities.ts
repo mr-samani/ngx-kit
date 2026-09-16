@@ -89,5 +89,3 @@ function extensionToMime(src: string): string | undefined {
   const ext = clean.split('.').pop()?.toLowerCase();
   return ext ? EXT_MIME_MAP[ext] : undefined;
 }
-
-

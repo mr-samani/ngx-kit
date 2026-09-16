@@ -15,12 +15,12 @@ import { NgxMediaError } from '../contracts/media-error';
 export class NgxMediaDecoderRegistry {
   private readonly decoders: readonly NgxMediaDecoder[];
 
-  constructor(
-    @Optional()
-    @Inject(NGX_MEDIA_DECODER)
-    decoders: NgxMediaDecoder[] | null,
-  ) {
-    this.decoders = [...(decoders ?? [])].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  private readonly customDecoders = inject<NgxMediaDecoder[] | null>(NGX_MEDIA_DECODER);
+
+  constructor() {
+    this.decoders = [...(this.customDecoders ?? [])].sort(
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+    );
   }
 
   async findDecoder(source: NgxMediaSource): Promise<NgxMediaDecoder | undefined> {

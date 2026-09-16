@@ -13,7 +13,9 @@ import { DateCellRenderer } from './shared/renderers/DateCellRenderer';
 import { ImageCellRenderer } from './shared/renderers/ImageCellRenderer';
 import { RolesCellRenderer } from './shared/renderers/RolesCellRenderer';
 import { StatusCellRenderer } from './shared/renderers/StatusCellRenderer';
-
+import { provideNgxMediaDecoder } from 'ngx-kit/media-control';
+import { FfmpegTranscodeDecoder } from './components/media-control/decoders/ffmpeg-transcode-decoder.example';
+ 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(
@@ -23,7 +25,7 @@ export const appConfig: ApplicationConfig = {
       }),
     ),
     provideHttpClient(),
-
+    provideNgxMediaDecoder(FfmpegTranscodeDecoder),
     provideMonacoEditor({
       baseUrl: 'assets/monaco/min/vs',
     }),

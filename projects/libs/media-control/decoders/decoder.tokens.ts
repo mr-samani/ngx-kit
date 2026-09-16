@@ -7,11 +7,9 @@ import { NgxMediaSource } from '../contracts/media-source';
  * add-on package, e.g. `ngx-kit/decoder-flac`) registers here is picked up
  * automatically by the registry — no central "known formats" list to edit.
  */
-export const NGX_MEDIA_DECODER = new InjectionToken<NgxMediaDecoder[]>(
-  'NGX_MEDIA_DECODER',
-);
-
-// export const NGX_MEDIA_DECODER = new InjectionToken<NgxMediaDecoder>('NGX_MEDIA_DECODER');
+export const NGX_MEDIA_DECODER = new InjectionToken<NgxMediaDecoder[]>('NGX_MEDIA_DECODER', {
+  factory: () => [],
+});
 
 /** Pluggable network layer so auth/signed URLs don't require coupling the core to HttpClient. */
 export interface NgxMediaRequestHandler {

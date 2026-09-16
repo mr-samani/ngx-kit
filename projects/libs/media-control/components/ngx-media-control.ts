@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { formatTime } from '../utils/format-time';
-import { NgxMediaSource } from '../contracts/media-source';
+import { NgxMediaSource, mediaSourcesEqual } from '../contracts/media-source';
 import { NgxMediaFacade } from '../facade/ngx-media-facade';
 import { hasFullscreen, hasPictureInPicture, isBrowser } from '../utils/capabilities';
 
@@ -93,15 +93,16 @@ export class NgxMediaControl {
     () => this.effectiveKind() === 'video' && hasPictureInPicture(),
   );
 
-  constructor() {
-    effect(() => this.facade.configure(this.effectiveKind()));
-
-    // Rebuild the playlist whenever the consumer swaps `fileList`/`sources` wholesale
-    // (a full input replacement, not an in-place mutation — no accidental re-append
-    // like the previous implementation's constructor effect).
-    effect(() => {
+  /**
+   * Derived from `sources()`, but memoized by CONTENT rather than reference
+   * (`equal: mediaSourcesEqual`). Angular's `input()` signal only compares
+   * by reference — a parent that binds an inline literal, e.g.
+   *
+   */
+  protected readonly resolvedSources = computed<NgxMediaSource[]>(
+    () => {
       const explicit = this.sources() ?? [];
-      const resolved: NgxMediaSource[] = explicit.map((m) => ({
+      return explicit.map((m) => ({
         ...m,
         title:
           m.title ??
@@ -110,7 +111,16 @@ export class NgxMediaControl {
             : null) ??
           'no name',
       }));
-      this.facade.setPlaylist(resolved, 0, true);
+    },
+    { equal: mediaSourcesEqual },
+  );
+
+  constructor() {
+    effect(() => this.facade.configure(this.effectiveKind()));
+
+    // Rebuild the playlist whenever the consumer swaps `sources` to genuinely
+    effect(() => {
+      this.facade.setPlaylist(this.resolvedSources(), 0, true);
     });
 
     effect(() => {

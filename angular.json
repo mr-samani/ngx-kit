@@ -53,6 +53,16 @@
                 "glob": "**/README.md",
                 "input": "projects/libs",
                 "output": "readmes/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@ffmpeg/core/dist/esm",
+                "output": "ffmpeg/core"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@ffmpeg/ffmpeg/dist/esm",
+                "output": "ffmpeg"
               }
             ],
             "styles": ["./projects/libs/styles/all.css", "projects/demo/src/styles.scss"],

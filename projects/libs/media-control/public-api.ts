@@ -10,6 +10,18 @@ export * from './contracts/media-error';
 export * from './engines/media-engine.interface';
 export * from './decoders/decoder.interface';
 export * from './decoders/wasm-decoder.base';
+/**
+ * `NativeMediaEngine` is otherwise an internal implementation detail, but
+ * it's exported here for one specific reason: a WASM decoder that
+ * transcodes an unsupported format into a natively-playable one (the
+ * `@ffmpeg/ffmpeg` pattern — see `decoders/ffmpeg-transcode-decoder.example.ts`)
+ * needs a way to hand the result back as a real `NgxMediaEngine`, and
+ * wrapping a transcoded `Blob` in the same native `<audio>`/`<video>`
+ * element the fast path already uses is simpler and more correct than
+ * reimplementing playback. Decoder authors are the intended audience for
+ * this export, not component consumers.
+ */
+export { NativeMediaEngine } from './engines/native-media-engine';
 
 // DI: tokens + provider helpers
 export * from './decoders/decoder.tokens';

@@ -27,7 +27,7 @@ export class DemoMediaControlComponent {
 
   /** Native audio playlist — same fast path as the old audio-control demo. */
   protected readonly audioPlaylist: NgxMediaSource[] = [
-    { src: 'audio/Free_Test_Data_500KB_MP3.mp3' },
+   // { src: 'audio/Free_Test_Data_500KB_MP3.mp3' },
     { src: 'audio/CottonEyeJoe.ogg', title: 'Cotton Eye Joe', type: 'audio/ogg' },
     { src: 'audio/La_Partida.ogg', title: 'La Partida', type: 'audio/ogg' },
     {
@@ -48,7 +48,7 @@ export class DemoMediaControlComponent {
       src: 'video/file_example_MP4_640_3MG.mp4',
       title: 'Sample clip',
       type: 'video/mp4',
-      poster: 'video/sample-poster.jpg',
+      poster: 'video/file_example_MP4_640_3MG-poster.jpg',
     },
   ];
 

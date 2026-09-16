@@ -48,3 +48,44 @@ export class PlayList {
 export function playListToMediaSource(item: PlayList): NgxMediaSource {
   return { src: item.fileAddress, title: item.title };
 }
+
+/**
+ * Content equality for `NgxMediaSource`/playlist arrays, not reference
+ * equality. `src` strings compare by value; `Blob`/`File`/`MediaStream`
+ * compare by identity (they can't be compared by content cheaply/safely).
+ *
+ * This exists specifically so a consumer that re-creates an equivalent
+ * array/object literal on every change-detection cycle (`[sources]="[{...}]"`,
+ * or a `.map()` derived from an otherwise-stable list) doesn't cause the
+ * player to treat it as "a new playlist" and reload media on every tick —
+ * see `computed(..., { equal: mediaSourcesEqual })` in `NgxMediaControl` and
+ * the same guard in `NgxMediaFacade.setPlaylist`.
+ */
+export function mediaSourcesEqual(
+  a: readonly NgxMediaSource[],
+  b: readonly NgxMediaSource[],
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (!mediaSourceEqual(a[i], b[i])) return false;
+  }
+  return true;
+}
+
+function mediaSourceEqual(a: NgxMediaSource, b: NgxMediaSource): boolean {
+  if (a === b) return true;
+  return (
+    srcKey(a.src) === srcKey(b.src) &&
+    a.type === b.type &&
+    a.codecs === b.codecs &&
+    a.title === b.title &&
+    a.poster === b.poster
+  );
+}
+
+function srcKey(src: NgxMediaSource['src']): unknown {
+  // Strings compare by value; everything else (Blob/File/MediaStream) only
+  // by identity, since there's no cheap/safe way to diff their content.
+  return src;
+}
