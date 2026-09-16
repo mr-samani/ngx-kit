@@ -1,0 +1,37 @@
+.example-list {
+  .box {
+    min-height: 50px;
+    border: 1px dashed #ccc;
+    background-color: cadetblue;
+  }
+  .placeholder {
+    border: 2px rgb(26, 255, 0) solid;
+  }
+  button,
+  input {
+    min-height: 40px;
+  }
+}
+.ngxpointer {
+  position: absolute;
+  background-color: #ff0000;
+  top: 11px;
+  left: 10px;
+  z-index: 99999999;
+}
+
+table {
+  width: 100%;
+  max-width: 768px;
+  margin: 10px auto;
+  td {
+    border: 1px red solid;
+    padding: 25px;
+  }
+}
+
+.card {
+  box-shadow: 0px 0px 5px rgba(0, 0, 0.3);
+  background-color: var(--surface-2);
+  padding: 15px;
+}

@@ -1,0 +1,297 @@
+<p>
+  IntersectionObserver-first infinite scrolling with element, window, custom-root, reverse chat and
+  bidirectional demos.
+</p>
+
+<nav class="demo-choice" aria-label="Infinite scroll demos">
+  <button
+    class="demo-choice-item"
+    [class.active]="activeDemo() === 'down'"
+    (click)="setDemo('down')">
+    Element · down
+  </button>
+  <button
+    class="demo-choice-item"
+    [class.active]="activeDemo() === 'window'"
+    (click)="setDemo('window')">
+    Window · down
+  </button>
+  <button
+    class="demo-choice-item"
+    [class.active]="activeDemo() === 'chat'"
+    (click)="setDemo('chat')">
+    Chat · up + preserve
+  </button>
+  <button
+    class="demo-choice-item"
+    [class.active]="activeDemo() === 'both'"
+    (click)="setDemo('both')">
+    Both directions
+  </button>
+</nav>
+
+@if (activeDemo() === 'down') {
+  <section class="demo-grid">
+    <article class="panel">
+      <div class="panel-head">
+        <div>
+          <span class="label">ELEMENT SCROLLER</span>
+          <h2>Load near the bottom</h2>
+        </div>
+        <span class="counter">{{ downItems().length }} items</span>
+      </div>
+
+      <div
+        class="scroll-box"
+        infiniteScroll
+        [scrollWindow]="false"
+        [infiniteScrollDistance]="240"
+        [infiniteScrollImmediateCheck]="true"
+        [infiniteScrollMinInterval]="250"
+        [infiniteScrollDisabled]="downLoading() || downEnd()"
+        (scrolled)="loadDown()">
+        @for (item of downItems(); track item.id) {
+          <div class="item-card">
+            <div class="item-id">{{ item.id }}</div>
+            <div>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.text }}</p>
+              <small>{{ item.meta }}</small>
+            </div>
+          </div>
+        }
+
+        <div class="status-row">
+          @if (downLoading()) {
+            <span class="spinner"></span>
+            <span>Loading more…</span>
+          } @else if (downEnd()) {
+            <span>✓ You reached the end</span>
+          } @else {
+            <span>Keep scrolling · 240px prefetch distance</span>
+          }
+        </div>
+      </div>
+
+      <pre><code>&lt;div
+  infiniteScroll
+  [scrollWindow]="false"
+  [infiniteScrollDistance]="240"
+  [infiniteScrollDisabled]="loading || endOfList"
+  (scrolled)="loadMore()"&gt;</code></pre>
+    </article>
+
+    <aside class="notes panel">
+      <span class="label">WHY IT FEELS FAST</span>
+      <h2>Nothing listens to scroll</h2>
+      <p>
+        The directive observes two 1px sentinels. Angular is re-entered only when the browser
+        reports an edge crossing.
+      </p>
+      <div class="metric">
+        <b>Request count</b>
+        <span>{{ downRequests() }}</span>
+      </div>
+      <div class="metric">
+        <b>Distance</b>
+        <span>240px</span>
+      </div>
+      <div class="metric">
+        <b>Change detection</b>
+        <span>event-driven</span>
+      </div>
+    </aside>
+  </section>
+}
+
+@if (activeDemo() === 'window') {
+  <section class="demo-grid single-wide">
+    <article class="panel window-demo">
+      <div class="panel-head">
+        <div>
+          <span class="label">WINDOW SCROLLER</span>
+          <h2>The browser window is the root</h2>
+        </div>
+        <span class="counter">{{ windowItems().length }} items</span>
+      </div>
+
+      <div
+        infiniteScroll
+        [infiniteScrollDistance]="600"
+        [infiniteScrollDisabled]="windowLoading() || windowEnd()"
+        [scrollWindow]="true"
+        (scrolled)="loadWindow($event)">
+        <div class="window-intro">
+          <strong>No inner overflow container.</strong>
+          <span>
+            Scroll the entire page. The directive uses the browser viewport as the
+            IntersectionObserver root.
+          </span>
+        </div>
+
+        <div class="item-grid">
+          @for (item of windowItems(); track item.id) {
+            <div class="item-card compact">
+              <div class="item-id">{{ item.id }}</div>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.text }}</p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="status-row">
+          @if (windowLoading()) {
+            <span class="spinner"></span>
+            <span>Loading the next batch…</span>
+          } @else if (windowEnd()) {
+            <span>✓ End of the dataset</span>
+          } @else {
+            <span>More records are prefetched before the viewport reaches the end.</span>
+          }
+        </div>
+      </div>
+    </article>
+  </section>
+}
+
+@if (activeDemo() === 'chat') {
+  <section class="demo-grid">
+    <article class="panel">
+      <div class="panel-head">
+        <div>
+          <span class="label">REVERSE / CHAT</span>
+          <h2>Load older messages without jumping</h2>
+        </div>
+        <span class="counter">{{ messages().length }} messages</span>
+      </div>
+
+      <div
+        class="chat-box"
+        infiniteScroll
+        [scrollWindow]="false"
+        [infiniteScrollDirection]="'up'"
+        [infiniteScrollDistance]="160"
+        [infiniteScrollMaintainScrollPosition]="true"
+        [infiniteScrollDisabled]="chatLoading() || chatBeginning()"
+        (scrolled)="loadOlderMessages()">
+        @for (message of messages(); track message.id) {
+          <div class="message" [class.mine]="message.author === 'Arman'">
+            <div class="avatar">{{ message.author[0] }}</div>
+            <div class="bubble-wrap">
+              <div class="message-meta">
+                <b>{{ message.author }}</b>
+                <span>{{ message.time }}</span>
+              </div>
+              <div class="bubble">{{ message.text }}</div>
+            </div>
+          </div>
+        }
+
+        <div class="status-row reverse-status">
+          @if (chatLoading()) {
+            <span class="spinner"></span>
+            <span>Loading older messages…</span>
+          } @else if (chatBeginning()) {
+            <span>✓ Beginning of the conversation</span>
+          } @else {
+            <span>Scroll to the top to load older messages.</span>
+          }
+        </div>
+      </div>
+
+      <pre><code>&lt;div
+  infiniteScroll
+  [scrollWindow]="false"
+  [infiniteScrollDirection]="'up'"
+  [infiniteScrollMaintainScrollPosition]="true"
+  (scrolled)="loadOlder()"&gt;</code></pre>
+    </article>
+
+    <aside class="notes panel">
+      <span class="label">SCROLL ANCHORING</span>
+      <h2>Prepend, then compensate</h2>
+      <p>
+        Before the up event, the directive snapshots scrollTop and scrollHeight. When older content
+        changes the height, it applies the exact delta.
+      </p>
+      <div class="metric">
+        <b>Request count</b>
+        <span>{{ chatRequests() }}</span>
+      </div>
+      <div class="metric">
+        <b>Anchor</b>
+        <span>automatic</span>
+      </div>
+      <div class="metric">
+        <b>Slow image/layout changes</b>
+        <span>watched</span>
+      </div>
+    </aside>
+  </section>
+}
+
+@if (activeDemo() === 'both') {
+  <section class="demo-grid">
+    <article class="panel">
+      <div class="panel-head">
+        <div>
+          <span class="label">BIDIRECTIONAL</span>
+          <h2>One list, two sentinels</h2>
+        </div>
+        <span class="counter">{{ bothItems().length }} items</span>
+      </div>
+
+      <div
+        class="scroll-box both-demo"
+        infiniteScroll
+        [scrollWindow]="false"
+        [infiniteScrollDirection]="'both'"
+        [infiniteScrollDistance]="180"
+        [infiniteScrollMaintainScrollPosition]="true"
+        [infiniteScrollDisabled]="
+          bothTopLoading() || bothBottomLoading() || (bothTopEnd() && bothBottomEnd())
+        "
+        (scrolled)="loadBoth($event)">
+        @for (item of bothItems(); track item.id) {
+          <div class="item-card compact">
+            <div class="item-id">{{ item.id }}</div>
+            <div>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.text }}</p>
+            </div>
+          </div>
+        }
+
+        <div class="status-row">
+          @if (bothTopLoading() || bothBottomLoading()) {
+            <span class="spinner"></span>
+            <span>Loading {{ bothTopLoading() ? 'older' : 'newer' }} records…</span>
+          } @else {
+            <span>Both edges are active. Scroll either direction.</span>
+          }
+        </div>
+      </div>
+    </article>
+
+    <aside class="notes panel">
+      <span class="label">FULL API</span>
+      <h2>Built for reusable UI primitives</h2>
+      <div class="api-list">
+        <span>down / up / both</span>
+        <span>window / element / custom root</span>
+        <span>dynamic container at runtime</span>
+        <span>SSR-safe browser guards</span>
+        <span>min trigger interval</span>
+        <span>immediate under-filled check</span>
+        <span>prepend scroll preservation</span>
+        <span>explicit check() + completePrepend()</span>
+      </div>
+      <div class="metric">
+        <b>Request count</b>
+        <span>{{ bothRequests() }}</span>
+      </div>
+    </aside>
+  </section>
+}

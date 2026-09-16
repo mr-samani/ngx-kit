@@ -1,0 +1,12 @@
+<app-example-showcase
+  title="Box Shadow"
+  [files]="sourceFiles"
+  readmePath="readmes/box-shadow/README.md">
+
+
+
+  <div class="card" [style.box-shadow]="boxShadow()"></div>
+
+  <ngx-box-shadow [(ngModel)]="boxShadow" name="bxsh" />
+  <p>{{ boxShadow() }}</p>
+</app-example-showcase>

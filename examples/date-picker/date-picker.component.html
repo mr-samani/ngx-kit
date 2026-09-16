@@ -1,0 +1,242 @@
+```html
+<app-example-showcase
+  title="Date Picker"
+  [files]="sourceFiles"
+  readmePath="readmes/date-picker/README.md">
+  <div class="demo-page">
+    <!-- Intro -->
+    <section class="demo-intro">
+      <div>
+        <h2 class="demo-title">Date Picker</h2>
+        <p class="demo-description">
+          A flexible date picker with locale support, date constraints, validation, date range
+          selection, and inline mode.
+        </p>
+      </div>
+    </section>
+
+    <!-- Configuration -->
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3>Configuration</h3>
+          <p>Configure locale, minimum and maximum dates, and action buttons.</p>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-grid">
+          <!-- Locale -->
+          <div class="demo-field">
+            <label class="form-label" for="locale">Locale</label>
+
+            <select id="locale" name="locale" class="form-control" [(ngModel)]="locale">
+              @for (item of availableLocals; track item) {
+                <option [value]="item">
+                  {{ item }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- Min Date -->
+          <div class="demo-field">
+            <label class="form-label">Minimum date</label>
+
+            <input
+              type="text"
+              class="form-control"
+              ngxInputDatePicker
+              [locale]="locale"
+              displayFormat="yyyy-MM-dd"
+              [(ngModel)]="minDate"
+              [max]="maxDate" />
+
+            @if (minDate) {
+              <div class="demo-value">
+                {{ minDate | date: 'yyyy-MM-dd' }}
+              </div>
+            }
+          </div>
+
+          <!-- Max Date -->
+          <div class="demo-field">
+            <label class="form-label">Maximum date</label>
+
+            <input
+              type="text"
+              class="form-control"
+              ngxInputDatePicker
+              [locale]="locale"
+              displayFormat="yyyy-MM-dd"
+              [(ngModel)]="maxDate"
+              [min]="minDate" />
+
+            @if (maxDate) {
+              <div class="demo-value">
+                {{ maxDate | date: 'yyyy-MM-dd' }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="demo-options">
+          <label class="demo-check">
+            <input
+              type="checkbox"
+              name="today"
+              [(ngModel)]="config().todayButton"
+              (change)="updateConfig()" />
+
+            <span>Show today button</span>
+          </label>
+
+          <label class="demo-check">
+            <input
+              type="checkbox"
+              name="clearbtn"
+              [(ngModel)]="config().clearButton"
+              (change)="updateConfig()" />
+
+            <span>Show clear button</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Input Mode -->
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3>Input mode</h3>
+          <p>Use the date picker directly with an Angular reactive form.</p>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <form [formGroup]="form">
+          <div class="ngx-row">
+            <div class="ngx-input-group">
+              <input
+                class="form-control"
+                formControlName="date"
+                ngxInputDatePicker
+                #dpInput="ngxInputDatePicker"
+                displayFormat="EEEE - d MMMM, yyyy"
+                [min]="minDate"
+                [max]="maxDate"
+                [locale]="locale"
+                [openOnCLick]="true"
+                [config]="config()" />
+
+              <button
+                type="button"
+                class="ngx-group-text pointer"
+                aria-label="Open date picker"
+                (click)="dpInput.toggle()">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 448 512"
+                  width="20"
+                  aria-hidden="true">
+                  <path
+                    d="M64 264C64 241.9 81.91 224 104 224H184C206.1 224 224 241.9 224 264V344C224 366.1 206.1 384 184 384H104C81.91 384 64 366.1 64 344V264zM96 264V344C96 348.4 99.58 352 104 352H184C188.4 352 192 348.4 192 344V264C192 259.6 188.4 256 184 256H104C99.58 256 96 259.6 96 264zM128 64H320V16C320 7.164 327.2 0 336 0C344.8 0 352 7.164 352 16V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H96V16C96 7.164 103.2 0 112 0C120.8 0 128 7.164 128 16V64zM32 448C32 465.7 46.33 480 64 480H384C401.7 480 416 465.7 416 448V192H32V448zM32 128V160H416V128C416 110.3 401.7 96 384 96H64C46.33 96 32 110.3 32 128z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Validation -->
+          <div class="demo-validation">
+            @if (form.get('date')?.hasError('invalid')) {
+              <div class="demo-error">Invalid date</div>
+            }
+
+            @if (form.get('date')?.hasError('required')) {
+              <div class="demo-error">Date is required</div>
+            }
+          </div>
+
+          <!-- Value -->
+          <div class="demo-output">
+            <div class="demo-output-label">Value</div>
+
+            <pre>{{ form.get('date')?.value | json }}</pre>
+          </div>
+
+          <!-- Status -->
+          <div class="demo-output">
+            <div class="demo-output-label">Form status</div>
+
+            <pre>
+invalid={{ form.get('date')?.invalid }} → {{ form.get('date')?.errors | json }}</pre>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Date Range -->
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3>Date range</h3>
+          <p>Select a start and end date using the range picker.</p>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-field">
+          <label class="form-label">Date range</label>
+
+          <input
+            class="form-control"
+            [(ngModel)]="dateRange"
+            ngxInputDateRangePicker
+            [locale]="locale"
+            [config]="config()" />
+        </div>
+
+        <div class="demo-output">
+          <div class="demo-output-label">Selected range</div>
+
+          <pre>{{ dateRange | json }}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inline -->
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3>Inline mode</h3>
+          <p>Render the date picker directly inside the page without an input.</p>
+        </div>
+      </div>
+
+      <div class="demo-card demo-card-inline">
+        <ngx-date-picker
+          #inlineDate
+          [config]="config()"
+          [locale]="locale"
+          [min]="minDate"
+          [max]="maxDate"></ngx-date-picker>
+      </div>
+    </section>
+
+    <!-- Current Configuration -->
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3>Current configuration</h3>
+          <p>The configuration currently applied to the date picker.</p>
+        </div>
+      </div>
+
+      <div class="demo-code">
+        <pre>{{ config() | json }}</pre>
+      </div>
+    </section>
+  </div>
+</app-example-showcase>
+```
