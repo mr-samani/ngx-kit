@@ -1,0 +1,190 @@
+:host {
+    width: 500px;
+}
+
+svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.audio-player,
+.play-list {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    position: relative;
+    overflow: hidden;
+    direction: ltr;
+    max-width: 100%;
+
+    &.linear {
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row-reverse;
+        }
+    }
+}
+
+.controls {
+    .time-seeker {
+        display: flex;
+        align-items: center;
+        flex: 1 0 0;
+        min-width: 200px;
+    }
+
+    .buttons {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    font-size: 18px;
+    padding: 5px;
+    width: 32px;
+    height: 32px;
+    border: 1px #e5e5e5 solid;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 2px;
+    color: #183153;
+
+    &:not(:disabled) {
+        cursor: pointer;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: #e5e5e5;
+    }
+}
+
+button:focus {
+    outline: none;
+}
+
+.seek-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    background-color: #ddd;
+    outline: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.seek-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background-color: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.seek-slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background-color: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.speed-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.speed-display {
+    width: 30px;
+    text-align: center;
+    overflow: hidden;
+    font-size: 90%;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    flex: auto;
+    min-width: 100px;
+}
+
+.volume-slider {
+    margin-left: 10px;
+    width: 10px;
+    flex: auto;
+}
+
+/*--------------------------------------------*/
+.play-list {
+    margin: 3px 0;
+
+    .list-item {
+        border-bottom: 1px rgba(172, 172, 172, 0.8) solid;
+        padding: 10px 15px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+
+        &:hover:not(.disabled) {
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        &.active {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+    }
+}
+
+.simp-buffer {
+    animation: audio-progress 1s linear infinite;
+    background-image: linear-gradient(
+        -45deg,
+        #000 25%,
+        transparent 25%,
+        transparent 50%,
+        #000 50%,
+        #000 75%,
+        transparent 75%,
+        transparent
+    );
+    background-repeat: repeat-x;
+    background-size: 25px 25px;
+    color: transparent;
+    width: 100%;
+    height: 4px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+@keyframes audio-progress {
+    to {
+        background-position: 25px 0;
+    }
+}
+
+.file-info {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
+}

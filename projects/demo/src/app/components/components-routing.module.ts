@@ -131,6 +131,13 @@ const routes: Routes = [
         path: 'tree-list',
         loadComponent: () => import('./tree-list/tree-list.component').then((c) => c.DemoTreeList),
       },
+      {
+        path: 'audio-control',
+        loadComponent: () =>
+          import('./audio-control/audio-control.component').then(
+            (c) => c.DemoAudioControlComponent,
+          ),
+      },
     ],
   },
 ];
