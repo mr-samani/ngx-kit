@@ -124,8 +124,14 @@ Capability detection (canPlayType + type/codecs)
 ```
 
 The UI (`NgxMediaControl`) never touches an engine directly — it only calls
-`NgxMediaFacade`, which asks `NgxMediaEngineFactory` for an `NgxMediaEngine`.
-Swapping the engine implementation never touches the component.
+`NgxMediaFacade`, which asks `NgxMediaEngineFactory` for a native engine and
+actually attempts `load()` before ever consulting the decoder registry.
+`canPlayType()`/extension/mime are only ever a hint, not a guarantee — a
+mislabeled or fake extension, or a container the browser opens but can't
+actually decode, only shows up as a genuine failure once `load()` is
+attempted, so the decoder registry is tried on a real failure, not on a
+pessimistic upfront guess. Swapping the engine implementation never touches
+the component.
 
 ## 11. WASM decoders
 

@@ -51,7 +51,7 @@ import {
  */
 export class FfmpegTranscodeDecoder extends NgxWasmDecoderBase {
   readonly id = 'ffmpeg-transcode';
-  readonly formats = ['3gp', '3g2', 'wma', 'amr', 'flv', 'ogg', 'mp3','mp4'] as const as string[];
+  readonly formats = ['3gp', '3g2', 'wma', 'amr', 'flv', 'ogg', 'mp3', 'mp4'] as const as string[];
   override priority = 0;
 
   private readonly handledExtensions = new Set(this.formats);
@@ -69,7 +69,7 @@ export class FfmpegTranscodeDecoder extends NgxWasmDecoderBase {
       import('@ffmpeg/util'),
     ]);
     const ffmpeg = new FFmpeg();
- 
+
     await ffmpeg.load({
       coreURL: await toBlobURL(`ffmpeg/core/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`ffmpeg/core/ffmpeg-core.wasm`, 'application/wasm'),

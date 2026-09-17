@@ -7,6 +7,7 @@ import { NgxMediaError } from '../contracts/media-error';
 import { NgxMediaSessionBridge } from './media-session';
 import { NgxWebAudioGraph } from '../audio/web-audio-graph';
 import { isBrowser } from '../utils/capabilities';
+import { NgxMediaDecoderRegistry } from '../decoders/decoder-registry';
 
 /**
  * Everything the UI component needs, expressed as signals it can bind to
@@ -19,6 +20,7 @@ import { isBrowser } from '../utils/capabilities';
 export class NgxMediaFacade {
   private readonly zone = inject(NgZone);
   private readonly engineFactory = inject(NgxMediaEngineFactory);
+  private readonly decoderRegistry = inject(NgxMediaDecoderRegistry);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mediaSession = new NgxMediaSessionBridge();
 
@@ -57,18 +59,18 @@ export class NgxMediaFacade {
   }
 
   setPlaylist(sources: NgxMediaSource[], startIndex = 0, autoLoad = true): void {
-    const clampedIndex = Math.min(Math.max(startIndex, 0), Math.max(sources.length - 1, 0));
-    // Defense-in-depth against reload loops: if a caller (typically a
-    // component effect reacting to an input that got a content-equal but
-    // reference-different array) asks for the playlist we already have
-    // loaded, do nothing. Reloading identical content would destroy and
-    // recreate the engine, re-fetch the media, and fire a fresh batch of
-    // state events for zero actual change — exactly what produces the
-    // "thousands of repeated requests" symptom if something upstream
-    // recomputes an equivalent array on every change-detection tick.
-    if (mediaSourcesEqual(this._playlist(), sources) && clampedIndex === this._currentIndex()) {
+    // اگر محتوای پلی‌لیست واقعاً عوض نشده، کاری نکن — حتی اگر startIndex
+    // صفر باشه. قبلاً اینجا currentIndex رو هم چک می‌کردیم که اگه با هم فرق
+    // داشتن ریست بشه؛ همون چک باعث می‌شد وقتی effect کامپوننت (که همیشه
+    // startIndex=0 صدا می‌زنه) به هر دلیلی دوباره اجرا بشه، مسیرِ ناوبری
+    // دستی کاربر (next/previous که فقط _currentIndex رو عوض می‌کنن) دور
+    // زده بشه و ایندکس با زور به 0 برگرده — دقیقاً همون رفتار "بعد از next
+    // دوباره میره رو آیتم اول". الان: تا وقتی محتوا یکیه، ایندکس دست‌نخورده
+    // می‌مونه، فارغ از اینکه startIndex چی خواسته بود.
+    if (mediaSourcesEqual(this._playlist(), sources)) {
       return;
     }
+    const clampedIndex = Math.min(Math.max(startIndex, 0), Math.max(sources.length - 1, 0));
     this._playlist.set(sources);
     this._currentIndex.set(clampedIndex);
     if (autoLoad && sources.length > 0) {
@@ -81,28 +83,68 @@ export class NgxMediaFacade {
     if (!source || !isBrowser()) return;
 
     this.loadAbort?.abort();
-    this.loadAbort = new AbortController();
+    const controller = new AbortController();
+    this.loadAbort = controller;
     this._error.set(null);
 
     try {
       this.engine?.destroy();
-      const newEngine = await this.engineFactory.create(
-        this.kind,
-        source,
-        (fn) => this.zone.runOutsideAngular(fn),
-        this.loadAbort.signal,
-      );
-      await newEngine.load(source, this.loadAbort.signal);
+      const newEngine = await this.resolveEngine(source, controller.signal);
+
+      // اگه تا این لحظه یه loadCurrent جدیدتر (مثلاً next/previous که کاربر
+      // زده) این کنترلر رو abort کرده باشه، این نتیجه دیگه معتبر نیست —
+      // نباید جایگزین موتور فعلی (که مال درخواست جدیدتره) بشه.
+      if (controller.signal.aborted) {
+        newEngine.destroy();
+        return;
+      }
+
       this._engine.set(newEngine);
       this.mediaSession.setMetadata(source);
       this.bindMediaSession();
       if (playAfter) await this.play();
     } catch (err) {
+      // این تلاش عمداً توسط یه loadCurrent جدیدتر لغو شده (کاربر next/previous
+      // زده در حالی که لود قبلی هنوز تموم نشده بود) — این خطا مال یه درخواست
+      // منسوخ‌شده‌ست، نباید به‌عنوان خطای واقعی نمایش داده بشه؛ درخواست جدیدتر
+      // خودش مسئول ست کردن error/state خودشه.
+      if (controller.signal.aborted) return;
       const mediaError =
         err instanceof NgxMediaError
           ? err
           : new NgxMediaError('UNKNOWN', 'Failed to load media.', err);
       this._error.set(mediaError);
+    }
+  }
+
+  /**
+   * مسیر native رو اول امتحان می‌کنه (fast path معمول). اگه واقعاً در حین
+   * load() شکست بخوره — نه فقط چون canPlayType/پسوند اولش گفته بود «نه»،
+   * بلکه چون واقعاً رد شده — می‌ره سراغ decoder registry. این لازمه چون
+   * پسوند/mime فقط یه حدسه و می‌تونه اشتباه/جعلی باشه؛ تنها سیگنال قابل
+   * اعتماد، شکست واقعیِ خود load() هست.
+   */
+  private async resolveEngine(
+    source: NgxMediaSource,
+    signal: AbortSignal,
+  ): Promise<NgxMediaEngine> {
+    const native = await this.engineFactory.create(this.kind, source, (fn) =>
+      this.zone.runOutsideAngular(fn),
+    );
+    try {
+      await native.load(source, signal);
+      return native;
+    } catch (nativeErr) {
+      native.destroy();
+      if (signal.aborted) throw nativeErr; // لغو عمدی بود، نه شکست واقعی فرمت — دنبال دیکودر نگرد
+
+      const decoder = await this.decoderRegistry.findDecoder(source);
+      if (!decoder) throw nativeErr;
+
+      // دیکودر یه موتور آماده و از قبل load-شده برمی‌گردونه (مثلاً روی یه
+      // blob ترنسکد شده، نه سورس اصلی) — دیگه نباید .load(source) دوباره
+      // روش صدا زده بشه.
+      return decoder.createEngine(source, signal);
     }
   }
 
@@ -157,7 +199,6 @@ export class NgxMediaFacade {
   }
 
   async next(): Promise<void> {
-    debugger;
     const list = this._playlist();
     if (list.length === 0) return;
     const next = (this._currentIndex() + 1) % list.length;

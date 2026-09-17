@@ -1,11 +1,5 @@
 import { EnvironmentProviders, makeEnvironmentProviders, Provider, Type } from '@angular/core';
-import {
-  NGX_MEDIA_CONFIG,
-  NGX_MEDIA_DECODER,
-  NGX_MEDIA_REQUEST_HANDLER,
-  NgxMediaConfig,
-  NgxMediaRequestHandler,
-} from '../decoders/decoder.tokens';
+import { NGX_MEDIA_CONFIG, NGX_MEDIA_DECODER, NGX_MEDIA_REQUEST_HANDLER, NgxMediaConfig, NgxMediaRequestHandler } from '../decoders/decoder.tokens';
 import { NgxMediaDecoder } from '../decoders/decoder.interface';
 
 /** Root-level setup: `bootstrapApplication(App, { providers: [provideNgxMedia({...})] })`. */
@@ -37,8 +31,6 @@ export function provideNgxMediaDecoder(
 }
 
 /** Registers a custom network layer (auth headers, signed URLs, a non-fetch HTTP client, ...). */
-export function provideNgxMediaRequestHandler(
-  handler: NgxMediaRequestHandler,
-): EnvironmentProviders {
+export function provideNgxMediaRequestHandler(handler: NgxMediaRequestHandler): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: NGX_MEDIA_REQUEST_HANDLER, useValue: handler }]);
 }
