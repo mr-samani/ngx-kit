@@ -7,8 +7,7 @@ export type NgxMediaErrorCategory =
   | 'MEDIA'
   | 'PERMISSION'
   | 'BROWSER_UNSUPPORTED'
-  | 'UNKNOWN'
-  | 'DESTROYED';
+  | 'UNKNOWN';
 
 export class NgxMediaError extends Error {
   constructor(
@@ -35,11 +34,7 @@ export class NgxMediaError extends Error {
       case MediaError.MEDIA_ERR_DECODE:
         return new NgxMediaError('DECODER', 'The media could not be decoded.', err);
       case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-        return new NgxMediaError(
-          'UNSUPPORTED_FORMAT',
-          'This media format/source is not supported.',
-          err,
-        );
+        return new NgxMediaError('UNSUPPORTED_FORMAT', 'This media format/source is not supported.', err);
       default:
         return new NgxMediaError('UNKNOWN', 'An unknown media error occurred.', err);
     }

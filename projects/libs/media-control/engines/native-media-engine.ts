@@ -28,6 +28,8 @@ export class NativeMediaEngine implements NgxMediaEngine {
   private objectUrl: string | null = null;
   private destroyed = false;
   private readonly cleanupFns: Array<() => void> = [];
+  /** Tracks which source (by URL) is currently loaded/loading, so a repeated `load()` for the same source is a no-op instead of a fresh network fetch. */
+  private loadedSrcKey: string | null = null;
 
   constructor(
     kind: NgxMediaKind,
@@ -48,6 +50,17 @@ export class NativeMediaEngine implements NgxMediaEngine {
 
   async load(source: NgxMediaSource, abort?: AbortSignal): Promise<void> {
     this.assertNotDestroyed();
+
+    // Idempotent load: if this exact source is already loaded (or currently
+    // loading) on this element, calling `.load()` again would tell the
+    // browser to re-fetch it from scratch — this is exactly what shows up
+    // in devtools as the same file being requested many times over. Skip it.
+    const key = this.sourceKey(source);
+    if (key !== null && key === this.loadedSrcKey && this.el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      return;
+    }
+    this.loadedSrcKey = key;
+
     this.releaseObjectUrl();
     this.patch({ playback: 'loading', currentTime: 0, duration: 0, buffered: [] });
 
@@ -132,6 +145,7 @@ export class NativeMediaEngine implements NgxMediaEngine {
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns.length = 0;
     this.releaseObjectUrl();
+    this.loadedSrcKey = null;
     this.el.pause();
     this.el.removeAttribute('src');
     (this.el as any).srcObject = null;
@@ -187,9 +201,11 @@ export class NativeMediaEngine implements NgxMediaEngine {
           videoHeight: (this.el as HTMLVideoElement).videoHeight || undefined,
           playback: 'ready',
         });
-        if (!Number.isFinite(this.el.duration)) {
-          void this.probeUnseekableDuration();
-        }
+        // Deliberately NOT auto-probing an unknown duration here anymore —
+        // see `probeUnseekableDuration()` below for why that cost extra
+        // network requests on every single load. `durationchange` (below)
+        // still updates the UI the moment the browser figures the real
+        // duration out on its own, with zero extra requests.
       });
       on('waiting', () => this.patch({ playback: 'buffering' }));
       on('playing', () => this.patch({ playback: 'playing' }));
@@ -216,14 +232,15 @@ export class NativeMediaEngine implements NgxMediaEngine {
 
   /**
    * Some servers/streams report `duration === Infinity` until more data
-   * arrives. Rather than eagerly fetching + fully decoding the file through
-   * `AudioContext.decodeAudioData` (expensive, one-shot AudioContext per
-   * call — what the previous implementation did), we seek to a huge time
-   * once; browsers that don't know the real duration yet will clamp and fire
-   * another `durationchange` with the correct value. This costs a single
-   * seek, no network re-fetch, no extra AudioContext.
+   * arrives. This forces the browser to resolve it immediately by seeking
+   * near the end and back — which works, but each call costs 1-2 extra
+   * HTTP range requests (this is what was showing up in devtools as the
+   * same file being fetched several times per load). No longer called
+   * automatically; it's opt-in for the rare case where you genuinely need
+   * duration *immediately* rather than letting `durationchange` update it
+   * naturally as the file streams in during normal playback.
    */
-  private async probeUnseekableDuration(): Promise<void> {
+  async probeUnseekableDuration(): Promise<void> {
     if (this.destroyed) return;
     const original = this.el.currentTime;
     try {
@@ -241,9 +258,17 @@ export class NativeMediaEngine implements NgxMediaEngine {
     }
   }
 
+  private sourceKey(source: NgxMediaSource): string | null {
+    // Only string URLs are cheaply comparable; Blob/File/MediaStream are
+    // always treated as a fresh load (correct default — re-checking their
+    // content for equality isn't worth the cost, and callers that already
+    // hold a stable Blob reference rarely call `load()` again for the same one).
+    return typeof source.src === 'string' ? source.src : null;
+  }
+
   private assertNotDestroyed(): void {
     if (this.destroyed) {
-      throw new NgxMediaError('DESTROYED', 'Media engine has already been destroyed.');
+      throw new NgxMediaError('ABORTED', `${this.id} engine method called after destroy().`);
     }
   }
 }

@@ -97,6 +97,30 @@ describe('NativeMediaEngine', () => {
     expect(() => engine.seek(1)).toThrow();
   });
 
+  it('methods throw NgxMediaError after destroy() (assertNotDestroyed)', async () => {
+    await engine.load({ src: 'song.mp3', type: 'audio/mpeg' });
+    engine.destroy();
+    await expect(engine.load({ src: 'other.mp3' })).rejects.toThrow();
+    expect(() => engine.seek(5)).toThrow();
+    await expect(engine.play()).rejects.toThrow();
+  });
+
+  it('does not call el.load() again for the same source already loaded (idempotent load)', async () => {
+    await engine.load({ src: 'song.mp3', type: 'audio/mpeg' });
+    (el as any).readyState = 2; // HAVE_CURRENT_DATA
+    const loadSpy = vi.spyOn(el as any, 'load');
+    await engine.load({ src: 'song.mp3', type: 'audio/mpeg' });
+    expect(loadSpy).not.toHaveBeenCalled();
+  });
+
+  it('does call el.load() again when the source genuinely changes', async () => {
+    await engine.load({ src: 'song.mp3', type: 'audio/mpeg' });
+    (el as any).readyState = 2;
+    const loadSpy = vi.spyOn(el as any, 'load');
+    await engine.load({ src: 'other-song.mp3', type: 'audio/mpeg' });
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects with NgxMediaError when the element fires an error event during load', async () => {
     const failing = fakeAudioElement();
     (failing as any).load = () => {
