@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { NgxDropzoneComponent, NgxDropzoneRejectedFile } from 'ngx-kit/dropzone';
+import { NgxDropzone, NgxDropzoneRejectedFile } from 'ngx-kit/dropzone';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
@@ -9,7 +9,7 @@ import {
   selector: 'app-dropzone',
   templateUrl: './dropzone.component.html',
   styleUrl: './dropzone.component.scss',
-  imports: [NgxDropzoneComponent, ExampleShowcaseComponent],
+  imports: [NgxDropzone, ExampleShowcaseComponent],
 })
 export class DropzoneComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
