@@ -65,11 +65,22 @@ sources: NgxMediaSource[] = [
 | `showVolume` | `boolean` | `true` | unchanged |
 | `linear` | `boolean` | `false` | unchanged |
 | `preload` | `'none' \| 'metadata' \| 'auto'` | `'metadata'` | unchanged |
-| `fetchHeaders` | `HeadersInit` | — | unchanged |
+| `fetchHeaders` | `HeadersInit` | — | see note below — NOT sent on plain native playback |
 | `fileList` | `string[]` | — | unchanged, still works |
 | `sources` | `NgxMediaSource[]` | — | new, preferred |
 
 Outputs: `trackChange` (fires with the active `NgxMediaSource`), `error` (fires with a human-readable message; inspect `NgxMediaError.category` if you're subscribing programmatically via the facade in your own wrapper).
+
+> **`fetchHeaders` platform limitation.** A native `<audio src>`/`<video src>`
+> fetch cannot carry arbitrary request headers — that's a browser limitation,
+> not something this library papers over with a hidden `fetch()` + `Blob`
+> step (which would break streaming/range-requests for anything but small
+> clips). `fetchHeaders` is applied as the default `requestHeaders` for any
+> resolved source that doesn't specify its own, and only actually takes
+> effect for sources that end up on a decoder/MSE backend — both of which
+> fetch through `NGX_MEDIA_REQUEST_HANDLER` and can carry headers. For a
+> plain natively-playable URL, set headers via a signed/short-lived URL or a
+> `NGX_MEDIA_REQUEST_HANDLER`-based backend instead.
 
 ## 7. Media sources
 

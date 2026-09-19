@@ -1,14 +1,23 @@
 import { EnvironmentProviders, makeEnvironmentProviders, Provider, Type } from '@angular/core';
-import { NGX_MEDIA_CONFIG, NGX_MEDIA_DECODER, NGX_MEDIA_REQUEST_HANDLER, NgxMediaConfig, NgxMediaRequestHandler } from '../decoders/decoder.tokens';
+import {
+  NGX_MEDIA_CONFIG,
+  NGX_MEDIA_CONFIG_DEFAULTS,
+  NGX_MEDIA_DECODER,
+  NGX_MEDIA_REQUEST_HANDLER,
+  NgxMediaConfig,
+  NgxMediaRequestHandler,
+} from '../decoders/decoder.tokens';
 import { NgxMediaDecoder } from '../decoders/decoder.interface';
 
-/** Root-level setup: `bootstrapApplication(App, { providers: [provideNgxMedia({...})] })`. */
+/**
+ * Root-level setup: `bootstrapApplication(App, { providers: [provideNgxMedia({...})] })`.
+ * The supplied config is merged over the library's own defaults, not
+ * replacing them outright — `provideNgxMedia({ preload: 'auto' })` must not
+ * silently drop `maxConcurrentDecoderProbes` and leave it `undefined`.
+ */
 export function provideNgxMedia(config?: Partial<NgxMediaConfig>): EnvironmentProviders {
-  const providers: Provider[] = [];
-  if (config) {
-    providers.push({ provide: NGX_MEDIA_CONFIG, useValue: config });
-  }
-  return makeEnvironmentProviders(providers);
+  const merged: NgxMediaConfig = { ...NGX_MEDIA_CONFIG_DEFAULTS, ...config };
+  return makeEnvironmentProviders([{ provide: NGX_MEDIA_CONFIG, useValue: merged }]);
 }
 
 /**

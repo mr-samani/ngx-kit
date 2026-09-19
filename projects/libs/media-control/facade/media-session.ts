@@ -10,12 +10,25 @@ export interface MediaSessionActions {
   seekForward(seconds: number): void;
 }
 
+/**
+ * `navigator.mediaSession` is a single global the whole page shares. With
+ * more than one `NgxMediaControl` on a page, whichever bound LAST naturally
+ * owns it (a reasonable policy — that matches which one the OS media
+ * controls should act on). The bug this fixes: without tracking who the
+ * current owner actually is, destroying an OLDER player unconditionally
+ * cleared every action handler, silently breaking the media session for
+ * whichever player is currently active. `currentOwner` makes `unbind()` a
+ * no-op unless the instance calling it is still the one that owns it.
+ */
+let currentOwner: NgxMediaSessionBridge | null = null;
+
 /** No-ops everywhere the API isn't supported; never throws. */
 export class NgxMediaSessionBridge {
   private bound = false;
 
   bind(actions: MediaSessionActions): void {
-    if (!hasMediaSession() || this.bound) return;
+    if (!hasMediaSession()) return;
+    currentOwner = this;
     this.bound = true;
     const ms = navigator.mediaSession;
     const safe = (fn: () => void) => () => {
@@ -33,8 +46,9 @@ export class NgxMediaSessionBridge {
     ms.setActionHandler('seekforward', (details) => actions.seekForward(details.seekOffset ?? 10));
   }
 
+  /** No-ops if a different (typically newer) instance currently owns the session — a stale player must never overwrite the active one's metadata. */
   setMetadata(source: NgxMediaSource): void {
-    if (!hasMediaSession() || typeof MediaMetadata === 'undefined') return;
+    if (!hasMediaSession() || typeof MediaMetadata === 'undefined' || currentOwner !== this) return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: source.title ?? '',
       artist: source.artist ?? '',
@@ -44,13 +58,19 @@ export class NgxMediaSessionBridge {
   }
 
   setPlaybackState(state: 'playing' | 'paused' | 'none'): void {
-    if (!hasMediaSession()) return;
+    if (!hasMediaSession() || currentOwner !== this) return;
     navigator.mediaSession.playbackState = state;
   }
 
   unbind(): void {
     if (!hasMediaSession() || !this.bound) return;
     this.bound = false;
+    if (currentOwner !== this) {
+      // A newer instance already took over ownership — clearing handlers
+      // now would wipe out THEIR session, not ours. Nothing to do.
+      return;
+    }
+    currentOwner = null;
     const ms = navigator.mediaSession;
     (['play', 'pause', 'previoustrack', 'nexttrack', 'seekbackward', 'seekforward'] as const).forEach(
       (action) => {

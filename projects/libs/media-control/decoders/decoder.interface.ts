@@ -21,8 +21,8 @@ export interface NgxMediaDecoder {
    */
   readonly priority?: number;
 
-  /** Cheap capability check; may be async if it needs to sniff bytes. */
-  canDecode(source: NgxMediaSource): boolean | Promise<boolean>;
+  /** Cheap capability check; may be async if it needs to sniff bytes. `signal` lets the registry cancel an in-flight probe (e.g. the user switched tracks before this decoder answered). */
+  canDecode(source: NgxMediaSource, signal?: AbortSignal): boolean | Promise<boolean>;
 
   /**
    * Build a ready-to-use engine for this source. `signal` allows the caller

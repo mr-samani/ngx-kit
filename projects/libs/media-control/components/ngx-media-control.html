@@ -15,9 +15,10 @@
         type="range"
         min="0"
         [max]="state().duration || 0"
-        [value]="state().currentTime"
+        [value]="displaySeekTime()"
         step=".1"
-        (input)="seekAudio($event)" />
+        (input)="onSeekInput($event)"
+        (change)="onSeekCommit($event)" />
       <span>{{ totalTimeDisplay() }}</span>
       @if (isBuffering()) {
         <div class="simp-buffer"></div>
@@ -150,7 +151,10 @@
     </div>
   </div>
   @if (errorMessage()) {
-    <div class="error-message">{{ errorMessage() }}</div>
+    <div class="error-message">
+      {{ errorMessage() }}
+      <button (click)="retryCurrent()" title="retry">retry</button>
+    </div>
   }
 </div>
 
@@ -159,7 +163,7 @@
     @if (playlist().length === 0) {
       <div class="list-item disabled">No any record</div>
     }
-    @for (item of playlist(); track $index; let i = $index) {
+    @for (item of playlist(); track item.src; let i = $index) {
       <div class="list-item" [class.active]="i === currentIndex()" (click)="onClickPlayList(i)">
         {{ item.title }}
       </div>

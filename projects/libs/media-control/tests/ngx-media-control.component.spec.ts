@@ -29,6 +29,32 @@ describe('NgxMediaControl', () => {
   });
 });
 
+describe('NgxMediaControl — malformed source URLs never crash filename extraction', () => {
+  it('tolerates a malformed percent-encoded URL instead of throwing', () => {
+    TestBed.configureTestingModule({ imports: [NgxMediaControl] });
+    const fixture = TestBed.createComponent(NgxMediaControl);
+    fixture.componentRef.setInput('sources', [{ src: 'https://example.com/song%zz.mp3' }]);
+    expect(() => fixture.detectChanges()).not.toThrow();
+  });
+});
+
+describe('NgxMediaControl — seek slider preview does not jitter against live playback', () => {
+  it('while isSeeking is true, displaySeekTime tracks the local preview, not state().currentTime', () => {
+    TestBed.configureTestingModule({ imports: [NgxMediaControl] });
+    const fixture = TestBed.createComponent(NgxMediaControl);
+    fixture.componentRef.setInput('fileList', []);
+    fixture.detectChanges();
+    const component = fixture.componentInstance as any;
+
+    component.onSeekInput({ target: { value: '42' } } as unknown as Event);
+    expect(component.isSeeking()).toBe(true);
+    expect(component.displaySeekTime()).toBe(42);
+
+    component.onSeekCommit({ target: { value: '42' } } as unknown as Event);
+    expect(component.isSeeking()).toBe(false);
+  });
+});
+
 describe('NgxAudioControl (legacy wrapper)', () => {
   it('still creates from the old selector/inputs and delegates to NgxMediaControl', () => {
     TestBed.configureTestingModule({ imports: [NgxAudioControl] });
