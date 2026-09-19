@@ -98,8 +98,7 @@ describe('DecodedBufferEngine', () => {
     // Simulate the source naturally finishing (onended fires from the browser).
     const lastSource = (engine as any).source;
     lastSource.onended();
-    expect(engine.state().playback).toBe('ended');
-
+    expect(engine.state().playback).toBe('ended');   
     await engine.play();
     expect(engine.state().currentTime).toBeCloseTo(0, 5);
     expect(engine.state().playback).toBe('playing');

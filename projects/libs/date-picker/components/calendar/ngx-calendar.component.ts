@@ -9,6 +9,7 @@ import {
   Output,
   inject,
   input,
+  signal,
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -78,9 +79,9 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   @Input() set locale(val: string) {
-    this._locale = val;
+    this._locale = val || 'en';
     this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    if (this.currYear !== undefined) this.syncAnchorToLocale();
+    if (this.currYear() !== undefined) this.syncAnchorToLocale();
     this.renderCalendar(this.view);
   }
 
@@ -105,7 +106,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   private _events: MsEvents[] = [];
   @Input() set events(val: MsEvents[]) {
     this._events = Array.isArray(val) ? val : [];
-    if (this.anchorDate) this.renderCalendar(this.view);
+    if (this.anchorDate()) this.renderCalendar(this.view);
   }
   get events(): MsEvents[] {
     return this._events;
@@ -118,7 +119,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   selected?: Date;
   // Todo: change to signal
-  anchorDate!: Date;
+  anchorDate = signal<Date | undefined>(undefined);
 
   eventViewItems: { event: MsEventViewer; start: Date; end: Date }[] = [];
   monthEventSegments: CalendarMonthEventSegment[] = [];
@@ -141,9 +142,9 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   ngOnInit(): void {
     this.months = this.adapter.longMonths;
     this.weeks = this.adapter.longDays;
-    this.anchorDate = this.selected
-      ? new Date(this.selected)
-      : this.adapter.getDate(this.adapter.today());
+    this.anchorDate.set(
+      this.selected ? new Date(this.selected) : this.adapter.getDate(this.adapter.today()),
+    );
     this.syncAnchorToLocale();
     this.renderCalendar(this.view);
   }
@@ -178,7 +179,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   override renderCalendar(view: CalendarView) {
-    if (!this.anchorDate) return;
+    if (!this.anchorDate()) return;
 
     this.syncAnchorToLocale();
 
@@ -205,7 +206,9 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   private syncAnchorToLocale() {
-    const localeDate = this.adapter.toLocale(this.anchorDate);
+    if (!this.anchorDate()) return;
+
+    const localeDate = this.adapter.toLocale(this.anchorDate()!);
     this.currYear.set(localeDate.year);
     this.currMonth.set(localeDate.month ?? 0);
     this.months = this.adapter.longMonths;
@@ -213,8 +216,10 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   private renderTimedView() {
-    const dates = this.getWeekDates(this.anchorDate);
-    const visibleDates = this.view === 'day' ? [new Date(this.startOfDay(this.anchorDate))] : dates;
+    if (!this.anchorDate()) return;
+    const dates = this.getWeekDates(this.anchorDate()!);
+    const visibleDates =
+      this.view === 'day' ? [new Date(this.startOfDay(this.anchorDate()!))] : dates;
 
     this.weekDays = visibleDates.map((date, column) => ({
       date,
@@ -493,18 +498,18 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   get headerText(): string {
-    if (!this.anchorDate) return '';
+    if (!this.anchorDate()) return '';
 
     if (this.view === 'day') {
-      return this.adapter.formatDate(this.adapter.toLocale(this.anchorDate), 'full') ?? '';
+      return this.adapter.formatDate(this.adapter.toLocale(this.anchorDate()!), 'full') ?? '';
     }
 
     if (this.view === 'week') {
-      const days = this.getWeekDates(this.anchorDate);
+      const days = this.getWeekDates(this.anchorDate()!);
       return this.formatDateRange(days[0], days[6]);
     }
 
-    return `${this.displayMonth} ${this.currYear}`;
+    return `${this.displayMonth()} ${this.currYear()}`;
   }
 
   formatDateRange(start: Date, end: Date): string {
@@ -533,8 +538,8 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   gotoToday() {
     this.cancelEventInteraction();
-    this.anchorDate = this.adapter.getDate(this.adapter.today());
-    this.selected = new Date(this.anchorDate);
+    this.anchorDate.set(this.adapter.getDate(this.adapter.today()));
+    this.selected = new Date(this.anchorDate()!);
     this.syncAnchorToLocale();
     this.renderCalendar(this.view);
   }
@@ -543,7 +548,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     ev.stopPropagation();
     if (item.active) {
       this.selected = item.date;
-      this.anchorDate = new Date(item.date!);
+      this.anchorDate.set(new Date(item.date!));
       this.dateChange.emit(item);
       this.renderCalendar(this.view);
     }
@@ -557,18 +562,22 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   }
 
   private navigate(direction: 1 | -1) {
-    const d = new Date(this.anchorDate);
+    if (!this.anchorDate()) return;
+
+    const d = new Date(this.anchorDate()!);
     if (this.view === 'month' || this.view === 'event') {
       const locale = this.adapter.toLocale(d);
-      this.anchorDate = this.adapter.getDate({
-        locale: this._locale,
-        year: locale.year,
-        month: locale.month! + direction,
-        day: 1,
-      });
+      this.anchorDate.set(
+        this.adapter.getDate({
+          locale: this._locale,
+          year: locale.year,
+          month: locale.month! + direction,
+          day: 1,
+        }),
+      );
     } else {
       d.setDate(d.getDate() + direction * (this.view === 'week' ? 7 : 1));
-      this.anchorDate = d;
+      this.anchorDate.set(d);
     }
     this.syncAnchorToLocale();
     this.renderCalendar(this.view);
