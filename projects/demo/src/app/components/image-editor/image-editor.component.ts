@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { NgxDropzoneComponent } from 'ngx-kit/dropzone';
+import { NgxDropzone } from 'ngx-kit/dropzone';
 import { NgxImageEditor, NgxImageEditorResult } from 'ngx-kit/image-editor';
 import {
   ExampleShowcaseComponent,
@@ -10,7 +10,7 @@ import {
   selector: 'app-image-editor',
   templateUrl: './image-editor.component.html',
   styleUrl: './image-editor.component.scss',
-  imports: [NgxDropzoneComponent, NgxImageEditor, ExampleShowcaseComponent],
+  imports: [NgxDropzone, NgxImageEditor, ExampleShowcaseComponent],
 })
 export class ImageEditorComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Subject, Observable } from 'rxjs';
 import { describe, expect, it, beforeEach } from 'vitest';
-import { NgxDropzoneComponent } from '../components/dropzone.component';
+import { NgxDropzone } from '../components/dropzone.component';
 import {
   NgxDropzoneUploadEvent,
   NgxDropzoneUploadRequest,
@@ -23,15 +23,15 @@ class FakeUploadService implements NgxDropzoneUploadService {
   }
 }
 
-describe('NgxDropzoneComponent upload flow', () => {
-  let fixture: ComponentFixture<NgxDropzoneComponent>;
+describe('NgxDropzone upload flow', () => {
+  let fixture: ComponentFixture<NgxDropzone>;
   let service: FakeUploadService;
 
   beforeEach(async () => {
     service = new FakeUploadService();
 
     await TestBed.configureTestingModule({
-      imports: [NgxDropzoneComponent],
+      imports: [NgxDropzone],
       providers: [
         {
           provide: NGX_DROPZONE_UPLOAD_SERVICE,
@@ -40,7 +40,7 @@ describe('NgxDropzoneComponent upload flow', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(NgxDropzoneComponent);
+    fixture = TestBed.createComponent(NgxDropzone);
     fixture.componentRef.setInput('uploadUrl', '/api/files');
     fixture.componentRef.setInput('uploadAlias', 'files');
     fixture.componentRef.setInput('maxParallel', 2);
