@@ -40,7 +40,7 @@ export type NgxDropzoneUploadMode = 'all' | 'single';
     class: 'ngx-dropzone-host',
   },
 })
-export class NgxDropzoneComponent implements OnDestroy {
+export class NgxDropzone implements OnDestroy {
   /** الگوی accept مثل input[type=file]: "image/*", ".pdf,.docx" و ... */
   accept = input<string>('');
   multiple = input<boolean>(true);

@@ -64,9 +64,7 @@ export class GridLayoutService {
   readonly activeId = signal<string | null>(null);
   readonly isInteracting = computed(() => this.activeId() !== null);
   readonly height = computed(() => this.calculateHeight(this.items(), this.options()));
-  readonly layout = computed<LayoutOutput[]>(() =>
-    this.items().map((x) => ({ id: x.id, ...x.config })),
-  );
+
   readonly columns = computed(() => Math.max(1, Math.floor(this.options().cols)));
 
   readonly rtl = computed(() => {
@@ -141,7 +139,7 @@ export class GridLayoutService {
   unregisterItem(id: string): void {
     this.items.update((xs) => xs.filter((x) => x.id !== id));
     this.settle();
-    this.emit();
+    //this.emit();
   }
 
   /** Called once the grid surface element exists (e.g. from `ngAfterViewInit`). */
@@ -473,6 +471,9 @@ export class GridLayoutService {
   }
 
   private emit(): void {
-    this.layoutListener?.(this.layout());
+    if (this.layoutListener) {
+      const layouts = this.items().map((x) => ({ id: x.id, ...x.config }));
+      this.layoutListener(layouts);
+    }
   }
 }

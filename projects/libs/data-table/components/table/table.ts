@@ -20,7 +20,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TableCell } from '../../directives/table-cell.directive';
 import { ColumnResize } from '../../directives/column-resize.directive';
-import { NGX_TABLE_CONFIG } from '../../tokens/table-config.token';
+import { NGX_TABLE_CONFIG, NGX_TABLE_I18N } from '../../tokens/table-config.token';
 import { NGX_PAGINATION_CONFIG } from '../../tokens/pagination-config.token';
 import { PageEvent, LazyLoadEvent } from '../../types/page.types';
 import { SortDirection, SortMeta } from '../../types/sort.types';
@@ -59,6 +59,7 @@ import { DirectionService } from 'ngx-kit/core';
 })
 export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   protected readonly config = inject(NGX_TABLE_CONFIG);
+  protected readonly labels = inject(NGX_TABLE_I18N);
   protected readonly paginationConfig = inject(NGX_PAGINATION_CONFIG);
 
   // ---------------------------------------------------------------- inputs

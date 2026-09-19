@@ -1,9 +1,7 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
-import {
-  NGX_PAGINATION_CONFIG,
-  NGX_PAGINATION_CONFIG_DEFAULT,
-} from '../tokens/pagination-config.token';
+import { NGX_PAGINATION_CONFIG } from '../tokens/pagination-config.token';
 import { NgxPaginationOptions } from '../types/pagination.types';
+import { NGX_PAGINATION_CONFIG_DEFAULT } from '../tokens/defaults';
 
 function mergePaginationConfig(
   base: NgxPaginationOptions,
@@ -13,7 +11,6 @@ function mergePaginationConfig(
   return {
     ...base,
     ...override,
-    labels: { ...base.labels, ...override.labels },
   };
 }
 

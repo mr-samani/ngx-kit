@@ -1,25 +1,12 @@
 import { InjectionToken } from '@angular/core';
 import { ResolvedTableOptions } from '../types/table-options.types';
+import { NGX_TABLE_CONFIG_DEFAULT } from './defaults';
+import { TableLocalization } from '../localization/table.localization';
 
-export const NGX_TABLE_CONFIG_DEFAULT: ResolvedTableOptions = {
-  showRecordNumber: false,
-  hoverable: true,
-  multiSort: true,
-  resizable: true,
-  stickyHeader: true,
-  stripedRows: true,
-  column: { minWidth: 60, maxWidth: 600, defaultWidth: 150 },
-  labels: {
-    noData: 'There is no data to display!',
-    loading: 'Loading...',
-    operation: 'Operation',
-  },
-  renderers: {},
-  formatters: {},
-  lazy: false,
-};
-
-/** به هر نمونه‌ی ngx-table تزریق می‌شود. با provideTable() مقداردهی کنید. */
-export const NGX_TABLE_CONFIG = new InjectionToken<ResolvedTableOptions>('ngx-table-config', {
+export const NGX_TABLE_CONFIG = new InjectionToken<ResolvedTableOptions>('NGX_TABLE_CONFIG', {
   factory: () => NGX_TABLE_CONFIG_DEFAULT,
+});
+
+export const NGX_TABLE_I18N = new InjectionToken<TableLocalization>('NGX_TABLE_I18N', {
+  factory: () => new TableLocalization(),
 });

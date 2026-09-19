@@ -1,6 +1,7 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
-import { NGX_TABLE_CONFIG, NGX_TABLE_CONFIG_DEFAULT } from '../tokens/table-config.token';
+import { NGX_TABLE_CONFIG } from '../tokens/table-config.token';
 import { NgxTableOptions, ResolvedTableOptions } from '../types/table-options.types';
+import { NGX_TABLE_CONFIG_DEFAULT } from '../tokens/defaults';
 
 function mergeTableConfig(
   base: ResolvedTableOptions,
@@ -11,7 +12,6 @@ function mergeTableConfig(
     ...base,
     ...override,
     column: { ...base.column, ...override.column },
-    labels: { ...base.labels, ...override.labels },
     renderers: { ...base.renderers, ...override.renderers },
     formatters: { ...base.formatters, ...override.formatters },
   };

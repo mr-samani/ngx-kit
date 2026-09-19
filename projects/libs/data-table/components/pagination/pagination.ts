@@ -9,7 +9,7 @@ import {
   output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NGX_PAGINATION_CONFIG } from '../../tokens/pagination-config.token';
+import { NGX_PAGINATION_CONFIG, NGX_PAGINATION_I18N } from '../../tokens/pagination-config.token';
 import { PageEvent } from '../../types/page.types';
 
 @Component({
@@ -22,6 +22,7 @@ import { PageEvent } from '../../types/page.types';
 })
 export class NgxPagination {
   protected readonly config = inject(NGX_PAGINATION_CONFIG);
+  protected readonly lables = inject(NGX_PAGINATION_I18N);
 
   readonly total = input.required<number>();
 
@@ -29,7 +30,6 @@ export class NgxPagination {
   readonly pageSize = model(this.config.defaultPageSize);
 
   readonly pageSizeOptions = input(this.config.pageSizeOptions);
-  readonly labels = input(this.config.labels);
   readonly siblingCount = input(1);
   readonly boundaryCount = input(1);
 
