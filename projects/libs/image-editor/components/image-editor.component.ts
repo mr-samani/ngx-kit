@@ -17,6 +17,7 @@ import {
   NgxImageEditorAdjustments,
   NgxImageEditorResult,
   NgxImageFilterPreset,
+  type NgxImageFileType,
 } from '../contracts/image-editor-types';
 import { NgxPointerDragDelta, NgxPointerDragDirective } from '../directives/pointer-drag.directive';
 import { canvasToBlob, createWorkingCopy, loadImage } from '../utils/image-io';
@@ -26,26 +27,6 @@ import { NGX_IMAGE_EDITOR_LOCALIZATION, NgxImageEditorLocalization } from '../to
 
 const ALL_FILTERS: NgxImageFilterPreset[] = ['none', 'grayscale', 'sepia', 'invert', 'cartoon'];
 
-/**
- * ویرایشگر تصویر: کراپ + چرخش + روشنایی/کنتراست/اشباع + فیلترهای آماده
- * (سیاه‌وسفید، سپیا، معکوس، کارتونی) + فشرده‌سازی خروجی. کاملاً روی Canvas
- * خام پیاده شده، بدون هیچ وابستگی خارجی‌ای.
- *
- * نکته‌ی مهمِ معماری: تمام تعامل زنده (چرخوندن، جابه‌جا/ریسایز کراپ‌باکس،
- * پیش‌نمایش فیلترها حتی کارتونی) روی یه کپیِ کوچیک‌شده از تصویر انجام می‌شه
- * (createWorkingCopy)، نه روی تصویر اصلی که ممکنه چند مگاپیکسل باشه — وگرنه
- * درگ‌کردن اسلایدرها/گوشه‌های کراپ رو کاربر حس تاخیر می‌کرد. فقط لحظه‌ی
- * save()، رندر نهایی از روی تصویر اصلیِ کامل انجام می‌شه.
- *
- * اندازه‌ی صحنه (stage) با panelSize کنترل می‌شه: عرض همیشه ۱۰۰٪ عرضِ
- * والدِ کامپوننته (با ResizeObserver اندازه‌گیری می‌شه، پس با تغییر سایز
- * صفحه/layout هم زنده هماهنگ می‌مونه)، ارتفاع دقیقاً همون چیزیه که کاربر با
- * panelSize می‌ده. تصویر همیشه با یک مقیاسِ «contain» واقعی (هم بر اساس
- * عرض، هم بر اساس ارتفاع — هرکدوم تنگ‌تره) جا داده می‌شه، پس کلِ تصویر
- * همیشه در محدوده‌ی همین باکس دیده می‌شه، صرف‌نظر از اندازه‌ی واقعیِ فایل.
- * سقفِ مقیاس هم ۱ هست، یعنی تصاویر کوچیک بزرگ‌نمایی نمی‌شن (که باعثِ محو
- * شدن‌شون می‌شد).
- */
 @Component({
   selector: 'ngx-image-editor',
   standalone: true,
@@ -61,7 +42,7 @@ export class NgxImageEditor {
   aspectRatio = input<number | undefined>(undefined);
   outputMaxWidth = input<number | undefined>(undefined);
   outputMaxHeight = input<number | undefined>(undefined);
-  outputType = input<'image/jpeg' | 'image/png' | 'image/webp'>('image/jpeg');
+  outputType = input<NgxImageFileType>('image/jpeg');
 
   /**
    * کدوم فیلترها نشون داده بشن (و به چه ترتیبی). اگه ندید، هر ۵ تا نشون داده
@@ -350,7 +331,15 @@ export class NgxImageEditor {
       const type = this.outputType();
       const blob = await canvasToBlob(finalCanvas, type, this.quality());
       const dataUrl = finalCanvas.toDataURL(type, this.quality());
-      this.saved.emit({ blob, dataUrl, width: finalCanvas.width, height: finalCanvas.height });
+      const file = new File([blob], '', { type });
+      this.saved.emit({
+        blob,
+        dataUrl,
+        width: finalCanvas.width,
+        height: finalCanvas.height,
+        file,
+        type,
+      });
     } finally {
       this.saving.set(false);
     }

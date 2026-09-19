@@ -7,7 +7,7 @@ export interface NgxCropRect {
 }
 
 export type NgxImageFilterPreset = 'none' | 'grayscale' | 'sepia' | 'invert' | 'cartoon';
-
+export type NgxImageFileType = 'image/jpeg' | 'image/png' | 'image/webp';
 export interface NgxImageEditorAdjustments {
   /** همه ۱۰۰ یعنی بدون تغییر؛ بازه‌ی معقول ۰ تا ۲۰۰ */
   brightness: number;
@@ -19,8 +19,10 @@ export interface NgxImageEditorAdjustments {
 }
 
 export interface NgxImageEditorResult {
+  file: File;
   blob: Blob;
   dataUrl: string;
   width: number;
   height: number;
+  type: NgxImageFileType;
 }
