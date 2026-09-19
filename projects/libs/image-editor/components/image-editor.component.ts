@@ -55,7 +55,7 @@ const ALL_FILTERS: NgxImageFilterPreset[] = ['none', 'grayscale', 'sepia', 'inve
   styleUrl: './image-editor.component.scss',
   host: { class: 'ngx-image-editor-host' },
 })
-export class NgxImageEditorComponent {
+export class NgxImageEditor {
   source = input<File | Blob | string | null>(null);
   /** قفل نسبتِ کراپ (مثلاً ۱ برای آواتار مربعی)؛ undefined یعنی آزاد */
   aspectRatio = input<number | undefined>(undefined);
