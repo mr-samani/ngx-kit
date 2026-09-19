@@ -12,7 +12,7 @@
               class="th-mrs operations"
               role="columnheader"
               [style.flex]="'0 0 ' + operationWidth() + 'px'">
-              {{ config.labels.operation }}
+              {{ labels.operation }}
             </div>
           }
           @if (showRecordNumber()) {
@@ -83,7 +83,7 @@
 
       <div class="tbody-mrs" role="rowgroup">
         @if (!loading() && pagedData().length === 0) {
-          <div class="no-data">{{ config.labels.noData }}</div>
+          <div class="no-data">{{ labels.noData }}</div>
         }
 
         @for (row of pagedData(); track trackBy()($index, row); let rowIndex = $index) {
@@ -94,7 +94,7 @@
                 role="cell"
                 [style.flex]="'0 0 ' + operationWidth() + 'px'">
                 <div class="cel">
-                  <span class="cell-title">{{ config.labels.operation }}:</span>
+                  <span class="cell-title">{{ labels.operation }}:</span>
                   <ng-container
                     [ngTemplateOutlet]="operations()!"
                     [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
@@ -149,7 +149,7 @@
 
     @if (loading()) {
       <div class="loading-container">
-        <div class="loading">{{ config.labels.loading }}</div>
+        <div class="loading">{{ labels.loading }}</div>
       </div>
     }
   </div>

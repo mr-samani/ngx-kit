@@ -41,7 +41,6 @@ export const appConfig: ApplicationConfig = {
         status: StatusCellRenderer,
         roles: RolesCellRenderer,
       },
-      labels: {},
       formatters: {
         emptyDash: (value) => {
           return value == null || value === '' ? '—' : String(value);

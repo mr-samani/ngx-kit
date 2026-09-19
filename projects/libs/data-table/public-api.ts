@@ -20,3 +20,7 @@ export * from './directives/column-resize.directive';
 // components
 export * from './components/table/table';
 export * from './components/pagination/pagination';
+
+// localizations
+export * from './localization/pagination.localization';
+export * from './localization/table.localization';
