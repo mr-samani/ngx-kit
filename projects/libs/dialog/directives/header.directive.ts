@@ -65,7 +65,7 @@ export class NgxDialogHeader implements OnInit {
     if (this.showCloseButton()) {
       const closeBtn = this.document.createElement('button');
       closeBtn.type = 'button';
-      closeBtn.className = 'ngx-dialog-action-btn';
+      closeBtn.className = 'ngx-dialog-action-btn close-btn';
       closeBtn.setAttribute('aria-label', 'Close');
       closeBtn.setAttribute('title', 'Close');
       closeBtn.innerHTML = CLOSE_ICON_SVG;

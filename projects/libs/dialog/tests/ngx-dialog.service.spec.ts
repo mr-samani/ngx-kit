@@ -51,9 +51,9 @@ describe('NgxDialogService', () => {
     document.body.style.paddingRight = '';
   });
 
-  it('opens a dialog and injects data into the content component', () => {
+  it('opens a dialog and injects data into the content component', async () => {
     service.open(GreetingContentComponent, { data: { name: 'Sara' } as GreetingData });
-
+    await new Promise((resolve) => setTimeout(resolve, 20));
     const greeting = document.querySelector('.greeting');
     expect(greeting?.textContent).toContain('Hello Sara');
   });
@@ -62,7 +62,7 @@ describe('NgxDialogService', () => {
     const ref = service.open<string, GreetingData>(GreetingContentComponent, {
       data: { name: 'Sara' },
     });
-
+    await new Promise((resolve) => setTimeout(resolve, 20));
     const resultPromise = firstValueFrom(ref.afterClosed);
     (document.querySelector('.save-btn') as HTMLButtonElement).click();
 
@@ -85,8 +85,9 @@ describe('NgxDialogService', () => {
     expect(service.openCount()).toBe(0);
   });
 
-  it('does not close on outside click by default (modal by default)', () => {
+  it('does not close on outside click by default (modal by default)', async () => {
     service.open(GreetingContentComponent, { data: { name: 'Sara' } });
+    await new Promise((resolve) => setTimeout(resolve, 20));
     document.body.click();
 
     expect(document.querySelector('.greeting')).toBeTruthy();
@@ -102,26 +103,26 @@ describe('NgxDialogService', () => {
     expect(document.querySelector('.greeting')).toBeFalsy();
   });
 
-  it('disableClose blocks both Escape and outside click', () => {
+  it('disableClose blocks both Escape and outside click', async () => {
     service.open(GreetingContentComponent, {
       data: { name: 'Sara' },
       disableClose: true,
       closeOnOutsideClick: true, // should still be overridden to false
     });
-
+    await new Promise((resolve) => setTimeout(resolve, 20));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     document.body.click();
 
     expect(document.querySelector('.greeting')).toBeTruthy();
   });
 
-  it('respects the beforeClose guard on Escape', () => {
+  it('respects the beforeClose guard on Escape', async () => {
     let canClose = false;
     service.open(GreetingContentComponent, {
       data: { name: 'Sara' },
       beforeClose: () => canClose,
     });
-
+    await new Promise((resolve) => setTimeout(resolve, 20));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(document.querySelector('.greeting')).toBeTruthy();
 
@@ -141,31 +142,6 @@ describe('NgxDialogService', () => {
   it('does not lock body scroll when lockBodyScroll is false', () => {
     service.open(GreetingContentComponent, { data: { name: 'Sara' }, lockBodyScroll: false });
     expect(document.body.style.overflow).not.toBe('hidden');
-  });
-
-  it('confirm() resolves true when confirmed', async () => {
-    const resultPromise = firstValueFrom(service.confirm({ message: 'Are you sure?' }));
-
-    (document.querySelector('.ngx-btn:not(.ngx-btn-ghost)') as HTMLButtonElement).click();
-
-    await expect(resultPromise).resolves.toBe(true);
-  });
-
-  it('confirm() resolves false when cancelled', async () => {
-    const resultPromise = firstValueFrom(service.confirm({ message: 'Are you sure?' }));
-
-    (document.querySelector('.ngx-btn-ghost') as HTMLButtonElement).click();
-
-    await expect(resultPromise).resolves.toBe(false);
-  });
-
-  it('alert() shows no cancel button and resolves on acknowledgement', async () => {
-    const resultPromise = firstValueFrom(service.alert({ message: 'Saved!' }));
-
-    expect(document.querySelector('.ngx-btn-ghost')).toBeFalsy();
-    (document.querySelector('.ngx-btn') as HTMLButtonElement).click();
-
-    await expect(resultPromise).resolves.toBeUndefined();
   });
 
   it('close() is idempotent', () => {

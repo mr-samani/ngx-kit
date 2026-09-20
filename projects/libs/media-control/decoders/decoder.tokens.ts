@@ -1,0 +1,54 @@
+import { InjectionToken } from '@angular/core';
+import { NgxMediaDecoder } from './decoder.interface';
+import { NgxMediaSource } from '../contracts/media-source';
+
+/**
+ * Multi-provider token: every decoder a consumer registers via
+ * `provideNgxMediaDecoder()` is picked up automatically by the registry.
+ *
+ * IMPORTANT: this token intentionally has NO default factory. Angular does
+ * not allow mixing a token's own default provider with externally
+ * registered `multi: true` providers for the SAME token — doing so throws
+ * at DI-construction time the moment a consumer actually registers a
+ * decoder (a real, if latent, bug this fixes). The correct pattern for an
+ * "optionally empty" multi token is `@Optional()` injection at the
+ * consumption site (see `NgxMediaDecoderRegistry`), which yields `null`
+ * when nothing has registered and an array when one or more have.
+ */
+export const NGX_MEDIA_DECODER = new InjectionToken<NgxMediaDecoder>('NGX_MEDIA_DECODER');
+
+/** Pluggable network layer so auth/signed URLs don't require coupling the core to HttpClient. */
+export interface NgxMediaRequestHandler {
+  request(source: NgxMediaSource, signal?: AbortSignal): Promise<Response>;
+}
+
+export const NGX_MEDIA_REQUEST_HANDLER = new InjectionToken<NgxMediaRequestHandler>(
+  'NGX_MEDIA_REQUEST_HANDLER',
+  {
+    providedIn: 'root',
+    factory: () => ({
+      request: (source, signal) =>
+        fetch(typeof source.src === 'string' ? source.src : '', {
+          headers: source.requestHeaders,
+          signal,
+        }),
+    }),
+  },
+);
+
+export interface NgxMediaConfig {
+  /** Default preload hint for native engines. */
+  preload: 'none' | 'metadata' | 'auto';
+  /** Ceiling for the number of decoder `canDecode` probes run in parallel. */
+  maxConcurrentDecoderProbes: number;
+}
+
+export const NGX_MEDIA_CONFIG_DEFAULTS: NgxMediaConfig = {
+  preload: 'metadata',
+  maxConcurrentDecoderProbes: 3,
+};
+
+export const NGX_MEDIA_CONFIG = new InjectionToken<NgxMediaConfig>('NGX_MEDIA_CONFIG', {
+  providedIn: 'root',
+  factory: () => ({ ...NGX_MEDIA_CONFIG_DEFAULTS }),
+});

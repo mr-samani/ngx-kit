@@ -36,7 +36,8 @@ describe('NgxCalendarComponent', () => {
     fixture = TestBed.createComponent(NgxCalendarComponent);
     component = fixture.componentInstance;
 
-    fixture.componentRef.setInput('locale', 'en');
+    fixture.componentRef.instance.locale = 'en';
+
     fixture.componentRef.setInput('events', []);
     fixture.componentRef.setInput('resizeAndMovable', true);
 
@@ -49,7 +50,7 @@ describe('NgxCalendarComponent', () => {
 
   describe('navigation and views', () => {
     it('shows seven days in week view', () => {
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('week');
 
       expect(component.weekDays).toHaveLength(7);
@@ -64,7 +65,7 @@ describe('NgxCalendarComponent', () => {
     });
 
     it('uses the selected day in day view', () => {
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       expect(component.weekDays).toHaveLength(1);
@@ -73,66 +74,66 @@ describe('NgxCalendarComponent', () => {
     });
 
     it('moves one week forward and backward in week view', () => {
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('week');
 
       component.next();
 
-      expect(component.anchorDate.getDate()).toBe(26);
+      expect(component.anchorDate()?.getDate()).toBe(26);
 
       component.previous();
 
-      expect(component.anchorDate.getDate()).toBe(19);
+      expect(component.anchorDate()?.getDate()).toBe(19);
     });
 
     it('moves one day forward and backward in day view', () => {
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       component.next();
 
-      expect(component.anchorDate.getDate()).toBe(20);
+      expect(component.anchorDate()?.getDate()).toBe(20);
       expect(component.weekDays[0].date.getDate()).toBe(20);
 
       component.previous();
 
-      expect(component.anchorDate.getDate()).toBe(19);
+      expect(component.anchorDate()?.getDate()).toBe(19);
       expect(component.weekDays[0].date.getDate()).toBe(19);
     });
 
     it('moves one month forward and backward in month view', () => {
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('month');
 
       component.next();
 
-      expect(component.currMonth).toBe(8);
-      expect(component.currYear).toBe(2026);
+      expect(component.currMonth()).toBe(8);
+      expect(component.currYear()).toBe(2026);
 
       component.previous();
 
-      expect(component.currMonth).toBe(7);
-      expect(component.currYear).toBe(2026);
+      expect(component.currMonth()).toBe(7);
+      expect(component.currYear()).toBe(2026);
     });
 
     it('handles December to January navigation', () => {
-      component.anchorDate = d('2026-12-15');
+      component.anchorDate.set(d('2026-12-15'));
       component.changeView('month');
 
       component.next();
 
-      expect(component.currMonth).toBe(0);
-      expect(component.currYear).toBe(2027);
+      expect(component.currMonth()).toBe(0);
+      expect(component.currYear()).toBe(2027);
     });
 
     it('handles January to December navigation', () => {
-      component.anchorDate = d('2026-01-15');
+      component.anchorDate.set(d('2026-01-15'));
       component.changeView('month');
 
       component.previous();
 
-      expect(component.currMonth).toBe(11);
-      expect(component.currYear).toBe(2025);
+      expect(component.currMonth()).toBe(11);
+      expect(component.currYear()).toBe(2025);
     });
   });
 
@@ -151,7 +152,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('week');
 
       const day = component.weekDays.find((x) => x.date.getDate() === 19)!;
@@ -172,7 +173,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       expect(component.weekDays).toHaveLength(1);
@@ -195,7 +196,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       expect(component.weekDays[0].events).toHaveLength(0);
@@ -213,7 +214,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('week');
 
       const index = component.weekDays.findIndex((day) => day.date.getDate() === 19);
@@ -244,7 +245,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       const events = component.weekDays[0].events;
@@ -274,7 +275,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       const events = component.weekDays[0].events;
@@ -302,7 +303,7 @@ describe('NgxCalendarComponent', () => {
         },
       ]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('month');
 
       expect(component.monthEventSegments.length).toBe(2);
@@ -361,7 +362,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -396,7 +397,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -427,7 +428,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -460,7 +461,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -501,7 +502,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -532,7 +533,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -582,7 +583,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -613,7 +614,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -717,7 +718,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -751,7 +752,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -784,7 +785,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();
@@ -809,7 +810,7 @@ describe('NgxCalendarComponent', () => {
 
       fixture.componentRef.setInput('events', [event]);
 
-      component.anchorDate = d('2026-08-19');
+      component.anchorDate.set(d('2026-08-19'));
       component.changeView('day');
 
       mockDayColumnGeometry();

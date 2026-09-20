@@ -328,7 +328,7 @@ describe('OverlayService', () => {
     ref.close();
   });
 
-  it('should respect the canClose guard on Escape', () => {
+  it('should respect the canClose guard on Escape', async () => {
     const anchor = document.createElement('button');
     document.body.appendChild(anchor);
     let allowClose = false;
@@ -338,6 +338,7 @@ describe('OverlayService', () => {
       viewContainerRef,
       canClose: () => allowClose,
     });
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(document.querySelector(hostQuerySelector)).toBeTruthy();
@@ -384,7 +385,7 @@ describe('OverlayService', () => {
   // ---------------------------
   // BACKDROP CLICK
   // ---------------------------
-  it('should close on backdrop click', () => {
+  it('should close on backdrop click', async () => {
     const anchor = document.createElement('button');
     document.body.appendChild(anchor);
     const ref = service.open({
@@ -392,6 +393,7 @@ describe('OverlayService', () => {
       component: MockComponent,
       viewContainerRef,
     });
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
     const host = document.querySelector(hostQuerySelector) as HTMLElement;
     const backdrop = host.querySelector<HTMLElement>('.ngx-ui-overlay-backdrop');

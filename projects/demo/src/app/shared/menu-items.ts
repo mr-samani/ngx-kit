@@ -107,6 +107,10 @@ export const MENU_LIST: ICategory[] = [
         url: '/components/gallery',
       },
       {
+        title: 'Media Control',
+        url: '/components/media-control',
+      },
+      {
         title: 'Drawer Menu',
         url: '/components/drawer-menu',
       },
