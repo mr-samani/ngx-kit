@@ -4,8 +4,9 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
 import { BoxShadowComponent } from './box-shadow.component';
-import { NgxBoxShadowComponent, NgxInputBoxShadow } from 'ngx-kit/box-shadow';
 import { FormsModule } from '@angular/forms';
+import { NgxShadowBox } from 'ngx-kit/box-shadow';
+import { ExampleShowcaseComponent } from '@demo/shared/showcase/example-showcase.component';
 
 describe('BoxShadowComponent', () => {
   let component: BoxShadowComponent;
@@ -14,7 +15,7 @@ describe('BoxShadowComponent', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [BoxShadowComponent, FormsModule, NgxInputBoxShadow, NgxBoxShadowComponent],
+      imports: [BoxShadowComponent,ExampleShowcaseComponent, FormsModule, NgxShadowBox],
     }).compileComponents();
     fixture = TestBed.createComponent(BoxShadowComponent);
     component = fixture.componentInstance;
