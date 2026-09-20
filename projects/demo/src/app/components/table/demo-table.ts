@@ -39,17 +39,16 @@ const fields = defineFields<UserDto, typeof renderers>(renderers, [
     width: 220,
     rendererInputs: { nameField: 'fullName', showName: true }, // ✅ fully type-checked
   },
-  { column: 'userName', title: 'Username', sortable: true },
-  { column: 'email', title: 'Email', width: 230, sortable: true, formatter: 'emptyDash' },
-  { column: 'isActive', title: 'Active', renderer: 'boolean', width: 90, sortable: true },
-  { column: 'status', title: 'Status', renderer: 'status', width: 120, sortable: true },
-  { column: 'roles', title: 'Roles', renderer: 'roles', width: 240, wrap: true },
+  { column: 'userName', title: 'Username' },
+  { column: 'email', title: 'Email', width: 230, formatter: 'emptyDash' },
+  { column: 'isActive', title: 'Active', renderer: 'boolean', width: 90 },
+  { column: 'status', title: 'Status', renderer: 'status', width: 120 },
+  { column: 'roles', title: 'Roles', renderer: 'roles', width: 240, wrap: true, sortable: false },
   {
     column: 'createdAt',
     title: 'Created At',
     renderer: 'date',
     width: 170,
-    sortable: true,
     rendererInputs: { format: 'yyyy/MM/dd HH:mm' },
   },
 

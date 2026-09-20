@@ -15,7 +15,7 @@ import { RolesCellRenderer } from './shared/renderers/RolesCellRenderer';
 import { StatusCellRenderer } from './shared/renderers/StatusCellRenderer';
 import { provideNgxMediaDecoder } from 'ngx-kit/media-control';
 import { FfmpegTranscodeDecoder } from './components/media-control/decoders/ffmpeg-transcode-decoder.example';
- 
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(
@@ -35,6 +35,11 @@ export const appConfig: ApplicationConfig = {
       pageSizeOptions: [5, 10, 50, 100, 1000, 2000, 5000],
     }),
     provideTable({
+      multiSort: true,
+      hoverable: true,
+      resizable: true,
+      stickyHeader: true,
+      stripedRows: true,
       renderers: {
         boolean: BooleanCellRenderer,
         date: DateCellRenderer,

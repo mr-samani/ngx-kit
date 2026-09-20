@@ -208,7 +208,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   }
 
   protected onHeaderClick(field: TableField<T, any>, event: MouseEvent): void {
-    if (!field.sortable) return;
+    if (field.sortable === false) return;
     const column = field.column;
     const current = this.sorts();
     const existingIndex = current.findIndex((s) => s.field === column);

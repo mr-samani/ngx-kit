@@ -28,7 +28,7 @@
             <div
               class="th-mrs"
               role="columnheader"
-              [class.th-mrs--sortable]="f.sortable"
+              [class.th-mrs--sortable]="f.sortable !== false"
               [style.flex]="columnFlex(f)"
               [attr.aria-sort]="
                 sortDirectionFor(f.column) === 'asc'
@@ -40,7 +40,7 @@
               (click)="onHeaderClick(f, $event)">
               <span class="th-mrs__title">{{ f.title }}</span>
 
-              @if (f.sortable) {
+              @if (f.sortable !== false) {
                 <span class="sort-icon" [class.active]="sortDirectionFor(f.column) !== null">
                   @if (sortDirectionFor(f.column) === 'asc') {
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
