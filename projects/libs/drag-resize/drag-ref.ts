@@ -113,12 +113,8 @@ export class DragRef<T = unknown> {
       this.el.style.visibility = 'hidden';
       this.el.style.display = 'none';
       this.el.style.pointerEvents = 'none';
-
-      this.updatePreview();
-    } else {
-      // KEEP THE ORIGINAL DRAG BEHAVIOR.
-      this.applyTransform();
     }
+    this.applyTransform();
   }
 
   dragMove(pointer: IPosition): void {
@@ -146,11 +142,7 @@ export class DragRef<T = unknown> {
       y: dy,
     });
 
-    if (this.dropList) {
-      this.updatePreview();
-    } else {
-      this.applyTransform();
-    }
+    this.applyTransform();
   }
 
   nudge(dx: number, dy: number): void {
@@ -175,11 +167,10 @@ export class DragRef<T = unknown> {
     if (dropList) {
       dropList.finishDrag(this);
       this.el.style.transform = this.previousTransform;
+      // Remove body preview after DropList has finished reading its state.
+      this.preview?.remove();
+      this.preview = undefined;
     }
-
-    // Remove body preview after DropList has finished reading its state.
-    this.preview?.remove();
-    this.preview = undefined;
 
     this.el.classList.remove('ngx-draggable--dragging');
 
@@ -240,11 +231,7 @@ export class DragRef<T = unknown> {
       x: this.scrollCompensation.x + dx,
       y: this.scrollCompensation.y + dy,
     };
-    if (this.dropList) {
-      this.updatePreview();
-    } else {
-      this.applyTransform();
-    }
+    this.applyTransform();
   }
 
   private applyTransform(): void {
@@ -256,11 +243,10 @@ export class DragRef<T = unknown> {
     const tx = this.moveDx + this.scrollCompensation.x;
     const ty = this.moveDy + this.scrollCompensation.y;
 
-    this.el.style.transform = `${base}translate3d(${tx}px, ${ty}px, 0)`;
-  }
-  private updatePreview(): void {
-    if (!this.preview) return;
-
-    this.preview.style.transform = `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
+    if (this.preview) {
+      this.preview.style.transform = `${base}translate3d(${tx}px, ${ty}px, 0)`;
+    } else {
+      this.el.style.transform = `${base}translate3d(${tx}px, ${ty}px, 0)`;
+    }
   }
 }

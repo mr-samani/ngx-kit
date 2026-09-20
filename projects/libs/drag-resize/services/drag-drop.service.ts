@@ -48,6 +48,7 @@ export class DragDropService {
       );
     });
 
+    if (candidates.length == 0) return current ?? null;
     // Staying over the current list should always win.
     if (current && candidates.includes(current)) return current;
 
