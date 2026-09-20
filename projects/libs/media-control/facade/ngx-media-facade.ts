@@ -272,8 +272,11 @@ export class NgxMediaFacade {
 
   async selectIndex(index: number): Promise<void> {
     if (index < 0 || index >= this._playlist().length) return;
-    const alreadyOnIt =
-      index === this._currentIndex() && (this.state().playback === 'ready' || this.state().playback === 'playing' || this.state().playback === 'paused');
+    // The facade owns the active engine. If the requested index is already
+    // backed by an engine, selecting it again is a no-op even if a custom
+    // engine reports an unusual/implementation-specific state. An explicit
+    // reloadCurrent() remains the opt-in way to restart the same source.
+    const alreadyOnIt = index === this._currentIndex() && this.engine !== null;
     if (alreadyOnIt) {
       // Same track, already loaded — selecting it again must not trigger a
       // fresh network load. Use `reloadCurrent()` for an explicit restart.

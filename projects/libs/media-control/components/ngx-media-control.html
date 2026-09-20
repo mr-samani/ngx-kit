@@ -163,7 +163,7 @@
     @if (playlist().length === 0) {
       <div class="list-item disabled">No any record</div>
     }
-    @for (item of playlist(); track item.src; let i = $index) {
+    @for (item of playlist(); track $index; let i = $index) {
       <div class="list-item" [class.active]="i === currentIndex()" (click)="onClickPlayList(i)">
         {{ item.title }}
       </div>

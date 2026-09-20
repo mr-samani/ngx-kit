@@ -158,9 +158,12 @@ export class DecodedBufferEngine implements NgxMediaEngine {
   async play(): Promise<void> {
     if (this.ctx.state === 'suspended') await this.ctx.resume();
 
-    if (this._state().playback === 'ended') {
-      // Replaying after the buffer finished naturally restarts from 0.
+    if (this._state().playback === 'ended' || this.offset >= this.buffer.duration) {
+      // Replaying after the buffer finished naturally (or after seeking
+      // exactly to its end) must restart from zero and update the exposed
+      // position immediately, before the next animation-frame tick.
       this.offset = 0;
+      this._state.update((s) => ({ ...s, currentTime: 0 }));
     }
 
     const myToken = ++this.playToken;

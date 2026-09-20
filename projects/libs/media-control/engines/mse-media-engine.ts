@@ -37,6 +37,8 @@ export class MseMediaEngine implements NgxMediaEngine {
   private mediaSource: MediaSource | null = null;
   private sourceBuffer: SourceBuffer | null = null;
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+  private objectUrl: string | null = null;
+  private loadController: AbortController | null = null;
   private destroyed = false;
   private readonly cleanupFns: Array<() => void> = [];
 
@@ -59,55 +61,87 @@ export class MseMediaEngine implements NgxMediaEngine {
   }
 
   async load(source: NgxMediaSource, signal?: AbortSignal): Promise<void> {
-    this.patch({ playback: 'loading' });
-    this.mediaSource = new MediaSource();
-    this.el.src = URL.createObjectURL(this.mediaSource);
+    if (this.destroyed) throw new NgxMediaError('ABORTED', 'MSE engine has been destroyed.');
 
-    const opened = new Promise<void>((resolve, reject) => {
-      this.mediaSource!.addEventListener(
-        'sourceopen',
-        async () => {
-          try {
-            if (this.destroyed) return;
-            const mime = source.type
-              ? source.codecs
-                ? `${source.type}; codecs="${source.codecs}"`
-                : source.type
-              : 'video/mp4';
-            if (!MediaSource.isTypeSupported(mime)) {
-              throw NgxMediaError.unsupported(`MSE: unsupported mime/codec combination "${mime}".`);
-            }
-            this.sourceBuffer = this.mediaSource!.addSourceBuffer(mime);
-            // Start streaming in the background; resolve `load()` as soon
-            // as the element reports it has enough data, not when the
-            // whole response has been read (see class doc).
-            const streamPromise = this.streamInto(this.sourceBuffer, source, signal);
-            streamPromise.catch((err) => {
-              if (!this.destroyed) this.patch({ playback: 'error' });
-              // Surfaced to whoever's still awaiting `load()` if metadata
-              // never arrives; otherwise this is a background failure the
-              // caller finds out about via `state().playback === 'error'`.
-              metadataOrError.rejectIfPending(err);
-            });
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
-        },
-        { once: true },
-      );
-    });
+    // A new source supersedes any previous stream. Without this, the old
+    // reader can continue fetching/appending while the new MediaSource is
+    // being opened, causing duplicate network traffic and leaked resources.
+    this.loadController?.abort();
+    this.loadController = null;
+    this.reader?.cancel().catch(() => {});
+    this.reader = null;
+    this.releaseObjectUrl();
+
+    const controller = new AbortController();
+    const forwardAbort = () => controller.abort();
+    if (signal?.aborted) controller.abort();
+    else signal?.addEventListener('abort', forwardAbort, { once: true });
+    this.loadController = controller;
+    const activeSignal = controller.signal;
+
+    this.patch({ playback: 'loading', currentTime: 0, duration: 0, buffered: [] });
+    const mediaSource = new MediaSource();
+    this.mediaSource = mediaSource;
+    this.objectUrl = URL.createObjectURL(mediaSource);
+    this.el.src = this.objectUrl;
 
     const metadataOrError = deferred<void>();
     const onMetadata = () => metadataOrError.resolveIfPending();
     this.el.addEventListener('loadedmetadata', onMetadata, { once: true });
 
+    const abortPromise = new Promise<never>((_, reject) => {
+      if (activeSignal.aborted) {
+        reject(new NgxMediaError('ABORTED', 'MSE load aborted.'));
+        return;
+      }
+      activeSignal.addEventListener('abort', () => reject(new NgxMediaError('ABORTED', 'MSE load aborted.')), { once: true });
+    });
+
     try {
-      await opened;
-      await metadataOrError.promise;
+      await Promise.race([
+        new Promise<void>((resolve, reject) => {
+          mediaSource.addEventListener(
+            'sourceopen',
+            async () => {
+              try {
+                if (this.destroyed || activeSignal.aborted || this.mediaSource !== mediaSource) {
+                  throw new NgxMediaError('ABORTED', 'MSE load superseded.');
+                }
+                const mime = source.type
+                  ? source.codecs
+                    ? `${source.type}; codecs="${source.codecs}"`
+                    : source.type
+                  : 'video/mp4';
+                if (!MediaSource.isTypeSupported(mime)) {
+                  throw NgxMediaError.unsupported(`MSE: unsupported mime/codec combination "${mime}".`);
+                }
+                this.sourceBuffer = mediaSource.addSourceBuffer(mime);
+                this.streamInto(this.sourceBuffer, source, activeSignal)
+                  .then(() => metadataOrError.resolveIfPending())
+                  .catch((err) => {
+                    if (!this.destroyed && this.mediaSource === mediaSource) this.patch({ playback: 'error' });
+                    metadataOrError.rejectIfPending(err);
+                  });
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+            },
+            { once: true },
+          );
+        }),
+        abortPromise,
+      ]);
+
+      await Promise.race([metadataOrError.promise, abortPromise]);
+      if (this.destroyed || this.mediaSource !== mediaSource) {
+        throw new NgxMediaError('ABORTED', 'MSE load was superseded.');
+      }
       this.patch({ playback: 'ready' });
     } finally {
       this.el.removeEventListener('loadedmetadata', onMetadata);
+      signal?.removeEventListener('abort', forwardAbort);
+      if (this.loadController === controller) this.loadController = null;
     }
   }
 
@@ -167,7 +201,15 @@ export class MseMediaEngine implements NgxMediaEngine {
   }
 
   async play(): Promise<void> {
-    await this.el.play();
+    if (this.destroyed) throw new NgxMediaError('ABORTED', 'MSE engine has been destroyed.');
+    try {
+      await this.el.play();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        throw NgxMediaError.autoplayBlocked(err);
+      }
+      throw err;
+    }
   }
   pause(): void {
     this.el.pause();
@@ -188,16 +230,25 @@ export class MseMediaEngine implements NgxMediaEngine {
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
+    this.loadController?.abort();
+    this.loadController = null;
     this.reader?.cancel().catch(() => {});
     this.reader = null;
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns.length = 0;
     this.el.pause();
-    if (this.el.src) URL.revokeObjectURL(this.el.src);
+    this.releaseObjectUrl();
     this.el.removeAttribute('src');
     this.mediaSource = null;
     this.sourceBuffer = null;
     this.patch({ playback: 'destroyed' });
+  }
+
+  private releaseObjectUrl(): void {
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
   }
 
   private patch(partial: Partial<NgxMediaState>): void {

@@ -47,7 +47,7 @@ export function canPlayNatively(
 ): 'probably' | 'maybe' | '' {
   const mime = resolveMimeType(source);
   if (!mime) return 'maybe'; // unknown — let the native element try; it will fail fast via the `error` event if wrong.
-  return el.canPlayType(mime) as 'probably' | 'maybe' | '';
+  return el?.canPlayType(mime) as 'probably' | 'maybe' | '';
 }
 
 function resolveMimeType(source: NgxMediaSource): string | undefined {

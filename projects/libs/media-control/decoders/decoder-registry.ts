@@ -70,6 +70,7 @@ export class NgxMediaDecoderRegistry {
           try {
             return (await decoder.canDecode(source, signal)) ? decoder : null;
           } catch (error) {
+            if (signal?.aborted) return null;
             // A misbehaving decoder shouldn't block evaluating the rest,
             // but the failure is no longer silently swallowed.
             this.onDecoderFailure?.({ decoderId: decoder.id, error });
@@ -77,6 +78,7 @@ export class NgxMediaDecoderRegistry {
           }
         }),
       );
+      if (signal?.aborted) return undefined;
       const found = results.find((d): d is NgxMediaDecoder => d !== null);
       if (found) return found;
     }

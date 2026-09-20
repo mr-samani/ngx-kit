@@ -95,6 +95,7 @@ export class NativeMediaEngine implements NgxMediaEngine {
   private loadState: NativeLoadState = 'idle';
   private loadedIdentity: SourceIdentity | null = null;
   private pendingLoad: Promise<void> | null = null;
+  private activeLoadController: AbortController | null = null;
 
   constructor(
     kind: NgxMediaKind,
@@ -114,7 +115,7 @@ export class NativeMediaEngine implements NgxMediaEngine {
     return this.el;
   }
 
-  load(source: NgxMediaSource, abort?: AbortSignal): Promise<void> {
+  async load(source: NgxMediaSource, abort?: AbortSignal): Promise<void> {
     this.assertNotDestroyed();
     const identity = computeIdentity(source);
 
@@ -130,9 +131,23 @@ export class NativeMediaEngine implements NgxMediaEngine {
       }
     }
 
-    const promise: Promise<void> = this.performLoad(source, identity, abort).finally(() => {
-      if (this.pendingLoad === promise) this.pendingLoad = null;
-    });
+    // A different source supersedes the previous load even when the caller
+    // didn't provide/abort its own signal. This prevents stale
+    // loadedmetadata/error events from resolving the new request.
+    this.activeLoadController?.abort();
+    const controller = new AbortController();
+    const onExternalAbort = () => controller.abort();
+    if (abort?.aborted) controller.abort();
+    else abort?.addEventListener('abort', onExternalAbort, { once: true });
+
+    const promise: Promise<void> = this.performLoad(source, identity, controller.signal).finally(
+      () => {
+        abort?.removeEventListener('abort', onExternalAbort);
+        if (this.pendingLoad === promise) this.pendingLoad = null;
+        if (this.activeLoadController === controller) this.activeLoadController = null;
+      },
+    );
+    this.activeLoadController = controller;
     this.pendingLoad = promise;
     return promise;
   }
@@ -148,22 +163,14 @@ export class NativeMediaEngine implements NgxMediaEngine {
     this.patch({ playback: 'loading', currentTime: 0, duration: 0, buffered: [] });
 
     try {
+      if (abort?.aborted) throw new NgxMediaError('ABORTED', 'Load aborted.');
+
       const capability = canPlayNatively(this.el, source);
       if (capability === '') {
         throw NgxMediaError.noDecoder(typeof source.src === 'string' ? source.src : '[blob]');
       }
 
       const resolvedSrc = this.resolveSrc(source);
-      if (source.src instanceof MediaStream) {
-        (this.el as any).srcObject = source.src;
-      } else {
-        this.el.src = resolvedSrc;
-      }
-      // See class doc: this does not cause a second network request for a
-      // genuinely new source — it makes the load-algorithm restart
-      // synchronous rather than triggering a second one.
-      this.el.load();
-
       await new Promise<void>((resolve, reject) => {
         const onReady = () => {
           cleanup();
@@ -185,6 +192,21 @@ export class NativeMediaEngine implements NgxMediaEngine {
         this.el.addEventListener('loadedmetadata', onReady, { once: true });
         this.el.addEventListener('error', onError, { once: true });
         abort?.addEventListener('abort', onAbort, { once: true });
+
+        if (abort?.aborted) {
+          onAbort();
+          return;
+        }
+
+        // Setting src/srcObject is enough to select the resource and avoids
+        // immediately restarting the same selection algorithm with an extra
+        // `load()` call. This is important for authenticated/redirected
+        // resources where a restart can result in another network request.
+        if (typeof MediaStream !== 'undefined' && source.src instanceof MediaStream) {
+          (this.el as any).srcObject = source.src;
+        } else {
+          this.el.src = resolvedSrc;
+        }
       });
 
       this.loadState = 'ready';
@@ -242,6 +264,8 @@ export class NativeMediaEngine implements NgxMediaEngine {
     this.loadState = 'idle';
     this.loadedIdentity = null;
     this.pendingLoad = null;
+    this.activeLoadController?.abort();
+    this.activeLoadController = null;
     this.el.pause();
     this.el.removeAttribute('src');
     (this.el as any).srcObject = null;
