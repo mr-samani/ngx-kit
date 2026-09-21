@@ -20,9 +20,12 @@ export class PlaceHolderRef {
       this.element.removeAttribute('tabindex');
     }
 
-    // The placeholder must never inherit a live drag transform/animation.
-    this.element.style.setProperty('transform', 'none', 'important');
-    this.element.style.setProperty('transition', 'none', 'important');
+    // The placeholder must never inherit a live drag transform/animation. `transform` and
+    // `transition` are deliberately NOT forced with !important: the sort session drives them
+    // to slide the placeholder (translate3d) to the current insertion slot.
+    this.element.style.removeProperty('transform');
+    this.element.style.removeProperty('transition');
+    this.element.style.removeProperty('will-change');
     this.element.style.setProperty('animation', 'none', 'important');
     this.element.style.setProperty('pointer-events', 'none', 'important');
     this.element.style.setProperty('visibility', 'visible', 'important');

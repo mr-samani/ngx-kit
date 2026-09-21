@@ -34,6 +34,7 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy {
   }
   @Output() readonly drop = new EventEmitter<IDropEvent<T>>();
 
+  private sub?: { unsubscribe(): void };
   private readonly service = inject(DragDropService);
   private readonly group = inject(NGX_DROPLIST_GROUP, { optional: true, skipSelf: true });
 
@@ -44,10 +45,12 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy {
     this._ref.dropListGroup = this.group?._ref ?? null;
     // Previously the group directive never actually tracked its lists — fixed here.
     this.group?._ref.add(this._ref);
-    this._ref.onDrop.subscribe((e) => this.drop.emit(e));
+    this.sub = this._ref.onDrop.subscribe((e) => this.drop.emit(e));
     this.service.registerDropList(this._ref);
   }
   ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this._ref._release();
     this.group?._ref.remove(this._ref);
     this.service.removeDropList(this._ref);
   }

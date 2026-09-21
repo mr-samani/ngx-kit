@@ -21,6 +21,9 @@ import { DragRef, DragAxis } from '../drag-ref';
 import { IPosition } from '../contracts/IPosition';
 import { AutoScroller, findScrollableAncestor, getScrollPosition } from '../utils/auto-scroll';
 
+/** Pointer events already claimed by an (inner) draggable. */
+const claimedPointerEvents = new WeakSet<Event>();
+
 export const NGX_DRAGGABLE = new InjectionToken<NgxDraggable>('ngx-draggable');
 
 const DEFAULT_KEYBOARD_STEP = 8;
@@ -77,6 +80,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   private removeUp?: () => void;
   private removeKeydown?: () => void;
   private removeEscape?: () => void;
+  private removeCancel?: () => void;
+  private removeLostCapture?: () => void;
   private scrollTarget: HTMLElement | Window = window;
   private lastScroll = { left: 0, top: 0 };
   private lastWindowScroll = { left: 0, top: 0 };
@@ -100,6 +105,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this._ref.boundary = this.boundary();
     this._ref.lockAxis = this.lockAxis();
     this._ref.dropListGroup = this.group?._ref;
+    this._ref.service = this.service;
     this._ref.init();
     this._ref.withDropList(this.list?._ref ?? null);
     this.service.registerDragItem(this._ref);
@@ -121,7 +127,12 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.removeUp?.();
     this.removeKeydown?.();
     this.removeEscape?.();
+    this.removeCancel?.();
+    this.removeLostCapture?.();
     this.scroller.stop();
+    this.stopScrollTracking();
+    // Destroyed mid-drag (e.g. the model changed underneath us): never leave a body clone behind.
+    this._ref.dispose();
     this.service.removeDragItem(this._ref);
     this._ref.dropList?.removeItem(this._ref);
   }
@@ -134,6 +145,10 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       !this.isOnHandle(e.target)
     )
       return;
+    // Nested draggables: pointerdown bubbles, so without this an ancestor draggable would start
+    // its own drag from the very same gesture. The innermost enabled draggable claims it.
+    if (claimedPointerEvents.has(e)) return;
+    claimedPointerEvents.add(e);
     e.preventDefault();
     this.down = true;
     this.pointerId = e.pointerId;
@@ -150,27 +165,24 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.removeEscape = this.renderer.listen(this.doc, 'keydown', (ev: KeyboardEvent) => {
       if (ev.key === 'Escape' && this.dragging()) this.cancel();
     });
+    this.removeCancel = this.renderer.listen(this.doc, 'pointercancel', (ev: PointerEvent) =>
+      this.pointerCancel(ev),
+    );
+    this.removeLostCapture = this.renderer.listen(this.doc, 'lostpointercapture', (ev: PointerEvent) =>
+      this.pointerCancel(ev),
+    );
   }
   private applyDragUpdate(p: IPosition): void {
+    const before = this._ref.activeDropList;
+    // DragRef decides everything (preview, target list, placeholder). A free drag never
+    // interacts with drop lists.
     this._ref.dragMove(p);
 
-    const target = this.service.findDropList(p, this._ref.dropList);
-
-    if (target !== this._ref.dropList) {
-      this._ref.dropList?.exit(this._ref);
-      this._ref.clearDropList();
-
-      if (target) {
-        this._ref.withDropList(target);
-        target.createPlaceholder(this._ref);
-
-        if (this.autoScroll()) this.scroller.retarget(target.el);
-      } else if (this.autoScroll()) {
-        this.scroller.stop();
-      }
+    if (this._ref.isListDrag && this.autoScroll()) {
+      const after = this._ref.activeDropList;
+      // Follow the hovered list; outside every list, scroll the page.
+      if (after !== before) this.scroller.retarget(after?.el ?? this.doc.body);
     }
-
-    this._ref.dropList?.sortItem(this._ref, p);
     this.dragMove.emit(p);
   }
   /** فراخوانی می‌شود دقیقاً وقتی drag واقعاً شروع می‌شود (چه با موس، چه با کیبورد). */
@@ -241,13 +253,28 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   private pointerUp(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
     if (this.dragging()) {
-      if (this._ref.dropList) {
+      // Also when released OUTSIDE every list: endDrag() rolls the drag back and cleans up.
+      if (this._ref.isListDrag) {
+        // The release position is authoritative for the drop target (a fast flick may end with
+        // a pointerup that has no preceding pointermove at that position).
+        const p = { x: e.clientX, y: e.clientY };
+        if (p.x !== this.lastPointer.x || p.y !== this.lastPointer.y) this._ref.dragMove(p);
         this._ref.endDrag();
       }
       this.service.end(this._ref);
     }
     this.finish();
     this.dragEnd.emit(this._ref.pointer);
+  }
+
+  /** Browser cancelled the pointer (touch takeover, lost capture...). */
+  private pointerCancel(e: PointerEvent): void {
+    if (!this.down || e.pointerId !== this.pointerId) return;
+    if (this.dragging() && this._ref.isListDrag) {
+      this.cancel();
+      return;
+    }
+    this.pointerUp(e);
   }
 
   private cancel(): void {
@@ -264,7 +291,10 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.removeMove?.();
     this.removeUp?.();
     this.removeEscape?.();
+    this.removeCancel?.();
+    this.removeLostCapture?.();
     this.removeMove = this.removeUp = this.removeEscape = undefined;
+    this.removeCancel = this.removeLostCapture = undefined;
   }
 
   /** Arrow-key movement for keyboard/assistive-tech users. Shift multiplies the step by 4. */
@@ -281,14 +311,19 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     if (delta) {
       e.preventDefault();
       if (!this.dragging()) {
-        this._ref.pointerDown({ x: 0, y: 0 });
+        // Free drag keeps its (0,0) pseudo pointer. A list item starts from its own centre so
+        // that keyboard sorting resolves against real geometry.
+        const inList = !!this._ref.dropList && this._ref.dropList.el === this._ref.el.parentElement;
+        const r = this._ref.el.getBoundingClientRect();
+        const origin = inList ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 };
+        this._ref.pointerDown(origin);
         this._ref.boundary = this.boundary();
         this._ref.lockAxis = this.lockAxis();
-        this._ref.startDrag({ x: 0, y: 0 });
+        this._ref.startDrag(origin);
         this.dragging.set(true);
         this.service.begin(this._ref);
         this.startScrollTracking();
-        this.dragStart.emit({ x: 0, y: 0 });
+        this.dragStart.emit(origin);
       }
       this._ref.nudge(delta.x, delta.y);
       this.dragMove.emit(this._ref.pointer);
