@@ -117,8 +117,8 @@ const routes: Routes = [
       },
       {
         path: 'drop-list',
-        loadComponent: () =>
-          import('./drop-list/drop-list.component').then((c) => c.DropListComponent),
+        loadChildren: () =>
+          import('./drop-list/drop-list.module').then((m) => m.DropListDemoModule),
       },
       {
         path: 'infinite-scroll',

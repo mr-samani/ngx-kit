@@ -41,6 +41,7 @@ export class DropListRef<T = any> {
 
   private session: SortSession | null = null;
   private placeholder?: PlaceHolderRef;
+  customPlaceholder?: PlaceHolderRef;
   private activeDrag: DragRef<T> | null = null;
   private isOrigin = false;
   private hovered = false;
@@ -247,7 +248,8 @@ export class DropListRef<T = any> {
     const rtl = isRtl(this.el);
     const axis = fallbackAxis(this.el);
 
-    const ph = new PlaceHolderRef();
+    const ph = this.customPlaceholder ?? new PlaceHolderRef();
+
     ph.dropList = this;
     let spacer: Text | null | undefined;
 
@@ -255,6 +257,7 @@ export class DropListRef<T = any> {
       // The placeholder takes over the exact slot of the (now hidden) source element.
       ph.attach(this.el, drag.el, drag.el);
     } else {
+      ph.detach();
       const reference = this.foreignInsertionReference(others, pointer, axis, rtl);
       ph.attach(this.el, drag.el, reference);
       spacer = makeSpacer(this.el);
@@ -341,7 +344,7 @@ export class DropListRef<T = any> {
   }
 
   private lockPlaceholderGeometry(drag: DragRef<T>, placeholder: HTMLElement, rect: DOMRect): void {
-    const set = (k: string, v: string) => placeholder.style.setProperty(k, v, 'important');
+    const set = (k: string, v: string) => placeholder.style.setProperty(k, v);
 
     // The clone was taken from the source, which may already carry drag-time inline styles.
     placeholder.style.display = drag.originalDisplay;
@@ -350,10 +353,10 @@ export class DropListRef<T = any> {
 
     set('width', `${rect.width}px`);
     set('height', `${rect.height}px`);
-    set('min-width', `${rect.width}px`);
-    set('min-height', `${rect.height}px`);
-    set('max-width', `${rect.width}px`);
-    set('max-height', `${rect.height}px`);
+    // set('min-width', `${rect.width}px`);
+    // set('min-height', `${rect.height}px`);
+    // set('max-width', `${rect.width}px`);
+    // set('max-height', `${rect.height}px`);
     set('visibility', 'visible');
     set('opacity', '0.16');
     set('pointer-events', 'none');

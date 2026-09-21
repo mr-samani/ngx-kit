@@ -1,4 +1,5 @@
 import {
+  ContentChild,
   Directive,
   ElementRef,
   EventEmitter,
@@ -8,11 +9,13 @@ import {
   OnInit,
   Output,
   inject,
+  type AfterContentInit,
 } from '@angular/core';
 import { DropListRef } from '../drop-list-ref';
 import { DragDropService } from '../services/drag-drop.service';
 import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
 import { IDropEvent } from '../contracts/IDropEvent';
+import { NGX_PLACEHOLDER, NgxPlaceholder } from './ngx-place-holder.directive';
 
 export const NGX_DROPLIST = new InjectionToken<NgxDropList>('ngx-drop-list');
 
@@ -21,7 +24,7 @@ export const NGX_DROPLIST = new InjectionToken<NgxDropList>('ngx-drop-list');
   providers: [{ provide: NGX_DROPLIST, useExisting: NgxDropList }],
   host: { class: 'ngx-drop-list' },
 })
-export class NgxDropList<T = any> implements OnInit, OnDestroy {
+export class NgxDropList<T = any> implements OnInit, OnDestroy, AfterContentInit {
   readonly _ref = new DropListRef<T>();
   @Input('data') set data(value: T) {
     this._ref.data = value;
@@ -33,7 +36,10 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy {
     this._ref.disableSort = value === true;
   }
   @Output() readonly drop = new EventEmitter<IDropEvent<T>>();
-
+  @ContentChild(NgxPlaceholder, {
+    descendants: true,
+  })
+  private readonly customPlaceholder?: NgxPlaceholder;
   private sub?: { unsubscribe(): void };
   private readonly service = inject(DragDropService);
   private readonly group = inject(NGX_DROPLIST_GROUP, { optional: true, skipSelf: true });
@@ -48,6 +54,12 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy {
     this.sub = this._ref.onDrop.subscribe((e) => this.drop.emit(e));
     this.service.registerDropList(this._ref);
   }
+  ngAfterContentInit(): void {
+    if (this.customPlaceholder) {
+      this._ref.customPlaceholder = this.customPlaceholder._ref;
+    }
+  }
+
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this._ref._release();

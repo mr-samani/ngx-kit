@@ -64,42 +64,9 @@
       </small>
 
       <nav class="example-list">
-        @for (item of cat.items; track item.url) {
-          <button
-            type="button"
-            class="example-button"
-            [routerLink]="item.url"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{
-              paths: 'exact',
-              queryParams: 'ignored',
-              matrixParams: 'ignored',
-              fragment: 'ignored',
-            }"
-            (click)="openMenuItem(item)">
-            <span class="example-icon">
-              {{ item.icon ?? '✦' }}
-            </span>
-
-            <span class="example-info">
-              <span class="example-title">
-                {{ item.title }}
-              </span>
-
-              @if (item.description) {
-                <span class="example-description">
-                  {{ item.description }}
-                </span>
-              }
-            </span>
-
-            @if (item.fragments?.length) {
-              <span class="has-fragments">
-                {{ item.fragments.length }}
-              </span>
-            }
-          </button>
-        }
+        <ng-container
+          [ngTemplateOutlet]="menuItem"
+          [ngTemplateOutletContext]="{ items: cat.items }"></ng-container>
       </nav>
     }
 
@@ -115,3 +82,50 @@
     </div>
   }
 </aside>
+
+<ng-template #menuItem let-items="items">
+  @for (item of items; track item.url) {
+    <button
+      type="button"
+      class="example-button"
+      [routerLink]="item.url"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{
+        paths: 'exact',
+        queryParams: 'ignored',
+        matrixParams: 'ignored',
+        fragment: 'ignored',
+      }"
+      (click)="openMenuItem(item)">
+      <span class="example-icon">
+        {{ item.icon ?? '✦' }}
+      </span>
+
+      <span class="example-info">
+        <span class="example-title">
+          {{ item.title }}
+        </span>
+
+        @if (item.description) {
+          <span class="example-description">
+            {{ item.description }}
+          </span>
+        }
+      </span>
+
+      @if (item.fragments?.length) {
+        <span class="has-fragments">
+          {{ item.fragments.length }}
+        </span>
+      }
+    </button>
+
+    @if (item.children) {
+      <nav class="example-list inner">
+        <ng-container
+          [ngTemplateOutlet]="menuItem"
+          [ngTemplateOutletContext]="{ items: item.children }"></ng-container>
+      </nav>
+    }
+  }
+</ng-template>
