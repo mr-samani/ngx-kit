@@ -89,3 +89,10 @@
   left: 10px;
   z-index: 99999999;
 }
+
+::ng-deep {
+  .ngx-drop-list--active {
+    outline: 3px blue solid;
+    outline-offset: -3px;
+  }
+}

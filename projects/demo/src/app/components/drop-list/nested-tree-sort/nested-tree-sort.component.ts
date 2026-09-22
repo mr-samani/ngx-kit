@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { NgxDraggable, NgxDropList, transferArrayItem, IDropEvent } from 'ngx-kit/drag-resize';
+import { NgxDraggable, NgxDropList, transferArrayItem, IDropEvent, NgxDropListGroup } from 'ngx-kit/drag-resize';
 
 export interface TreeModel {
   name: string;
@@ -9,7 +9,7 @@ export interface TreeModel {
 
 @Component({
   selector: 'app-nested-tree-sort',
-  imports: [CommonModule, NgxDraggable,NgxDropList],
+  imports: [CommonModule, NgxDraggable, NgxDropList, NgxDropListGroup],
   templateUrl: './nested-tree-sort.component.html',
   styleUrl: './nested-tree-sort.component.scss',
 })

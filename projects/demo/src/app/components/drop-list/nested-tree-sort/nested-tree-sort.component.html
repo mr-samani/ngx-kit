@@ -1,9 +1,19 @@
-<ng-container [ngTemplateOutlet]="tree" [ngTemplateOutletContext]="{ $implicit: items, level: 0 }"></ng-container>
+<div ngxDropListGroup>
+  <ng-container
+    [ngTemplateOutlet]="tree"
+    [ngTemplateOutletContext]="{ $implicit: items, level: 0, path: 'root' }"></ng-container>
+</div>
 
 <button (click)="add()">add</button>
 
-<ng-template #tree let-items let-level="level" let-class="class">
-  <div ngxDropList class="example-list" [ngClass]="class" (drop)="drop($event)" [data]="items" id="level_{{ level }}">
+<ng-template #tree let-items let-level="level" let-class="class" let-path="path">
+  <div
+    ngxDropList
+    class="example-list"
+    [ngClass]="class"
+    (drop)="drop($event)"
+    [data]="items"
+    [id]="path">
     <!-- <div class="custom-placeholder2" *ngxPlaceholder></div> -->
     @for (item of items; track item) {
       <div class="example-box" ngxDraggable [id]="item.name">
@@ -15,6 +25,7 @@
               $implicit: item.children,
               level: level + 1,
               class: 'children',
+              path: path + '/' + item.name,
             }"></ng-container>
         }
       </div>
