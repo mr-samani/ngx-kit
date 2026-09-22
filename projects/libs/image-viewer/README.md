@@ -1,4 +1,4 @@
-# ngx-kit/gallery
+# ngx-kit/image-viewer
 
 A professional image viewer: takes a list of images, navigates them with ‹ › buttons (like a carousel), has a fully configurable toolbar (zoom, rotate, download, print, fullscreen), zoom via mouse scroll or two-finger pinch, and panning via drag once zoomed in.
 
@@ -24,16 +24,58 @@ images: NgxImageViewerItem[] = [
 ## Usage — inside a fullscreen dialog
 
 ```ts
-import { NgxImageViewerService } from 'ngx-kit/gallery';
-
-constructor(private viewer: NgxImageViewerService) {}
-
-openGallery() {
-  this.viewer.open(this.images, { startIndex: 0 });
-}
+  protected readonly dialog = inject(NgxDialogService);
+  openInDialog() {
+    this.dialog.open(ImageViewDialog, {
+      data: {
+        images: this.images,
+      },
+      size: 'full',
+    });
+  }
 ```
 
-`NgxImageViewerComponent` doesn't depend on any dialog (it only has a `closed` output) — if you want to put it inside your own dialog (e.g. `ngx-kit/dialog`), use the component directly; the service is just a convenience shortcut.
+```ts
+import { Component, inject } from '@angular/core';
+import { DIALOG_DATA, DIALOG_REF } from 'ngx-kit/dialog';
+import { NgxImageViewer, type NgxImageViewerItem } from 'ngx-kit/image-viewer';
+
+@Component({
+  template: `
+    <ngx-image-viewer [images]="data.images" />
+    <button type="button" (click)="close()" class="close-btn">X</button>
+  `,
+  imports: [NgxImageViewer],
+  styles: `
+    :host {
+      display: block;
+      height: 100%;
+    }
+    .close-btn {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: cursive;
+      font-size: 1.2rem;
+    }
+  `,
+})
+export class ImageViewDialog {
+  readonly data = inject<{ images: NgxImageViewerItem[] }>(DIALOG_DATA);
+  protected readonly dialogRef = inject(DIALOG_REF);
+  close() {
+    this.dialogRef.close();
+  }
+}
+
+
+
+```
+
+`NgxImageViewer` doesn't depend on any dialog (it only has a `closed` output) — if you want to put it inside your own dialog (e.g. `ngx-kit/dialog`), use the component directly; the service is just a convenience shortcut.
 
 ## API
 

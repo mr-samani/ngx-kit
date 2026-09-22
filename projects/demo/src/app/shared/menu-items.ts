@@ -104,7 +104,9 @@ export const MENU_LIST: ICategory[] = [
       },
       {
         title: 'Image Viewer',
-        url: '/components/gallery',
+        url: '/components/image-viewer',
+        imageDark: 'preview/image-viewer-dark.png',
+        imageLight: 'preview/image-viewer-light.png',
       },
       {
         title: 'Media Control',

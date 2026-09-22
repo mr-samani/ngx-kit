@@ -9,6 +9,7 @@
   box-sizing: border-box;
   width: 100%;
   height: 100%;
+  min-width: var(--ngx-dialog-min-width);
   overflow: hidden;
   background-color: var(--panel-bg, var(--ngx-dialog-bg));
   color: var(--side-config-fg, var(--ngx-dialog-fg));
@@ -17,24 +18,20 @@
 }
 
 :host(.ngx-dialog-size-sm) {
-  --ngx-dialog-min-width: 20rem;
-  max-width: 24rem;
+  --ngx-dialog-min-width: 30dvw;
 }
 :host(.ngx-dialog-size-md) {
-  --ngx-dialog-min-width: 28rem;
-  max-width: 36rem;
+  --ngx-dialog-min-width: 50dvw;
 }
 :host(.ngx-dialog-size-lg) {
-  --ngx-dialog-min-width: 36rem;
-  max-width: 56rem;
+  --ngx-dialog-min-width: 60dvw;
 }
 :host(.ngx-dialog-size-xl) {
-  --ngx-dialog-min-width: 44rem;
-  max-width: 72rem;
+  --ngx-dialog-min-width: 80dvw;
 }
 :host(.ngx-dialog-size-full) {
-  width: 100%;
-  height: 100%;
+  width: 100dvw;
+  height: 100dvh;
   max-width: none;
   border-radius: 0;
 }

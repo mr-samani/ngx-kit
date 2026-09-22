@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Components } from './components';
 import { provideNgxDialog } from 'ngx-kit/dialog';
+import { ImageViewerDemoComponent } from './image-viewer/image-viewer.component';
 
 const routes: Routes = [
   {
@@ -87,8 +88,8 @@ const routes: Routes = [
           import('./image-editor/image-editor.component').then((c) => c.ImageEditorComponent),
       },
       {
-        path: 'gallery',
-        loadComponent: () => import('./gallery/gallery.component').then((c) => c.GalleryComponent),
+        path: 'image-viewer',
+        loadComponent: () => import('./image-viewer/image-viewer.component').then((c) => c.ImageViewerDemoComponent),
       },
       {
         path: 'drawer-menu',

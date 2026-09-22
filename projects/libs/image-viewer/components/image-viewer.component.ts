@@ -55,7 +55,7 @@ import {
   styleUrl: './image-viewer.component.scss',
   host: { class: 'ngx-image-viewer-host', tabindex: '0' },
 })
-export class NgxImageViewerComponent {
+export class NgxImageViewer {
   images = input.required<NgxImageViewerItem[]>();
   startIndex = input<number>(0);
   toolbar = input<NgxImageViewerToolbarConfig>({});

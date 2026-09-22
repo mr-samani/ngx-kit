@@ -1,13 +1,14 @@
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
   outline: none;
+  height: 100%;
+  display: block;
+  width: 100%;
 }
 
 .ngx-iv-stage {
   position: relative;
-  block-size: 420px;
+  block-size: 100%;
+  min-block-size: 420px;
   background: light-dark(#f3f4f6, #0b0b0d);
   border-radius: 10px;
   overflow: hidden;
@@ -63,18 +64,6 @@
   inset-inline-end: 0.6rem;
 }
 
-.ngx-iv-counter {
-  position: absolute;
-  inset-block-end: 0.6rem;
-  inset-inline-start: 50%;
-  translate: -50% 0;
-  padding: 0.2rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 0.75rem;
-}
-
 .ngx-iv-close {
   position: absolute;
   inset-block-start: 0.6rem;
@@ -89,31 +78,67 @@
   z-index: 2;
 }
 
-.ngx-iv-caption {
-  font-size: 0.85rem;
-  color: light-dark(#4b5563, #a1a1aa);
-  text-align: center;
-}
-
 .ngx-iv-toolbar {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
   display: flex;
+  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-
+  &--inner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 5px 20px;
+    background: #32323267;
+    border-radius: 9999px;
+    box-shadow: 0 4px 30px #000000aa;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(50, 50, 50, 0.3);
+  }
   button {
     appearance: none;
-    border: 1px solid light-dark(#d1d5db, #3f3f46);
-    background: light-dark(#ffffff, #232327);
-    color: light-dark(#374151, #d4d4d8);
+    border: none;
+    background: none;
+    color: #f2f2f2;
     border-radius: 8px;
     inline-size: 36px;
     block-size: 36px;
     font-size: 1rem;
     cursor: pointer;
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 300ms;
     &:hover {
-      background: light-dark(#f3f4f6, #2c2c31);
+      transform: scale(1.2);
+    }
+    svg {
+      stroke: currentColor;
     }
   }
+}
+
+.ngx-iv-caption {
+  background-color: #0000002f;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ngx-iv-counter {
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.251);
+  color: #fff;
+  font-size: 0.75rem;
 }

@@ -33,7 +33,7 @@ export class NgxDialogConfig<DataType = any> {
 
   /** Named size preset - sets sensible min/max width bounds. Combine with
    * `width`/`maxWidth`/... for full manual control. */
-  size?: NgxDialogSize;
+  size?: NgxDialogSize = 'lg';
   width?: string;
   minWidth?: string;
   maxWidth?: string;
@@ -53,9 +53,13 @@ export class NgxDialogConfig<DataType = any> {
   };
   footer?: NgxDialogFooterConfig = { enable: false, align: 'end' };
 
-  /** Close when clicking outside the panel. Default: false (modal by default). */
-  closeOnOutsideClick?: boolean = false;
-  /** Close on Escape. Default: true. */
+  /** Close when clicking outside the panel.
+   * - Default: `true`
+   * */
+  closeOnOutsideClick?: boolean = true;
+  /** Close on Escape.
+   * - Default: `true`
+   *  */
   closeOnEscape?: boolean = true;
   /** Shorthand for `closeOnOutsideClick: false, closeOnEscape: false` - the
    * dialog can then only be closed programmatically (e.g. via its own
