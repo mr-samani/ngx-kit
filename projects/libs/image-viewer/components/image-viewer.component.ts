@@ -99,10 +99,6 @@ export class NgxImageViewer {
   constructor() {
     this.activeIndex.set(this.startIndex());
 
-    // wheel/touch با addEventListener دستی + passive:false وصل می‌شن (دلیلش
-    // بالای کلاس توضیح داده شده)؛ effect به‌صورت خودکار وقتی stageEl از
-    // undefined به یه ElementRef واقعی تغییر کنه (یعنی بعد از اولین رندر)
-    // دوباره اجرا می‌شه، پس نیازی به ngAfterViewInit نیست.
     effect((onCleanup) => {
       const stage = this.stageEl()?.nativeElement;
       if (!stage) return;

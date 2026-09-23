@@ -3,6 +3,7 @@
   height: 100%;
   display: block;
   width: 100%;
+  position: relative;
 }
 
 .ngx-iv-stage {
@@ -114,6 +115,7 @@
     align-items: center;
     justify-content: center;
     transition: transform 300ms;
+    margin: 0;
     &:hover {
       transform: scale(1.2);
     }
@@ -133,6 +135,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  pointer-events: none;
 }
 
 .ngx-iv-counter {
@@ -141,4 +144,17 @@
   background: rgba(0, 0, 0, 0.251);
   color: #fff;
   font-size: 0.75rem;
+  pointer-events: none;
+}
+
+@media (max-width: 500px) {
+  .ngx-iv-counter {
+    position: absolute;
+    transform: translate(0px, -160%);
+  }
+  .ngx-iv-toolbar {
+    &--inner {
+      gap: 0.3rem;
+    }
+  }
 }

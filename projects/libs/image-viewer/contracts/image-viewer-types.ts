@@ -2,14 +2,10 @@ export interface NgxImageViewerItem {
   src: string;
   alt?: string;
   caption?: string;
-  /** نام فایل هنگام دانلود؛ نبود یعنی از روی src حدس زده می‌شه */
   downloadFileName?: string;
 }
 
-/**
- * هر دکمه‌ی نوار ابزار جدا فعال/غیرفعال می‌شه — دقیقاً طبق خواسته: «این
- * دکمه‌های کانفیگی باشه که هر کدوم خواست فعال کنه».
- */
+
 export interface NgxImageViewerToolbarConfig {
   prevNext?: boolean;
   counter?: boolean;
