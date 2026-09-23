@@ -7,6 +7,8 @@ export interface IAppMenu {
   icon?: string;
 
   fragments?: IFragmentsMenu[];
+
+  children?: IAppMenu[];
 }
 
 export interface IFragmentsMenu {

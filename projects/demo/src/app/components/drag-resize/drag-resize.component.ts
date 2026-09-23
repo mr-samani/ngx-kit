@@ -1,9 +1,8 @@
-import { NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
+import { isRtl, NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
 import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-
-type Direction = 'ltr' | 'rtl';
+import { DirectionService } from 'ngx-kit/core';
 
 type PositionMode = 'static' | 'relative' | 'absolute' | 'fixed';
 
@@ -30,6 +29,7 @@ export class DragResizeComponent implements OnInit, OnDestroy {
   // Navigation
   // ---------------------------------------------------------
   protected readonly route = inject(ActivatedRoute);
+  protected readonly direction = inject(DirectionService);
 
   readonly selectedExample = signal('overview');
 
@@ -37,7 +37,7 @@ export class DragResizeComponent implements OnInit, OnDestroy {
   // Playground state
   // ---------------------------------------------------------
 
-  readonly direction = signal<Direction>('ltr');
+  readonly isRtl = this.direction.isRtl();
 
   readonly darkMode = signal(false);
 
@@ -73,10 +73,6 @@ export class DragResizeComponent implements OnInit, OnDestroy {
   // Computed
   // ---------------------------------------------------------
 
-  readonly directionLabel = computed(() =>
-    this.direction() === 'rtl' ? 'Right to Left' : 'Left to Right',
-  );
-
   readonly positionLabel = computed(() => this.selectedPosition());
 
   readonly generatedCode = computed(() => {
@@ -108,14 +104,6 @@ export class DragResizeComponent implements OnInit, OnDestroy {
 
   selectExample(id: string): void {
     this.selectedExample.set(id);
-  }
-
-  // ---------------------------------------------------------
-  // Direction
-  // ---------------------------------------------------------
-
-  setDirection(direction: Direction): void {
-    this.direction.set(direction);
   }
 
   // ---------------------------------------------------------

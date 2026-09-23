@@ -40,27 +40,38 @@ export class DragDropService {
     this.activeDrag.set(null);
   }
 
-  findDropList(point: { x: number; y: number }, current?: DropListRef | null): DropListRef | null {
-    const candidates = this.dropLists().filter((list) => {
-      const r = list.el?.getBoundingClientRect();
-      return (
-        !!r && point.x >= r.left && point.x <= r.right && point.y >= r.top && point.y <= r.bottom
-      );
-    });
+  /**
+   * Which drop list is under `point`?
+   *
+   * - Only lists connected to the drag's ORIGIN list qualify (connectivity is not transitive, so
+   *   A→B→C never lets an item hop A→C). Without an origin (a free-drag element) nothing
+   *   qualifies: free dragging is never captured by a list.
+   * - Only the visible (clip-aware) part of a list counts.
+   * - A list inside the dragged element itself is never a target.
+   * - Nested lists: the innermost qualifying list wins. Among unrelated overlapping lists the
+   *   current one is kept (no flicker), otherwise the smallest.
+   */
+  findDropList(
+    point: { x: number; y: number },
+    current?: DropListRef | null,
+    origin?: DropListRef | null,
+    dragEl?: HTMLElement | null,
+  ): DropListRef | null {
+    const source = origin ?? null;
+    if (!source) return null;
 
-    // Staying over the current list should always win.
-    if (current && candidates.includes(current)) return current;
+    let best: DropListRef | null = null;
+    for (const list of this.dropLists()) {
+      if (!list.el || !source.isConnectedTo(list)) continue;
+      if (dragEl && dragEl !== list.el && dragEl.contains(list.el)) continue;
+      if (!list._containsPoint(point.x, point.y)) continue;
 
-    // Never jump into an unrelated list just because it overlaps the pointer.
-    // Prefer the smallest matching connected container (useful for nested lists).
-    return (
-      candidates
-        .filter((list) => !current || current.isConnectedTo(list))
-        .sort((a, b) => {
-          const ra = a.el.getBoundingClientRect();
-          const rb = b.el.getBoundingClientRect();
-          return ra.width * ra.height - rb.width * rb.height;
-        })[0] ?? null
-    );
+      if (!best) best = list;
+      else if (best.el.contains(list.el)) best = list; // deeper wins
+      else if (list.el.contains(best.el)) continue;
+      else if (list === current) best = list;
+      else if (best !== current && list._area() < best._area()) best = list;
+    }
+    return best;
   }
 }

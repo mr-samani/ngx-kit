@@ -1,0 +1,40 @@
+<div class="form-container">
+  <div
+    ngxDropList
+    class="example-list"
+    [data]="sourceList"
+    [disableSort]="true"
+    [connectedTo]="[copyZone]"
+    id="baseList">
+    @for (item of sourceList; track $index) {
+      <div class="example-box" ngxDraggable>
+        {{ item }}
+      </div>
+    }
+  </div>
+
+  <div class="target-container">
+    Copy zone
+    <div
+      class="inner"
+      id="copyZone"
+      #copyZone
+      ngxDropList
+      [data]="targetList"
+      (drop)="drop($event)"
+      [connectedTo]="[deleteZone]">
+      @for (item of targetList; track item.id) {
+        <div class="example-box" ngxDraggable (click)="onClick(item)" [id]="item.id">
+          {{ item.title }}
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="target-container">
+    Delete zone
+    <div class="inner" id="deleteZone" #deleteZone ngxDropList [data]="targetList" (drop)="dropToDelete($event)">
+      drag here for delete
+    </div>
+  </div>
+</div>

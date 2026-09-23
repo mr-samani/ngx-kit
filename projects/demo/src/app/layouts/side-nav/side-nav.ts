@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -8,7 +9,7 @@ import { filter, map, startWith } from 'rxjs';
 @Component({
   selector: 'app-side-nav',
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './side-nav.html',
   styleUrl: './side-nav.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -132,6 +133,6 @@ export class SideNavComponent {
   }
 
   private normalizeUrl(url: string): string {
-    return url.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
+    return url?.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
   }
 }

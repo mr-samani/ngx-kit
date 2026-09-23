@@ -6,6 +6,7 @@ import { DropListRef } from './drop-list-ref';
  * Lists register themselves automatically when `NgxDropListGroup` wraps them.
  */
 export class DropListGroupRef {
+  el?: HTMLElement;
   readonly lists = new Set<DropListRef<any>>();
 
   add(list: DropListRef<any>): void {

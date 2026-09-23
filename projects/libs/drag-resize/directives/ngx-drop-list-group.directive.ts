@@ -1,4 +1,4 @@
-import { Directive, InjectionToken, OnDestroy } from '@angular/core';
+import { Directive, ElementRef, inject, InjectionToken, Injector, OnDestroy } from '@angular/core';
 import { DropListGroupRef } from '../drop-list-group-ref';
 
 export const NGX_DROPLIST_GROUP = new InjectionToken<NgxDropListGroup>('ngx-drop-list-group');
@@ -7,9 +7,16 @@ export const NGX_DROPLIST_GROUP = new InjectionToken<NgxDropListGroup>('ngx-drop
 @Directive({
   selector: '[NgxDropListGroup],[ngxDropListGroup]',
   providers: [{ provide: NGX_DROPLIST_GROUP, useExisting: NgxDropListGroup }],
+  exportAs: 'ngxDropListGroup',
 })
 export class NgxDropListGroup implements OnDestroy {
   readonly _ref = new DropListGroupRef();
+  protected readonly el = inject(ElementRef<HTMLElement>);
+
+  injector = inject(Injector);
+  constructor() {
+    this._ref.el = this.el.nativeElement;
+  }
   ngOnDestroy(): void {
     this._ref.lists.clear();
   }

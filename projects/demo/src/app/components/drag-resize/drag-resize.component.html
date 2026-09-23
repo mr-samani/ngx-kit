@@ -309,33 +309,6 @@
       }
 
       <!-- --------------------------------------- -->
-      <!-- RTL -->
-      <!-- --------------------------------------- -->
-
-      @if (selectedExample() === 'rtl') {
-        <div class="rtl-demo">
-          <div class="rtl-info">
-            <span>
-              {{ directionLabel() }}
-            </span>
-
-            <strong>Bidirectional support</strong>
-          </div>
-
-          <div
-            class="rtl-object"
-            ngxDraggable
-            ngxResizable
-            (dragEnd)="onDragEnd($event)"
-            (resizeEnd)="onResizeEnd($event)">
-            <span>
-              {{ direction() === 'rtl' ? 'قابل جابجایی' : 'Draggable' }}
-            </span>
-          </div>
-        </div>
-      }
-
-      <!-- --------------------------------------- -->
       <!-- MULTIPLE -->
       <!-- --------------------------------------- -->
 
@@ -378,9 +351,10 @@
         <div class="sidepan-demo">
           <div
             class="sidenav"
+            [class.rtl]="isRtl"
             ngxResizable
             (resizeEnd)="onResizeEnd($event)"
-            [directions]="['e']"
+            [directions]="isRtl ? ['w'] : ['e']"
             [minWidth]="120">
             side nav content
 
@@ -447,13 +421,6 @@
       <div class="section-title">CONFIGURATION</div>
 
       <div class="config-list">
-        <div>
-          <span>Direction</span>
-          <strong>
-            {{ direction() | uppercase }}
-          </strong>
-        </div>
-
         <div>
           <span>Position</span>
           <strong>

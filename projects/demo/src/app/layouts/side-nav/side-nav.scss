@@ -60,6 +60,9 @@
   flex-direction: column;
 
   gap: 2px;
+  &.inner {
+    padding-inline-start: 30px;
+  }
 }
 
 /* =========================================================

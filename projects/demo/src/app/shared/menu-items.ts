@@ -218,15 +218,13 @@ export const MENU_LIST: ICategory[] = [
         title: 'Drop List',
         description: '',
         url: '/components/drop-list',
-        fragments: [
-          {
-            id: 'sortable',
-            title: 'Sortable list',
-          },
-          {
-            id: 'mixed',
-            title: 'Mixed',
-          },
+        children: [
+          { url: '/components/drop-list/sort-list', title: 'Sort list' },
+          { url: '/components/drop-list/kanban', title: 'Kanban View' },
+          { url: '/components/drop-list/horizontal-list', title: 'Horizontal List' },
+          { url: '/components/drop-list/copy-to-zone', title: 'Copy to zone' },
+          { url: '/components/drop-list/nested-tree-sort', title: 'Nested Tree' },
+          { url: '/components/drop-list/dynamic-html', title: 'Dynamic html elements' },
         ],
       },
       {
