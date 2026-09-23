@@ -154,3 +154,15 @@
     text-decoration: none;
   }
 }
+
+@media (max-width: 768px) {
+  .topbar-center {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .main-nav {
+    display: none;
+  }
+}

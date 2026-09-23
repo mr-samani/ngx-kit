@@ -19,8 +19,20 @@
           <a class="card" [routerLink]="item.url">
             @if (item.imageDark || item.imageLight) {
               <div class="preview-img-container">
-                <img class="dark" [src]="item.imageDark" [alt]="item.title + ' dark'" />
-                <img class="light" [src]="item.imageLight" [alt]="item.title + ' light'" />
+                @if (item.imageDark) {
+                  <img
+                    class="dark"
+                    [src]="item.imageDark"
+                    [alt]="item.title + ' dark'"
+                    loading="lazy" />
+                }
+                @if (item.imageLight) {
+                  <img
+                    class="light"
+                    [src]="item.imageLight"
+                    [alt]="item.title + ' light'"
+                    loading="lazy" />
+                }
               </div>
             } @else {
               <app-preview-card [seed]="item.title" [icon]="iconFor(item.title)" />

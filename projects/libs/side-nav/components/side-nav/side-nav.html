@@ -1,0 +1,20 @@
+<div class="ngx-side-nav-container"
+      [class.is-open]="open()">
+  @if (shouldShowOverlay()) {
+    <div class="ngx-drawer-menu-overlay" (click)="closeMenu()"></div>
+  }
+
+  @if (open()) {
+    <div
+      class="ngx-drawer-menu"
+      [class.overlay-mode]="mode() === 'overlay' && isMatchMediaQuery()"
+      animate.enter="show-ngx-drawer-menu"
+      animate.leave="hide-ngx-drawer-menu">
+      <ng-content select="[ngxDrawerMenu]" />
+    </div>
+  }
+
+  <div class="ngx-side-nav-content">
+    <ng-content />
+  </div>
+</div>
