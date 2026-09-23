@@ -1,16 +1,16 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgxDrawerMenuComponent, NgxDrawerEffect } from 'ngx-kit/drawer-menu';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
+import { NgxSideNavModule, NgxSideNavMode } from 'ngx-kit/side-nav';
 
 @Component({
   selector: 'app-drawer-menu',
   templateUrl: './drawer-menu.component.html',
   styleUrl: './drawer-menu.component.scss',
-  imports: [FormsModule, NgxDrawerMenuComponent, ExampleShowcaseComponent],
+  imports: [FormsModule, ExampleShowcaseComponent, NgxSideNavModule],
 })
 export class DrawerMenuComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
@@ -18,8 +18,9 @@ export class DrawerMenuComponent {
     { label: 'HTML', path: 'examples/drawer-menu/drawer-menu.component.html', language: 'html' },
   ];
 
-  protected readonly effects: NgxDrawerEffect[] = ['none', 'fabric', 'slide', 'push', 'scale'];
+  mode = signal<NgxSideNavMode>('push');
 
-  protected readonly effect = signal<NgxDrawerEffect>('fabric');
-  protected readonly open = signal(false);
+  setMode(m: NgxSideNavMode) {
+    this.mode.set(m);
+  }
 }
