@@ -826,6 +826,12 @@ RESIZE PAN
     &:hover .ngx-resize-handler {
       display: block;
     }
+    &.rtl {
+      .ngx-resize-handler {
+        right: auto;
+        left: 4px;
+      }
+    }
   }
   .main {
     background-color: var(--surface-2);
