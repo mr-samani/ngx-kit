@@ -2,25 +2,23 @@
   title="Drawer Menu"
   [files]="sourceFiles"
   readmePath="readmes/drawer-menu/README.md">
-  <div class="controls">
-    <label>
-      effect
-      <select [ngModel]="effect()" (ngModelChange)="effect.set($event)">
-        @for (e of effects; track e) {
-          <option [value]="e">{{ e }}</option>
-        }
-      </select>
-    </label>
+  <div class="toolbar-group">
+    <span class="toolbar-label">Mode</span>
+
+    <div class="segmented">
+      <button type="button" [class.active]="mode() === 'push'" (click)="setMode('push')">
+        Push
+      </button>
+
+      <button type="button" [class.active]="mode() === 'overlay'" (click)="setMode('overlay')">
+        Overlay
+      </button>
+    </div>
   </div>
 
-  <p class="hint">
-    This preview is confined to the frame below (via a perspective/containing-block trick); in real
-    usage, the drawer covers the whole page. You can also swipe from the frame's left/right edge.
-  </p>
-
   <div class="frame">
-    <ngx-drawer-menu [effect]="effect()" [(open)]="open" side="start" [width]="220">
-      <div drawerContent class="menu-content">
+    <ngx-side-nav [mode]="mode()" [width]="220" class="my-drawer-menu">
+      <div ngxDrawerMenu class="menu-content">
         <h4>My Menu</h4>
         <ul>
           <li>Home</li>
@@ -31,12 +29,12 @@
       </div>
 
       <div class="page-content">
-        <button type="button" (click)="open.set(true)">
+        <button type="button" ngxDrawerMenuToggle>
           <i class="fa fa-bars"></i>
         </button>
         <p>This is the page's main content.</p>
         <p>Change "contentBehavior" to see how it reacts.</p>
       </div>
-    </ngx-drawer-menu>
+    </ngx-side-nav>
   </div>
 </app-example-showcase>

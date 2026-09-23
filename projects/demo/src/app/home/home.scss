@@ -94,6 +94,7 @@
     position: absolute;
     border-radius: 10px;
     transition: transform 300ms;
+    object-fit: contain;
     &.dark {
       transform: rotate(9deg) translate(12%, -8%) scale(0.92);
       z-index: 0;

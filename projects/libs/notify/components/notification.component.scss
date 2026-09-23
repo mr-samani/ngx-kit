@@ -117,18 +117,15 @@
   }
 }
 
-::ng-deep {
-  html[dir='rtl'],
-  body[dir='ltr'] {
-    .ngx-notify-content {
-      border-radius: 0px 0px 15px 0px;
-    }
-    .ngx-notify-progress {
-      left: 0;
-      right: 60px;
-      .progress-bar {
-        transform-origin: right !important;
-      }
+:host-context([dir='rtl']) {
+  .ngx-notify-content {
+    border-radius: 0px 0px 15px 0px;
+  }
+  .ngx-notify-progress {
+    left: 0;
+    right: 60px;
+    .progress-bar {
+      transform-origin: right !important;
     }
   }
 }

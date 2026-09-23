@@ -1,0 +1,58 @@
+:host {
+  --ngx-drawer-size: 270px;
+  --ngx-sidenav-gap: 10px;
+  --ngx-break-point: 960;
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  --ngx-drawer-menu-offset: -100%;
+}
+:host-context([dir='rtl']) {
+  --ngx-drawer-menu-offset: 100%;
+}
+.ngx-side-nav-container {
+  position: relative;
+  display: flex;
+  gap: var(--ngx-sidenav-gap, 10px);
+  width: 100%;
+  height: 100%;
+}
+.ngx-drawer-menu {
+  overflow: auto;
+  height: 100%;
+  width: var(--ngx-drawer-size, 270);
+  z-index: 99999;
+  &.overlay-mode {
+    position: absolute;
+  }
+}
+.ngx-side-nav-content {
+  overflow: auto;
+  height: 100%;
+  flex: 1 1 0;
+}
+
+.ngx-drawer-menu-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #1a1a1a31;
+  z-index: 9999;
+}
+
+.show-ngx-drawer-menu {
+  animation: showNgxDrawerMenu 300ms;
+}
+.hide-ngx-drawer-menu {
+  transform: translateX(var(--ngx-drawer-menu-offset));
+  transition: transform 300ms ease-out;
+}
+
+@keyframes showNgxDrawerMenu {
+  from {
+    transform: translateX(var(--ngx-drawer-menu-offset));
+  }
+  to {
+    transform: translateX(0);
+  }
+}

@@ -5,16 +5,12 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-
+  width: 100%;
   border-inline-end: 1px solid var(--border);
 
   background: var(--surface);
 
   overflow: hidden;
-
-  transition:
-    width 180ms ease,
-    flex-basis 180ms ease;
 }
 
 /* =========================================================
@@ -617,16 +613,5 @@
   .fragment-button:hover .fragment-arrow,
   .fragment-button.active .fragment-arrow {
     transform: translateX(0);
-  }
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 760px) {
-  .sidebar {
-    width: 270px;
-    flex-basis: 270px;
   }
 }
