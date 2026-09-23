@@ -49,6 +49,7 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy, AfterContentInit
   ngOnInit(): void {
     this._ref.el = this.el.nativeElement;
     this._ref.dropListGroup = this.group?._ref ?? null;
+    // console.log('list:', this._ref.el, 'group:', this._ref.dropListGroup?.el);
     // Previously the group directive never actually tracked its lists — fixed here.
     this.group?._ref.add(this._ref);
     this.sub = this._ref.onDrop.subscribe((e) => this.drop.emit(e));
