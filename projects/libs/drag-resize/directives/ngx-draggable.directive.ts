@@ -87,10 +87,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   private lastWindowScroll = { left: 0, top: 0 };
   private removeContainerScroll?: () => void;
   private removeWindowScroll?: () => void;
-  constructor(
-    private readonly host: ElementRef<HTMLElement>,
-    private readonly renderer: Renderer2,
-  ) {
+
+  protected readonly renderer = inject(Renderer2);
+  constructor(private readonly host: ElementRef<HTMLElement>) {
     effect(() => {
       this._ref.el = this.dragRootElement()
         ? (this.host.nativeElement.closest(this.dragRootElement()) ?? this.host.nativeElement)
@@ -168,8 +167,10 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
     this.removeCancel = this.renderer.listen(this.doc, 'pointercancel', (ev: PointerEvent) =>
       this.pointerCancel(ev),
     );
-    this.removeLostCapture = this.renderer.listen(this.doc, 'lostpointercapture', (ev: PointerEvent) =>
-      this.pointerCancel(ev),
+    this.removeLostCapture = this.renderer.listen(
+      this.doc,
+      'lostpointercapture',
+      (ev: PointerEvent) => this.pointerCancel(ev),
     );
   }
   private applyDragUpdate(p: IPosition): void {
@@ -315,7 +316,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
         // that keyboard sorting resolves against real geometry.
         const inList = !!this._ref.dropList && this._ref.dropList.el === this._ref.el.parentElement;
         const r = this._ref.el.getBoundingClientRect();
-        const origin = inList ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 };
+        const origin = inList
+          ? { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+          : { x: 0, y: 0 };
         this._ref.pointerDown(origin);
         this._ref.boundary = this.boundary();
         this._ref.lockAxis = this.lockAxis();
