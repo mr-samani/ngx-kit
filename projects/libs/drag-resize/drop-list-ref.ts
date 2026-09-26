@@ -6,6 +6,7 @@ import { DropListGroupRef } from './drop-list-group-ref';
 import { PlaceHolderRef } from './placeholder-ref';
 import {
   Box,
+  Point,
   analyzeLayout,
   boxContains,
   resolveInsertionIndex,
@@ -39,6 +40,17 @@ export class DropListRef<T = any> {
   readonly _draggables = new Set<DragRef<T>>();
   readonly onDrop = new EventEmitter<IDropEvent<T>>();
 
+  /**
+   * Nesting: the nearest ENCLOSING drop list (null for a top-level list), and this list's own
+   * direct nested lists — i.e. lists whose nearest enclosing list is this one, not a list at any
+   * depth. Set by `NgxDropList` at init from a `skipSelf` DI lookup. Used for two things: (1)
+   * `depth` for "innermost wins" in `DragRef`'s target resolution, without any DOM `.contains()`
+   * calls on the hot path, and (2) cascading `_setAncestorOffset` (below) to every list nested
+   * inside an item that gets displaced by sorting, at any depth.
+   */
+  parentList: DropListRef<any> | null = null;
+  readonly childLists = new Set<DropListRef<any>>();
+
   private session: SortSession | null = null;
   private placeholder?: PlaceHolderRef;
   customPlaceholder?: PlaceHolderRef;
@@ -50,6 +62,95 @@ export class DropListRef<T = any> {
   /** Pre-insertion geometry of a foreign list, restored when the drag leaves it. */
   private naturalHit: HitGeometry | null = null;
   private hitCached = false;
+  /**
+   * Screen-space offset contributed by displaced ANCESTOR item(s) (see `parentList` above).
+   * `{0,0}` outside of that (the overwhelmingly common case). Kept as a SUM of independent
+   * per-source contributions, not a single overwritten value: while the pointer hovers a
+   * FOREIGN (non-origin) list nested inside the origin's own displaced item, up to two ancestor
+   * sessions can be displacing this list at once — the origin's (frozen, still active further
+   * up) and that foreign list's own — and one clearing its contribution on release must not
+   * wipe out the other's, still-active, contribution.
+   */
+  private readonly ancestorContributions = new Map<DropListRef<any>, Point>();
+  private ancestorOffset: Point = { x: 0, y: 0 };
+  /** Entries this list itself pushed via a one-time placeholder-insertion reflow (see below). */
+  private readonly reflowContributions = new Map<HTMLElement, Point>();
+
+  /** How many enclosing drop lists this one is nested inside. Root lists are depth 0. */
+  get depth(): number {
+    let d = 0;
+    for (let p: DropListRef<any> | null = this.parentList; p; p = p.parentList) d++;
+    return d;
+  }
+
+  _registerChild(child: DropListRef<any>): void {
+    child.parentList = this;
+    this.childLists.add(child);
+  }
+
+  _unregisterChild(child: DropListRef<any>): void {
+    if (child.parentList === this) child.parentList = null;
+    this.childLists.delete(child);
+  }
+
+  /**
+   * One ancestor SESSION's contribution to this list's total displacement just changed (or
+   * cleared, `{0,0}`). `source` identifies WHICH session — the list whose own item is doing the
+   * displacing — so that this list's own recomputed total is a SUM across every currently-active
+   * source, and cascades the SAME (source, offset) pair on to every nested list at any depth
+   * unchanged, so a list several levels down stays hit-testable at its true on-screen position
+   * regardless of which ancestor(s) are currently sorting.
+   */
+  _setAncestorOffset(source: DropListRef<any>, offset: Point): void {
+    const prev = this.ancestorContributions.get(source);
+    if (prev && prev.x === offset.x && prev.y === offset.y) return;
+    if (offset.x === 0 && offset.y === 0) this.ancestorContributions.delete(source);
+    else this.ancestorContributions.set(source, offset);
+
+    let x = 0;
+    let y = 0;
+    for (const o of this.ancestorContributions.values()) {
+      x += o.x;
+      y += o.y;
+    }
+    if (x === this.ancestorOffset.x && y === this.ancestorOffset.y) return; // no net change
+    this.ancestorOffset = { x, y };
+    for (const child of this.childLists) child._setAncestorOffset(source, offset);
+  }
+
+  /** Which of this list's DIRECT nested lists live inside `el`, notified of its new offset. */
+  private propagateOffset(el: HTMLElement, offset: Point): void {
+    for (const child of this.childLists) {
+      if (el.contains(child.el)) child._setAncestorOffset(this, offset);
+    }
+  }
+
+  /** Rects, right now, of every `other` entry that contains one of this list's nested lists. */
+  private trackedEntryRects(others: ReadonlySet<HTMLElement>): Map<HTMLElement, DOMRect> {
+    const map = new Map<HTMLElement, DOMRect>();
+    for (const child of this.childLists) {
+      for (const el of others) {
+        if (el.contains(child.el)) {
+          if (!map.has(el)) map.set(el, el.getBoundingClientRect());
+          break;
+        }
+      }
+    }
+    return map;
+  }
+
+  /** Turns the real reflow a fresh placeholder insertion just caused into ordinary offsets. */
+  private propagateReflow(before: Map<HTMLElement, DOMRect>): void {
+    for (const [el, prev] of before) {
+      const now = el.getBoundingClientRect();
+      const dx = now.left - prev.left;
+      const dy = now.top - prev.top;
+      if (dx || dy) {
+        this.propagateOffset(el, { x: dx, y: dy });
+        this.reflowContributions.set(el, { x: dx, y: dy });
+      }
+    }
+  }
 
   addItem(item: DragRef<T>): void {
     this._draggables.add(item);
@@ -69,9 +170,24 @@ export class DropListRef<T = any> {
   // hit testing (cached for the duration of a drag)
   // ---------------------------------------------------------------------------------------
 
-  /** Measure the list and its clipping ancestors once, at drag start. */
+  /**
+   * Measure the list and its clipping ancestors once, at drag start (or the moment a nested
+   * list becomes a candidate mid-drag). `measureHit` reads live `getBoundingClientRect()`s,
+   * which already include any `translate3d` an ancestor item's displacement has applied — so if
+   * this list is currently offset (nested inside a sibling that sorting is displacing right
+   * now), the measurement is normalized back to the zero-offset frame `_containsPoint` expects,
+   * by subtracting that offset straight back out. Without this, entering a nested list while
+   * its ancestor is mid-displacement would double-count the offset on every check afterwards.
+   */
   _cacheGeometry(): void {
-    this.hit = measureHit(this.el);
+    const hit = measureHit(this.el);
+    if (hit && (this.ancestorOffset.x || this.ancestorOffset.y)) {
+      hit.box.left -= this.ancestorOffset.x;
+      hit.box.right -= this.ancestorOffset.x;
+      hit.box.top -= this.ancestorOffset.y;
+      hit.box.bottom -= this.ancestorOffset.y;
+    }
+    this.hit = hit;
     this.hitCached = true;
   }
 
@@ -84,10 +200,14 @@ export class DropListRef<T = any> {
   _containsPoint(x: number, y: number): boolean {
     const hit = this.hitCached ? this.hit : measureHit(this.el);
     if (!hit) return false;
-    let d = hit.frame.delta();
-    if (!boxContains(hit.box, x + d.x, y + d.y)) return false;
+    // The list's own box shifts with any ancestor displacement; a clip window (a scroll/overflow
+    // ancestor) normally does not, since it is not itself an item being sorted, so it is tested
+    // against the raw pointer.
+    const d0 = hit.frame.delta();
+    if (!boxContains(hit.box, x - this.ancestorOffset.x + d0.x, y - this.ancestorOffset.y + d0.y))
+      return false;
     for (const clip of hit.clips) {
-      d = clip.frame.delta();
+      const d = clip.frame.delta();
       if (!boxContains(clip.box, x + d.x, y + d.y)) return false;
     }
     return true;
@@ -124,7 +244,9 @@ export class DropListRef<T = any> {
   /** The drag pointer entered this list (or the drag started inside it). */
   enter(drag: DragRef<T>, x = 0, y = 0): void {
     if (this.session && this.activeDrag === drag) {
-      // Re-entering the list the drag started in: its session (and slot) are still alive.
+      // Resuming a session that's still alive: either this is the origin list (its slot is
+      // always kept), or the pointer dove into one of its own nested lists and came back up
+      // (frozen rather than released in `exit()`, see there).
       this.hovered = true;
       this.el.classList.add('ngx-drop-list--active');
       drag.placeholder = this.placeholder;
@@ -150,6 +272,11 @@ export class DropListRef<T = any> {
   }
 
   /** The pointer left this list. */
+  /**
+   * The pointer truly left this list (as opposed to moving deeper into one of its own nested
+   * lists — see `DragRef`'s chain tracking, which never calls `exit()` for a list that remains
+   * an ancestor of the new target, so this always means "left this list's territory").
+   */
   exit(drag: DragRef<T>): void {
     if (!this.session || this.activeDrag !== drag) return;
     this.hovered = false;
@@ -162,6 +289,18 @@ export class DropListRef<T = any> {
       // A foreign list forgets the drag on exit; its geometry stays cached until the drag ends.
       this.releaseSession(drag);
     }
+  }
+
+  /**
+   * The pointer dove into one of this list's own nested lists: this list is no longer the
+   * innermost target, but it isn't being left either — its placeholder and sibling displacement
+   * stay exactly as they are (avoids a snap-back-then-forward flicker), only the "currently
+   * hovered" bookkeeping (and its visual highlight) is cleared. `DragRef`'s chain tracking calls
+   * this instead of `exit()` for every list that remains an ancestor of the new target.
+   */
+  _freeze(): void {
+    this.hovered = false;
+    this.el.classList.remove('ngx-drop-list--active');
   }
 
   /**
@@ -212,6 +351,12 @@ export class DropListRef<T = any> {
     this.releaseSession(drag);
     this.hit = null;
     this.hitCached = false;
+    // `ancestorOffset` is deliberately NOT reset here: `enter()` calls this unconditionally as a
+    // safety-clear on every (re-)entry, including while a currently-active ancestor transform
+    // still legitimately applies to this list. It self-corrects when that transform actually
+    // reverts to zero, via the `onOffsetChange` cascade (see `_setAncestorOffset`), which also
+    // covers the true end of a drag (the displaced list's own session disposes and reports
+    // every entry back to `{0,0}`).
   }
 
   /** Dispose the sort session, placeholder and drag ownership. */
@@ -220,6 +365,13 @@ export class DropListRef<T = any> {
 
     this.session?.dispose();
     this.session = null;
+    if (this.reflowContributions.size) {
+      // The one-time reflow from this list's own placeholder insertion (see `propagateReflow`)
+      // never went through the session's own `applied` map, so its `dispose()` above cannot
+      // have cleared it — do that here instead, or it would linger as a stale contribution.
+      for (const [el] of this.reflowContributions) this.propagateOffset(el, { x: 0, y: 0 });
+      this.reflowContributions.clear();
+    }
 
     this.placeholder?.detach();
     if (this.activeDrag && this.activeDrag.placeholder === this.placeholder) {
@@ -256,14 +408,27 @@ export class DropListRef<T = any> {
     if (origin) {
       // The placeholder takes over the exact slot of the (now hidden) source element.
       ph.attach(this.el, drag.el, drag.el);
+      this.lockPlaceholderGeometry(drag, ph, drag.start);
     } else {
       ph.detach();
+      // Only the "other" entries that contain a nested list are worth measuring (usually none,
+      // or very few, even in a large tree): inserting the placeholder is a REAL DOM node, so it
+      // shifts later siblings via ordinary CSS reflow, not `translate3d` — a one-time event this
+      // list's own SortSession never reports through `onOffsetChange`, since (being sized and
+      // positioned by `foreignInsertionReference` to already match where it belongs) it never
+      // needs to actually transform anything afterwards. Measuring the small tracked set just
+      // before and after the insertion turns that one-time reflow into an ordinary ancestor
+      // contribution, exactly like any other displaced entry.
+      const tracked = this.childLists.size ? this.trackedEntryRects(others) : null;
       const reference = this.foreignInsertionReference(others, pointer, axis, rtl);
       ph.attach(this.el, drag.el, reference);
+      // Sized to its final footprint BEFORE measuring the reflow it causes: an unsized clone
+      // (still near-zero height) wouldn't have pushed `others` at all yet.
+      this.lockPlaceholderGeometry(drag, ph, drag.start);
+      if (tracked) this.propagateReflow(tracked);
       spacer = makeSpacer(this.el);
       if (spacer) this.el.insertBefore(spacer, reference ?? ph.element!);
     }
-    this.lockPlaceholderGeometry(drag, ph.element!, drag.start);
 
     this.placeholder = ph;
     this.activeDrag = drag;
@@ -278,6 +443,9 @@ export class DropListRef<T = any> {
       fallbackRtl: rtl,
       animationMs: this.sortAnimationDuration,
       spacer,
+      onOffsetChange: this.childLists.size
+        ? (el, offset) => this.propagateOffset(el, offset)
+        : undefined,
     });
 
     if (!origin && this.hitCached) {
@@ -285,7 +453,7 @@ export class DropListRef<T = any> {
       // (and must be able to reach, e.g. to append below the last item). The natural box comes
       // back on exit, so entering/leaving at the old edge cannot flicker.
       this.naturalHit = this.hit;
-      this.hit = measureHit(this.el);
+      this._cacheGeometry();
     }
   }
 
@@ -343,14 +511,19 @@ export class DropListRef<T = any> {
     return -1;
   }
 
-  private lockPlaceholderGeometry(drag: DragRef<T>, placeholder: HTMLElement, rect: DOMRect): void {
-    const set = (k: string, v: string) => placeholder.style.setProperty(k, v);
+  private lockPlaceholderGeometry(drag: DragRef<T>, ph: PlaceHolderRef, rect: DOMRect): void {
+    const placeholder = ph.element!;
+    const set = (k: string, v: string) => placeholder.style.setProperty(k, v, 'important');
 
-    // The clone was taken from the source, which may already carry drag-time inline styles.
-    placeholder.style.display = drag.originalDisplay;
     placeholder.style.zIndex = '';
     placeholder.style.removeProperty('will-change');
 
+    if (ph.custom) return;
+
+    placeholder.style.display = drag.originalDisplay;
+
+    // Occupies exactly the dragged item's footprint, so the gap reserved in the list — and the
+    // sibling-displacement math derived from it — matches the item's real size.
     set('width', `${rect.width}px`);
     set('height', `${rect.height}px`);
     // set('min-width', `${rect.width}px`);

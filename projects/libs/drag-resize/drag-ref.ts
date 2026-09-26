@@ -56,6 +56,14 @@ export class DragRef<T = unknown> {
   /** True while a drop-list drag (body preview + placeholder) is in progress. Free drag: always false. */
   private listDrag = false;
   private cachedLists: DropListRef<T>[] = [];
+  /**
+   * Candidate lists for hit-testing, filtered (connected to the origin; not inside the dragged
+   * element) and sorted deepest-first — both computed ONCE, not on every pointer move, since
+   * neither ever changes mid-drag. Kept in sync with the live registry (see `dropListsSnapshot`)
+   * so a list that appears or disappears mid-drag (e.g. behind an `@if`) is still picked up.
+   */
+  private dropCandidates: { list: DropListRef<T>; depth: number }[] = [];
+  private dropListsSnapshot: readonly DropListRef<any>[] | null = null;
   private lastEffective: IPosition = { x: 0, y: 0 };
   private scrollListener?: () => void;
   private resizeListener?: () => void;
@@ -313,17 +321,14 @@ export class DragRef<T = unknown> {
     const doc = this.el.ownerDocument;
     const win = doc.defaultView ?? window;
 
-    const lists = new Set<DropListRef<T>>([origin]);
-    for (const l of this.service?.dropLists() ?? []) lists.add(l as DropListRef<T>);
-    this.cachedLists = Array.from(lists);
-    // Foreign lists are measured as they are now (no placeholder in them yet)...
-    for (const l of this.cachedLists) if (l !== origin) l._cacheGeometry();
+    this.dropListsSnapshot = null; // force refreshDropCandidates() to do a full pass below
+    this.refreshDropCandidates(origin);
 
     this.lastEffective = { ...pointer };
     this.activeDropList = origin;
     origin.enter(this, pointer.x, pointer.y);
-    // ...the origin list AFTER its placeholder took over the source's slot, so its box still
-    // covers the whole list (the hidden source no longer occupies space).
+    // The origin is (re-)measured AFTER its placeholder took over the source's slot, so its box
+    // still covers the whole list (the hidden source no longer occupies space).
     origin._cacheGeometry();
 
     this.scrollListener = () => {
@@ -339,24 +344,87 @@ export class DragRef<T = unknown> {
     win.addEventListener('resize', this.resizeListener, { passive: true });
   }
 
-  /** Decide which list is under the pointer, switch if needed, then re-sort in the active one. */
+  /**
+   * Recomputes which registered lists are valid targets for this drag — connected to the
+   * origin, and not nested inside the element being dragged — plus each one's nesting depth.
+   *
+   * `DragDropService.dropLists()` is an Angular signal: its array is a NEW reference only when a
+   * list actually registers or unregisters, so the check below is a single reference comparison
+   * on every pointer move and the (heavier) connectivity/containment/depth work below it only
+   * runs on the rare event a list appears or disappears mid-drag — never on every pointer move.
+   */
+  private refreshDropCandidates(origin: DropListRef<T>): void {
+    const all = this.service?.dropLists() ?? [];
+    if (all === this.dropListsSnapshot) return;
+    this.dropListsSnapshot = all;
+
+    const already = new Set(this.dropCandidates.map((c) => c.list));
+    const next: { list: DropListRef<T>; depth: number }[] = [{ list: origin, depth: origin.depth }];
+    for (const l of all as DropListRef<T>[]) {
+      if (l === origin || !l.el || !origin.isConnectedTo(l)) continue;
+      if (this.el !== l.el && this.el.contains(l.el)) continue;
+      if (!already.has(l)) l._cacheGeometry(); // newly eligible mid-drag: measure it now
+      next.push({ list: l, depth: l.depth });
+    }
+    this.dropCandidates = next;
+    this.cachedLists = next.map((c) => c.list);
+  }
+
+  /**
+   * Decide which list is under the pointer, switch if needed, then re-sort in the active one.
+   *
+   * The origin list is the one exception to "exiting a list resets/releases it": while the
+   * pointer dives into one of the origin's OWN nested lists (at any depth), the origin's
+   * placeholder and sibling displacement are left exactly as they are — frozen, not reset —
+   * so returning to the origin's own level doesn't snap items back and then forward again.
+   * Every OTHER (foreign) list still fully releases the moment the pointer leaves it, exactly
+   * as before; nesting multiple foreign sessions alive at once would let their own internal
+   * sibling displacement compound in ways a single flat `ancestorOffset` cannot represent.
+   */
   private updateDropTarget(pointer: IPosition): void {
     const origin = this.originDropList;
     if (!origin) return;
 
-    const next = this.service
-      ? (this.service.findDropList(pointer, this.activeDropList, origin, this.el) as DropListRef<T> | null)
-      : origin._containsPoint(pointer.x, pointer.y)
-        ? origin
-        : null;
-
-    if (next !== this.activeDropList) {
-      this.activeDropList?.exit(this);
-      this.activeDropList = next;
-      next?.enter(this, pointer.x, pointer.y);
-    } else {
+    this.refreshDropCandidates(origin);
+    const next = this.resolveDropList(pointer);
+    if (next === this.activeDropList) {
       next?.sortItem(this, pointer);
+      return;
     }
+
+    const prev = this.activeDropList;
+    if (prev && prev !== origin) prev.exit(this);
+
+    const nextWithinOrigin = !!next && (next === origin || isDescendantOfList(next, origin));
+    if (nextWithinOrigin) {
+      if (prev === origin) origin._freeze(); // no longer the innermost, but stays engaged
+    } else {
+      origin.exit(this); // truly outside the origin's territory now: reset it (idempotent)
+    }
+
+    this.activeDropList = next;
+    next?.enter(this, pointer.x, pointer.y); // fresh entry, or resumes a still-alive (frozen) session
+  }
+
+  /**
+   * Innermost connected list under the pointer, from the precomputed candidates: deeper always
+   * beats shallower; among lists at the same depth (unrelated, visually overlapping lists) the
+   * currently active one is kept to avoid flicker, otherwise the smaller one wins. No DOM
+   * reads and no `.contains()` calls happen here — everything needed was precomputed above.
+   */
+  private resolveDropList(pointer: IPosition): DropListRef<T> | null {
+    let best: DropListRef<T> | null = null;
+    let bestDepth = -1;
+    for (const { list, depth } of this.dropCandidates) {
+      if (!list._containsPoint(pointer.x, pointer.y)) continue;
+      if (!best || depth > bestDepth) {
+        best = list;
+        bestDepth = depth;
+      } else if (depth === bestDepth && best !== this.activeDropList) {
+        if (list === this.activeDropList || list._area() < best._area()) best = list;
+      }
+    }
+    return best;
   }
 
   /**
@@ -366,8 +434,10 @@ export class DragRef<T = unknown> {
    */
   private finishListDrag(commit: boolean): void {
     const doc = this.el.ownerDocument;
-    if (this.scrollListener) doc.removeEventListener('scroll', this.scrollListener, { capture: true });
-    if (this.resizeListener) (doc.defaultView ?? window).removeEventListener('resize', this.resizeListener);
+    if (this.scrollListener)
+      doc.removeEventListener('scroll', this.scrollListener, { capture: true });
+    if (this.resizeListener)
+      (doc.defaultView ?? window).removeEventListener('resize', this.resizeListener);
     this.scrollListener = this.resizeListener = undefined;
 
     const target = commit ? this.activeDropList : null;
@@ -379,6 +449,8 @@ export class DragRef<T = unknown> {
     this.placeholder = undefined;
     this.activeDropList = null;
     this.cachedLists = [];
+    this.dropCandidates = [];
+    this.dropListsSnapshot = null;
     this.listDrag = false;
 
     // The source element is put back exactly as it was (its transform was never touched).
@@ -398,4 +470,12 @@ export class DragRef<T = unknown> {
 
     this.preview.style.transform = `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
   }
+}
+
+/** Is `list` nested (at any depth) inside `ancestor`, per the parent/child list tree? */
+function isDescendantOfList(list: DropListRef<any>, ancestor: DropListRef<any>): boolean {
+  for (let p: DropListRef<any> | null = list.parentList; p; p = p.parentList) {
+    if (p === ancestor) return true;
+  }
+  return false;
 }

@@ -1,4 +1,4 @@
-import { Directive, InjectionToken, TemplateRef, inject } from '@angular/core';
+import { ApplicationRef, Directive, InjectionToken, TemplateRef, inject } from '@angular/core';
 import { PlaceHolderRef } from '../placeholder-ref';
 import { NGX_DROPLIST } from './ngx-drop-list.directive';
 
@@ -14,5 +14,8 @@ export class NgxPlaceholder {
   constructor(public readonly tpl: TemplateRef<unknown>) {
     this._ref.tpl = tpl;
     this._ref.dropList = this.list?._ref;
+    // Lets the embedded view join Angular's change-detection tree (matters in zoneless apps,
+    // and for app-stability tracking) instead of being rendered once and left dangling.
+    this._ref.appRef = inject(ApplicationRef);
   }
 }

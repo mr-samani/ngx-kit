@@ -1,12 +1,29 @@
 import { Injectable, signal } from '@angular/core';
 import { DragRef } from '../drag-ref';
 import { DropListRef } from '../drop-list-ref';
+import { DropListGroupRef } from '../drop-list-group-ref';
 
 @Injectable({ providedIn: 'root' })
 export class DragDropService {
   readonly drags = signal<readonly DragRef[]>([]);
   readonly dropLists = signal<readonly DropListRef[]>([]);
   readonly activeDrag = signal<DragRef | null>(null);
+
+  /**
+   * DOM-position registries, used to find the nearest enclosing list/group by walking real
+   * ancestor elements instead of Angular's element-injector tree.
+   *
+   * This matters for `ngTemplateOutlet`-based recursive trees (a list of items whose own
+   * children are rendered by re-invoking the SAME `<ng-template>`, as in a tree/outliner UI):
+   * each invocation gets a FRESH embedded view whose injector context is wherever the outlet
+   * was written in the template, not wherever its content ends up in the DOM. So `inject(TOKEN,
+   * {skipSelf})` from one recursion level can never see a provider from another level — the
+   * only fix within Angular's own DI is to manually thread `ngTemplateOutletInjector` through
+   * every recursive call, which isn't reasonable to require of every consumer of this library.
+   * A plain DOM walk has no such limitation: it only cares where elements actually ended up.
+   */
+  private readonly listsByEl = new Map<HTMLElement, DropListRef>();
+  private readonly groupsByEl = new Map<HTMLElement, DropListGroupRef>();
 
   registerDragItem(ref: DragRef<any>): void {
     this.drags.update((items) => (items.includes(ref) ? items : [...items, ref]));
@@ -19,10 +36,38 @@ export class DragDropService {
 
   registerDropList(ref: DropListRef): void {
     this.dropLists.update((items) => (items.includes(ref) ? items : [...items, ref]));
+    if (ref.el) this.listsByEl.set(ref.el, ref);
   }
 
   removeDropList(ref: DropListRef<any>): void {
     this.dropLists.update((items) => items.filter((x) => x !== ref));
+    if (ref.el && this.listsByEl.get(ref.el) === ref) this.listsByEl.delete(ref.el);
+  }
+
+  registerGroup(el: HTMLElement, ref: DropListGroupRef): void {
+    this.groupsByEl.set(el, ref);
+  }
+
+  removeGroup(el: HTMLElement): void {
+    this.groupsByEl.delete(el);
+  }
+
+  /** Nearest registered drop list starting at (and including) `start`, walking up the DOM. */
+  findAncestorDropList(start: HTMLElement | null): DropListRef | null {
+    for (let n = start; n; n = n.parentElement) {
+      const found = this.listsByEl.get(n);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  /** Nearest registered drop-list group starting at (and including) `start`, walking up the DOM. */
+  findAncestorGroup(start: HTMLElement | null): DropListGroupRef | null {
+    for (let n = start; n; n = n.parentElement) {
+      const found = this.groupsByEl.get(n);
+      if (found) return found;
+    }
+    return null;
   }
 
   begin(ref: DragRef<any>): void {

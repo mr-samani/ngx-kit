@@ -24,6 +24,13 @@ export interface SortSessionInit {
   animationMs: number;
   /** Whitespace separator already inserted next to the placeholder (inline layouts only). */
   spacer?: Text | null;
+  /**
+   * Notified whenever an entry's `translate3d` offset changes (including back to `{0,0}`).
+   * A displaced item can contain OTHER registered drop lists (a tree of nested lists); their
+   * cached hit-test geometry was measured before any displacement, so without this hook their
+   * on-screen position and their hit-test box silently disagree once a sibling moves.
+   */
+  onOffsetChange?: (el: HTMLElement, offset: Point) => void;
 }
 
 /**
@@ -98,9 +105,11 @@ export class SortSession {
   private disposed = false;
   /** undefined = not created yet, null = this layout has no whitespace separators. */
   private spacer: Text | null | undefined;
+  private readonly onOffsetChange?: (el: HTMLElement, offset: Point) => void;
 
   constructor(init: SortSessionInit) {
     this.spacer = init.spacer;
+    this.onOffsetChange = init.onOffsetChange;
     this.container = init.container;
     this.placeholder = init.placeholder;
     this.itemElements = init.itemElements;
@@ -199,6 +208,7 @@ export class SortSession {
       e.el.style.transform = e.savedTransform;
       e.el.style.transition = e.savedTransition;
       e.el.style.willChange = e.savedWillChange;
+      if (this.applied.has(e.el)) this.onOffsetChange?.(e.el, { x: 0, y: 0 });
     }
     this.applied.clear();
     this.spacer?.remove();
@@ -283,6 +293,7 @@ export class SortSession {
       this.applied.set(e.el, off);
       e.el.style.transform = `translate3d(${off.x}px, ${off.y}px, 0)${e.base}`;
     }
+    this.onOffsetChange?.(e.el, off);
   }
 
   // ---------------------------------------------------------------------------------------
@@ -347,6 +358,7 @@ export class SortSession {
     for (const e of this.entries) {
       e.el.style.transition = 'none';
       e.el.style.transform = e.savedTransform;
+      if (this.applied.has(e.el)) this.onOffsetChange?.(e.el, { x: 0, y: 0 });
     }
     this.applied.clear();
   }

@@ -42,12 +42,27 @@ function makeInjector(providers: any[]): Injector {
 let groupDir: NgxDropListGroup | null = null;
 
 export function group(el?: HTMLElement) {
-  groupDir = runInInjectionContext(makeInjector([]), () => new NgxDropListGroup());
+  const host = el ?? document.body;
+  groupDir = runInInjectionContext(
+    makeInjector([
+      { provide: DragDropService, useValue: svc },
+      { provide: ElementRef, useValue: new ElementRef(host) },
+    ]),
+    () => new NgxDropListGroup(),
+  );
+  groupDir.ngOnInit();
   return groupDir;
 }
 
 export function registerList(el: HTMLElement, opts: { grouped?: boolean; data?: any; connectedTo?: HTMLElement[]; disableSort?: boolean } = {}) {
+  // Find the nearest registered ANCESTOR list (mirrors `inject(NGX_DROPLIST, {skipSelf})`), so
+  // nested drop lists in a tree get the same parent/child wiring a real template gets from DI.
+  let parent: NgxDropList | null = null;
+  for (let n = el.parentElement; n; n = n.parentElement) {
+    if (lists.has(n)) { parent = lists.get(n)!; break; }
+  }
   const providers: any[] = [{ provide: DragDropService, useValue: svc }];
+  if (parent) providers.push({ provide: NGX_DROPLIST, useValue: parent });
   if (opts.grouped && groupDir) providers.push({ provide: NGX_DROPLIST_GROUP, useValue: groupDir });
   const inj = makeInjector(providers);
   const dir = runInInjectionContext(inj, () => new NgxDropList(new ElementRef(el)));
@@ -122,7 +137,9 @@ export async function auto(opts: { animation?: number } = {}) {
   destroyAll();
   drops.length = 0;
   initialStyle.clear();
-  if (document.querySelector('[data-group]')) group();
+  // document.body is always a genuine common ancestor of every [data-group] element in these
+  // test fixtures (some mark the wrapper, some mark lists directly with no dedicated wrapper).
+  if (document.querySelector('[data-group]')) group(document.body);
   document.querySelectorAll<HTMLElement>('[data-list]').forEach((el) => {
     const d = registerList(el, {
       grouped: el.hasAttribute('data-group'),

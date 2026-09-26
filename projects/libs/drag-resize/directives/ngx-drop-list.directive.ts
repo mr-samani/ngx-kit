@@ -13,7 +13,6 @@ import {
 } from '@angular/core';
 import { DropListRef } from '../drop-list-ref';
 import { DragDropService } from '../services/drag-drop.service';
-import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
 import { IDropEvent } from '../contracts/IDropEvent';
 import { NGX_PLACEHOLDER, NgxPlaceholder } from './ngx-place-holder.directive';
 
@@ -42,16 +41,24 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy, AfterContentInit
   private readonly customPlaceholder?: NgxPlaceholder;
   private sub?: { unsubscribe(): void };
   private readonly service = inject(DragDropService);
-  private readonly group = inject(NGX_DROPLIST_GROUP, { optional: true, skipSelf: true });
 
   constructor(private readonly el: ElementRef<HTMLElement>) {}
 
   ngOnInit(): void {
     this._ref.el = this.el.nativeElement;
-    this._ref.dropListGroup = this.group?._ref ?? null;
-    // console.log('list:', this._ref.el, 'group:', this._ref.dropListGroup?.el);
-    // Previously the group directive never actually tracked its lists — fixed here.
-    this.group?._ref.add(this._ref);
+
+    // Found by walking the real DOM (not Angular's element-injector tree): a list rendered by a
+    // recursively-invoked `ngTemplateOutlet` (a tree/outliner UI, where every level re-uses the
+    // SAME `<ng-template>`) gets a fresh injector context per invocation, so `inject(TOKEN,
+    // {skipSelf})` can never see a provider from another recursion level — the DOM position is
+    // what actually determines nesting/grouping for this library's purposes anyway.
+    const parentEl = this.el.nativeElement.parentElement;
+    const group = this.service.findAncestorGroup(parentEl);
+    const parent = this.service.findAncestorDropList(parentEl);
+
+    this._ref.dropListGroup = group ?? null;
+    group?.add(this._ref);
+    parent?._registerChild(this._ref);
     this.sub = this._ref.onDrop.subscribe((e) => this.drop.emit(e));
     this.service.registerDropList(this._ref);
   }
@@ -64,7 +71,8 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy, AfterContentInit
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this._ref._release();
-    this.group?._ref.remove(this._ref);
+    this._ref.parentList?._unregisterChild(this._ref);
+    this._ref.dropListGroup?.remove(this._ref);
     this.service.removeDropList(this._ref);
   }
 }

@@ -1,30 +1,34 @@
-import { ApplicationRef, inject, TemplateRef, type EmbeddedViewRef } from '@angular/core';
+import { ApplicationRef, TemplateRef, type EmbeddedViewRef } from '@angular/core';
 import { DropListRef } from './drop-list-ref';
 
 export class PlaceHolderRef {
+  /**
+   * Custom placeholder content, from `*ngxPlaceholder` inside the `ngxDropList`. When unset,
+   * `attach()` falls back to a shallow clone of the dragged element (previous behaviour).
+   *
+   * Example:
+   *
+   *   <div ngxDropList>
+   *     <span class="my-placeholder" *ngxPlaceholder></span>
+   *     ...
+   *   </div>
+   */
   tpl?: TemplateRef<unknown>;
+  /** Set by `NgxPlaceholder` so the embedded view can join Angular's change-detection tree. */
+  appRef?: ApplicationRef;
   dropList?: DropListRef;
   element?: HTMLElement;
 
   private _visible = false;
-  /**
-   * Angular embedded view created from `tpl`.
-   */
   private _view?: EmbeddedViewRef<unknown>;
+  /** True once `this.element` was built from `tpl` (as opposed to the fallback clone). */
+  private isCustom = false;
 
   attach(container: HTMLElement, source: HTMLElement, reference?: Node | null): HTMLElement {
-    /**
-     * If the placeholder has a template, render the template instead of
-     * cloning the dragged element.
-     *
-     * Example:
-     *
-     * <span class="placeholder" *ngxPlaceholder></span>
-     */
     if (!this.element) {
       if (this.tpl) {
         this._view = this.tpl.createEmbeddedView({});
-
+        this.appRef?.attachView(this._view);
         // Render bindings inside the embedded view before we move its DOM nodes.
         this._view.detectChanges();
 
@@ -33,21 +37,20 @@ export class PlaceHolderRef {
         );
 
         if (!element) {
+          this.appRef?.detachView(this._view);
           this._view.destroy();
           this._view = undefined;
 
           throw new Error(
-            'ngxPlaceholder template must contain at least one HTMLElement root node.',
+            'ngxPlaceholder template must contain exactly one HTMLElement root node ' +
+              '(other root nodes, if any, are ignored).',
           );
         }
 
         this.element = element;
+        this.isCustom = true;
       } else {
-        /**
-         * Backward-compatible fallback:
-         * if no ngxPlaceholder template was supplied, keep the old behavior.
-         */
-
+        // Fallback: keep the same tag/attributes as the dragged item so selectors such as
         // ".list > article" and grid/flex item rules continue to apply.
         this.element = source.cloneNode(false) as HTMLElement;
         this.element.removeAttribute('id');
@@ -55,21 +58,28 @@ export class PlaceHolderRef {
         this.element.setAttribute('aria-hidden', 'true');
         this.element.setAttribute('inert', '');
         this.element.removeAttribute('tabindex');
+        this.isCustom = false;
       }
     }
 
-    // The placeholder must never inherit a live drag transform/animation. `transform` and
-    // `transition` are deliberately NOT forced with !important: the sort session drives them
-    // to slide the placeholder (translate3d) to the current insertion slot.
+    // Safety overrides that apply regardless of who authored the element: it must never
+    // inherit a live drag transform/animation (transform/transition are left free for the
+    // sort session to drive, translate3d-ing the placeholder to the current insertion slot),
+    // never intercept pointer events, and never be display:none.
     this.element.style.removeProperty('transform');
     this.element.style.removeProperty('transition');
     this.element.style.removeProperty('will-change');
     this.element.style.setProperty('animation', 'none', 'important');
     this.element.style.setProperty('pointer-events', 'none', 'important');
     this.element.style.setProperty('visibility', 'visible', 'important');
-    this.element.style.setProperty('opacity', '0.16', 'important');
-    this.element.style.setProperty('outline', '2px dashed currentColor', 'important');
-    this.element.style.setProperty('outline-offset', '-2px', 'important');
+
+    if (!this.isCustom) {
+      // Only the auto-generated clone gets the default "phantom box" look. A custom
+      // *ngxPlaceholder template is styled entirely by the caller.
+      this.element.style.setProperty('opacity', '0.16', 'important');
+      this.element.style.setProperty('outline', '2px dashed currentColor', 'important');
+      this.element.style.setProperty('outline-offset', '-2px', 'important');
+    }
 
     this._visible = true;
 
@@ -82,11 +92,19 @@ export class PlaceHolderRef {
     return this.element;
   }
 
+  /** True while the currently attached element came from a custom `*ngxPlaceholder` template. */
+  get custom(): boolean {
+    return this.isCustom;
+  }
+
   detach(): void {
     this.element?.remove();
 
-    this._view?.destroy();
-    this._view = undefined;
+    if (this._view) {
+      this.appRef?.detachView(this._view);
+      this._view.destroy();
+      this._view = undefined;
+    }
 
     this.element = undefined;
     this._visible = false;

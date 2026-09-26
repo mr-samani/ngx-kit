@@ -15,8 +15,6 @@ import {
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { DragDropService } from '../services/drag-drop.service';
-import { NGX_DROPLIST } from './ngx-drop-list.directive';
-import { NGX_DROPLIST_GROUP } from './ngx-drop-list-group.directive';
 import { DragRef, DragAxis } from '../drag-ref';
 import { IPosition } from '../contracts/IPosition';
 import { AutoScroller, findScrollableAncestor, getScrollPosition } from '../utils/auto-scroll';
@@ -67,8 +65,6 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
 
   private readonly doc = inject(DOCUMENT);
   private readonly service = inject(DragDropService);
-  private readonly list = inject(NGX_DROPLIST, { optional: true, skipSelf: true });
-  private readonly group = inject(NGX_DROPLIST_GROUP, { optional: true, skipSelf: true });
   private readonly scroller = new AutoScroller();
 
   private down = false;
@@ -103,10 +99,15 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       : this.host.nativeElement;
     this._ref.boundary = this.boundary();
     this._ref.lockAxis = this.lockAxis();
-    this._ref.dropListGroup = this.group?._ref;
+    // Found by walking the real DOM, not Angular's element-injector tree — see the matching
+    // comment in `ngx-drop-list.directive.ts` for why: a draggable rendered by a recursively
+    // invoked `ngTemplateOutlet` needs this just as much as a nested list does.
+    const parentEl = this.host.nativeElement.parentElement;
+    const list = this.service.findAncestorDropList(parentEl);
+    this._ref.dropListGroup = list?.dropListGroup ?? this.service.findAncestorGroup(parentEl);
     this._ref.service = this.service;
     this._ref.init();
-    this._ref.withDropList(this.list?._ref ?? null);
+    this._ref.withDropList(list ?? null);
     this.service.registerDragItem(this._ref);
     this.removeDown = this.renderer.listen(
       this.host.nativeElement,
