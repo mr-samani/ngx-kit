@@ -53,19 +53,31 @@ export class DragDropService {
   }
 
   /** Nearest registered drop list starting at (and including) `start`, walking up the DOM. */
-  findAncestorDropList(start: HTMLElement | null): DropListRef | null {
-    for (let n = start; n; n = n.parentElement) {
-      const found = this.listsByEl.get(n);
-      if (found) return found;
+  findAncestorDropList(start: HTMLElement | ParentNode | null): DropListRef | null {
+    let node = start;
+    while (node) {
+      if (node instanceof HTMLElement) {
+        const found = this.listsByEl.get(node);
+        if (found) {
+          return found;
+        }
+      }
+      node = node instanceof ShadowRoot ? node.host : node.parentNode;
     }
     return null;
   }
 
   /** Nearest registered drop-list group starting at (and including) `start`, walking up the DOM. */
-  findAncestorGroup(start: HTMLElement | null): DropListGroupRef | null {
-    for (let n = start; n; n = n.parentElement) {
-      const found = this.groupsByEl.get(n);
-      if (found) return found;
+  findAncestorGroup(start: HTMLElement | ParentNode | null): DropListGroupRef | null {
+    let node = start;
+    while (node) {
+      if (node instanceof HTMLElement) {
+        const found = this.groupsByEl.get(node);
+        if (found) {
+          return found;
+        }
+      }
+      node = node instanceof ShadowRoot ? node.host : node.parentNode;
     }
     return null;
   }
@@ -112,7 +124,8 @@ export class DragDropService {
       if (!list._containsPoint(point.x, point.y)) continue;
 
       if (!best) best = list;
-      else if (best.el.contains(list.el)) best = list; // deeper wins
+      else if (best.el.contains(list.el))
+        best = list; // deeper wins
       else if (list.el.contains(best.el)) continue;
       else if (list === current) best = list;
       else if (best !== current && list._area() < best._area()) best = list;

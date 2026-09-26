@@ -6,12 +6,21 @@
  * engine runs against Chromium's actual layout (flex, grid, RTL, scrolling, transforms).
  */
 import '@angular/compiler';
-import { ElementRef, Injector, runInInjectionContext, EnvironmentInjector, Renderer2 } from '@angular/core';
+import {
+  ElementRef,
+  Injector,
+  runInInjectionContext,
+  EnvironmentInjector,
+  Renderer2,
+} from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { createApplication } from '@angular/platform-browser';
 import { NgxDraggable, NGX_DRAGGABLE } from '../../directives/ngx-draggable.directive';
 import { NgxDropList, NGX_DROPLIST } from '../../directives/ngx-drop-list.directive';
-import { NgxDropListGroup, NGX_DROPLIST_GROUP } from '../../directives/ngx-drop-list-group.directive';
+import {
+  NgxDropListGroup,
+  NGX_DROPLIST_GROUP,
+} from '../../directives/ngx-drop-list-group.directive';
 import { DragDropService } from '../../services/drag-drop.service';
 
 class DomRenderer {
@@ -23,7 +32,9 @@ class DomRenderer {
 }
 
 export let root: EnvironmentInjector;
-export const ready: Promise<void> = createApplication({ providers: [] }).then((app) => { root = app.injector as EnvironmentInjector; });
+export const ready: Promise<void> = createApplication({ providers: [] }).then((app) => {
+  root = app.injector as EnvironmentInjector;
+});
 const svc = new DragDropService();
 
 const lists = new Map<HTMLElement, NgxDropList>();
@@ -54,12 +65,18 @@ export function group(el?: HTMLElement) {
   return groupDir;
 }
 
-export function registerList(el: HTMLElement, opts: { grouped?: boolean; data?: any; connectedTo?: HTMLElement[]; disableSort?: boolean } = {}) {
+export function registerList(
+  el: HTMLElement,
+  opts: { grouped?: boolean; data?: any; connectedTo?: HTMLElement[]; disableSort?: boolean } = {},
+) {
   // Find the nearest registered ANCESTOR list (mirrors `inject(NGX_DROPLIST, {skipSelf})`), so
   // nested drop lists in a tree get the same parent/child wiring a real template gets from DI.
   let parent: NgxDropList | null = null;
   for (let n = el.parentElement; n; n = n.parentElement) {
-    if (lists.has(n)) { parent = lists.get(n)!; break; }
+    if (lists.has(n)) {
+      parent = lists.get(n)!;
+      break;
+    }
   }
   const providers: any[] = [{ provide: DragDropService, useValue: svc }];
   if (parent) providers.push({ provide: NGX_DROPLIST, useValue: parent });
@@ -78,13 +95,16 @@ export function registerItem(el: HTMLElement, opts: { data?: any; handle?: strin
   // Find nearest registered ancestor list (mirrors `inject(NGX_DROPLIST, {skipSelf})`).
   let list: NgxDropList | null = null;
   for (let n = el.parentElement; n; n = n.parentElement) {
-    if (lists.has(n)) { list = lists.get(n)!; break; }
+    if (lists.has(n)) {
+      list = lists.get(n)!;
+      break;
+    }
   }
   const providers: any[] = [{ provide: DragDropService, useValue: svc }];
   if (list) providers.push({ provide: NGX_DROPLIST, useValue: list });
   if (groupDir) providers.push({ provide: NGX_DROPLIST_GROUP, useValue: groupDir });
   const inj = makeInjector(providers);
-  const dir = runInInjectionContext(inj, () => new NgxDraggable(new ElementRef(el), new DomRenderer() as any));
+  const dir = runInInjectionContext(inj, () => new NgxDraggable(new ElementRef(el)));
   if (opts.data !== undefined) dir.data = opts.data;
   dir.ngOnInit();
   items.set(el, dir);
@@ -109,14 +129,34 @@ export const getItem = (el: HTMLElement) => items.get(el)!;
 
 // ---- pointer helpers (real DOM events) ----
 let pid = 1;
-function fire(target: EventTarget, type: string, x: number, y: number, extra: PointerEventInit = {}) {
-  target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerId: pid, pointerType: 'mouse', button: 0, isPrimary: true, ...extra }));
+function fire(
+  target: EventTarget,
+  type: string,
+  x: number,
+  y: number,
+  extra: PointerEventInit = {},
+) {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      clientX: x,
+      clientY: y,
+      pointerId: pid,
+      pointerType: 'mouse',
+      button: 0,
+      isPrimary: true,
+      ...extra,
+    }),
+  );
 }
 export const down = (el: Element, x: number, y: number) => fire(el, 'pointerdown', x, y);
 export const move = (x: number, y: number) => fire(document, 'pointermove', x, y);
 export const up = (x: number, y: number) => fire(document, 'pointerup', x, y);
 export const cancelPtr = (x: number, y: number) => fire(document, 'pointercancel', x, y);
-export const esc = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+export const esc = () =>
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
 export function center(el: Element) {
   const r = el.getBoundingClientRect();
@@ -129,7 +169,8 @@ export function center(el: Element) {
 
 const initialStyle = new Map<HTMLElement, string>();
 export const drops: any[] = [];
-const label = (n: Element) => (n as HTMLElement).dataset['id'] || n.id || (n.textContent || '').trim();
+const label = (n: Element) =>
+  (n as HTMLElement).dataset['id'] || n.id || (n.textContent || '').trim();
 
 /** Registers every [data-list] / [data-item] in the document (outer lists first). */
 export async function auto(opts: { animation?: number } = {}) {
@@ -172,11 +213,18 @@ export function visual(list: HTMLElement): string[] {
   const rtl = getComputedStyle(list).direction === 'rtl';
   const kids = Array.from(list.children).filter(
     (n): n is HTMLElement =>
-      n instanceof HTMLElement && n.style.display !== 'none' && !n.classList.contains('ngx-drag-preview'),
+      n instanceof HTMLElement &&
+      n.style.display !== 'none' &&
+      !n.classList.contains('ngx-drag-preview'),
   );
   const rows: { top: number; items: { x: number; l: string }[] }[] = [];
-  for (const k of kids.map((n) => ({ r: n.getBoundingClientRect(), l: n.classList.contains('ngx-drag-placeholder') ? '[PH]' : label(n) }))) {
-    const row = rows.find((r) => Math.abs(r.top - k.r.top) < 5) ?? (rows.push({ top: k.r.top, items: [] }), rows[rows.length - 1]);
+  for (const k of kids.map((n) => ({
+    r: n.getBoundingClientRect(),
+    l: n.classList.contains('ngx-drag-placeholder') ? '[PH]' : label(n),
+  }))) {
+    const row =
+      rows.find((r) => Math.abs(r.top - k.r.top) < 5) ??
+      (rows.push({ top: k.r.top, items: [] }), rows[rows.length - 1]);
     row.items.push({ x: k.r.left + k.r.width / 2, l: k.l });
   }
   rows.sort((a, b) => a.top - b.top);
@@ -190,19 +238,25 @@ export function leaks(): string[] {
   const out: string[] = [];
   const n = (sel: string) => document.querySelectorAll(sel).length;
   if (n('.ngx-drag-preview')) out.push(`preview nodes in DOM: ${n('.ngx-drag-preview')}`);
-  if (n('.ngx-drag-placeholder')) out.push(`placeholder nodes in DOM: ${n('.ngx-drag-placeholder')}`);
-  if (Array.from(document.body.children).some((c) => c.classList.contains('ngx-drag-preview'))) out.push('body clone');
+  if (n('.ngx-drag-placeholder'))
+    out.push(`placeholder nodes in DOM: ${n('.ngx-drag-placeholder')}`);
+  if (Array.from(document.body.children).some((c) => c.classList.contains('ngx-drag-preview')))
+    out.push('body clone');
   initialStyle.forEach((css, el) => {
-    if (el.style.cssText !== css) out.push(`style of ${label(el)}: "${el.style.cssText}" (was "${css}")`);
-    if (el.classList.contains('ngx-draggable--dragging')) out.push(`dragging class left on ${label(el)}`);
+    if (el.style.cssText !== css)
+      out.push(`style of ${label(el)}: "${el.style.cssText}" (was "${css}")`);
+    if (el.classList.contains('ngx-draggable--dragging'))
+      out.push(`dragging class left on ${label(el)}`);
   });
   lists.forEach((d, el) => {
     const r: any = d._ref;
     if (r.session) out.push(`list ${el.id} still has a sort session`);
     if (r.placeholder) out.push(`list ${el.id} still holds a placeholder`);
     if (r.activeDrag) out.push(`list ${el.id} still has an active drag`);
-    if (el.classList.contains('ngx-drop-list--active')) out.push(`list ${el.id} still active class`);
-    if (Array.from(el.children).some((c) => (c as HTMLElement).style.transform)) out.push(`list ${el.id} child has transform`);
+    if (el.classList.contains('ngx-drop-list--active'))
+      out.push(`list ${el.id} still active class`);
+    if (Array.from(el.children).some((c) => (c as HTMLElement).style.transform))
+      out.push(`list ${el.id} child has transform`);
   });
   items.forEach((d, el) => {
     const r = d._ref;
@@ -218,18 +272,55 @@ export function leaks(): string[] {
 export function watchDom(target: Node) {
   const log: { added: string[]; removed: string[] }[] = [];
   const mo = new MutationObserver((recs) => {
-    for (const r of recs) if (r.type === 'childList') log.push({
-      added: Array.from(r.addedNodes).map((x) => (x as HTMLElement).className || x.nodeName),
-      removed: Array.from(r.removedNodes).map((x) => (x as HTMLElement).className || x.nodeName),
-    });
+    for (const r of recs)
+      if (r.type === 'childList')
+        log.push({
+          added: Array.from(r.addedNodes).map((x) => (x as HTMLElement).className || x.nodeName),
+          removed: Array.from(r.removedNodes).map(
+            (x) => (x as HTMLElement).className || x.nodeName,
+          ),
+        });
   });
   mo.observe(target, { childList: true, subtree: true });
-  return { stop: () => { const rest = mo.takeRecords(); rest.forEach((r) => log.push({ added: Array.from(r.addedNodes).map((x) => (x as HTMLElement).className || x.nodeName), removed: Array.from(r.removedNodes).map((x) => (x as HTMLElement).className || x.nodeName) })); mo.disconnect(); return log; } };
+  return {
+    stop: () => {
+      const rest = mo.takeRecords();
+      rest.forEach((r) =>
+        log.push({
+          added: Array.from(r.addedNodes).map((x) => (x as HTMLElement).className || x.nodeName),
+          removed: Array.from(r.removedNodes).map(
+            (x) => (x as HTMLElement).className || x.nodeName,
+          ),
+        }),
+      );
+      mo.disconnect();
+      return log;
+    },
+  };
 }
 
-export const raf = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-export const rect = (el: Element) => { const r = el.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height, cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; };
-export const previewRect = () => { const p = document.querySelector('.ngx-drag-preview'); return p ? rect(p) : null; };
-export const key = (el: Element, k: string, extra: KeyboardEventInit = {}) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...extra }));
+export const raf = () =>
+  new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+export const rect = (el: Element) => {
+  const r = el.getBoundingClientRect();
+  return {
+    l: r.left,
+    t: r.top,
+    r: r.right,
+    b: r.bottom,
+    w: r.width,
+    h: r.height,
+    cx: r.left + r.width / 2,
+    cy: r.top + r.height / 2,
+  };
+};
+export const previewRect = () => {
+  const p = document.querySelector('.ngx-drag-preview');
+  return p ? rect(p) : null;
+};
+export const key = (el: Element, k: string, extra: KeyboardEventInit = {}) =>
+  el.dispatchEvent(
+    new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...extra }),
+  );
 
 export { NGX_DRAGGABLE, NGX_DROPLIST };
