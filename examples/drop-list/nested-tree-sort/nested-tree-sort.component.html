@@ -1,8 +1,7 @@
-<div ngxDropListGroup #group="ngxDropListGroup">
+<div ngxDropListGroup>
   <ng-container
     [ngTemplateOutlet]="tree"
-    [ngTemplateOutletContext]="{ $implicit: items, level: 0, path: 'root' }"
-    [ngTemplateOutletInjector]="group.injector"></ng-container>
+    [ngTemplateOutletContext]="{ $implicit: items, level: 0, path: 'root' }"></ng-container>
 </div>
 
 <button (click)="add()">add</button>
@@ -27,8 +26,7 @@
               level: level + 1,
               class: 'children',
               path: path + '/' + item.name,
-            }"
-            [ngTemplateOutletInjector]="group.injector"></ng-container>
+            }"></ng-container>
         }
       </div>
     }

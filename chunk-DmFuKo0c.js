@@ -1,0 +1,1 @@
+var t={start:"w",end:"e","n-start":"nw","n-end":"ne","s-start":"sw","s-end":"se"},o={n:"n",s:"s",e:"w",w:"e",ne:"nw",nw:"ne",se:"sw",sw:"se"};function r(e){return Object.prototype.hasOwnProperty.call(t,e)}function s(e){return typeof window>"u"?false:window.getComputedStyle(e).direction==="rtl"}function c(e,i){if(!r(e))return e;let n=t[e];return i?o[n]:n}export{c,s};
