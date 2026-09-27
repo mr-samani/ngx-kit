@@ -59,24 +59,10 @@ export class NgxMessageComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /**
-   * وقتی چند تا پیام هم‌زمان باز باشن، هرکدوم listener خودشو روی document
-   * داشت — پس یه فشردن Escape/Enter، رویداد رو به *همه‌شون* هم‌زمان می‌فرستاد،
-   * نه فقط آخرین پیامی که باز شده (رفتار طبیعیِ یه استکِ مودال باید این باشه
-   * که فقط بالاترین لایه به کیبورد واکنش نشون بده). این چک همون چیزیه که
-   * OverlayService با getLastDialog() برای اورلی‌ها انجام می‌ده.
-   */
   private isTopmost(): boolean {
     const ids = [...this.messageService.alerts.keys()];
     if (!ids.length) return true;
     return this.index === Math.max(...ids);
-  }
-
-  @HostListener('document:keydown.escape', ['$event'])
-  onScapeKey(event: Event) {
-    if (this.options.allowEscapeKey && this.isTopmost()) {
-      this.onCancel();
-    }
   }
 
   @HostListener('document:keydown.enter', ['$event'])
@@ -130,15 +116,5 @@ export class NgxMessageComponent implements OnInit, AfterViewInit {
   }
   close() {
     this.onCancel();
-  }
-
-  onOutSideClick() {
-    if (this.options.allowOutsideClick) {
-      this.onCancel();
-    }
-  }
-  innerOnClick(ev: Event) {
-    ev.preventDefault();
-    ev.stopPropagation();
   }
 }

@@ -32,14 +32,6 @@ export interface IMessageOptions {
    */
   html?: string | HTMLElement;
 
-  /**
-   * Whether or not  should show a full screen click-to-dismiss backdrop.
-   * Either a boolean value or a css background value (hex, rgb, rgba, url, etc.)
-   *
-   * @default true
-   */
-  backdrop?: boolean;
-
   icon?: MessageIcon;
 
   /**
@@ -175,4 +167,8 @@ export interface IMessageOptions {
   showCloseButton?: boolean;
 
   containerClass?: string;
+
+  ariaLabel?: string;
+  ariaLabelledby?: string;
+  ariaDescribedby?: string;
 }

@@ -1,4 +1,4 @@
-:root {
+.ngx-msg-modal {
   --bg-0: #0a0c14;
   --bg-1: #0f1220;
   --ngx-msg-panel-bg: light-dark(#ffffffc4, #161928b8);
@@ -28,28 +28,16 @@
 }
 
 /* =====================================================
-     OVERLAY + MODAL
+      MODAL
   ===================================================== */
-.ngx-msg-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(6, 7, 14, 0.55);
-  backdrop-filter: blur(6px) saturate(140%);
-  -webkit-backdrop-filter: blur(6px) saturate(140%);
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.35s ease,
-    visibility 0.35s ease;
+.ngx-msg-backdrop {
+  backdrop-filter: blur(4px) saturate(140%);
 }
-.ngx-msg-overlay.show {
-  opacity: 1;
-  visibility: visible;
+.ngx-msg-panel {
+  overflow: visible !important;
+  box-shadow: none !important;
+  border-radius: unset !important;
+  border: none !important;
 }
 
 .ngx-msg-modal {
@@ -62,20 +50,13 @@
   border-radius: 26px;
   padding: 38px 30px 28px;
   text-align: center;
-  box-shadow:
-    0 30px 80px -20px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
-  transform: translateY(28px) scale(0.92);
-  opacity: 0;
-  transition:
-    transform 0.1s,
-    opacity 0.1s;
   overflow: hidden;
+  &.show {
+    animation: modalIn 0.55s cubic-bezier(0.2, 1.1, 0.3, 1) forwards;
+  }
 }
-.ngx-msg-overlay.show .ngx-msg-modal {
-  animation: modalIn 0.55s cubic-bezier(0.2, 1.1, 0.3, 1) forwards;
-}
-.ngx-msg-overlay.closing .ngx-msg-modal {
+
+.close-ngx-msg-modal {
   animation: modalOut 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 @keyframes modalIn {
@@ -144,7 +125,7 @@
 }
 
 /* ---------- icon stage ---------- */
-.ngx-msg-overlay {
+.ngx-msg-modal {
   .icon-stage {
     position: relative;
     width: 96px;
@@ -281,10 +262,10 @@
   overflow: auto;
   max-height: 70dvh;
 }
-.ngx-msg-overlay.show .ngx-msg-modal h2 {
+.ngx-msg-modal.show h2 {
   animation: textIn 0.5s 0.3s ease forwards;
 }
-.ngx-msg-overlay.show .ngx-msg-modal p.desc {
+.ngx-msg-modal.show p.desc {
   animation: textIn 0.5s 0.38s ease forwards;
 }
 @keyframes textIn {
@@ -302,10 +283,10 @@
   opacity: 0;
   transform: translateY(8px);
 }
-.ngx-msg-overlay.show .ngx-msg-modal .ngx-msg-actions {
+.ngx-msg-modal.show .ngx-msg-actions {
   animation: textIn 0.5s 0.46s ease forwards;
 }
-.ngx-msg-overlay {
+.ngx-msg-modal {
   .btn {
     appearance: none;
     border: none;
@@ -373,42 +354,42 @@
 }
 
 /* ---------- type theme variables ---------- */
-.ngx-msg-overlay[data-type='success'] .ngx-msg-modal {
+.ngx-msg-modal[data-type='success'] {
   --type-ring: conic-gradient(from 0deg, var(--success-a), var(--success-b), var(--success-a));
   --type-disc: linear-gradient(150deg, var(--success-a), var(--success-b));
   --type-shadow: rgba(62, 224, 143, 0.5);
   --type-btn: linear-gradient(135deg, var(--success-a), var(--success-b));
   --type-glow: radial-gradient(circle, rgba(62, 224, 143, 0.35), transparent 70%);
 }
-.ngx-msg-overlay[data-type='error'] .ngx-msg-modal {
+.ngx-msg-modal[data-type='error'] {
   --type-ring: conic-gradient(from 0deg, var(--error-a), var(--error-b), var(--error-a));
   --type-disc: linear-gradient(150deg, var(--error-a), var(--error-b));
   --type-shadow: rgba(255, 107, 139, 0.5);
   --type-btn: linear-gradient(135deg, var(--error-a), var(--error-b));
   --type-glow: radial-gradient(circle, rgba(255, 107, 139, 0.35), transparent 70%);
 }
-.ngx-msg-overlay[data-type='warning'] .ngx-msg-modal {
+.ngx-msg-modal[data-type='warning'] {
   --type-ring: conic-gradient(from 0deg, var(--warning-a), var(--warning-b), var(--warning-a));
   --type-disc: linear-gradient(150deg, var(--warning-a), var(--warning-b));
   --type-shadow: rgba(255, 140, 76, 0.5);
   --type-btn: linear-gradient(135deg, var(--warning-a), var(--warning-b));
   --type-glow: radial-gradient(circle, rgba(255, 140, 76, 0.35), transparent 70%);
 }
-.ngx-msg-overlay[data-type='info'] .ngx-msg-modal {
+.ngx-msg-modal[data-type='info'] {
   --type-ring: conic-gradient(from 0deg, var(--info-a), var(--info-b), var(--info-a));
   --type-disc: linear-gradient(150deg, var(--info-a), var(--info-b));
   --type-shadow: rgba(91, 108, 255, 0.5);
   --type-btn: linear-gradient(135deg, var(--info-a), var(--info-b));
   --type-glow: radial-gradient(circle, rgba(91, 108, 255, 0.35), transparent 70%);
 }
-.ngx-msg-overlay[data-type='confirm'] .ngx-msg-modal {
+.ngx-msg-modal[data-type='confirm'] {
   --type-ring: conic-gradient(from 0deg, var(--confirm-a), var(--confirm-b), var(--confirm-a));
   --type-disc: linear-gradient(150deg, var(--confirm-a), var(--confirm-b));
   --type-shadow: rgba(123, 92, 255, 0.5);
   --type-btn: linear-gradient(135deg, var(--confirm-a), var(--confirm-b));
   --type-glow: radial-gradient(circle, rgba(123, 92, 255, 0.35), transparent 70%);
 }
-.ngx-msg-overlay[data-type='loading'] .ngx-msg-modal {
+.ngx-msg-modal[data-type='loading'] {
   --type-disc: linear-gradient(150deg, #9aa3c0, #565c78);
   --type-glow: radial-gradient(circle, rgba(154, 163, 192, 0.3), transparent 70%);
 }
