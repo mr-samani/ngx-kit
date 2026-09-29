@@ -1,3 +1,4 @@
+import { isElementNode } from '../utils/element.helper';
 import { ScrollFrame } from '../utils/scroll-frame';
 import {
   Axis,
@@ -228,13 +229,14 @@ export class SortSession {
     let allOthers = 0;
 
     for (const node of Array.from(this.container.children)) {
-      if (!(node instanceof HTMLElement)) continue;
-      const isSlot = node === this.placeholder;
-      if (!isSlot && !this.itemElements.has(node)) continue;
+      if (!isElementNode(node)) continue;
+      const el = node as HTMLElement;
+      const isSlot = el === this.placeholder;
+      if (!isSlot && !this.itemElements.has(el)) continue;
 
       const modelIdx = isSlot ? -1 : allOthers++;
-      const rect = node.getBoundingClientRect();
-      const off = this.applied.get(node);
+      const rect = el.getBoundingClientRect();
+      const off = this.applied.get(el);
       const box = toBox(rect);
       if (off) {
         // Strip our own displacement so the snapshot always describes the *undisplaced* layout.
@@ -249,15 +251,15 @@ export class SortSession {
       if (isSlot) slot = entries.length;
       else otherModelIndex.push(modelIdx);
 
-      const known = previous.get(node);
+      const known = previous.get(el);
       entries.push(
         known ?? {
-          el: node,
+          el: el,
           isSlot,
-          base: initialTransform(node),
-          savedTransform: node.style.transform,
-          savedTransition: node.style.transition,
-          savedWillChange: node.style.willChange,
+          base: initialTransform(el),
+          savedTransform: el.style.transform,
+          savedTransition: el.style.transition,
+          savedWillChange: el.style.willChange,
         },
       );
       boxes.push(box);

@@ -6,6 +6,7 @@ import { HorizontalListComponent } from './horizontal-list/horizontal-list.compo
 import { DemoKanbanComponent } from './kanban/kanban.component';
 import { NestedTreeSortComponent } from './nested-tree-sort/nested-tree-sort.component';
 import { SortListComponent } from './sort-list/sort-list.component';
+import { CopyToIFrameComponent } from './copy-to-iframe/copy-to-iframe.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'kanban', pathMatch: 'full' },
@@ -13,6 +14,7 @@ const routes: Routes = [
   { path: 'kanban', component: DemoKanbanComponent },
   { path: 'horizontal-list', component: HorizontalListComponent },
   { path: 'copy-to-zone', component: CopyToZoneComponent },
+  { path: 'copy-to-iframe', component: CopyToIFrameComponent },
   { path: 'nested-tree-sort', component: NestedTreeSortComponent },
   { path: 'dynamic-html', component: DynamicHtmlComponent },
 ];

@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { DragRef } from '../drag-ref';
 import { DropListRef } from '../drop-list-ref';
 import { DropListGroupRef } from '../drop-list-group-ref';
+import { isDocumentNode, isElementNode, isShadowRootNode } from '../utils/element.helper';
 
 @Injectable({ providedIn: 'root' })
 export class DragDropService {
@@ -9,19 +10,6 @@ export class DragDropService {
   readonly dropLists = signal<readonly DropListRef[]>([]);
   readonly activeDrag = signal<DragRef | null>(null);
 
-  /**
-   * DOM-position registries, used to find the nearest enclosing list/group by walking real
-   * ancestor elements instead of Angular's element-injector tree.
-   *
-   * This matters for `ngTemplateOutlet`-based recursive trees (a list of items whose own
-   * children are rendered by re-invoking the SAME `<ng-template>`, as in a tree/outliner UI):
-   * each invocation gets a FRESH embedded view whose injector context is wherever the outlet
-   * was written in the template, not wherever its content ends up in the DOM. So `inject(TOKEN,
-   * {skipSelf})` from one recursion level can never see a provider from another level — the
-   * only fix within Angular's own DI is to manually thread `ngTemplateOutletInjector` through
-   * every recursive call, which isn't reasonable to require of every consumer of this library.
-   * A plain DOM walk has no such limitation: it only cares where elements actually ended up.
-   */
   private readonly listsByEl = new Map<HTMLElement, DropListRef>();
   private readonly groupsByEl = new Map<HTMLElement, DropListGroupRef>();
 
@@ -54,30 +42,62 @@ export class DragDropService {
 
   /** Nearest registered drop list starting at (and including) `start`, walking up the DOM. */
   findAncestorDropList(start: HTMLElement | ParentNode | null): DropListRef | null {
-    let node = start;
+    let node: Node | null = start;
     while (node) {
-      if (node instanceof HTMLElement) {
-        const found = this.listsByEl.get(node);
+      if (isElementNode(node)) {
+        const found = this.listsByEl.get(node as HTMLElement);
         if (found) {
           return found;
         }
       }
-      node = node instanceof ShadowRoot ? node.host : node.parentNode;
+      if (isShadowRootNode(node) && 'host' in node) {
+        node = (node as ShadowRoot).host;
+        continue;
+      }
+      if (isDocumentNode(node)) {
+        const frame = (node as Document).defaultView?.frameElement;
+        if (frame) {
+          node = frame;
+          continue;
+        }
+        break;
+      }
+      node = node.parentNode;
     }
     return null;
   }
 
   /** Nearest registered drop-list group starting at (and including) `start`, walking up the DOM. */
-  findAncestorGroup(start: HTMLElement | ParentNode | null): DropListGroupRef | null {
-    let node = start;
+  findAncestorGroup(start: Node | null): DropListGroupRef | null {
+    let node: Node | null = start;
     while (node) {
-      if (node instanceof HTMLElement) {
-        const found = this.groupsByEl.get(node);
+      // HTMLElement / SVGElement / ...
+      if (isElementNode(node)) {
+        const found = this.groupsByEl.get(node as HTMLElement);
+
         if (found) {
           return found;
         }
       }
-      node = node instanceof ShadowRoot ? node.host : node.parentNode;
+      // ShadowRoot
+      // ShadowRoot یک DocumentFragment است و در iframe ممکن است
+      if (isShadowRootNode(node) && 'host' in node && node.host) {
+        node = node.host as Node;
+        continue;
+      }
+
+      // iframe Document
+      // 9 === DOCUMENT_NODE
+      if (node.nodeType === 9) {
+        const frame = (node as Document).defaultView?.frameElement;
+        if (frame) {
+          node = frame;
+          continue;
+        }
+        // root document
+        break;
+      }
+      node = node.parentNode;
     }
     return null;
   }

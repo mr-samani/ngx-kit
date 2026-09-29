@@ -1,3 +1,5 @@
+import { isWindow } from './element.helper';
+
 /**
  * Auto-scrolls the nearest scrollable ancestor (or window) while the pointer
  * is dragged near the edge of the scrollable viewport. Direction-agnostic —
@@ -50,18 +52,24 @@ export class AutoScroller {
       this.raf = 0;
       return;
     }
-    if (this.container instanceof Window) {
-      this.container.scrollBy(this.speed.x, this.speed.y);
+
+    const container = this.container;
+
+    if (isWindow(container)) {
+      container.scrollBy(this.speed.x, this.speed.y);
     } else {
-      this.container.scrollLeft += this.speed.x;
-      this.container.scrollTop += this.speed.y;
+      container.scrollLeft += this.speed.x;
+      container.scrollTop += this.speed.y;
     }
-    // pointer ثابت مونده ولی محتوای زیرش اسکرول شده — پس sort/placeholder را
-    // دوباره با آخرین موقعیت شناخته‌شده اجرا کن.
+
+    // Pointer ثابت مانده ولی محتوا اسکرول شده؛
+    // بنابراین موقعیت placeholder/sort را دوباره محاسبه کن.
     this.onTick?.();
+
     this.raf = requestAnimationFrame(this.tick);
   };
 }
+
 function edgeSpeed(pos: number, min: number, max: number, edge: number, maxSpeed: number): number {
   if (pos < min + edge) return -maxSpeed * (1 - Math.max(0, pos - min) / edge);
   if (pos > max - edge) return maxSpeed * (1 - Math.max(0, max - pos) / edge);
@@ -74,7 +82,7 @@ function getScrollRect(container: HTMLElement | Window): {
   top: number;
   bottom: number;
 } {
-  if (container instanceof Window) {
+  if (isWindow(container)) {
     return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
   }
   return container.getBoundingClientRect();
@@ -82,17 +90,23 @@ function getScrollRect(container: HTMLElement | Window): {
 
 export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
   let node: HTMLElement | null = el;
+
   while (node) {
     const style = getComputedStyle(node);
     const scrollable = /(auto|scroll|overlay)/.test(style.overflowY + style.overflowX);
-    if (scrollable && node.scrollHeight > node.clientHeight) return node;
+
+    if (scrollable && node.scrollHeight > node.clientHeight) {
+      return node;
+    }
+
     node = node.parentElement;
   }
-  return window;
+
+  return el.ownerDocument.defaultView ?? window;
 }
 
 export function getScrollPosition(container: HTMLElement | Window): { left: number; top: number } {
-  if (container instanceof Window) {
+  if (isWindow(container)) {
     return { left: window.scrollX, top: window.scrollY };
   }
   return { left: container.scrollLeft, top: container.scrollTop };

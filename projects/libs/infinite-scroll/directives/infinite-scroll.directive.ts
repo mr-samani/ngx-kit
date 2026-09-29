@@ -363,7 +363,7 @@ export class NgxInfiniteScroll implements AfterViewInit {
     }
 
     const container = this.infiniteScrollContainer();
-
+    //TODO: not safe instanceof: node.nodeType === Node.ELEMENT_NODE
     if (container instanceof HTMLElement) {
       return container;
     }
@@ -451,7 +451,9 @@ export class NgxInfiniteScroll implements AfterViewInit {
 
   private getDocumentScroller(): HTMLElement | null {
     if (typeof document === 'undefined') return null;
-    return document.scrollingElement instanceof HTMLElement ? document.scrollingElement : null;
+    return document.scrollingElement?.nodeType === Node.ELEMENT_NODE
+      ? (document.scrollingElement as HTMLElement)
+      : null;
   }
 
   private getScrollMetrics(): {

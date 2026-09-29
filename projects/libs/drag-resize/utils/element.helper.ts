@@ -40,3 +40,27 @@ export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
 
   return firstLevel;
 }
+
+export function isElementNode(node: Node): node is Element {
+  return node?.nodeType === Node.ELEMENT_NODE;
+}
+
+export function isDocumentNode(node: Node | null): node is Document {
+  return node?.nodeType === Node.DOCUMENT_NODE;
+}
+
+export function isShadowRootNode(node: Node | null): node is ShadowRoot {
+  return node?.nodeType === Node.DOCUMENT_FRAGMENT_NODE && 'host' in node;
+}
+
+export function getOwnerWindow(node: Node): Window | null {
+  return node?.ownerDocument?.defaultView ?? null;
+}
+export function isWindow(value: unknown): value is Window {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    'window' in value &&
+    (value as Window).window === value
+  );
+}

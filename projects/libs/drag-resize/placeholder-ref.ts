@@ -1,5 +1,6 @@
 import { ApplicationRef, TemplateRef, type EmbeddedViewRef } from '@angular/core';
 import { DropListRef } from './drop-list-ref';
+import { isElementNode } from './utils/element.helper';
 
 export class PlaceHolderRef {
   /**
@@ -32,8 +33,8 @@ export class PlaceHolderRef {
         // Render bindings inside the embedded view before we move its DOM nodes.
         this._view.detectChanges();
 
-        const element = this._view.rootNodes.find(
-          (node): node is HTMLElement => node instanceof HTMLElement,
+        const element = this._view.rootNodes.find((node): node is HTMLElement =>
+          isElementNode(node),
         );
 
         if (!element) {
