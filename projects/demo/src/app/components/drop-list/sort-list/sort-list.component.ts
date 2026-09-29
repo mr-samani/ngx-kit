@@ -1,9 +1,16 @@
 import { Component } from '@angular/core';
-import { IDropEvent, moveItemInArray, NgxDraggable, NgxDropList } from 'ngx-kit/drag-resize';
+import {
+  IDropEvent,
+  moveItemInArray,
+  NgxDraggable,
+  NgxDragPreview,
+  NgxDropList,
+  NgxPlaceholder,
+} from 'ngx-kit/drag-resize';
 
 @Component({
   selector: 'app-sort-list',
-  imports: [NgxDraggable, NgxDropList],
+  imports: [NgxDraggable, NgxDropList, NgxDragPreview, NgxPlaceholder],
   templateUrl: './sort-list.component.html',
   styleUrl: './sort-list.component.scss',
 })

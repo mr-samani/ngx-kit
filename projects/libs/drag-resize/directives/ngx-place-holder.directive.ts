@@ -3,7 +3,17 @@ import { PlaceHolderRef } from '../placeholder-ref';
 import { NGX_DROPLIST } from './ngx-drop-list.directive';
 
 export const NGX_PLACEHOLDER = new InjectionToken<PlaceHolderRef>('ngx-place-holder');
-
+/**
+ * Custom placeholder content, from `*ngxPlaceholder` inside the `ngxDropList`.
+ *
+ * @example
+ *   ```html
+ *   <div ngxDropList>
+ *     <span class="my-placeholder" *ngxPlaceholder></span>
+ *     ...
+ *   </div>
+ *  ```
+ */
 @Directive({
   selector: '[NgxPlaceholder],[ngxPlaceholder]',
   providers: [{ provide: NGX_PLACEHOLDER, useExisting: NgxPlaceholder }],

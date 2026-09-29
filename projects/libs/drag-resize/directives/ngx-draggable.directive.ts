@@ -1,4 +1,5 @@
 import {
+  ContentChild,
   Directive,
   ElementRef,
   InjectionToken,
@@ -12,12 +13,14 @@ import {
   model,
   output,
   signal,
+  type AfterContentInit,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { DragDropService } from '../services/drag-drop.service';
 import { DragRef, DragAxis } from '../drag-ref';
 import { IPosition } from '../contracts/IPosition';
 import { AutoScroller, findScrollableAncestor, getScrollPosition } from '../utils/auto-scroll';
+import { NgxDragPreview } from './ngx-drag-preview.directive';
 
 /** Pointer events already claimed by an (inner) draggable. */
 const claimedPointerEvents = new WeakSet<Event>();
@@ -37,7 +40,7 @@ const DEFAULT_KEYBOARD_STEP = 8;
     '[class.disable-drag]': 'disabled()',
   },
 })
-export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
+export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterContentInit {
   readonly disabled = model<boolean>(false);
   /** Element whose rect constrains the drag. Now actually enforced. */
   readonly boundary = input<HTMLElement>();
@@ -55,6 +58,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
   @Input('data') set data(v: T) {
     this._ref.data = v;
   }
+
+  @ContentChild(NgxDragPreview) private readonly customPreview?: NgxDragPreview;
 
   readonly dragStart = output<IPosition>();
   readonly dragMove = output<IPosition>();
@@ -119,6 +124,11 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy {
       'keydown',
       (e: KeyboardEvent) => this.keyDown(e),
     );
+  }
+  ngAfterContentInit(): void {
+    if (this.customPreview) {
+      this._ref.preview = this.customPreview._ref;
+    }
   }
 
   ngOnDestroy(): void {

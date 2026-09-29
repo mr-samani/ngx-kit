@@ -5,7 +5,7 @@ import { PlaceHolderRef } from './placeholder-ref';
 import { DropListGroupRef } from './drop-list-group-ref';
 import { DragDropService } from './services/drag-drop.service';
 import { checkBoundX, checkBoundY } from './utils/check-boundary';
-import { cloneDragElementInBody } from './utils/clone-drag-element-in-body';
+import { DragPreviewRef } from './drag-preview-ref';
 
 export type DragAxis = 'x' | 'y' | undefined;
 
@@ -32,6 +32,8 @@ export class DragRef<T = unknown> {
   originDropList: DropListRef<T> | null = null;
   originIndex = -1;
 
+  preview?: DragPreviewRef;
+
   readonly isDragging = signal(false);
   readonly position = signal<IPosition>({ x: 0, y: 0 });
 
@@ -45,9 +47,6 @@ export class DragRef<T = unknown> {
   private moveDx = 0;
   private moveDy = 0;
   private scrollCompensation = { x: 0, y: 0 };
-  private preview?: HTMLElement;
-  private previewOffsetX = 0;
-  private previewOffsetY = 0;
   private sourceVisibility = '';
   private sourceDisplay = '';
   private sourcePointerEvents = '';
@@ -132,14 +131,8 @@ export class DragRef<T = unknown> {
      */
     if (list) {
       this.listDrag = true;
-
-      // Order matters: clone while the source is still visible and fully styled, hide it,
-      // and only THEN measure (the placeholder takes over the source's slot).
-      const preview = cloneDragElementInBody(this.el, this.startRect, pointer.x, pointer.y);
-
-      this.preview = preview.element;
-      this.previewOffsetX = preview.offsetX;
-      this.previewOffsetY = preview.offsetY;
+      this.preview ??= new DragPreviewRef();
+      this.preview.attach(this.el, this.startRect);
 
       this.el.style.visibility = 'hidden';
       this.el.style.display = 'none';
@@ -212,7 +205,7 @@ export class DragRef<T = unknown> {
     this.placeholder?.detach();
     this.placeholder = undefined;
 
-    this.preview?.remove();
+    this.preview?.detach();
     this.preview = undefined;
 
     this.el.classList.remove('ngx-draggable--dragging');
@@ -444,7 +437,7 @@ export class DragRef<T = unknown> {
     const event = target?._finish(this, true) ?? null;
     for (const l of this.cachedLists) l._release(this);
 
-    this.preview?.remove();
+    this.preview?.detach();
     this.preview = undefined;
     this.placeholder = undefined;
     this.activeDropList = null;
@@ -466,9 +459,9 @@ export class DragRef<T = unknown> {
   }
 
   private updatePreview(): void {
-    if (!this.preview) return;
+    if (!this.preview || !this.preview.element) return;
 
-    this.preview.style.transform = `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
+    this.preview.element.style.transform = `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
   }
 }
 

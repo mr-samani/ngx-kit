@@ -11,6 +11,7 @@ export * from './directives/ngx-resizable.directive';
 export * from './directives/ngx-drop-list.directive';
 export * from './directives/ngx-drop-list-group.directive';
 export * from './directives/ngx-place-holder.directive';
+export * from './directives/ngx-drag-preview.directive';
 export * from './utils/rtl';
 export * from './utils/check-boundary';
 export * from './utils/auto-scroll';

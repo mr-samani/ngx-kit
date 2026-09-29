@@ -14,7 +14,7 @@ import {
 import { DropListRef } from '../drop-list-ref';
 import { DragDropService } from '../services/drag-drop.service';
 import { IDropEvent } from '../contracts/IDropEvent';
-import { NGX_PLACEHOLDER, NgxPlaceholder } from './ngx-place-holder.directive';
+import { NgxPlaceholder } from './ngx-place-holder.directive';
 
 export const NGX_DROPLIST = new InjectionToken<NgxDropList>('ngx-drop-list');
 

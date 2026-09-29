@@ -43,7 +43,6 @@
 }
 .custom-placeholder {
   border: 2px #008a3c solid;
-  min-height: 40px;
   &:after,
   &::before {
     position: absolute;
@@ -63,4 +62,11 @@
     border-right-color: transparent;
     left: -2px;
   }
+}
+
+.custom-preview {
+  border: 2px #8a0019 solid;
+  background-color: #f790a3;
+  color: #000;
+  padding: 50px;
 }

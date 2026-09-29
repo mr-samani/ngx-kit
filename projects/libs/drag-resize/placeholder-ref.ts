@@ -2,17 +2,6 @@ import { ApplicationRef, TemplateRef, type EmbeddedViewRef } from '@angular/core
 import { DropListRef } from './drop-list-ref';
 
 export class PlaceHolderRef {
-  /**
-   * Custom placeholder content, from `*ngxPlaceholder` inside the `ngxDropList`. When unset,
-   * `attach()` falls back to a shallow clone of the dragged element (previous behaviour).
-   *
-   * Example:
-   *
-   *   <div ngxDropList>
-   *     <span class="my-placeholder" *ngxPlaceholder></span>
-   *     ...
-   *   </div>
-   */
   tpl?: TemplateRef<unknown>;
   /** Set by `NgxPlaceholder` so the embedded view can join Angular's change-detection tree. */
   appRef?: ApplicationRef;
