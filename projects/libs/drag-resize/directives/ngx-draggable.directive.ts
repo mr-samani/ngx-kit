@@ -162,14 +162,15 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     e.preventDefault();
     this.down = true;
     this.pointerId = e.pointerId;
+    this._ref.el.setPointerCapture(this.pointerId);
     this.start = { x: e.clientX, y: e.clientY };
     this._ref.boundary = this.boundary();
     this._ref.lockAxis = this.lockAxis();
     this._ref.pointerDown(this.start);
-    this.removeMove = this.renderer.listen(this.doc, 'pointermove', (ev: PointerEvent) =>
+    this.removeMove = this.renderer.listen(this._ref.el, 'pointermove', (ev: PointerEvent) =>
       this.pointerMove(ev),
     );
-    this.removeUp = this.renderer.listen(this.doc, 'pointerup', (ev: PointerEvent) =>
+    this.removeUp = this.renderer.listen(this._ref.el, 'pointerup', (ev: PointerEvent) =>
       this.pointerUp(ev),
     );
     this.removeEscape = this.renderer.listen(this.doc, 'keydown', (ev: KeyboardEvent) => {
@@ -264,6 +265,11 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   }
   private pointerUp(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
+
+    if (this._ref.el.hasPointerCapture(this.pointerId)) {
+      this._ref.el.releasePointerCapture(this.pointerId);
+    }
+
     if (this.dragging()) {
       // Also when released OUTSIDE every list: endDrag() rolls the drag back and cleans up.
       if (this._ref.isListDrag) {
@@ -360,10 +366,12 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
 
   private isOnHandle(target: EventTarget | null): boolean {
     if (!this.dragHandle()) return true;
+    // TODO notsafe instanseof: node.nodeType === Node.ELEMENT_NODE
     return target instanceof HTMLElement && !!target.closest(this.dragHandle());
   }
 
   private isInteractive(target: EventTarget | null): boolean {
+    // TODO notsafe instanseof: node.nodeType === Node.ELEMENT_NODE
     return (
       target instanceof HTMLElement &&
       !!target.closest('button,a,input,textarea,select,[data-no-drag]')

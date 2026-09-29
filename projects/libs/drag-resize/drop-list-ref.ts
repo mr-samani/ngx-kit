@@ -15,6 +15,7 @@ import {
 import { SortSession, makeSpacer } from './sorting/sort-session';
 import { isRtl } from './utils/rtl';
 import { ScrollFrame } from './utils/scroll-frame';
+import { isElementNode } from './utils/element.helper';
 
 /**
  * A drop list.
@@ -264,7 +265,6 @@ export class DropListRef<T = any> {
   sortItem(drag: DragRef<T>, position: IPosition): number | null {
     const s = this.session;
     if (!s || this.activeDrag !== drag || !this.hovered || this.disableSort) return null;
-
     const next = s.resolve(position);
     if (next === s.target) return null;
     s.apply(next);
@@ -470,10 +470,13 @@ export class DropListRef<T = any> {
     const els: HTMLElement[] = [];
     const boxes: Box[] = [];
     for (const node of Array.from(this.el.children)) {
-      if (!(node instanceof HTMLElement) || !others.has(node)) continue;
-      const r = node.getBoundingClientRect();
+      if (!isElementNode(node)) continue;
+      const el = node as HTMLElement;
+      if (!others.has(el)) continue;
+
+      const r = el.getBoundingClientRect();
       if (r.width === 0 && r.height === 0) continue;
-      els.push(node);
+      els.push(el);
       boxes.push(toBox(r));
     }
     if (!els.length) return null;
@@ -499,11 +502,12 @@ export class DropListRef<T = any> {
 
     let index = 0;
     for (const node of Array.from(this.el.children)) {
-      if (!(node instanceof HTMLElement)) continue;
-      if (node === this.placeholder?.element) continue;
-      if (node.classList.contains('ngx-drag-placeholder')) continue;
-      if (node.classList.contains('ngx-drag-preview')) continue;
-      const ref = byElement.get(node);
+      if (!isElementNode(node)) continue;
+      const el = node as HTMLElement;
+      if (el === this.placeholder?.element) continue;
+      if (el.classList.contains('ngx-drag-placeholder')) continue;
+      if (el.classList.contains('ngx-drag-preview')) continue;
+      const ref = byElement.get(el);
       if (!ref) continue;
       if (ref === item) return index;
       index++;

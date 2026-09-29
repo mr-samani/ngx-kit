@@ -1,0 +1,11 @@
+<div class="form-container" ngxDropListGroup>
+  <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true" id="baseList">
+    @for (item of sourceList; track $index) {
+      <div class="example-box" ngxDraggable>
+        {{ item }}
+      </div>
+    }
+  </div>
+
+  <iframe class="target-container" #iframe></iframe>
+</div>

@@ -674,7 +674,7 @@ export class OverlayService {
 
   private getActiveElement(): HTMLElement | null {
     const active = this.document.activeElement;
-    return active instanceof HTMLElement ? active : null;
+    return active?.nodeType === Node.ELEMENT_NODE ? (active as HTMLElement) : null;
   }
 
   // ---------------------------------------------------------------------------

@@ -46,16 +46,9 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy, AfterContentInit
 
   ngOnInit(): void {
     this._ref.el = this.el.nativeElement;
-
-    // Found by walking the real DOM (not Angular's element-injector tree): a list rendered by a
-    // recursively-invoked `ngTemplateOutlet` (a tree/outliner UI, where every level re-uses the
-    // SAME `<ng-template>`) gets a fresh injector context per invocation, so `inject(TOKEN,
-    // {skipSelf})` can never see a provider from another recursion level — the DOM position is
-    // what actually determines nesting/grouping for this library's purposes anyway.
     const parentEl = this.el.nativeElement.parentElement;
     const group = this.service.findAncestorGroup(parentEl);
     const parent = this.service.findAncestorDropList(parentEl);
-
     this._ref.dropListGroup = group ?? null;
     group?.add(this._ref);
     parent?._registerChild(this._ref);

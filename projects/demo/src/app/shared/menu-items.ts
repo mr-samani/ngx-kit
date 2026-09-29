@@ -223,6 +223,7 @@ export const MENU_LIST: ICategory[] = [
           { url: '/components/drop-list/kanban', title: 'Kanban View' },
           { url: '/components/drop-list/horizontal-list', title: 'Horizontal List' },
           { url: '/components/drop-list/copy-to-zone', title: 'Copy to zone' },
+          { url: '/components/drop-list/copy-to-iframe', title: 'Copy to iframe' },
           { url: '/components/drop-list/nested-tree-sort', title: 'Nested Tree' },
           { url: '/components/drop-list/dynamic-html', title: 'Dynamic html elements' },
         ],

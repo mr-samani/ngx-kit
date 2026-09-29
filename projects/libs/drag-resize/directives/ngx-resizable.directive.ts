@@ -361,6 +361,7 @@ export class NgxResizable {
     /**
      * Explicit resize handle has priority.
      */
+    // TODO notsafe instanceof:node.nodeType === Node.ELEMENT_NODE
     const handle =
       e.target instanceof HTMLElement
         ? e.target.closest<HTMLElement>('[data-ngx-resize-handle]')
