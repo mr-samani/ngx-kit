@@ -2,7 +2,7 @@ import { ICategory } from './interfaces/ICategory';
 
 export const MENU_LIST: ICategory[] = [
   {
-    name: 'Message & Dialog & Notify',
+    name: 'Message & Dialog & Notify & Tooltip',
     items: [
       {
         title: 'Message',
@@ -19,6 +19,10 @@ export const MENU_LIST: ICategory[] = [
       {
         title: 'Dialog',
         url: '/components/dialog',
+      },
+      {
+        title: 'Tooltip',
+        url: '/components/tooltip',
       },
     ],
   },

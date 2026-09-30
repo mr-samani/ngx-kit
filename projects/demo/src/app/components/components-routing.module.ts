@@ -55,6 +55,10 @@ const routes: Routes = [
         loadComponent: () => import('./notify/notify.component').then((c) => c.NotifyComponent),
       },
       {
+        path: 'tooltip',
+        loadComponent: () => import('./tooltip/tooltip.component').then((c) => c.TooltipComponent),
+      },
+      {
         path: 'dialog',
         providers: [
           provideNgxDialog({
@@ -89,7 +93,8 @@ const routes: Routes = [
       },
       {
         path: 'image-viewer',
-        loadComponent: () => import('./image-viewer/image-viewer.component').then((c) => c.ImageViewerDemoComponent),
+        loadComponent: () =>
+          import('./image-viewer/image-viewer.component').then((c) => c.ImageViewerDemoComponent),
       },
       {
         path: 'drawer-menu',
