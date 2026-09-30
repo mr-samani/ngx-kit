@@ -32,7 +32,7 @@ export class TooltipComponent {
   tooltipContent = model('Test tooltip');
 
   placements: NgxTooltipPlacement[] = ['top', 'bottom', 'left', 'right'];
-  placement = model<NgxTooltipPlacement>('top');
+  placement = model<NgxTooltipPlacement>('bottom');
   offset = model<number>(8);
   delay = model<number>(80);
   hideDelay = model<number>(40);

@@ -6,6 +6,8 @@
   --ngx-tooltip-radius: 7px;
   --ngx-tooltip-arrow-size: 6px;
   position: fixed;
+  inset: auto;
+  margin: 0;
   z-index: 2147483000;
   display: block;
   max-width: min(360px, 100vw - 16px);

@@ -1,5 +1,6 @@
 import {
   Directive,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -10,8 +11,8 @@ import {
   SecurityContext,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import type { NgxTooltipPlacement } from '../types/NgxTooltipPlacement';
-import type { NgxTooltipTrigger } from '../types/NgxTooltipTrigger';
+import { NgxTooltipPlacement } from '../types/NgxTooltipPlacement';
+import { NgxTooltipTrigger } from '../types/NgxTooltipTrigger';
 
 const TOOLTIP_CLASS = 'ngx-tooltip';
 const VISIBLE_CLASS = 'ngx-tooltip-visible';
@@ -29,12 +30,11 @@ export class NgxTooltip implements OnDestroy {
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly zone = inject(NgZone);
+  private readonly doc = inject(DOCUMENT);
 
   private readonly element = this.elementRef.nativeElement;
 
   private tooltip?: HTMLElement;
-  private arrow?: HTMLElement;
 
   private showTimer?: ReturnType<typeof setTimeout>;
   private hideTimer?: ReturnType<typeof setTimeout>;
@@ -53,7 +53,7 @@ export class NgxTooltip implements OnDestroy {
   readonly tooltipText = input.required<string>({ alias: 'ngxTooltip' });
   readonly ngxTooltipUseOverlay = input<boolean>(true);
 
-  readonly ngxTooltipPlacement = input<NgxTooltipPlacement>('top');
+  readonly ngxTooltipPlacement = input<NgxTooltipPlacement>('bottom');
 
   readonly ngxTooltipOffset = input<number>(DEFAULT_OFFSET);
 
@@ -61,7 +61,7 @@ export class NgxTooltip implements OnDestroy {
 
   readonly ngxTooltipHideDelay = input<number>(HIDE_DELAY);
 
-  readonly ngxTooltipHtml = input<boolean>(false);
+  readonly ngxTooltipAllowHtml = input<boolean>(false);
 
   readonly ngxTooltipTrigger = input<NgxTooltipTrigger>('hover');
 
@@ -97,7 +97,6 @@ export class NgxTooltip implements OnDestroy {
 
     this.tooltip?.remove();
     this.tooltip = undefined;
-    this.arrow = undefined;
   }
 
   private bindEvents(): void {
@@ -259,14 +258,9 @@ export class NgxTooltip implements OnDestroy {
     const content = doc.createElement('div');
     content.className = 'ngx-tooltip-content';
 
-    const arrow = doc.createElement('div');
-    arrow.className = 'ngx-tooltip-arrow';
-
     tooltip.appendChild(content);
-    tooltip.appendChild(arrow);
 
     this.tooltip = tooltip;
-    this.arrow = arrow;
 
     return tooltip;
   }
@@ -279,17 +273,11 @@ export class NgxTooltip implements OnDestroy {
     }
 
     const value = this.tooltipText() ?? '';
-
-    if (!this.ngxTooltipHtml) {
-      // textContent is intentionally used here.
-      // It is faster and completely safe.
+    if (this.ngxTooltipAllowHtml()) {
+      content.innerHTML = this.sanitizer.sanitize(SecurityContext.STYLE, value) ?? '';
+    } else {
       content.textContent = value;
-      return;
     }
-
-    const sanitized = this.sanitizer.sanitize(SecurityContext.HTML, value);
-
-    content.innerHTML = sanitized ?? '';
   }
 
   private applyDirection(): void {
@@ -368,25 +356,17 @@ export class NgxTooltip implements OnDestroy {
       this.ngxTooltipOffset(),
     );
 
-    let arrowOffset: number | undefined;
-
     if (this.ngxTooltipShift()) {
       const shifted = this.shiftIntoViewport(left, top, tooltipRect, viewportWidth, viewportHeight);
 
       left = shifted.left;
       top = shifted.top;
-
-      arrowOffset = this.calculateArrowOffset(placement, targetRect, left, top, tooltipRect);
     }
 
     tooltip.dataset['placement'] = placement;
 
     tooltip.style.left = `${Math.round(left)}px`;
     tooltip.style.top = `${Math.round(top)}px`;
-
-    if (arrowOffset !== undefined) {
-      tooltip.style.setProperty('--ngx-tooltip-arrow-offset', `${Math.round(arrowOffset)}px`);
-    }
 
     tooltip.style.visibility = 'visible';
   }
@@ -505,26 +485,6 @@ export class NgxTooltip implements OnDestroy {
     top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop));
 
     return { left, top };
-  }
-
-  private calculateArrowOffset(
-    placement: NgxTooltipPlacement,
-    target: DOMRect,
-    tooltipLeft: number,
-    tooltipTop: number,
-    tooltip: DOMRect,
-  ): number {
-    const [side] = this.parsePlacement(placement);
-
-    if (side === 'top' || side === 'bottom') {
-      const targetCenter = target.left + target.width / 2;
-
-      return targetCenter - tooltipLeft;
-    }
-
-    const targetCenter = target.top + target.height / 2;
-
-    return targetCenter - tooltipTop;
   }
 
   private fitsViewport(
