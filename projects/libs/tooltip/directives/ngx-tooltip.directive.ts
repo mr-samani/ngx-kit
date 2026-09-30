@@ -1,30 +1,17 @@
 import {
   Directive,
+  effect,
   ElementRef,
   inject,
-  Input,
+  input,
   NgZone,
   OnDestroy,
   Renderer2,
   SecurityContext,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-
-export type NgxTooltipPlacement =
-  | 'top'
-  | 'top-start'
-  | 'top-end'
-  | 'bottom'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left'
-  | 'left-start'
-  | 'left-end'
-  | 'right'
-  | 'right-start'
-  | 'right-end';
-
-export type NgxTooltipTrigger = 'hover' | 'focus' | 'hover-focus';
+import type { NgxTooltipPlacement } from '../types/NgxTooltipPlacement';
+import type { NgxTooltipTrigger } from '../types/NgxTooltipTrigger';
 
 const TOOLTIP_CLASS = 'ngx-tooltip';
 const VISIBLE_CLASS = 'ngx-tooltip-visible';
@@ -38,7 +25,7 @@ const HIDE_DELAY = 40;
   selector: '[ngxTooltip]',
   standalone: true,
 })
-export class NgxTooltipDirective implements OnDestroy {
+export class NgxTooltip implements OnDestroy {
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
   private readonly sanitizer = inject(DomSanitizer);
@@ -63,42 +50,34 @@ export class NgxTooltipDirective implements OnDestroy {
   private removeScroll?: () => void;
   private removeResize?: () => void;
 
-  @Input('ngxTooltip')
-  tooltipText: string | null | undefined;
+  readonly tooltipText = input.required<string>({ alias: 'ngxTooltip' });
 
-  @Input()
-  ngxTooltipPlacement: NgxTooltipPlacement = 'top';
+  readonly ngxTooltipPlacement = input<NgxTooltipPlacement>('top');
 
-  @Input()
-  ngxTooltipOffset = DEFAULT_OFFSET;
+  readonly ngxTooltipOffset = input<number>(DEFAULT_OFFSET);
 
-  @Input()
-  ngxTooltipDelay = SHOW_DELAY;
+  readonly ngxTooltipDelay = input<number>(SHOW_DELAY);
 
-  @Input()
-  ngxTooltipHideDelay = HIDE_DELAY;
+  readonly ngxTooltipHideDelay = input<number>(HIDE_DELAY);
 
-  @Input()
-  ngxTooltipHtml = false;
+  readonly ngxTooltipHtml = input<boolean>(false);
 
-  @Input()
-  ngxTooltipTrigger: NgxTooltipTrigger = 'hover';
+  readonly ngxTooltipTrigger = input<NgxTooltipTrigger>('hover');
 
   /**
    * If true, the tooltip automatically changes placement
    * when there is not enough room.
    */
-  @Input()
-  ngxTooltipFlip = true;
+  readonly ngxTooltipFlip = input<boolean>(true);
 
   /**
    * Keeps the tooltip inside the viewport.
    */
-  @Input()
-  ngxTooltipShift = true;
+  readonly ngxTooltipShift = input<boolean>(true);
 
   constructor() {
-    this.zone.runOutsideAngular(() => {
+    effect(() => {
+      const trigger = this.ngxTooltipTrigger();
       this.bindEvents();
     });
   }
@@ -121,7 +100,11 @@ export class NgxTooltipDirective implements OnDestroy {
   }
 
   private bindEvents(): void {
-    const trigger = this.ngxTooltipTrigger;
+    const trigger = this.ngxTooltipTrigger();
+    this.removeMouseEnter?.();
+    this.removeMouseLeave?.();
+    this.removeFocusIn?.();
+    this.removeFocusOut?.();
 
     if (trigger === 'hover' || trigger === 'hover-focus') {
       this.removeMouseEnter = this.renderer.listen(this.element, 'mouseenter', () =>
@@ -164,7 +147,7 @@ export class NgxTooltipDirective implements OnDestroy {
           this.show();
         }
       },
-      Math.max(0, this.ngxTooltipDelay),
+      Math.max(0, this.ngxTooltipDelay()),
     );
   }
 
@@ -185,7 +168,7 @@ export class NgxTooltipDirective implements OnDestroy {
           this.hide();
         }
       },
-      Math.max(0, this.ngxTooltipHideDelay),
+      Math.max(0, this.ngxTooltipHideDelay()),
     );
   }
 
@@ -266,7 +249,7 @@ export class NgxTooltipDirective implements OnDestroy {
       return;
     }
 
-    const value = this.tooltipText ?? '';
+    const value = this.tooltipText() ?? '';
 
     if (!this.ngxTooltipHtml) {
       // textContent is intentionally used here.
@@ -333,9 +316,9 @@ export class NgxTooltipDirective implements OnDestroy {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    const requestedPlacement = this.ngxTooltipPlacement;
+    const requestedPlacement = this.ngxTooltipPlacement();
 
-    const placement = this.ngxTooltipFlip
+    const placement = this.ngxTooltipFlip()
       ? this.findBestPlacement(
           requestedPlacement,
           targetRect,
@@ -349,12 +332,12 @@ export class NgxTooltipDirective implements OnDestroy {
       placement,
       targetRect,
       tooltipRect,
-      this.ngxTooltipOffset,
+      this.ngxTooltipOffset(),
     );
 
     let arrowOffset: number | undefined;
 
-    if (this.ngxTooltipShift) {
+    if (this.ngxTooltipShift()) {
       const shifted = this.shiftIntoViewport(left, top, tooltipRect, viewportWidth, viewportHeight);
 
       left = shifted.left;
@@ -445,7 +428,7 @@ export class NgxTooltipDirective implements OnDestroy {
     const candidates = this.getPlacementCandidates(requested);
 
     for (const placement of candidates) {
-      const position = this.calculatePosition(placement, target, tooltip, this.ngxTooltipOffset);
+      const position = this.calculatePosition(placement, target, tooltip, this.ngxTooltipOffset());
 
       if (this.fitsViewport(position.left, position.top, tooltip, viewportWidth, viewportHeight)) {
         return placement;
@@ -468,30 +451,6 @@ export class NgxTooltipDirective implements OnDestroy {
 
       case 'right':
         return ['right', 'left', 'top', 'bottom'];
-
-      case 'top-start':
-        return ['top-start', 'bottom-start', 'top-end', 'bottom-end', 'right-start', 'left-start'];
-
-      case 'top-end':
-        return ['top-end', 'bottom-end', 'top-start', 'bottom-start', 'right-end', 'left-end'];
-
-      case 'bottom-start':
-        return ['bottom-start', 'top-start', 'bottom-end', 'top-end', 'right-start', 'left-start'];
-
-      case 'bottom-end':
-        return ['bottom-end', 'top-end', 'bottom-start', 'top-start', 'right-end', 'left-end'];
-
-      case 'left-start':
-        return ['left-start', 'right-start', 'left-end', 'right-end', 'top-start', 'bottom-start'];
-
-      case 'left-end':
-        return ['left-end', 'right-end', 'left-start', 'right-start', 'top-end', 'bottom-end'];
-
-      case 'right-start':
-        return ['right-start', 'left-start', 'right-end', 'left-end', 'top-start', 'bottom-start'];
-
-      case 'right-end':
-        return ['right-end', 'left-end', 'right-start', 'left-start', 'top-end', 'bottom-end'];
     }
   }
 
@@ -575,21 +534,30 @@ export class NgxTooltipDirective implements OnDestroy {
       return;
     }
 
-    this.zone.runOutsideAngular(() => {
-      const win = this.element.ownerDocument.defaultView;
+    const win = this.element.ownerDocument.defaultView;
 
-      if (!win) {
-        return;
-      }
+    if (!win) {
+      return;
+    }
 
-      this.removeScroll = this.renderer.listen(win, 'scroll', () => this.schedulePositionUpdate(), {
-        passive: true,
-      });
+    const onScroll = () => this.schedulePositionUpdate();
+    const onResize = () => this.schedulePositionUpdate();
 
-      this.removeResize = this.renderer.listen(win, 'resize', () => this.schedulePositionUpdate(), {
-        passive: true,
-      });
+    win.addEventListener('scroll', onScroll, {
+      passive: true,
     });
+
+    win.addEventListener('resize', onResize, {
+      passive: true,
+    });
+
+    this.removeScroll = () => {
+      win.removeEventListener('scroll', onScroll);
+    };
+
+    this.removeResize = () => {
+      win.removeEventListener('resize', onResize);
+    };
   }
 
   private removeViewportListeners(): void {
@@ -613,7 +581,7 @@ export class NgxTooltipDirective implements OnDestroy {
   }
 
   private hasContent(): boolean {
-    return !!this.tooltipText?.trim();
+    return !!this.tooltipText()?.trim();
   }
 
   private clearTimers(): void {

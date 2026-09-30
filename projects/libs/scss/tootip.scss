@@ -1,0 +1,189 @@
+.ngx-tooltip {
+  --ngx-tooltip-bg: light-dark(#f4f4f5, #18181b);
+  --ngx-tooltip-fg: light-dark(#18181b, #f4f4f5);
+  --ngx-tooltip-border: #ffffff1a;
+  --ngx-tooltip-shadow: 0 10px 30px rgb(0 0 0 / 0.25), 0 2px 8px rgb(0 0 0 / 0.18);
+
+  --ngx-tooltip-radius: 7px;
+  --ngx-tooltip-arrow-size: 6px;
+
+  position: fixed;
+  z-index: 2147483000;
+
+  display: block;
+
+  max-width: min(360px, calc(100vw - 16px));
+
+  padding: 8px 10px;
+
+  box-sizing: border-box;
+
+  background: var(--ngx-tooltip-bg);
+  color: var(--ngx-tooltip-fg);
+
+  border: 1px solid var(--ngx-tooltip-border);
+  border-radius: var(--ngx-tooltip-radius);
+
+  box-shadow: var(--ngx-tooltip-shadow);
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+
+  font-size: 12px;
+  font-weight: 450;
+  line-height: 1.45;
+
+  text-align: start;
+
+  pointer-events: none;
+  user-select: none;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform: scale(0.96);
+
+  transition:
+    opacity 120ms ease,
+    transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 120ms linear;
+
+  // Prevent long unbroken strings from destroying the layout.
+  overflow-wrap: anywhere;
+
+  &[data-placement^='top'] {
+    transform-origin: bottom center;
+  }
+
+  &[data-placement^='bottom'] {
+    transform-origin: top center;
+  }
+
+  &[data-placement^='left'] {
+    transform-origin: right center;
+  }
+
+  &[data-placement^='right'] {
+    transform-origin: left center;
+  }
+
+  &.ngx-tooltip-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .ngx-tooltip-content {
+    position: relative;
+
+    max-width: inherit;
+
+    p {
+      margin: 0 0 6px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    code {
+      padding: 1px 4px;
+
+      border-radius: 4px;
+
+      background: rgb(255 255 255 / 0.08);
+
+      font-family: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
+
+      font-size: 0.9em;
+    }
+
+    strong {
+      font-weight: 650;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+
+  .ngx-tooltip-arrow {
+    position: absolute;
+
+    width: calc(var(--ngx-tooltip-arrow-size) * 2);
+    height: calc(var(--ngx-tooltip-arrow-size) * 2);
+
+    background: var(--ngx-tooltip-bg);
+
+    border: 1px solid var(--ngx-tooltip-border);
+
+    transform: rotate(45deg);
+
+    pointer-events: none;
+  }
+
+  &[data-placement^='top'] {
+    .ngx-tooltip-arrow {
+      left: var(--ngx-tooltip-arrow-offset, 50%);
+      bottom: calc(var(--ngx-tooltip-arrow-size) * -1);
+
+      transform: translateX(-50%) rotate(45deg);
+
+      border-left: 0;
+      border-top: 0;
+    }
+  }
+
+  &[data-placement^='bottom'] {
+    .ngx-tooltip-arrow {
+      left: var(--ngx-tooltip-arrow-offset, 50%);
+      top: calc(var(--ngx-tooltip-arrow-size) * -1);
+
+      transform: translateX(-50%) rotate(45deg);
+
+      border-right: 0;
+      border-bottom: 0;
+    }
+  }
+
+  &[data-placement^='left'] {
+    .ngx-tooltip-arrow {
+      right: calc(var(--ngx-tooltip-arrow-size) * -1);
+      top: var(--ngx-tooltip-arrow-offset, 50%);
+
+      transform: translateY(-50%) rotate(45deg);
+
+      border-left: 0;
+      border-bottom: 0;
+    }
+  }
+
+  &[data-placement^='right'] {
+    .ngx-tooltip-arrow {
+      left: calc(var(--ngx-tooltip-arrow-size) * -1);
+      top: var(--ngx-tooltip-arrow-offset, 50%);
+
+      transform: translateY(-50%) rotate(45deg);
+
+      border-right: 0;
+      border-top: 0;
+    }
+  }
+
+  // Respect reduced motion.
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &.ngx-tooltip-visible {
+      transform: none;
+    }
+  }
+}
