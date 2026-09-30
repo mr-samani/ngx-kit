@@ -1,7 +1,7 @@
 .ngx-tooltip {
   --ngx-tooltip-bg: light-dark(#f4f4f5, #18181b);
   --ngx-tooltip-fg: light-dark(#18181b, #f4f4f5);
-  --ngx-tooltip-border: #ffffff1a;
+  --ngx-tooltip-border: light-dark(#63636336, #ffffff1a);
   --ngx-tooltip-shadow: 0 10px 30px rgb(0 0 0 / 0.25), 0 2px 8px rgb(0 0 0 / 0.18);
   --ngx-tooltip-font-size: 12px;
 

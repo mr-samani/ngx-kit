@@ -11,22 +11,20 @@ import {
   SecurityContext,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { NgxTooltipPlacement } from '../types/NgxTooltipPlacement';
-import { NgxTooltipTrigger } from '../types/NgxTooltipTrigger';
+import { NgxTooltipPlacement } from '../types/placement';
+import { NgxTooltipTrigger } from '../types/trigger';
+import { NGX_TOOLTIP_CONFIG } from '../providers/tootip.provider';
 
 const TOOLTIP_CLASS = 'ngx-tooltip';
 const VISIBLE_CLASS = 'ngx-tooltip-visible';
-
 const VIEWPORT_PADDING = 8;
-const DEFAULT_OFFSET = 8;
-const SHOW_DELAY = 80;
-const HIDE_DELAY = 40;
 
 @Directive({
   selector: '[ngxTooltip]',
   standalone: true,
 })
 export class NgxTooltip implements OnDestroy {
+  private readonly configs = inject(NGX_TOOLTIP_CONFIG);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly renderer = inject(Renderer2);
   private readonly sanitizer = inject(DomSanitizer);
@@ -55,11 +53,11 @@ export class NgxTooltip implements OnDestroy {
 
   readonly ngxTooltipPlacement = input<NgxTooltipPlacement>('bottom');
 
-  readonly ngxTooltipOffset = input<number>(DEFAULT_OFFSET);
+  readonly ngxTooltipOffset = input<number>(this.configs.offset);
 
-  readonly ngxTooltipDelay = input<number>(SHOW_DELAY);
+  readonly ngxTooltipDelay = input<number>(this.configs.delay);
 
-  readonly ngxTooltipHideDelay = input<number>(HIDE_DELAY);
+  readonly ngxTooltipHideDelay = input<number>(this.configs.hideDelay);
 
   readonly ngxTooltipAllowHtml = input<boolean>(false);
 
