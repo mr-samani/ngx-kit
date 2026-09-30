@@ -37,6 +37,7 @@ export class TooltipComponent {
   delay = model<number>(80);
   hideDelay = model<number>(40);
   useHtml = model<boolean>(false);
+  usePopOver = model<boolean>(true);
   trigger = model<NgxTooltipTrigger>('hover');
   triggers: NgxTooltipTrigger[] = ['hover', 'focus', 'hover-focus'];
 }

@@ -99,6 +99,13 @@
 
               <span>Allow Html</span>
             </label>
+            <label class="demo-check">
+              <input type="checkbox" [(ngModel)]="usePopOver" name="usePopover" />
+
+              <span class="demo-check-box"></span>
+
+              <span>User Popover Overlay</span>
+            </label>
           </div>
         </section>
       </div>
@@ -124,7 +131,8 @@
                 [ngxTooltipTrigger]="trigger()"
                 [ngxTooltipPlacement]="placement()"
                 [ngxTooltipOffset]="offset()"
-                [ngxTooltipHtml]="useHtml()">
+                [ngxTooltipHtml]="useHtml()"
+                [ngxTooltipUseOverlay]="usePopOver()">
                 Custom element
               </span>
 
@@ -137,6 +145,7 @@
                 [ngxTooltipPlacement]="placement()"
                 [ngxTooltipOffset]="offset()"
                 [ngxTooltipHtml]="useHtml()"
+                [ngxTooltipUseOverlay]="usePopOver()"
                 placeholder="Sample Tooltip on text box" />
             </div>
           </div>

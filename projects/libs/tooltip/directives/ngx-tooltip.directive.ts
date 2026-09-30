@@ -51,6 +51,7 @@ export class NgxTooltip implements OnDestroy {
   private removeResize?: () => void;
 
   readonly tooltipText = input.required<string>({ alias: 'ngxTooltip' });
+  readonly ngxTooltipUseOverlay = input<boolean>(true);
 
   readonly ngxTooltipPlacement = input<NgxTooltipPlacement>('top');
 
@@ -181,8 +182,6 @@ export class NgxTooltip implements OnDestroy {
 
     this.updateContent(tooltip);
 
-    this.visible = true;
-
     const doc = this.element.ownerDocument;
 
     if (!tooltip.isConnected) {
@@ -191,11 +190,19 @@ export class NgxTooltip implements OnDestroy {
 
     this.applyDirection();
 
-    // Make it measurable before positioning.
+    this.visible = true;
+
+    if (this.ngxTooltipUseOverlay()) {
+      const popover = tooltip as HTMLElement & {
+        showPopover?: () => void;
+      };
+
+      popover.showPopover?.();
+    }
+
     tooltip.classList.add(VISIBLE_CLASS);
 
     this.schedulePositionUpdate();
-
     this.addViewportListeners();
   }
 
@@ -206,7 +213,25 @@ export class NgxTooltip implements OnDestroy {
 
     this.visible = false;
 
+    this.clearShowTimer();
+
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = 0;
+    }
+
     this.tooltip?.classList.remove(VISIBLE_CLASS);
+
+    if (this.ngxTooltipUseOverlay() && this.tooltip?.matches(':popover-open')) {
+      (
+        this.tooltip as HTMLElement & {
+          hidePopover(): void;
+        }
+      ).hidePopover();
+    }
+
+    // Tooltip should not stay in the DOM while hidden.
+    this.tooltip?.remove();
 
     this.removeViewportListeners();
   }
@@ -219,9 +244,13 @@ export class NgxTooltip implements OnDestroy {
     const doc = this.element.ownerDocument;
 
     const tooltip = doc.createElement('div');
-    tooltip.className = TOOLTIP_CLASS;
 
+    tooltip.className = TOOLTIP_CLASS;
     tooltip.setAttribute('role', 'tooltip');
+
+    if (this.ngxTooltipUseOverlay()) {
+      tooltip.setAttribute('popover', 'manual');
+    }
 
     tooltip.style.position = 'fixed';
     tooltip.style.left = '0';
@@ -300,10 +329,14 @@ export class NgxTooltip implements OnDestroy {
       return;
     }
 
+    const win = this.element.ownerDocument.defaultView;
+
+    if (!win) {
+      return;
+    }
+
     const targetRect = this.element.getBoundingClientRect();
 
-    // If the target itself isn't visible in the viewport,
-    // don't keep the tooltip floating somewhere unrelated.
     if (targetRect.width === 0 || targetRect.height === 0 || !this.intersectsViewport(targetRect)) {
       tooltip.style.visibility = 'hidden';
       return;
@@ -313,8 +346,8 @@ export class NgxTooltip implements OnDestroy {
 
     const tooltipRect = tooltip.getBoundingClientRect();
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const viewportWidth = win.innerWidth;
+    const viewportHeight = win.innerHeight;
 
     const requestedPlacement = this.ngxTooltipPlacement();
 
@@ -510,11 +543,14 @@ export class NgxTooltip implements OnDestroy {
   }
 
   private intersectsViewport(rect: DOMRect): boolean {
+    const win = this.element.ownerDocument.defaultView;
+
+    if (!win) {
+      return false;
+    }
+
     return (
-      rect.bottom > 0 &&
-      rect.right > 0 &&
-      rect.top < window.innerHeight &&
-      rect.left < window.innerWidth
+      rect.bottom > 0 && rect.right > 0 && rect.top < win.innerHeight && rect.left < win.innerWidth
     );
   }
 
