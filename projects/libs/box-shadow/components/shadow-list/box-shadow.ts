@@ -108,6 +108,8 @@ export class NgxShadowBox implements OnInit, AfterViewInit {
     this.overlay.open({
       component: NgxShadowControl,
       anchor: el,
+      alignment:'end',
+      placement:'bottom',
       configure: (instance, ref) => {
         ref.componentRef?.setInput('maxRange', this.maxRange());
         ref.componentRef?.setInput('selectedShadow', item);
@@ -127,10 +129,23 @@ export class NgxShadowBox implements OnInit, AfterViewInit {
     });
   }
 
-  removeShadow(ev: Event, index: number) {
+  protected removeShadow(ev: Event, index: number) {
     ev.stopPropagation();
 
     this.shadows().splice(index, 1);
+    this.update();
+  }
+
+  protected duplicate(ev: Event, index: number): void {
+    ev.stopPropagation();
+    const src = this.shadows()[index];
+    if (!src) return;
+    const copy = Object.assign({}, src);
+    this.shadows.update((s) => {
+      const n = [...s];
+      n.splice(index + 1, 0, copy);
+      return n;
+    });
     this.update();
   }
 

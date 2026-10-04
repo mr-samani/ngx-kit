@@ -1,21 +1,49 @@
-<div class="">
-  <button (click)="addShadow(list)" type="button" class="action-btn add-btn">Add</button>
-</div>
-<div class="list-box" #list>
-  @for (item of shadows(); let i = $index; track i) {
-    <button
-      type="button"
-      class="list-item"
-      [class.active]="i == selectedIndex()"
-      #el
-      (click)="setShadow(el, item, i)">
-      <span>{{ item.cssValue }}</span>
-      <button (click)="removeShadow($event, i)" type="button" class="action-btn">
-        <svg fill="currentColor" viewBox="0 0 320 512">
+<div class="trc">
+  <div class="kit-head">
+    <span class="kit-title">Shadow</span>
+    <span class="kit-actions">
+      <button (click)="addShadow(list)" type="button" class="kit-add">
+        <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true">
           <path
-            d="M315.3 411.3c-6.253 6.253-16.37 6.253-22.63 0L160 278.6l-132.7 132.7c-6.253 6.253-16.37 6.253-22.63 0c-6.253-6.253-6.253-16.37 0-22.63L137.4 256L4.69 123.3c-6.253-6.253-6.253-16.37 0-22.63c6.253-6.253 16.37-6.253 22.63 0L160 233.4l132.7-132.7c6.253-6.253 16.37-6.253 22.63 0c6.253 6.253 6.253 16.37 0 22.63L182.6 256l132.7 132.7C321.6 394.9 321.6 405.1 315.3 411.3z" />
+            d="M6 1v10M1 6h10"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round" />
         </svg>
       </button>
-    </button>
-  }
+    </span>
+  </div>
+  <ul class="kit-list" role="list" #list>
+    @for (item of shadows(); let i = $index; track i) {
+      <li
+        #row
+        class="kit-row"
+        role="listitem"
+        tabindex="0"
+        [class.on]="i == selectedIndex()"
+        (click)="setShadow(row, item, i)"
+        (keydown.enter)="setShadow(row, item, i)"
+        (keydown.space)="$event.preventDefault(); setShadow(row, item, i)">
+        <span class="kit-text">{{ item.cssValue }}</span>
+        <span class="kit-ops">
+          <button
+            type="button"
+            class="kit-icon"
+            title="Duplicate"
+            aria-label="Duplicate"
+            (click)="duplicate($event, i)">
+            ⧉
+          </button>
+          <button
+            type="button"
+            class="kit-icon del"
+            title="Remove"
+            aria-label="Remove"
+            (click)="removeShadow($event, i)">
+            ✕
+          </button>
+        </span>
+      </li>
+    }
+  </ul>
 </div>

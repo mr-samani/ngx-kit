@@ -133,7 +133,10 @@ export class NgxShadowControl implements OnInit {
       this.y.set(0);
     });
   }
-
+  changeInset(val: boolean) {
+    this.selectedShadow.update((u) => ({ ...u, inset: val }));
+    this.updateShadow(this.selectedShadow());
+  }
   updateShadow(updatedShadow: Partial<BoxShadow>) {
     this.selectedShadow().cssValue = formatBoxShadowToCSS([this.selectedShadow()]);
     this.setXyFromShadow(this.selectedShadow());
