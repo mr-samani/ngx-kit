@@ -71,6 +71,8 @@ export const MENU_LIST: ICategory[] = [
       {
         title: 'Box Shadow',
         url: '/components/box-shadow',
+        imageDark: 'preview/shadow-dark.png',
+        imageLight: 'preview/shadow-light.png',
       },
       {
         title: 'Angle Selector',
