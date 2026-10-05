@@ -5,11 +5,11 @@
   input {
     transition: box-shadow 0.1s;
     box-shadow:
-      inset hsl(250, 3%, 85%) 0 0 0 1px,
-      inset white 0 0 0 100px;
+      inset light-dark(#d8d8da, #4b4b4b) 0 0 0 1px,
+      inset light-dark(white, #626262) 0 0 0 100px;
     border: none;
     width: 48px;
-    color: hsl(250, 3%, 0%);
+    color: light-dark(black, white);
     font-family: 'Inter', sans-serif;
     padding: 5px 6px;
     border-radius: 5px;

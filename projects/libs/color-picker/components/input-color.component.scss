@@ -127,15 +127,15 @@
   padding: 0 0 12px;
   select {
     outline: none;
-    border: none;
     border-radius: 4px;
     padding: 5px 10px;
     background: none;
     color: var(--ngx-color-text);
+    border: 1px rgba(109, 109, 109, 0.436) solid;
     &:focus {
       cursor: pointer;
-      background: hsl(216, 100%, 95%);
-      color: hsl(216, 100%, 50%);
+      background: light-dark(#e5f0ff, #35373a);
+      color: #0066ff;
     }
     option {
       padding: 10px 20px;

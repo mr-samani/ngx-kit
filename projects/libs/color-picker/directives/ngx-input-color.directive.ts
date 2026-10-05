@@ -50,9 +50,8 @@ import { NGX_INPUT_COLOR_CONFIG } from '../tokens/input-color.token';
   ],
 })
 export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAccessor, Validator {
-  @Input() setInputBackgroundColor = true;
-
   protected readonly configs = inject(NGX_INPUT_COLOR_CONFIG);
+  readonly setInputBackgroundColor = input(true);
   /** Minifi UI  */
   readonly simpleMode = input(this.configs.simpleMode ?? false);
   readonly outputType = input<OutputType>(this.configs.outputType ?? 'HEX');
@@ -89,14 +88,11 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     this.removeTargetInputListener();
 
     this.isHostInput = false;
-    this.explicitTargetInput = false;
 
     if (element instanceof ElementRef) {
       this._targetInput = element.nativeElement;
-      this.explicitTargetInput = true;
     } else if (this.isInputElement(element)) {
       this._targetInput = element;
-      this.explicitTargetInput = true;
     } else {
       /**
        * Bare directive:
@@ -123,8 +119,8 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   private color?: NgxColor;
   private pickerRef?: OverlayRef<NgxInputColorComponent>;
   private _targetInput?: HTMLInputElement;
-  private explicitTargetInput = false;
   private isHostInput = false;
+  private syncingTargetInput = false;
   private removeInputListener?: () => void;
   private disabled = false;
   private invalid = false;
@@ -140,7 +136,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   ) {
     effect(() => {
       const useAlphaChannel = this.useAlphaChannel() == true;
-      if (!this.useAlphaChannel && this.color) {
+      if (!useAlphaChannel && this.color) {
         this.color.removeAlphaChannel();
         void this.color.getOutputResult(this.outputType()).then((value) => this.emitChange(value));
       }
@@ -160,7 +156,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     }
 
     if (this._targetInput) {
-      this.writeValue(this._targetInput.value);
+      this.readTargetInput();
     }
   }
 
@@ -211,9 +207,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
       this.color = color;
       this.invalid = false;
 
-      const colorValue = this.getViewColor();
-
-      this.syncView(colorValue);
+      this.syncView(value instanceof NgxColor ? this.getViewColor() : String(value));
     } catch {
       this.color = undefined;
       this.invalid = true;
@@ -224,7 +218,8 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
        * Angular/form validation needs to know that the value
        * is invalid instead of silently turning it into #000.
        */
-      this.syncView('');
+      this.syncView(String(value));
+      this.syncHostBackground('');
 
       this.notifyValidatorChange();
     }
@@ -301,32 +296,24 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
    * must propagate through ControlValueAccessor.
    */
   private handleInputEvent(event: Event): void {
+    if (this.syncingTargetInput) return;
+
     const input = event.target as HTMLInputElement;
     const value = input.value;
+    let color: NgxColor | undefined;
     try {
-      const color = value ? new NgxColor(value) : undefined;
-      if (color && color.isValid === false) {
-        this.color = undefined;
-        this.invalid = true;
-        this.notifyValidatorChange();
-        return;
-      }
-
-      this.color = color;
-      this.invalid = false;
-      this.syncHostBackground(value);
-      /**
-       * User change → Angular Forms.
-       */
-      this._onChange(value);
-      this.change.emit(value);
-      this._onTouched();
-      this.notifyValidatorChange();
+      color = value ? new NgxColor(value) : undefined;
     } catch {
-      this.color = undefined;
-      this.invalid = true;
-      this.notifyValidatorChange();
+      color = undefined;
     }
+
+    this.color = color?.isValid ? color : undefined;
+    this.invalid = !!value && !this.color;
+    this.syncHostBackground(this.invalid ? '' : value);
+    this._onChange(value);
+    this.change.emit(value);
+    this._onTouched();
+    this.notifyValidatorChange();
   }
 
   toggle(): void {
@@ -338,6 +325,9 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
       return;
     }
 
+    // A bound model can change this input's value without firing a DOM event.
+    this.readTargetInput();
+
     this.pickerRef = this.overlayService.open({
       anchor: this.el.nativeElement,
       component: NgxInputColorComponent,
@@ -346,10 +336,9 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
       placement: 'auto',
       configure: (instance, ref) => {
         ref.componentRef?.setInput('defaultInspector', this.defaultInspector());
-        ref.componentRef?.setInput('defaultInspector', this.defaultInspector());
         ref.componentRef?.setInput('simpleMode', this.simpleMode());
         ref.componentRef?.setInput('outputType', this.outputType());
-        ref.componentRef?.setInput('setUseAlphaChannel', this.useAlphaChannel());
+        ref.componentRef?.setInput('useAlphaChannel', this.useAlphaChannel());
         ref.componentRef?.setInput('showPresets', this.showPresets());
         ref.componentRef?.setInput('presetColors', this.presetColors());
 
@@ -375,11 +364,7 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
     this.pickerRef = undefined;
   }
 
-  /**
-   * User-originated/custom-picker value.
-   *
-   * This is the ONLY place where _onChange is called.
-   */
+  /** Propagates values selected from the custom picker. */
   private async emitChange(value: string): Promise<void> {
     try {
       const color = new NgxColor(value);
@@ -391,13 +376,9 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
       }
       this.color = color;
       this.invalid = false;
-      const viewValue = this.getViewColor();
-      this.syncView(viewValue);
-      /**
-       * Do NOT dispatch another input event here.
-       */
-      this._onChange(viewValue);
-      this.change.emit(viewValue);
+      this.syncView(value, true);
+      this._onChange(value);
+      this.change.emit(value);
       this._onTouched();
       this.notifyValidatorChange();
     } catch {
@@ -409,20 +390,28 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   /**
    * Synchronize all visual representations.
    */
-  private syncView(value: string): void {
+  private syncView(value: string, notifyTargetInput = false): void {
     /**
      * Host input value.
      */
     if (this.isHostInput) {
       const input = this.el.nativeElement as HTMLInputElement;
-      input.value = this.getNativeInputColor(value);
+      input.value = this.getNativeInputColor(value, input);
     }
 
     /**
      * External target input.
      */
     if (this._targetInput && this._targetInput !== this.el.nativeElement) {
-      this._targetInput.value = this.getNativeInputColor(value);
+      this._targetInput.value = this.getNativeInputColor(value, this._targetInput);
+      if (notifyTargetInput) {
+        this.syncingTargetInput = true;
+        try {
+          this._targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+        } finally {
+          this.syncingTargetInput = false;
+        }
+      }
     }
     /**
      * Background of host element.
@@ -436,10 +425,11 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
    * Therefore even if the selected color contains alpha,
    * the native color input receives #RRGGBB.
    */
-  private getNativeInputColor(value: string): string {
+  private getNativeInputColor(value: string, input: HTMLInputElement): string {
     if (!value) {
       return '';
     }
+    if (input.type !== 'color') return value;
     try {
       const color = new NgxColor(value);
 
@@ -454,11 +444,36 @@ export class NgxInputColor implements AfterViewInit, OnDestroy, ControlValueAcce
   }
 
   private syncHostBackground(value: string): void {
-    if (!this.setInputBackgroundColor) {
+    if (!this.setInputBackgroundColor()) {
       return;
     }
-    const element = this.el.nativeElement;
+    const element = this._targetInput ?? this.el.nativeElement;
     this.renderer.setStyle(element, 'backgroundColor', value || null);
+  }
+
+  private readTargetInput(): void {
+    if (!this._targetInput) return;
+
+    const value = this._targetInput.value;
+    if (!value) {
+      this.color = undefined;
+      this.invalid = false;
+      this.syncHostBackground('');
+      this.notifyValidatorChange();
+      return;
+    }
+
+    try {
+      const color = new NgxColor(value);
+      this.color = color.isValid ? color : undefined;
+      this.invalid = !color.isValid;
+      this.syncHostBackground(this.invalid ? '' : value);
+    } catch {
+      this.color = undefined;
+      this.invalid = true;
+      this.syncHostBackground('');
+    }
+    this.notifyValidatorChange();
   }
 
   private notifyValidatorChange(): void {
