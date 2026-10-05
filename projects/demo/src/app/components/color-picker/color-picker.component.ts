@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, model, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ColorInspector, NgxInputColor, OutputType } from 'ngx-kit/color-picker';
 import {
@@ -23,7 +23,7 @@ export class ColorPickerComponent implements OnInit {
     { label: 'HTML', path: 'examples/color-picker/color-picker.component.html', language: 'html' },
   ];
 
-  color = 'pink';
+  color = model<string>('pink');
   outputType: OutputType = 'HEX';
   simpleMode = false;
   inspector: ColorInspector = ColorInspector.Picker;
