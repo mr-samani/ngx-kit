@@ -2,14 +2,14 @@ import {
   AfterViewInit,
   Directive,
   ElementRef,
-  EventEmitter,
   HostListener,
   Input,
   OnDestroy,
-  Output,
   Renderer2,
   ViewContainerRef,
   forwardRef,
+  input,
+  output,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -20,7 +20,7 @@ import {
   Validator,
 } from '@angular/forms';
 import { NgxInputGradientComponent } from '../components/input-gradient.component';
-import { isValidGradient, parseGradient } from '../utils/build-gradient';
+import { isValidGradient } from '../utils/build-gradient';
 import { OverlayRef, OverlayService } from 'ngx-kit/core';
 
 @Directive({
@@ -35,8 +35,10 @@ import { OverlayRef, OverlayService } from 'ngx-kit/core';
   ],
 })
 export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueAccessor, Validator {
-  @Input() setInputBackground = true;
+  readonly setInputBackground = input(true);
   private _targetInput?: HTMLInputElement;
+
+  readonly showSamples = input(true);
   @Input('ngxInputColor') set ngxInputColor(
     el: HTMLInputElement | ElementRef<HTMLInputElement> | null | undefined | '',
   ) {
@@ -55,7 +57,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
       this._targetInput.addEventListener('input', this.boundInputHandler);
     }
   }
-  @Output() change = new EventEmitter<string>();
+  protected readonly change = output<string>();
 
   private boundInputHandler = (e: Event) => {
     this.writeValue((e.target as HTMLInputElement).value);
@@ -113,7 +115,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
     this.value = val;
     if (val && isValidGradient(val)) {
       // const parsed = parseGradient(val);
-      if (this.setInputBackground) {
+      if (this.setInputBackground()) {
         this.renderer.setStyle(this.el.nativeElement, 'background', val);
       }
       if (this.isHostInput) {
@@ -139,7 +141,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
       placement: 'auto',
       configure: (instance, ref) => {
         instance.writeValue(this.value);
-
+        ref.componentRef?.setInput('showSamples', this.showSamples());
         instance.change.subscribe((c: string) => {
           this.value = c;
           this.emitChange(c);
@@ -161,7 +163,7 @@ export class NgxInputGradient implements AfterViewInit, OnDestroy, ControlValueA
   }
 
   private async emitChange(c: string) {
-    if (this.setInputBackground) {
+    if (this.setInputBackground()) {
       this.renderer.setStyle(this.el.nativeElement, 'background', c);
     }
 
