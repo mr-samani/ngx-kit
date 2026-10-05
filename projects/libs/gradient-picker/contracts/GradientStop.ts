@@ -4,4 +4,11 @@ export interface GradientStop {
   color: string; // مثل 'red' یا '#ff0000'
 }
 
-export type GradientType = 'linear' | 'radial';
+// prettier-ignore
+export type GradientType =
+  | 'linear'
+  | 'radial'
+  | 'conic'
+  | 'repeating-linear'
+  | 'repeating-radial'
+  | 'repeating-conic';

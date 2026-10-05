@@ -1,6 +1,6 @@
 # ngx-kit/gradient-picker
 
-A linear/radial gradient picker with multiple draggable color stops, outputting a ready-to-use CSS string.
+A linear, radial, conic, and repeating gradient picker with multiple draggable color stops, outputting a ready-to-use CSS string.
 
 ## Install
 

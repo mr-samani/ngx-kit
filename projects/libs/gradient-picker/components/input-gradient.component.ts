@@ -5,9 +5,11 @@ import {
   EventEmitter,
   forwardRef,
   inject,
+  input,
   Input,
   OnDestroy,
   OnInit,
+  output,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -55,8 +57,8 @@ import { CommonModule } from '@angular/common';
 export class NgxInputGradientComponent
   implements OnInit, OnDestroy, ControlValueAccessor, Validator
 {
-  browserService = inject(BrowserService);
-  @Output() change = new EventEmitter<string>();
+  readonly showSamples = input(true);
+  readonly change = output<string>();
 
   defaultGradients: string[] = [];
 
@@ -65,6 +67,7 @@ export class NgxInputGradientComponent
   rangeValues: GradientStop[] = [];
   type: GradientType = 'linear';
   rotation: number = 90;
+  gradientOptions = '';
   selectedIndex = 0;
 
   isDisabled = false;
@@ -106,7 +109,8 @@ export class NgxInputGradientComponent
       if (parsed.valid) {
         this.resultGradient = value;
         this.type = parsed.type;
-        this.rotation = +parsed.rotation;
+        this.rotation = parsed.rotation;
+        this.gradientOptions = parsed.options;
         this.rangeValues = parsed.stops;
       } else {
         this.resultGradient = '';
@@ -116,6 +120,7 @@ export class NgxInputGradientComponent
         ];
         this.type = 'linear';
         this.rotation = 90;
+        this.gradientOptions = '';
       }
     } else {
       this.resultGradient = '';
@@ -125,6 +130,7 @@ export class NgxInputGradientComponent
       ];
       this.type = 'linear';
       this.rotation = 90;
+      this.gradientOptions = '';
     }
     this.generateGradient();
   }
@@ -156,8 +162,23 @@ export class NgxInputGradientComponent
       item.color ??= generateRandomColor();
     }
     this.baseBg = buildGradientFromStops(this.rangeValues, 'linear', 90);
-    this.resultGradient = buildGradientFromStops(this.rangeValues, this.type, +this.rotation);
+    this.resultGradient = buildGradientFromStops(
+      this.rangeValues,
+      this.type,
+      this.rotation,
+      this.gradientOptions,
+    );
     this.emitChange();
+  }
+
+  updateGradientType() {
+    this.gradientOptions = '';
+    this.generateGradient();
+  }
+
+  updateRotation() {
+    this.gradientOptions = '';
+    this.generateGradient();
   }
 
   updateRangeSlider() {

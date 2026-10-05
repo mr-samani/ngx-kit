@@ -63,7 +63,11 @@ $sliderHeight: 12px;
     cursor: grab;
     z-index: 100;
     &.is-active {
-      outline: 1px rgb(89, 0, 255) solid;
+      outline: 1px #5900ff solid;
+      box-shadow:
+        hsla(250, 3%, 0%, 0.15) 0 0 0 1px,
+        rgba(0, 0, 0, 0.05) 0 10px 10px -5px,
+        inset #5900ff 0 0 0 6px;
     }
   }
 }

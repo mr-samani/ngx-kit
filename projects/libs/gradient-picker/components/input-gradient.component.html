@@ -54,9 +54,9 @@
               type="text"
               [(ngModel)]="rotation"
               ngxInputAngle
-              (change)="generateGradient()"
+              (change)="updateRotation()"
               name="rotation"
-              [disabled]="type == 'radial'" />
+              [disabled]="type.endsWith('radial')" />
             <span class="ngx-input-prefix">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
                 <path
@@ -68,9 +68,13 @@
         <div class="ngx-col-6">
           <div class="label">Type</div>
           <div class="ngx-input-group">
-            <select [(ngModel)]="type" (change)="generateGradient()" name="type">
+            <select [(ngModel)]="type" (change)="updateGradientType()" name="type">
               <option value="linear">linear</option>
               <option value="radial">radial</option>
+              <option value="conic">conic</option>
+              <option value="repeating-linear">repeating linear</option>
+              <option value="repeating-radial">repeating radial</option>
+              <option value="repeating-conic">repeating conic</option>
             </select>
             <span class="ngx-input-prefix">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
@@ -83,10 +87,12 @@
       </div>
     }
 
-    <div class="default-list">
-      @for (item of defaultGradients; track $index; let i = $index) {
-        <span [style.background]="item" (click)="onSelectDefault(item, i)"></span>
-      }
-    </div>
+    @if (showSamples()) {
+      <div class="default-list">
+        @for (item of defaultGradients; track $index; let i = $index) {
+          <span [style.background]="item" (click)="onSelectDefault(item, i)"></span>
+        }
+      </div>
+    }
   </div>
 </div>
