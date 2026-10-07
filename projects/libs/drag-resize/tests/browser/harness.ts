@@ -210,7 +210,7 @@ export async function auto(opts: { animation?: number } = {}) {
 
 /** What the user SEES, in reading order, including the placeholder. */
 export function visual(list: HTMLElement): string[] {
-  const rtl = getComputedStyle(list).direction === 'rtl';
+  const rtl = getComputedStyle?.(list)?.direction === 'rtl';
   const kids = Array.from(list.children).filter(
     (n): n is HTMLElement =>
       n instanceof HTMLElement &&

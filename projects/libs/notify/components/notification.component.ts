@@ -98,7 +98,7 @@ export class NgxNotificationComponent implements OnInit, OnDestroy {
     this._remaining = Math.max(0, this._endTs - performance.now());
     const bar = this.bar()?.nativeElement;
     if (bar) {
-      const matrix = getComputedStyle(bar).transform;
+      const matrix = getComputedStyle?.(bar)?.transform;
       bar.style.transition = 'none';
       bar.style.transform = matrix;
     }

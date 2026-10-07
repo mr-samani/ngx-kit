@@ -343,7 +343,7 @@ export class OverlayService {
     element.style.overflow = 'auto';
     element.style.transformOrigin = 'left top';
     element.style.background = 'none';
-    element.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4)';
+    element.style.filter = 'drop-shadow(0px 0px 6px black)';
     element.style.borderRadius = 'var(--ngx-dialog-corner-radius,8px)';
     this.addClasses(element, options.panelClass);
     return element;
@@ -468,6 +468,9 @@ export class OverlayService {
   // ---------------------------------------------------------------------------
 
   private lockBodyScroll(): void {
+    if (!this.isBrowser) {
+      return;
+    }
     this.bodyScrollLockCount++;
     if (this.bodyScrollLockCount > 1) {
       return;

@@ -283,7 +283,7 @@ export class NgxTooltip implements OnDestroy {
       return;
     }
 
-    const direction = getComputedStyle(this.element).direction;
+    const direction = getComputedStyle?.(this.element)?.direction;
 
     this.tooltip.style.direction = direction;
   }

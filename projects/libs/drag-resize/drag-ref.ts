@@ -68,7 +68,7 @@ export class DragRef<T = unknown> {
   private resizeListener?: () => void;
 
   init(): void {
-    this.previousTransform = getComputedStyle(this.el).getPropertyValue('transform');
+    this.previousTransform = getComputedStyle?.(this.el)?.getPropertyValue?.('transform');
   }
 
   withDropList(list: DropListRef<T> | null): this {

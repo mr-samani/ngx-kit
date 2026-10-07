@@ -367,6 +367,6 @@ export class SortSession {
 }
 
 function initialTransform(el: HTMLElement): string {
-  const t = getComputedStyle(el).transform;
+  const t = getComputedStyle?.(el)?.transform;
   return t && t !== 'none' ? ` ${t}` : '';
 }

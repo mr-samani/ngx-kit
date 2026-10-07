@@ -15,7 +15,7 @@ function resolveDirection(doc: Document): Direction {
   const htmlDir = doc.documentElement.dir;
   if (htmlDir === 'rtl' || htmlDir === 'ltr') return htmlDir;
 
-  return getComputedStyle(doc.documentElement).direction === 'rtl' ? 'rtl' : 'ltr';
+  return getComputedStyle?.(doc.documentElement)?.direction === 'rtl' ? 'rtl' : 'ltr';
 }
 
 /**
@@ -43,7 +43,7 @@ export class DirectionService {
 
   constructor() {
     const observer = new MutationObserver(() => {
-      const next = resolveDirection(this.doc);
+      const next = resolveDirection(this.doc );
       if (next !== this._direction()) {
         this._direction.set(next);
       }

@@ -15,6 +15,7 @@ export function copyComputedStyle(source: Element, target: Element): void {
 }
 
 function copyStyleValues(source: Element, target: Element): void {
+  if (!window) return;
   const computed = window.getComputedStyle(source);
 
   for (let i = 0; i < computed.length; i++) {
@@ -22,7 +23,11 @@ function copyStyleValues(source: Element, target: Element): void {
     const value = computed.getPropertyValue(property);
 
     if (value) {
-      (target as HTMLElement).style.setProperty(property, value, computed.getPropertyPriority(property));
+      (target as HTMLElement).style.setProperty(
+        property,
+        value,
+        computed.getPropertyPriority(property),
+      );
     }
   }
 }
@@ -33,7 +38,6 @@ export function copyComputedStyleTree(source: Element, target: Element): void {
 }
 
 function copyDescendants(source: Element, target: Element): void {
-
   const sourceChildren = Array.from(source.children);
   const targetChildren = Array.from(target.children);
 

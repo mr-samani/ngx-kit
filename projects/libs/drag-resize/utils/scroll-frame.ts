@@ -74,7 +74,7 @@ interface Point {
 }
 
 function scrolls(el: HTMLElement): boolean {
-  const s = getComputedStyle(el);
+  const s = getComputedStyle?.(el);
   // `hidden` containers still scroll programmatically; `clip` never does.
   const scrollish = (v: string) => v === 'auto' || v === 'scroll' || v === 'overlay' || v === 'hidden';
   return scrollish(s.overflowX) || scrollish(s.overflowY);
