@@ -50,6 +50,7 @@ export class NgxMenu implements OnDestroy {
       appRef: this.appRef,
       alignment: this.alignment() ?? 'start',
       placement: this.placement() ?? 'auto',
+      panelClass: 'ngx-menu-overlay',
       onClosed: () => {
         this.containerRef = undefined;
         this.overlayService.closeAll();

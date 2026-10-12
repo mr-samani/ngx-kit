@@ -30,6 +30,8 @@ import { MenuContext, NGX_MENU_CONTEXT } from '../../tokens/menu-context.token';
       min-width: var(--ngx-menu-min-width, 20px);
       min-height: var(--ngx-menu-min-height, 40px);
       will-change: transform, opacity;
+      width: 100%;
+      height: 100%;
     }
     .ngx-menu-panel.ngx-menu-panel-exit {
       animation: menu-exit 100ms 25ms linear forwards;

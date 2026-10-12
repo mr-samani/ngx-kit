@@ -29,10 +29,12 @@
     <button [ngxMenu]="menu1" class="btn-icon">
       <i class="fa fa-grid bold"></i>
     </button>
-    <ngx-menu #menu1="NgxMenu" [class]="x() ? 'red-bg' : ''">
-      <p>Content of menu</p>
-      <button (click)="x.update((u) => !u)">xxx</button>
-      {{ x() }}
+    <ngx-menu #menu1="NgxMenu">
+      <p class="space-between">
+        Content of menu
+        <button (click)="toggleFulScreenMenu()">⥈</button>
+      </p>
+
       <div class="box-container">
         <div class="box" ngx-menu-item>
           <span class="icon">

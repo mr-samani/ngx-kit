@@ -64,6 +64,19 @@ section {
   }
 
   .red-bg {
-    background-color: red !important;
+    background-color: rgb(17, 70, 107) !important;
+  }
+}
+.space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+::ng-deep {
+  .ngx-menu-overlay.full-screen {
+    inset: 0 !important;
+    .box-container {
+      max-width: 100%;
+    }
   }
 }
