@@ -1,10 +1,13 @@
+:host {
+  display: grid;
+  height: 100%;
+  grid-template-rows: 60px minmax(0, 1fr);
+}
 .showcase {
   border: 1px solid light-dark(#e5e7eb, #33333a);
   border-radius: 10px;
-  overflow: hidden;
   background: light-dark(#ffffff, #1a1a1e);
-  position: sticky;
-  top: 60px;
+  overflow: auto;
 }
 
 .showcase-title {
@@ -51,7 +54,7 @@
 }
 
 .showcase-preview {
-  padding: 1.25rem;
+  padding: 1rem;
 }
 
 .showcase-code {

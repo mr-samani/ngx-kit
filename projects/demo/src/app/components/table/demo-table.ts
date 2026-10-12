@@ -39,9 +39,9 @@ const fields = defineFields<UserDto, typeof renderers>(renderers, [
     width: 220,
     rendererInputs: { nameField: 'fullName', showName: true }, // ✅ fully type-checked
   },
-  { column: 'userName', title: 'Username' },
+  { column: 'userName', title: 'Username', width: 220 },
   { column: 'email', title: 'Email', width: 230, formatter: 'emptyDash' },
-  { column: 'isActive', title: 'Active', renderer: 'boolean', width: 90 },
+  { column: 'isActive', title: 'Active', renderer: 'boolean', width: 100 },
   { column: 'status', title: 'Status', renderer: 'status', width: 120 },
   { column: 'roles', title: 'Roles', renderer: 'roles', width: 240, wrap: true, sortable: false },
   {

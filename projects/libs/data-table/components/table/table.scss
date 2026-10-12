@@ -22,7 +22,7 @@
 }
 .ngx-table-scroll {
   overflow: auto;
-  max-height: 75vh;
+  max-height: var(--ngx-table-scroll-height, 75vh);
 
   &::-webkit-scrollbar {
     height: 10px;

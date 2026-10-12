@@ -55,6 +55,7 @@ import { DirectionService } from 'ngx-kit/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ngx-table-host',
+    '[style.--ngx-table-scroll-height]': 'height()',
   },
 })
 export class NgxTable<T extends object> implements OnInit, AfterContentInit {
@@ -77,6 +78,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   readonly multiSort = input<boolean | undefined>(undefined);
   readonly lazy = input(this.config.lazy);
   readonly resizable = input(this.config.resizable);
+  readonly height = input<string>('75dvh');
   /** پیش‌فرض بر اساس ایندکس؛ برای جلوگیری از گم‌شدن state سطرها هنگام سورت،
    *  یک شناسه‌ی یکتا بدهید: [trackBy]="(i, row) => row.id" */
   readonly trackBy = input<(index: number, row: T) => unknown>((index) => index);
