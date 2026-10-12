@@ -25,7 +25,7 @@ export class NgxMessageService {
 
     const id = this.insertedId++;
     const payload: MessageOutput<T> = {
-      close,
+      close: () => this.alerts.get(id)?.componentRef?.instance.close(),
       id,
       afterClose: new EventEmitter(),
     };
