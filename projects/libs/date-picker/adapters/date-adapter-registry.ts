@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { DATE_ADAPTERS, DateAdapterRegistration } from './consts';
+import { DateAdapterRegistration } from './consts';
 import { GregorianAdapter } from './locales/gregorian.adapter';
+import { DATE_ADAPTERS } from '../tokens/adapters';
 
 @Injectable()
 export class DateAdapterRegistry {

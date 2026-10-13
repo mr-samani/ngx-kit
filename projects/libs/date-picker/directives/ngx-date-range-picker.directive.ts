@@ -1,11 +1,14 @@
 import {
   Directive,
+  effect,
   ElementRef,
   EventEmitter,
   forwardRef,
   HostListener,
   inject,
+  input,
   Input,
+  model,
   Output,
   Renderer2,
   ViewContainerRef,
@@ -21,7 +24,7 @@ import {
 import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { NgxDateRange } from '../models/range';
-import { NgxDatePickerConfig } from '../components/config';
+import { NGX_DATE_CONFIG, NgxDateConfig } from '../tokens/config';
 import { NgxDateRangePickerComponent } from '../components/date-range-picker/ngx-date-range-picker.component';
 import { compareDate, deserialize } from '../helpers/date.helper';
 import { normalizeDateRange } from '../helpers/date-range.helper';
@@ -49,6 +52,8 @@ import { IDateAdapter } from '../adapters/IAdapter';
   ],
 })
 export class NgxInputDateRangePicker implements ControlValueAccessor, Validator {
+  protected readonly _config = inject(NGX_DATE_CONFIG);
+
   protected readonly dateAdapterRegistry = inject(DateAdapterRegistry);
   protected readonly overlayService = inject(OverlayService);
   protected readonly viewContainerRef = inject(ViewContainerRef);
@@ -57,16 +62,9 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
   @Input() openOnClick = true;
   @Input() displayFormat = 'yyyy/MM/dd';
   @Input() rangeSeparator = ' – ';
-  private _locale = 'en';
-  @Input()
-  set locale(value: string) {
-    this._locale = value || 'en';
-    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    this.formatValue();
-  }
-  get locale() {
-    return this._locale;
-  }
+
+  readonly config = model<NgxDateConfig>(this._config);
+  readonly locale = input<string>(this._config.locale ?? 'en');
 
   @Input('min') set setMin(value: Date | null | undefined) {
     this.min = deserialize(value);
@@ -78,7 +76,6 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
     this._validatorOnChange();
   }
 
-  @Input() config = new NgxDatePickerConfig();
   @Output() change = new EventEmitter<NgxDateRange<Date>>();
 
   private min: Date | null = null;
@@ -93,12 +90,11 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
   private _validatorOnChange = () => {};
 
   constructor(private readonly el: ElementRef<HTMLInputElement>) {
-    this.adapter = this.dateAdapterRegistry.resolve(this.locale);
-  }
-
-  ngOnChanges(): void {
-    this.adapter = this.dateAdapterRegistry.resolve(this.locale);
-    this.formatValue();
+    effect(() => {
+      const locale = this.locale();
+      this.adapter = this.dateAdapterRegistry.resolve(locale);
+      this.formatValue();
+    });
   }
 
   @HostListener('click', ['$event'])
@@ -144,8 +140,6 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
       return;
     }
 
-    this.adapter = this.dateAdapterRegistry.resolve(this.locale);
-
     this.pickerRef = this.overlayService.open({
       anchor: this.el.nativeElement,
       component: NgxDateRangePickerComponent,
@@ -153,11 +147,11 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
       alignment: 'center',
       placement: 'bottom',
       margin: 4,
-      configure: (instance) => {
-        instance.locale = this.locale;
+      configure: (instance, ref) => {
+        ref.componentRef?.setInput('locale', this.locale());
         instance.min = this.min;
         instance.max = this.max;
-        instance.updateConfig(this.config);
+        instance.updateConfig(this.config());
         instance.writeValue(this.value);
 
         instance.rangeChange.subscribe((value) => {

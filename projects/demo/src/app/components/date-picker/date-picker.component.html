@@ -223,6 +223,25 @@ invalid={{ form.get('date')?.invalid }} → {{ form.get('date')?.errors | json }
           [max]="maxDate"></ngx-date-picker>
       </div>
     </section>
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3>Reactive Form</h3>
+          <p>Locale load with provider.</p>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input
+          class="form-control"
+          ngxInputDatePicker
+          [formControl]="startDate"
+          placeholder="StartDate" />
+        <span class="input-group-text py-0 px-1">
+          <i class="fa fa-calendar"></i>
+        </span>
+      </div>
+    </section>
 
     <!-- Current Configuration -->
     <section class="demo-section">

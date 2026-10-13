@@ -39,7 +39,7 @@
       <span id="prev" (click)="previous()">
         <ng-template
           [ngTemplateOutlet]="
-            config.previousButtonTemplate || defaultPreviousBTNTemplate
+            config().previousButtonTemplate || defaultPreviousBTNTemplate
           "></ng-template>
       </span>
     </div>
@@ -47,18 +47,18 @@
       <span (click)="changeView('year')">
         {{ currYear() }}
         <ng-template
-          [ngTemplateOutlet]="config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
+          [ngTemplateOutlet]="config().caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
       </span>
       <span (click)="changeView('month')">
         {{ displayMonth() }}
         <ng-template
-          [ngTemplateOutlet]="config.caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
+          [ngTemplateOutlet]="config().caretDownIconTemplate || defaultCaretDownIcon"></ng-template>
       </span>
     </span>
     <div class="icons">
       <span id="next" (click)="next()">
         <ng-template
-          [ngTemplateOutlet]="config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
+          [ngTemplateOutlet]="config().nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
       </span>
     </div>
   </div>
@@ -113,12 +113,12 @@
       {{selected|json}}
     </pre> -->
     <div class="calendar-footer">
-      @if (config.clearButton) {
+      @if (config().clearButton) {
         <button (click)="clear()">
           {{ localize().clear }}
         </button>
       }
-      @if (config.todayButton) {
+      @if (config().todayButton) {
         <button (click)="gotoToday()">
           {{ localize().today }}
         </button>

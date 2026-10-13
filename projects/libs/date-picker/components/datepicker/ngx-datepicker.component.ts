@@ -1,5 +1,6 @@
 import {
   Component,
+  effect,
   EventEmitter,
   forwardRef,
   inject,
@@ -11,7 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
-import { NgxDatePickerConfig } from '../config';
+import { NGX_DATE_CONFIG, NgxCalendarLocalization, NgxDateConfig } from '../../tokens/config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../../adapters/calendar-date';
@@ -26,7 +27,6 @@ import {
 } from '@angular/forms';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
-import { NGX_CALENDAR_LOCALIZATION, type NgxCalendarLocalization } from '../../tokens/localization';
 
 @Component({
   selector: 'ngx-date-picker',
@@ -51,18 +51,15 @@ export class NgxInputDatePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
-  defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
-  localize = input<NgxCalendarLocalization>(this.defaultLocalization);
-  config = new NgxDatePickerConfig();
-  @Input('config') set setConfig(val: NgxDatePickerConfig) {
-    this.config = { ...new NgxDatePickerConfig(), ...val };
-  }
+  protected readonly _config = inject(NGX_DATE_CONFIG);
 
-  @Input() set locale(val: string) {
-    this._locale = val;
-    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    this.init();
-  }
+  localize = input<NgxCalendarLocalization>(
+    this._config.localization ?? new NgxCalendarLocalization(),
+  );
+
+  readonly config = model<NgxDateConfig>(this._config);
+  readonly locale = input<string>(this._config.locale ?? 'en');
+
   /** The minimum valid date. */
   @Input('min') set setMin(value: Date | null | undefined) {
     const validValue = deserialize(value);
@@ -98,14 +95,20 @@ export class NgxInputDatePickerComponent
   protected _validatorOnChange = () => {};
   constructor() {
     super();
+    effect(() => {
+      this.adapter = this.dateAdapterRegistry.resolve(this.locale());
+      this.init();
+    });
   }
 
   ngOnInit(): void {
     this.init();
   }
-  updateConfig(val: NgxDatePickerConfig) {
-    this.config = { ...new NgxDatePickerConfig(), ...val };
+
+  updateConfig(val: NgxDateConfig) {
+    this.config.set({ ...this.config(), ...val });
   }
+
   init() {
     this.months = this.adapter.longMonths;
     let sDays = this.adapter.shortDays;

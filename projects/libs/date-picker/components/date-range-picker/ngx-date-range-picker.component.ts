@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  effect,
   EventEmitter,
   forwardRef,
   inject,
@@ -30,9 +31,8 @@ import {
 import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
 import { DatePickerView } from '../../models/view';
 import { NgxDateRange } from '../../models/range';
-import { NgxDatePickerConfig } from '../config';
+import { NGX_DATE_CONFIG, NgxCalendarLocalization, NgxDateConfig } from '../../tokens/config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
-import { NGX_CALENDAR_LOCALIZATION, NgxCalendarLocalization } from '../../tokens/localization';
 
 @Component({
   selector: 'ngx-date-range-picker',
@@ -58,16 +58,13 @@ export class NgxDateRangePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
-  defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
-  localize = input<NgxCalendarLocalization>(this.defaultLocalization);
-  config = new NgxDatePickerConfig();
+  protected readonly _config = inject(NGX_DATE_CONFIG);
 
-  @Input() set locale(value: string) {
-    this._locale = value || 'en';
-    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    this.init();
-  }
-
+  readonly config = model<NgxDateConfig>(this._config);
+  readonly locale = input<string>(this._config.locale ?? 'en');
+  localize = input<NgxCalendarLocalization>(
+    this._config.localization ?? new NgxCalendarLocalization(),
+  );
   @Input() set min(value: Date | null | undefined) {
     const next = deserialize(value);
     if (!sameDate(next, this.minDate)) {
@@ -102,12 +99,20 @@ export class NgxDateRangePickerComponent
   protected _validatorOnChange = () => {};
   isDisabled = false;
 
+  constructor() {
+    super();
+    effect(() => {
+      this.adapter = this.dateAdapterRegistry.resolve(this.locale());
+      this.init();
+    });
+  }
+
   ngOnInit(): void {
     this.init();
   }
 
-  updateConfig(value: NgxDatePickerConfig) {
-    this.config = { ...new NgxDatePickerConfig(), ...value };
+  updateConfig(val: NgxDateConfig) {
+    this.config.set({ ...this.config(), ...val });
   }
 
   writeValue(value: NgxDateRange<Date> | readonly [Date | null, Date | null] | null): void {

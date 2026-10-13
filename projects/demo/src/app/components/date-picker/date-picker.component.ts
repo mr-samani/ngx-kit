@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, signal, viewChild } from '@angular/core';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -10,7 +11,7 @@ import {
 
 import {
   getLocals,
-  NgxDatePickerConfig,
+  NgxDateConfig,
   NgxInputDatePicker,
   NgxInputDatePickerComponent,
   NgxInputDateRangePicker,
@@ -39,8 +40,13 @@ import {
   ],
   providers: [
     provideDateAdapters({
-      locale: 'jp',
-      useClass: JapanesAdapter,
+      locale: 'fa',
+      adapters: [
+        {
+          locale: 'jp',
+          useClass: JapanesAdapter,
+        },
+      ],
     }),
   ],
 })
@@ -66,7 +72,7 @@ export class DatePickerComponent {
 
   maxDate?: Date;
 
-  config = signal<NgxDatePickerConfig>({
+  config = signal<NgxDateConfig>({
     todayButton: true,
     clearButton: true,
   });
@@ -84,6 +90,7 @@ export class DatePickerComponent {
     new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate() + 5),
   ];
 
+  startDate = new FormControl<Date | undefined>(undefined);
   constructor(fb: FormBuilder) {
     this.form = fb.group({
       date: ['', Validators.required],

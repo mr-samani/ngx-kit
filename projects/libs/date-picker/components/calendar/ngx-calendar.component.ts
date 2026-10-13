@@ -7,13 +7,15 @@ import {
   Input,
   OnInit,
   Output,
+  effect,
   inject,
   input,
+  model,
   signal,
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgxDatePickerConfig } from '../config';
+import { NGX_DATE_CONFIG, NgxCalendarLocalization, NgxDateConfig } from '../../tokens/config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 import { MsEvents, MsEventViewer } from '../../models/events';
 import {
@@ -30,7 +32,6 @@ import {
 } from '../../models/calendar-event-interaction';
 import { deserialize, sameDate, compareDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
-import { NGX_CALENDAR_LOCALIZATION, NgxCalendarLocalization } from '../../tokens/localization';
 
 const HOUR_HEIGHT = 64;
 const HALF_HOUR_HEIGHT = HOUR_HEIGHT / 2;
@@ -69,21 +70,15 @@ interface EventInteractionState {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
-  defaultLocalization = inject(NGX_CALENDAR_LOCALIZATION);
-  localize = input<NgxCalendarLocalization>(this.defaultLocalization);
+  readonly _config = inject(NGX_DATE_CONFIG);
+
+  readonly config = model<NgxDateConfig>(this._config);
+  localize = input<NgxCalendarLocalization>(
+    this._config.localization ?? new NgxCalendarLocalization(),
+  );
   resizeAndMovable = input<boolean>(false);
 
-  _config = new NgxDatePickerConfig();
-  @Input() set config(val: NgxDatePickerConfig) {
-    this._config = { ...new NgxDatePickerConfig(), ...val };
-  }
-
-  @Input() set locale(val: string) {
-    this._locale = val || 'en';
-    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    if (this.currYear() !== undefined) this.syncAnchorToLocale();
-    this.renderCalendar(this.view);
-  }
+  readonly locale = input<string>(this._config.locale ?? 'en');
 
   @Input('min') set setMin(value: Date | null | undefined) {
     const validValue = deserialize(value);
@@ -137,6 +132,11 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   constructor() {
     super();
+    effect(() => {
+      this.adapter = this.dateAdapterRegistry.resolve(this._locale);
+      if (this.currYear() !== undefined) this.syncAnchorToLocale();
+      this.renderCalendar(this.view);
+    });
   }
 
   ngOnInit(): void {

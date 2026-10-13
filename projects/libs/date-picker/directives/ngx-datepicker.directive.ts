@@ -8,6 +8,8 @@ import {
   inject,
   input,
   Input,
+  model,
+  output,
   Output,
   Renderer2,
   signal,
@@ -25,9 +27,10 @@ import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepi
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
 import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { IDateAdapter } from '../adapters/IAdapter';
-import { NgxDatePickerConfig } from '../components/config';
+import { NgxDateConfig } from '../tokens/config';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { FormatType } from '../adapters/consts';
+import { NGX_DATE_CONFIG } from '../tokens/config';
 
 @Directive({
   selector: '[ngxInputDatePicker]',
@@ -52,19 +55,16 @@ import { FormatType } from '../adapters/consts';
 })
 export class NgxInputDatePicker implements ControlValueAccessor, Validator {
   protected readonly dateAdapterRegistry = inject(DateAdapterRegistry);
+  protected readonly _config = inject(NGX_DATE_CONFIG);
 
-  openOnCLick = input<boolean>(true);
-
-  @Output() change = new EventEmitter<Date>();
+  readonly openOnCLick = input<boolean>(true);
+  readonly change = output<Date>();
   private value?: Date | null;
   private pickerRef?: OverlayRef<NgxInputDatePickerComponent>;
   adapter!: IDateAdapter;
-  private _locale: string = 'en';
-  @Input() set locale(val: string) {
-    this._locale = val || 'en';
-    this.adapter = this.dateAdapterRegistry.resolve(this._locale);
-    this._formatValue(this.value);
-  }
+
+  readonly config = model<NgxDateConfig>(this._config);
+  readonly locale = input<string>(this.config().locale ?? 'en');
 
   protected _onChange = (value: Date | null | undefined) => {};
   protected _onTouched = () => {};
@@ -95,22 +95,23 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
     }
   }
 
-  config = new NgxDatePickerConfig();
-  @Input('config') set setConfig(val: NgxDatePickerConfig) {
-    this.config = { ...new NgxDatePickerConfig(), ...val };
-  }
-
   private isDisabled = false;
 
   private readonly overlayService = inject(OverlayService);
   private readonly viewContainerRef = inject(ViewContainerRef);
   private readonly renderer = inject(Renderer2);
-  constructor(private el: ElementRef<HTMLInputElement>) {}
+  constructor(private el: ElementRef<HTMLInputElement>) {
+    effect(() => {
+      const locale = this.locale();
+      this.adapter = this.dateAdapterRegistry.resolve(locale);
+      this._formatValue(this.value);
+    });
+  }
 
-  updateConfig(val: NgxDatePickerConfig) {
-    this.config = { ...new NgxDatePickerConfig(), ...val };
+  updateConfig(val: NgxDateConfig) {
+    this.config.set({ ...this.config(), ...val });
     if (this.pickerRef && this.pickerRef.componentRef) {
-      this.pickerRef.componentRef.instance.updateConfig(this.config);
+      this.pickerRef.componentRef.instance.updateConfig(this.config());
     }
   }
   ngOnDestroy(): void {
@@ -178,10 +179,10 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
       placement: 'bottom',
       margin: 2,
       configure: (instance, ref) => {
-        instance.locale = this._locale;
+        ref.componentRef?.setInput('locale', this.locale());
         instance.minDate = this.min;
         instance.maxDate = this.max;
-        instance.updateConfig(this.config);
+        instance.updateConfig(this.config());
         instance.writeValue(this.value);
         instance.change.subscribe((c: Date) => {
           this.value = c;

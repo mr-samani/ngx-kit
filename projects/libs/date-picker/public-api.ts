@@ -1,4 +1,4 @@
-export * from './components/config';
+export * from './tokens/config';
 export * from './directives/ngx-datepicker.directive';
 
 export * from './components/calendar/ngx-calendar.component';
@@ -17,3 +17,5 @@ export * from './helpers/date-range.helper';
 export * from './components/date-range-picker/ngx-date-range-picker.component';
 export * from './directives/ngx-date-range-picker.directive';
 export * from './models/calendar-event-interaction';
+export * from './tokens/adapters';
+export * from './tokens/config';
