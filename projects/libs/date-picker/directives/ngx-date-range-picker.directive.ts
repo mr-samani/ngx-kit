@@ -26,7 +26,7 @@ import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { NgxDateRange } from '../models/range';
 import { NGX_DATE_CONFIG, NgxDateConfig } from '../tokens/config';
 import { NgxDateRangePickerComponent } from '../components/date-range-picker/ngx-date-range-picker.component';
-import { compareDate, deserialize } from '../helpers/date.helper';
+import { compareDate, deserialize, sameDate } from '../helpers/date.helper';
 import { normalizeDateRange } from '../helpers/date-range.helper';
 import { IDateAdapter } from '../adapters/IAdapter';
 
@@ -66,20 +66,13 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
   readonly config = model<NgxDateConfig>(this._config);
   readonly locale = input<string>(this._config.locale ?? 'en');
 
-  @Input('min') set setMin(value: Date | null | undefined) {
-    this.min = deserialize(value);
-    this._validatorOnChange();
-  }
-
-  @Input('max') set setMax(value: Date | null | undefined) {
-    this.max = deserialize(value);
-    this._validatorOnChange();
-  }
+  readonly min = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
+  readonly max = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
 
   @Output() change = new EventEmitter<NgxDateRange<Date>>();
 
-  private min: Date | null = null;
-  private max: Date | null = null;
+  private minDate: Date | null = null;
+  private maxDate: Date | null = null;
   private value: NgxDateRange<Date> = { start: null, end: null };
   private pickerRef?: OverlayRef<NgxDateRangePickerComponent>;
   private isDisabled = false;
@@ -94,6 +87,15 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
       const locale = this.locale();
       this.adapter = this.dateAdapterRegistry.resolve(locale);
       this.formatValue();
+    });
+    effect(() => {
+      const minDate = this.min();
+      const maxDate = this.max();
+      if (sameDate(minDate, this.minDate) && sameDate(maxDate, this.maxDate)) return;
+
+      this.minDate = minDate;
+      this.maxDate = maxDate;
+      this._validatorOnChange();
     });
   }
 
@@ -149,8 +151,8 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
       margin: 4,
       configure: (instance, ref) => {
         ref.componentRef?.setInput('locale', this.locale());
-        instance.min = this.min;
-        instance.max = this.max;
+        ref.componentRef?.setInput('min', this.minDate);
+        ref.componentRef?.setInput('max', this.maxDate);
         instance.updateConfig(this.config());
         instance.writeValue(this.value);
 
@@ -175,11 +177,11 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
   validate(_control: AbstractControl): ValidationErrors | null {
     const { start, end } = this.value;
 
-    if (start && this.min && compareDate(start, this.min) < 0) {
-      return { min: this.min };
+    if (start && this.minDate && compareDate(start, this.minDate) < 0) {
+      return { min: this.minDate };
     }
-    if (end && this.max && compareDate(end, this.max) > 0) {
-      return { max: this.max };
+    if (end && this.maxDate && compareDate(end, this.maxDate) > 0) {
+      return { max: this.maxDate };
     }
     if (start && end && compareDate(start, end) > 0) {
       return { range: true };

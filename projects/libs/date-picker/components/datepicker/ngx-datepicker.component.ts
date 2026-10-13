@@ -5,13 +5,12 @@ import {
   forwardRef,
   inject,
   input,
-  Input,
   model,
   OnInit,
   Output,
   signal,
 } from '@angular/core';
-import { clampDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
+import { clampDate, deserialize, isValid } from '../../helpers/date.helper';
 import { NGX_DATE_CONFIG, NgxCalendarLocalization, NgxDateConfig } from '../../tokens/config';
 import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 import { DatePickerView } from '../../models/view';
@@ -51,35 +50,6 @@ export class NgxInputDatePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
-  protected readonly _config = inject(NGX_DATE_CONFIG);
-
-  localize = input<NgxCalendarLocalization>(
-    this._config.localization ?? new NgxCalendarLocalization(),
-  );
-
-  readonly config = model<NgxDateConfig>(this._config);
-  readonly locale = input<string>(this._config.locale ?? 'en');
-
-  /** The minimum valid date. */
-  @Input('min') set setMin(value: Date | null | undefined) {
-    const validValue = deserialize(value);
-    if (!sameDate(validValue, this.minDate)) {
-      this.minDate = validValue;
-      this._validatorOnChange();
-      this.init();
-    }
-  }
-
-  /** The maximum valid date. */
-  @Input('max') set setMax(value: Date | null | undefined) {
-    const validValue = deserialize(value);
-    if (!sameDate(validValue, this.maxDate)) {
-      this.maxDate = validValue;
-      this._validatorOnChange();
-      this.init();
-    }
-  }
-
   readonly view = model<DatePickerView>('day');
 
   @Output() change = new EventEmitter<Date | null>();
@@ -102,6 +72,11 @@ export class NgxInputDatePickerComponent
   }
 
   ngOnInit(): void {
+    this.init();
+  }
+
+  protected override onDateBoundsChange(): void {
+    this._validatorOnChange();
     this.init();
   }
 
@@ -229,7 +204,7 @@ export class NgxInputDatePickerComponent
     ev.stopPropagation();
     if (item.active) {
       this.selected = {
-        locale: this._locale,
+        locale: this.locale(),
         year: this.currYear(),
         month: this.currMonth(),
         day: item.day,

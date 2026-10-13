@@ -30,7 +30,7 @@ import {
   CalendarEventChange,
   CalendarEventInteractionType,
 } from '../../models/calendar-event-interaction';
-import { deserialize, sameDate, compareDate } from '../../helpers/date.helper';
+import { sameDate, compareDate } from '../../helpers/date.helper';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
 
 const HOUR_HEIGHT = 64;
@@ -70,31 +70,7 @@ interface EventInteractionState {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
-  readonly _config = inject(NGX_DATE_CONFIG);
-
-  readonly config = model<NgxDateConfig>(this._config);
-  localize = input<NgxCalendarLocalization>(
-    this._config.localization ?? new NgxCalendarLocalization(),
-  );
   resizeAndMovable = input<boolean>(false);
-
-  readonly locale = input<string>(this._config.locale ?? 'en');
-
-  @Input('min') set setMin(value: Date | null | undefined) {
-    const validValue = deserialize(value);
-    if (!sameDate(validValue, this.minDate)) {
-      this.minDate = validValue;
-      this.renderCalendar(this.view);
-    }
-  }
-
-  @Input('max') set setMax(value: Date | null | undefined) {
-    const validValue = deserialize(value);
-    if (!sameDate(validValue, this.maxDate)) {
-      this.maxDate = validValue;
-      this.renderCalendar(this.view);
-    }
-  }
 
   @Input() view: CalendarView = 'month';
 
@@ -133,7 +109,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   constructor() {
     super();
     effect(() => {
-      this.adapter = this.dateAdapterRegistry.resolve(this._locale);
+      this.adapter = this.dateAdapterRegistry.resolve(this.locale());
       if (this.currYear() !== undefined) this.syncAnchorToLocale();
       this.renderCalendar(this.view);
     });
@@ -146,6 +122,10 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
       this.selected ? new Date(this.selected) : this.adapter.getDate(this.adapter.today()),
     );
     this.syncAnchorToLocale();
+    this.renderCalendar(this.view);
+  }
+
+  protected override onDateBoundsChange(): void {
     this.renderCalendar(this.view);
   }
 
@@ -474,13 +454,13 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
   private renderEventView() {
     const monthStart = this.adapter.getDate({
-      locale: this._locale,
+      locale: this.locale(),
       year: this.currYear(),
       month: this.currMonth(),
       day: 1,
     });
     const monthEnd = this.adapter.getDate({
-      locale: this._locale,
+      locale: this.locale(),
       year: this.currYear(),
       month: this.currMonth(),
       day: this.adapter.lastDateofMonth(this.currYear(), this.currMonth()),
@@ -569,7 +549,7 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
       const locale = this.adapter.toLocale(d);
       this.anchorDate.set(
         this.adapter.getDate({
-          locale: this._locale,
+          locale: this.locale(),
           year: locale.year,
           month: locale.month! + direction,
           day: 1,

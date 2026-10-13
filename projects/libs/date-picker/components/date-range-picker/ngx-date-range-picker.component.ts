@@ -6,7 +6,6 @@ import {
   forwardRef,
   inject,
   input,
-  Input,
   model,
   OnInit,
   Output,
@@ -21,7 +20,7 @@ import {
   Validator,
 } from '@angular/forms';
 import { DateAdapterRegistry } from '../../adapters/date-adapter-registry';
-import { compareDate, deserialize, isValid, sameDate } from '../../helpers/date.helper';
+import { compareDate, isValid, sameDate } from '../../helpers/date.helper';
 import {
   isCompleteDateRange,
   isDateInPreviewRange,
@@ -58,31 +57,6 @@ export class NgxDateRangePickerComponent
   extends NgxDatePickerBase
   implements ControlValueAccessor, Validator, OnInit
 {
-  protected readonly _config = inject(NGX_DATE_CONFIG);
-
-  readonly config = model<NgxDateConfig>(this._config);
-  readonly locale = input<string>(this._config.locale ?? 'en');
-  localize = input<NgxCalendarLocalization>(
-    this._config.localization ?? new NgxCalendarLocalization(),
-  );
-  @Input() set min(value: Date | null | undefined) {
-    const next = deserialize(value);
-    if (!sameDate(next, this.minDate)) {
-      this.minDate = next;
-      this._validatorOnChange();
-      this.renderِDatePicker(this.view());
-    }
-  }
-
-  @Input() set max(value: Date | null | undefined) {
-    const next = deserialize(value);
-    if (!sameDate(next, this.maxDate)) {
-      this.maxDate = next;
-      this._validatorOnChange();
-      this.renderِDatePicker(this.view());
-    }
-  }
-
   readonly view = model<DatePickerView>('day');
 
   @Output() rangeChange = new EventEmitter<NgxDateRange<Date>>();
@@ -109,6 +83,11 @@ export class NgxDateRangePickerComponent
 
   ngOnInit(): void {
     this.init();
+  }
+
+  protected override onDateBoundsChange(): void {
+    this._validatorOnChange();
+    this.renderِDatePicker(this.view());
   }
 
   updateConfig(val: NgxDateConfig) {

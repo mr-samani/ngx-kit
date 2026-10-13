@@ -3,15 +3,29 @@ import { IDateAdapter } from '../adapters/IAdapter';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents, MsEventViewer } from '../models/events';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
-import { inject, signal } from '@angular/core';
+import { Directive, effect, inject, input, model, signal } from '@angular/core';
 import { CalendarView, DatePickerView } from '../models/view';
 import { DateViewDay, DateViewMonth, DateViewWeek, DateViewYear } from '../models/date';
 import { convertNumberToTime } from '../helpers/time.helper';
+import { deserialize, sameDate } from '../helpers/date.helper';
+import { NGX_DATE_CONFIG, NgxCalendarLocalization, NgxDateConfig } from '../tokens/config';
 
+@Directive()
 export abstract class NgxDatePickerBase {
-  protected _locale = 'en';
+  protected readonly _config = inject(NGX_DATE_CONFIG);
+
+  readonly locale = input<string>(this._config.locale ?? 'en');
+
+  localize = input<NgxCalendarLocalization>(
+    this._config.localization ?? new NgxCalendarLocalization(),
+  );
+
+  readonly config = model<NgxDateConfig>(this._config);
   protected dateAdapterRegistry = inject(DateAdapterRegistry);
-  adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this._locale);
+  adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this.locale());
+
+  readonly min = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
+  readonly max = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
 
   currYear = signal(0);
   currMonth = signal(0);
@@ -28,6 +42,22 @@ export abstract class NgxDatePickerBase {
 
   minDate: Date | null = null;
   maxDate: Date | null = null;
+
+  constructor() {
+    effect(() => {
+      const minDate = this.min();
+      const maxDate = this.max();
+      const minChanged = !sameDate(minDate, this.minDate);
+      const maxChanged = !sameDate(maxDate, this.maxDate);
+      if (!minChanged && !maxChanged) return;
+      
+      this.minDate = minDate;
+      this.maxDate = maxDate;
+      this.onDateBoundsChange();
+    });
+  }
+
+  protected onDateBoundsChange(): void {}
 
   renderCalendar(
     view: CalendarView,
@@ -163,7 +193,7 @@ export abstract class NgxDatePickerBase {
     for (let i = firstDayOfMonth; i > 0; i--) {
       const day = lastDateOfLastMonth - i + 1;
       const date = this.adapter.getDate({
-        locale: this._locale,
+        locale: this.locale(),
         year: this.currYear(),
         month: this.currMonth() - 1,
         day,
@@ -185,7 +215,7 @@ export abstract class NgxDatePickerBase {
         day === today.day && this.currMonth() === today.month && this.currYear() === today.year;
 
       const date = this.adapter.getDate({
-        locale: this._locale,
+        locale: this.locale(),
         year: this.currYear(),
         month: this.currMonth(),
         day,
@@ -207,7 +237,7 @@ export abstract class NgxDatePickerBase {
     for (let i = lastDayOfMonth; i < 6; i++) {
       const day = i - lastDayOfMonth + 1;
       const date = this.adapter.getDate({
-        locale: this._locale,
+        locale: this.locale(),
         year: this.currYear(),
         month: this.currMonth() + 1,
         day,
@@ -230,9 +260,9 @@ export abstract class NgxDatePickerBase {
   }
 
   checkActiveMonth(year: number, month: number) {
-    const fd = this.adapter.getDate({ locale: this._locale, year, month, day: 1 });
+    const fd = this.adapter.getDate({ locale: this.locale(), year, month, day: 1 });
     const ld = this.adapter.getDate({
-      locale: this._locale,
+      locale: this.locale(),
       year,
       month,
       day: this.adapter.lastDateofMonth(year, month),
@@ -245,7 +275,7 @@ export abstract class NgxDatePickerBase {
   }
 
   checkActiveYear(year: number) {
-    const d = this.adapter.getDate({ locale: this._locale, year, month: 1, day: 1 });
+    const d = this.adapter.getDate({ locale: this.locale(), year, month: 1, day: 1 });
     return clampYear(d, this.minDate, this.maxDate) === 0;
   }
 

@@ -75,25 +75,11 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
    */
   @Input() displayFormat: FormatType = 'yyyy/MM/dd';
 
-  private min: Date | null = null;
-  /** The minimum valid date. */
-  @Input('min') set setMin(value: Date | null | undefined) {
-    const validValue = deserialize(value);
-    if (!sameDate(validValue, this.min)) {
-      this.min = validValue;
-      this._validatorOnChange();
-    }
-  }
-
-  private max: Date | null = null;
-  /** The maximum valid date. */
-  @Input('max') set setMax(value: Date | null | undefined) {
-    const validValue = deserialize(value);
-    if (!sameDate(validValue, this.max)) {
-      this.max = validValue;
-      this._validatorOnChange();
-    }
-  }
+  /** The minimum and maximum valid dates. */
+  readonly min = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
+  readonly max = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
+  private minDate: Date | null = null;
+  private maxDate: Date | null = null;
 
   private isDisabled = false;
 
@@ -105,6 +91,15 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
       const locale = this.locale();
       this.adapter = this.dateAdapterRegistry.resolve(locale);
       this._formatValue(this.value);
+    });
+    effect(() => {
+      const minDate = this.min();
+      const maxDate = this.max();
+      if (sameDate(minDate, this.minDate) && sameDate(maxDate, this.maxDate)) return;
+
+      this.minDate = minDate;
+      this.maxDate = maxDate;
+      this._validatorOnChange();
     });
   }
 
@@ -180,8 +175,8 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
       margin: 2,
       configure: (instance, ref) => {
         ref.componentRef?.setInput('locale', this.locale());
-        instance.minDate = this.min;
-        instance.maxDate = this.max;
+        ref.componentRef?.setInput('min', this.minDate);
+        ref.componentRef?.setInput('max', this.maxDate);
         instance.updateConfig(this.config());
         instance.writeValue(this.value);
         instance.change.subscribe((c: Date) => {
@@ -216,16 +211,16 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
           invalid: true,
         };
       }
-      let c = clampDate(this.value, this.min, this.max);
+      let c = clampDate(this.value, this.minDate, this.maxDate);
       if (c < 0) {
         return {
           invalid: true,
-          min: this.min,
+          min: this.minDate,
         };
       } else if (c > 0) {
         return {
           invalid: true,
-          max: this.max,
+          max: this.maxDate,
         };
       }
     }
