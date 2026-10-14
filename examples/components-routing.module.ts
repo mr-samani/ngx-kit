@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Components } from './components';
 import { provideNgxDialog } from 'ngx-kit/dialog';
-import { ImageViewerDemoComponent } from './image-viewer/image-viewer.component';
 
 const routes: Routes = [
   {
@@ -60,14 +59,8 @@ const routes: Routes = [
       },
       {
         path: 'dialog',
-        providers: [
-          provideNgxDialog({
-            closeOnOutsideClick: true,
-            closeOnEscape: true,
-            disableClose: false,
-          }),
-        ],
-        loadComponent: () => import('./dialog/dialog').then((c) => c.DialogDemo),
+        providers: [provideNgxDialog()],
+        loadChildren: () => import('./dialog/dialog.module').then((c) => c.DemoDialogModule),
       },
       {
         path: 'menu',
