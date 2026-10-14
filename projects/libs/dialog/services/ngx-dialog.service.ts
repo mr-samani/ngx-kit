@@ -1,4 +1,12 @@
-import { Injectable, Injector, Type, computed, inject, signal } from '@angular/core';
+import {
+  EnvironmentInjector,
+  Injectable,
+  Injector,
+  Type,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { OverlayService, OverlayOptions } from 'ngx-kit/core';
 import { NgxDialogRef } from '../configs/dialog-ref';
 import { NgxDialogConfig } from '../configs/dialog-config';
@@ -14,6 +22,7 @@ import { NgxDialogComponent } from '../components/ngx-dialog.component';
 export class NgxDialogService {
   private readonly overlay = inject(OverlayService);
   private readonly injector = inject(Injector);
+  private readonly environmentInjector = inject(EnvironmentInjector);
 
   private readonly _openRefs = signal<NgxDialogRef<any>[]>([]);
   /** Every currently open dialog, oldest first. */
@@ -48,6 +57,7 @@ export class NgxDialogService {
     const overlayRef = this.overlay.open<NgxDialogComponent>({
       component: NgxDialogComponent,
       injector: componentInjector,
+      environmentInjector: this.environmentInjector,
       placement: 'center',
       alignment: 'center',
       margin: 0,

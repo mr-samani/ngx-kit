@@ -1,4 +1,11 @@
-import { ApplicationRef, Injector, TemplateRef, Type, ViewContainerRef } from '@angular/core';
+import {
+  ApplicationRef,
+  EnvironmentInjector,
+  Injector,
+  TemplateRef,
+  Type,
+  ViewContainerRef,
+} from '@angular/core';
 import { OverlayRef } from './overlay-ref';
 
 /**
@@ -35,13 +42,17 @@ export interface BaseOverlayOptions<T = any> {
   usePopover?: boolean;
 
   /**
-   * Parent injector used when creating the overlay's component. Lets callers
-   * (e.g. a dialog service) provide their own tokens - such as data or a
-   * reference back to the overlay - to the created component and everything
-   * it projects. Defaults to the injector of `viewContainerRef` (or, when
-   * `viewContainerRef` is omitted, the root environment injector).
+   * Element injector used when creating the overlay's component. Lets callers
+   * provide per-overlay tokens such as data or a reference back to the overlay.
+   * Environment-level dependencies are resolved from `environmentInjector`.
    */
   injector?: Injector;
+
+  /**
+   * Environment used to resolve dependencies for the overlay component and
+   * its content. Defaults to the environment where OverlayService was created.
+   */
+  environmentInjector?: EnvironmentInjector;
 
   /** Close this overlay when Escape is pressed while it's the topmost overlay. Default: true. */
   closeOnEscape?: boolean;
