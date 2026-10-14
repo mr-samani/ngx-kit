@@ -17,6 +17,7 @@ const NOT_INITIALIZED_MESSAGE =
  */
 export class Dialog {
   private static serviceInstance: NgxDialogService | null = null;
+  private static readonly openRefs = new Set<NgxDialogRef<any>>();
 
   /** @internal set by `provideNgxDialog()`'s environment initializer. */
   static _setService(svc: NgxDialogService): void {
@@ -34,10 +35,15 @@ export class Dialog {
     component: Type<any>,
     config?: Partial<NgxDialogConfig<DataType>>,
   ): NgxDialogRef<R> {
-    return this.service.open<R, DataType>(component, config);
+    const scopedService = config?.injector?.get(NgxDialogService, null);
+    const ref = (scopedService ?? this.service).open<R, DataType>(component, config);
+    this.openRefs.add(ref);
+    ref.afterClosed.subscribe(() => this.openRefs.delete(ref));
+    return ref;
   }
 
   static closeAll(): void {
+    this.openRefs.forEach((ref) => ref.close());
     this.service.closeAll();
   }
 }

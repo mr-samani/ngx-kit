@@ -54,7 +54,6 @@ export class NgxDialogBody {
     const footerHeight = this.dialogRef.footerEl()?.offsetHeight ?? 0;
     const panelHeight = Math.min(panel.clientHeight, window.innerHeight);
     const available = panelHeight - headerHeight - footerHeight;
-    console.log('available', available);
     if (available > 0) {
       this.renderer.setStyle(this.el.nativeElement, 'height', `${available}px`);
     }
