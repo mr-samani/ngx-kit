@@ -88,7 +88,7 @@ export class NgxDialogConfig<DataType = any> {
   animation?: 'zoom' | 'fade' | 'slide-up' | 'none' = 'zoom';
 
   /** Parent injector for the content component (and `ngx-dialog-panel`
-   * itself). Defaults to the root injector. */
+   * itself). Defaults to the dialog service's injector. */
   injector?: Injector;
 
   constructor(init?: Partial<NgxDialogConfig<DataType>>) {

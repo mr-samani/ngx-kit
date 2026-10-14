@@ -93,6 +93,7 @@ export class EditUserComponent {
 | `ariaLabel` / `ariaLabelledby` / `ariaDescribedby` | `string`                                   | -                                     |                                                                                   |
 | `animation`                                        | `'zoom' \| 'fade' \| 'slide-up' \| 'none'` | `'zoom'`                              |                                                                                   |
 | `injector`                                         | `Injector`                                 | -                                     | Injector والد برای کامپوننت محتوا                                                 |
+`NgxDialogService` محیط تزریق خودش را به Overlay منتقل می‌کند؛ بنابراین providerهای ثبت‌شده در مسیر lazy یا محیطی که سرویس از آن resolve شده، برای محتوای دیالوگ نیز در دسترس هستند و نیازی به پاس‌دادن `ViewContainerRef` از سمت فراخواننده نیست.
 
 ### `NgxDialogRef<R>`
 

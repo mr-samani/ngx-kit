@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Component, inject } from '@angular/core';
+import { Component, EnvironmentInjector, createEnvironmentInjector, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { DIALOG_DATA, DIALOG_REF } from '../tokens/dialog.tokens';
 import { NgxDialogRef } from '../configs/dialog-ref';
@@ -30,6 +30,14 @@ class GreetingContentComponent {
   }
 }
 
+@Component({
+  standalone: true,
+  template: '<span class="dialog-service-count">{{ dialog.openCount() }}</span>',
+})
+class InjectedDialogServiceContentComponent {
+  protected readonly dialog = inject(NgxDialogService);
+}
+
 describe('NgxDialogService', () => {
   let service: NgxDialogService;
 
@@ -56,6 +64,21 @@ describe('NgxDialogService', () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     const greeting = document.querySelector('.greeting');
     expect(greeting?.textContent).toContain('Hello Sara');
+  });
+
+  it('resolves route-scoped services from the dialog service environment', async () => {
+    const routeEnvironment = createEnvironmentInjector(
+      [NgxDialogService],
+      TestBed.inject(EnvironmentInjector),
+    );
+    const routeDialog = routeEnvironment.get(NgxDialogService);
+    routeDialog.open(InjectedDialogServiceContentComponent);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(document.querySelector('.dialog-service-count')?.textContent).toBe('1');
+
+    routeDialog.closeAll();
+    routeEnvironment.destroy();
   });
 
   it('emits the result on afterClosed when the content component closes itself', async () => {

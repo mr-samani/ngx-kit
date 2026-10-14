@@ -13,6 +13,8 @@ import {
   standalone: false,
 })
 export class DialogDemo {
+  private readonly dialog = inject(NgxDialogService);
+
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/dialog/dialog.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/dialog/dialog.html', language: 'html' },
@@ -22,7 +24,6 @@ export class DialogDemo {
       language: 'typescript',
     },
   ];
-  protected readonly dialog = inject(NgxDialogService);
   protected readonly injector = inject(Injector);
 
   showModal() {
