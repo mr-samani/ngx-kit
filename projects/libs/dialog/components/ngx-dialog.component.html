@@ -7,7 +7,12 @@
   </div>
 }
 
-<ng-container *ngComponentOutlet="content" />
+<ng-container
+  *ngComponentOutlet="
+    content;
+    injector: contentInjector;
+    environmentInjector: contentEnvironmentInjector
+  " />
 
 @if (config.footer?.enable) {
   <div ngxDialogFooter [align]="config.footer?.align ?? 'end'">

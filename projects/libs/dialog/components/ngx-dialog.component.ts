@@ -1,5 +1,13 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EnvironmentInjector,
+  Injector,
+  computed,
+  inject,
+} from '@angular/core';
 import { NGX_DIALOG_CONFIG, DIALOG_CONTENT, DIALOG_REF } from '../tokens/dialog.tokens';
 import { NgxDialogFooter } from '../directives/footer.directive';
 import { NgxDialogHeader } from '../directives/header.directive';
@@ -30,6 +38,8 @@ export class NgxDialogComponent {
   protected readonly dialogRef = inject(DIALOG_REF);
   protected readonly config = inject(NGX_DIALOG_CONFIG);
   protected readonly content = inject(DIALOG_CONTENT);
+  protected readonly contentInjector = inject(Injector);
+  protected readonly contentEnvironmentInjector = inject(EnvironmentInjector);
 
   protected readonly sizeClass = computed(() =>
     this.config.size ? `ngx-dialog-size-${this.config.size}` : '',

@@ -30,11 +30,19 @@ class GreetingContentComponent {
   }
 }
 
+class RouteScopedService {
+  readonly value = 'route-scoped';
+}
+
 @Component({
   standalone: true,
-  template: '<span class="dialog-service-count">{{ dialog.openCount() }}</span>',
+  template: `
+    <span class="route-service-value">{{ service.value }}</span>
+    <span class="dialog-service-count">{{ dialog.openCount() }}</span>
+  `,
 })
-class InjectedDialogServiceContentComponent {
+class RouteScopedServiceContentComponent {
+  protected readonly service = inject(RouteScopedService);
   protected readonly dialog = inject(NgxDialogService);
 }
 
@@ -68,13 +76,14 @@ describe('NgxDialogService', () => {
 
   it('resolves route-scoped services from the dialog service environment', async () => {
     const routeEnvironment = createEnvironmentInjector(
-      [NgxDialogService],
+      [NgxDialogService, RouteScopedService],
       TestBed.inject(EnvironmentInjector),
     );
     const routeDialog = routeEnvironment.get(NgxDialogService);
-    routeDialog.open(InjectedDialogServiceContentComponent);
+    routeDialog.open(RouteScopedServiceContentComponent);
     await new Promise((resolve) => setTimeout(resolve, 20));
 
+    expect(document.querySelector('.route-service-value')?.textContent).toBe('route-scoped');
     expect(document.querySelector('.dialog-service-count')?.textContent).toBe('1');
 
     routeDialog.closeAll();
