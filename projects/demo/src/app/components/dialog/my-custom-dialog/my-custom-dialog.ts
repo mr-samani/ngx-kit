@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Dialog, DIALOG_DATA } from 'ngx-kit/dialog';
+import { DIALOG_DATA, NgxDialogService } from 'ngx-kit/dialog';
 import { NgxDialogModule } from 'ngx-kit/dialog';
 
 @Component({
@@ -10,8 +10,10 @@ import { NgxDialogModule } from 'ngx-kit/dialog';
 })
 export class MyCustomDialog {
   data = inject<{ counter: number }>(DIALOG_DATA);
+  private readonly dialog = inject(NgxDialogService);
+
   openDialog() {
-    Dialog.open(MyCustomDialog, {
+    this.dialog.open(MyCustomDialog, {
       width: '50dvw',
       height: '50dvh',
       data: {
