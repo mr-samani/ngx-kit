@@ -18,7 +18,7 @@ import {
 } from '../tokens/dialog.tokens';
 import { NgxDialogComponent } from '../components/ngx-dialog.component';
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class NgxDialogService {
   private readonly overlay = inject(OverlayService);
   private readonly injector = inject(Injector);
@@ -53,7 +53,7 @@ export class NgxDialogService {
     });
 
     const disableClose = resolvedConfig.disableClose ?? false;
-
+    debugger;
     const overlayRef = this.overlay.open<NgxDialogComponent>({
       component: NgxDialogComponent,
       injector: componentInjector,

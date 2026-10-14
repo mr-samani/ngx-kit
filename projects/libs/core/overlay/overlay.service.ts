@@ -162,6 +162,7 @@ export class OverlayService {
       // No host ViewContainerRef available (e.g. a global service opening an
       // overlay outside of any component template) - create and attach the
       // component directly against the application, like a root component.
+      const elementInjector = options.injector ?? Injector.NULL;
       componentRef = createComponent<T>(component, {
         environmentInjector: options.environmentInjector ?? this.environmentInjector,
         elementInjector: options.injector,

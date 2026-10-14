@@ -290,26 +290,11 @@ export namespace Jalali {
    * @param {number} [ms] milliseconds
    * @returns Date object of the jalaali calendar dates
    */
-  export function jalaaliToDateObject(
-    jy: any,
-    jm: any,
-    jd: any,
-    h?: any,
-    m?: any,
-    s?: any,
-    ms?: any,
-  ) {
-    var gregorianCalenderDate = toGregorian(jy, jm, jd);
+  export function jalaaliToDateObject(jy: any, jm: any, jd: any, h = 0, m = 0, s = 0, ms = 0) {
+    const { gy, gm, gd } = toGregorian(jy, jm, jd);
+    const date = new Date(Date.UTC(gy, gm - 1, gd, h, m, s, ms));
 
-    return new Date(
-      gregorianCalenderDate.gy,
-      gregorianCalenderDate.gm - 1,
-      gregorianCalenderDate.gd,
-      h || 3,
-      m || 30,
-      s || 0,
-      ms || 0,
-    );
+    return date;
   }
 
   /*
