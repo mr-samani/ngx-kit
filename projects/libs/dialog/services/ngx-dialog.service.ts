@@ -1,4 +1,12 @@
-import { Injectable, Injector, Type, computed, inject, signal } from '@angular/core';
+import {
+  Injectable,
+  Injector,
+  Type,
+  ViewContainerRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { OverlayService, OverlayOptions } from 'ngx-kit/core';
 import { NgxDialogRef } from '../configs/dialog-ref';
 import { NgxDialogConfig } from '../configs/dialog-config';
@@ -10,11 +18,13 @@ import {
 } from '../tokens/dialog.tokens';
 import { NgxDialogComponent } from '../components/ngx-dialog.component';
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class NgxDialogService {
-  private readonly overlay = inject(OverlayService);
-  private readonly injector = inject(Injector);
-
+  protected readonly overlay = inject(OverlayService);
+  protected readonly injector = inject(Injector);
+  protected readonly viewContainerRef = inject(ViewContainerRef, {
+    optional: true,
+  });
   private readonly _openRefs = signal<NgxDialogRef<any>[]>([]);
   /** Every currently open dialog, oldest first. */
   readonly openDialogs = this._openRefs.asReadonly();
@@ -44,10 +54,11 @@ export class NgxDialogService {
     });
 
     const disableClose = resolvedConfig.disableClose ?? false;
-
+    debugger;
     const overlayRef = this.overlay.open<NgxDialogComponent>({
       component: NgxDialogComponent,
       injector: componentInjector,
+      viewContainerRef: this.viewContainerRef ?? undefined,
       placement: 'center',
       alignment: 'center',
       margin: 0,
