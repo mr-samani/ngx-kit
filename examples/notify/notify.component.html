@@ -96,81 +96,50 @@
 
           <div class="demo-radio-group">
             <label class="demo-radio">
-              <input type="radio" name="position" [(ngModel)]="options.position" value="top-left" />
-
+              <input type="radio" name="placement" [(ngModel)]="options.placement" value="top" />
               <span class="demo-radio-dot"></span>
-
-              Top left
+              Top
             </label>
 
             <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="top-center" />
-
+              <input type="radio" name="placement" [(ngModel)]="options.placement" value="center" />
               <span class="demo-radio-dot"></span>
-
-              Top center
-            </label>
-
-            <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="top-right" />
-
-              <span class="demo-radio-dot"></span>
-
-              Top right
-            </label>
-
-            <label class="demo-radio">
-              <input type="radio" name="position" [(ngModel)]="options.position" value="center" />
-
-              <span class="demo-radio-dot"></span>
-
               Center
             </label>
 
             <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="bottom-left" />
-
+              <input type="radio" name="placement" [(ngModel)]="options.placement" value="bottom" />
               <span class="demo-radio-dot"></span>
-
-              Bottom left
+              Bottom
             </label>
 
             <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="bottom-center" />
-
+              <input type="radio" name="placement" [(ngModel)]="options.placement" value="auto" />
               <span class="demo-radio-dot"></span>
-
-              Bottom center
-            </label>
-
-            <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="bottom-right" />
-
-              <span class="demo-radio-dot"></span>
-
-              Bottom right
+              Auto
             </label>
           </div>
+          
+          <div class="demo-radio-group">
+            <label class="demo-radio">
+              <input type="radio" name="alignment" [(ngModel)]="options.alignment" value="start" />
+              <span class="demo-radio-dot"></span>
+              Start
+            </label>
+
+            <label class="demo-radio">
+              <input type="radio" name="alignment" [(ngModel)]="options.alignment" value="center" />
+              <span class="demo-radio-dot"></span>
+              Center
+            </label>
+
+            <label class="demo-radio">
+              <input type="radio" name="position" [(ngModel)]="options.alignment" value="end" />
+              <span class="demo-radio-dot"></span>
+              End
+            </label>
+          </div>
+
           <!-- =====================================================
          BEHAVIOR
          ===================================================== -->

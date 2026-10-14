@@ -44,7 +44,8 @@ export class NotifyComponent {
     dismissible: true,
     allowHtml: true,
     timeout: 5000,
-    position: 'center',
+    placement: 'center',
+    alignment: 'center',
   };
 
   get payload(): NgxNotifyPayload {
