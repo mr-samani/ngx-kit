@@ -42,7 +42,7 @@ export class NgxNotificationComponent implements OnInit, OnDestroy {
   safeDescription: SafeHtml | string = '';
   showClass = signal('');
   protected doc = inject(DOCUMENT);
-  protected el = inject(ElementRef);
+  el = inject(ElementRef);
   protected sanitizer = inject(DomSanitizer);
   protected chdr = inject(ChangeDetectorRef);
   constructor() {

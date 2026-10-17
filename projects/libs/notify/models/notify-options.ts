@@ -46,4 +46,10 @@ export interface NgxNotifyOptions {
    * Additional notification class
    */
   notificationClass?: string;
+
+  /**
+   * Whether to render this overlay using the native Popover API 
+   * @default true
+   */
+  usePopover?: boolean;
 }

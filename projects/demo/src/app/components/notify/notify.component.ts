@@ -45,6 +45,7 @@ export class NotifyComponent {
     allowHtml: true,
     timeout: 5000,
     position: 'center',
+    usePopover: true,
   };
 
   get payload(): NgxNotifyPayload {
