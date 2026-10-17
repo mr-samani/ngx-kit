@@ -15,4 +15,5 @@ export const NGX_NOTIFY_DEFAULTS: Required<NgxNotifyOptions> = {
   closeOnTap: true,
   containerClass: 'ngx-bg-notify',
   notificationClass: 'ngx-notify',
+  usePopover: true,
 };

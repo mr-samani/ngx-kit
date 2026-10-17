@@ -24,7 +24,7 @@ export type Alignment = 'start' | 'center' | 'end';
 
 export interface BaseOverlayOptions<T = any> {
   /**
-   * Element the overlay is positioned 
+   * Element the overlay is positioned
    */
   anchor?: HTMLElement;
   /** pointer for context menu */
@@ -34,10 +34,8 @@ export interface BaseOverlayOptions<T = any> {
   margin?: number;
 
   /**
-   * Whether to render this overlay using the native Popover API (top-layer
-   * rendering, escapes clipping/stacking-context issues of ancestors).
-   * Falls back automatically to a manual z-index based overlay when the
-   * browser doesn't support the Popover API. Defaults to `true`.
+   * Whether to render this overlay using the native Popover API
+   * @default true
    */
   usePopover?: boolean;
 

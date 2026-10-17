@@ -13,14 +13,12 @@
                 Customize the notification message and description.
               </p>
             </div>
-
             <span class="badge">Notification</span>
           </div>
 
           <div class="demo-grid">
             <label class="demo-field">
               <span class="demo-field-label">Message</span>
-
               <input
                 class="demo-input"
                 type="text"
@@ -31,7 +29,6 @@
 
             <label class="demo-field">
               <span class="demo-field-label">Description</span>
-
               <input
                 class="demo-input"
                 type="text"
@@ -97,9 +94,7 @@
           <div class="demo-radio-group">
             <label class="demo-radio">
               <input type="radio" name="position" [(ngModel)]="options.position" value="top-left" />
-
               <span class="demo-radio-dot"></span>
-
               Top left
             </label>
 
@@ -109,9 +104,7 @@
                 name="position"
                 [(ngModel)]="options.position"
                 value="top-center" />
-
               <span class="demo-radio-dot"></span>
-
               Top center
             </label>
 
@@ -121,17 +114,13 @@
                 name="position"
                 [(ngModel)]="options.position"
                 value="top-right" />
-
               <span class="demo-radio-dot"></span>
-
               Top right
             </label>
 
             <label class="demo-radio">
               <input type="radio" name="position" [(ngModel)]="options.position" value="center" />
-
               <span class="demo-radio-dot"></span>
-
               Center
             </label>
 
@@ -141,9 +130,7 @@
                 name="position"
                 [(ngModel)]="options.position"
                 value="bottom-left" />
-
               <span class="demo-radio-dot"></span>
-
               Bottom left
             </label>
 
@@ -153,9 +140,7 @@
                 name="position"
                 [(ngModel)]="options.position"
                 value="bottom-center" />
-
               <span class="demo-radio-dot"></span>
-
               Bottom center
             </label>
 
@@ -165,9 +150,7 @@
                 name="position"
                 [(ngModel)]="options.position"
                 value="bottom-right" />
-
               <span class="demo-radio-dot"></span>
-
               Bottom right
             </label>
           </div>
@@ -178,7 +161,6 @@
           <div class="demo-section-header">
             <div>
               <h3 class="demo-section-title">Behavior</h3>
-
               <p class="demo-section-description">Configure notification lifecycle behavior.</p>
             </div>
           </div>
@@ -186,22 +168,24 @@
           <div class="demo-grid">
             <label class="demo-check">
               <input type="checkbox" [(ngModel)]="options.dismissible" name="dismissible" />
-
               <span class="demo-check-box"></span>
-
               <span>Dismissible</span>
             </label>
+
             <label class="demo-check">
               <input type="checkbox" [(ngModel)]="options.allowHtml" name="allowHtml" />
-
               <span class="demo-check-box"></span>
-
               <span>Allow Html</span>
+            </label>
+
+            <label class="demo-check">
+              <input type="checkbox" [(ngModel)]="options.usePopover" name="usePopover" />
+              <span class="demo-check-box"></span>
+              <span>Use Popover</span>
             </label>
 
             <label class="demo-field">
               <span class="demo-field-label">Timeout</span>
-
               <input
                 class="demo-input"
                 type="number"
@@ -209,7 +193,6 @@
                 name="timeout"
                 min="0"
                 step="500" />
-
               <span class="demo-field-hint">Duration in milliseconds</span>
             </label>
           </div>
@@ -220,7 +203,6 @@
         <section class="demo-action">
           <button type="button" class="demo-button primary" (click)="showNotify()">
             <span>✦</span>
-
             Show Notify
           </button>
         </section>
@@ -230,11 +212,9 @@
           <!-- =====================================================
          ACTUAL COMPONENT
          ===================================================== -->
-
           <div class="demo-section-header">
             <div>
               <h3 class="demo-section-title">Preview</h3>
-
               <p class="demo-section-description">
                 Notification component rendered with the current configuration.
               </p>
@@ -252,7 +232,6 @@
           <div class="demo-section-header">
             <div>
               <h3 class="demo-section-title">Live payload</h3>
-
               <p class="demo-section-description">
                 Current payload passed to the notification component.
               </p>
