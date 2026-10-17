@@ -44,13 +44,12 @@ Notify.info('A new version is available', undefined, { timeout: 8000 });
 | Field          | Type                    | Default        | Description                                                   |
 | -------------- | ----------------------- | -------------- | ------------------------------------------------------------- |
 | `timeout`      | `number` (ms)           | `3000`         | How long it's shown before auto-dismissing                    |
-| `position`     | `NgxNotifyPositionType` | `'top-center'` | Corner/center to display in; left/right positions flip automatically in RTL |
+| `position`     | `NgxNotifyPositionType` | `'top-center'` | Corner/center to display in                                   |
 | `maxVisible`   | `number`                | `10`           | Beyond this count, notifications queue instead of overlapping |
 | `allowHtml`    | `boolean`               | `false`        | If `true`, the message is rendered as HTML (not sanitized)    |
 | `pauseOnHover` | `boolean`               | `true`         | The timer pauses while the mouse hovers                       |
 | `dismissible`  | `boolean`               | `true`         | Show a close button                                           |
 | `closeOnTap`   | `boolean`               | `true`         | Clicking the notification itself closes it                    |
-| `popover`      | `boolean`               | `false`        | Use the non-modal browser popover top layer when supported     |
 
 ## Dark mode and RTL
 
