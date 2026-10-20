@@ -42,7 +42,7 @@
 
 .ngx-msg-modal {
   position: relative;
-  min-width: 400px;
+  min-width: min(400px, 100dvw);
   max-width: 80dvw;
   background-color: var(--ngx-msg-panel-bg);
   color: var(--ngx-msg-panel-fg);

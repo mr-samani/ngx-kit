@@ -1,7 +1,8 @@
 :host {
   display: grid;
   height: 100%;
-  grid-template-rows: 60px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  // grid-template-rows: 60px minmax(0, 1fr);
 }
 .showcase {
   border: 1px solid light-dark(#e5e7eb, #33333a);

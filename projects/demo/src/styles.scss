@@ -160,7 +160,7 @@ button {
 .segmented {
   display: flex;
   gap: 2px;
-
+  flex-wrap: wrap;
   padding: 2px;
 
   border: 1px solid var(--border);
@@ -896,5 +896,21 @@ button {
 
   .demo-preview {
     min-height: 180px;
+  }
+  .config-preview {
+    flex-direction: column;
+  }
+}
+@media (max-width: 500px) {
+  .toolbar-group {
+    flex-direction: column;
+  }
+  .playground-toolbar {
+    padding: 0;
+    gap: 0;
+    .segmented {
+      border: none;
+      background: none;
+    }
   }
 }
