@@ -33,7 +33,7 @@ export class NgxDialogConfig<DataType = any> {
 
   /** Named size preset - sets sensible min/max width bounds. Combine with
    * `width`/`maxWidth`/... for full manual control. */
-  size?: NgxDialogSize = 'lg';
+  size?: NgxDialogSize;
   width?: string;
   minWidth?: string;
   maxWidth?: string;
