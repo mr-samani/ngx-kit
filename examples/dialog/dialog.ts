@@ -23,8 +23,8 @@ export class DialogDemo {
 
   showModal() {
     Dialog.open(MyCustomDialog, {
-      maxWidth: '1200px',
-      width: '70dvw',
+      // maxWidth: '1200px',
+      // width: '70dvw',
       injector: this.injector,
     });
   }
