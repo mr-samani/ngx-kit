@@ -65,6 +65,17 @@
                 </span>
               }
 
+              @if (isFilterable(f)) {
+                <ngx-column-filter
+                  [tableEl]="elementRef"
+                  [field]="f.column"
+                  [config]="f.filterConfig"
+                  [currentFilter]="getFilterState(f.column)"
+                  [distinctValues]="getDistinctValues(f.column)"
+                  (applyFilter)="onFilterApply($event)"
+                  (clearFilter)="onFilterClear($event)"></ngx-column-filter>
+              }
+
               @if (isResizable(f)) {
                 <span
                   ngxColumnResize
@@ -156,7 +167,7 @@
 </div>
 
 <ngx-pagination
-  [page]="page()"
+  [page]="pageIndex()"
   [pageSize]="pageSizeS()"
   [total]="totalCount()"
   (paginate)="onPaginate($event)"></ngx-pagination>
