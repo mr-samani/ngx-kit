@@ -21,7 +21,7 @@ export interface ExampleSourceFile {
   styleUrl: './example-showcase.component.scss',
 })
 export class ExampleShowcaseComponent {
-  title = input<string>('');
+  lable = input<string>('');
   files = input.required<ExampleSourceFile[]>();
   /** آدرس README.md لایبرری (مثلاً readmes/dialog/README.md)؛ اگه ندی، تب مستندات نشون داده نمی‌شه */
   readmePath = input<string | undefined>(undefined);
