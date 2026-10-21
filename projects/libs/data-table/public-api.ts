@@ -4,6 +4,7 @@ export * from './types/page.types';
 export * from './types/pagination.types';
 export * from './types/table-field.types';
 export * from './types/table-options.types';
+export * from './types/filter.type';
 
 // tokens
 export * from './tokens/table-config.token';
@@ -20,6 +21,10 @@ export * from './directives/column-resize.directive';
 // components
 export * from './components/table/table';
 export * from './components/pagination/pagination';
+export * from './components/column-filter/column-filter';
+
+// services
+export * from './services/column-filter.service';
 
 // localizations
 export * from './localization/pagination.localization';

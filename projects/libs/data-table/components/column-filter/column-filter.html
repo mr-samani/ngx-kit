@@ -1,0 +1,114 @@
+<div class="ngx-col-filter" (click)="$event.stopPropagation()">
+  <button
+    type="button"
+    class="filter-trigger"
+    [class.active]="!!currentFilter()"
+    [title]="labels.filter"
+    (click)="toggleDropdown($event)">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="funnel-icon">
+      <path
+        fill="currentColor"
+        d="M3.9 54.9C10.5 36.5 28 24 47.6 24H464.4c19.6 0 37.1 12.5 43.7 30.9c6.6 18.4 0 38.8-16.1 49.9L320 223.5V432c0 13.5-8.4 25.5-21.1 30.2s-27 1.1-35.8-9.1l-64-75.1c-4.7-5.5-7.1-12.6-7.1-19.8V223.5L4.1 104.8C-1.9 93.7-2.6 73.3 3.9 54.9z" />
+    </svg>
+  </button>
+
+  @if (isOpen()) {
+    <div class="filter-popover" role="dialog">
+      @if (filterType() !== 'enum') {
+        <div class="filter-section">
+          <label class="filter-label">{{ labels.filter }}:</label>
+          <select
+            class="filter-select"
+            [ngModel]="selectedOperator()"
+            (ngModelChange)="selectedOperator.set($event)">
+            @for (op of operators(); track op.value) {
+              <option [ngValue]="op.value">{{ op.label }}</option>
+            }
+          </select>
+        </div>
+
+        @if (!isNoValueOperator()) {
+          <div class="filter-section">
+            @if (filterType() === 'number') {
+              <input
+                type="number"
+                class="filter-input"
+                [placeholder]="labels.search"
+                [ngModel]="filterValue()"
+                (ngModelChange)="filterValue.set($event)" />
+              @if (selectedOperator() === 9) {
+                <input
+                  type="number"
+                  class="filter-input mt-1"
+                  [placeholder]="labels.to"
+                  [ngModel]="filterValueTo()"
+                  (ngModelChange)="filterValueTo.set($event)" />
+              }
+            } @else if (filterType() === 'date') {
+              <input
+                type="date"
+                class="filter-input"
+                [ngModel]="filterValue()"
+                (ngModelChange)="filterValue.set($event)" />
+              @if (selectedOperator() === 9) {
+                <input
+                  type="date"
+                  class="filter-input mt-1"
+                  [ngModel]="filterValueTo()"
+                  (ngModelChange)="filterValueTo.set($event)" />
+              }
+            } @else if (filterType() === 'boolean') {
+              <select
+                class="filter-select"
+                [ngModel]="filterValue()"
+                (ngModelChange)="filterValue.set($event)">
+                <option [ngValue]="true">{{ labels.trueText }}</option>
+                <option [ngValue]="false">{{ labels.falseText }}</option>
+              </select>
+            } @else {
+              <input
+                type="text"
+                class="filter-input"
+                [placeholder]="labels.search"
+                [ngModel]="filterValue()"
+                (ngModelChange)="filterValue.set($event)" />
+            }
+          </div>
+        }
+      } @else {
+        <!-- Excel-like Set Filter (Enum) -->
+        <div class="filter-section">
+          <input
+            type="text"
+            class="filter-input"
+            [placeholder]="labels.search"
+            [ngModel]="enumSearchQuery()"
+            (ngModelChange)="enumSearchQuery.set($event)" />
+        </div>
+        <div class="filter-set-list">
+          <label class="filter-set-item font-bold">
+            <input
+              type="checkbox"
+              [checked]="selectedEnumValues().size === enumOptions().length"
+              (change)="toggleSelectAll($any($event.target).checked)" />
+            <span>({{ labels.selectAll }})</span>
+          </label>
+          @for (opt of filteredEnumOptions(); track opt.value) {
+            <label class="filter-set-item">
+              <input
+                type="checkbox"
+                [checked]="selectedEnumValues().has(opt.value)"
+                (change)="toggleEnumSelection(opt.value)" />
+              <span>{{ opt.label }}</span>
+            </label>
+          }
+        </div>
+      }
+
+      <div class="filter-actions">
+        <button type="button" class="btn-clear" (click)="onClear()">{{ labels.clearFilter }}</button>
+        <button type="button" class="btn-apply" (click)="onApply()">{{ labels.applyFilter }}</button>
+      </div>
+    </div>
+  }
+</div>

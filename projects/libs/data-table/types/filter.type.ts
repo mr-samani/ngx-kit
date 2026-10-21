@@ -18,20 +18,22 @@ export enum DynamicDataFilterOperator {
 
 export type FilterDataType = 'text' | 'number' | 'date' | 'boolean' | 'enum';
 
-export interface EnumFilterOption<T = any> {
+export interface EnumFilterOption<T = unknown> {
   label: string;
   value: T;
 }
 
-export interface ColumnFilterConfig<T = any> {
+export interface ColumnFilterConfig<T = unknown> {
   type?: FilterDataType;
   enabled?: boolean;
-  options?: EnumFilterOption[]; // برای حالت enum
+  options?: EnumFilterOption<T>[];
+  placeholder?: string;
+  defaultOperator?: DynamicDataFilterOperator;
 }
 
 export interface ColumnFilterState {
   field: string;
   operator: DynamicDataFilterOperator;
-  value: any;
-  valueTo?: any; // برای اپراتور Between
+  value: unknown;
+  valueTo?: unknown; // مخصوص اپراتور Between
 }

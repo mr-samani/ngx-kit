@@ -3,19 +3,46 @@ import { ColumnFilterState, DynamicDataFilterOperator } from '../types/filter.ty
 
 @Injectable({ providedIn: 'root' })
 export class ColumnFilterService {
-  applyFilters<T>(data: T[], filters: Record<string, ColumnFilterState>): T[] {
-    const activeFilters = Object.values(filters).filter(
-      (f) => f && f.value !== undefined && f.value !== null && f.value !== '',
-    );
-    if (activeFilters.length === 0) return data;
+  applyFilters<T>(data: readonly T[], filters: Record<string, ColumnFilterState>): T[] {
+    const activeFilters = Object.values(filters).filter((f) => this.isFilterActive(f));
+    if (activeFilters.length === 0) return [...data];
 
-    return data.filter((item) => {
-      return activeFilters.every((filter) => this.evaluateFilter(item, filter));
-    });
+    return data.filter((item) =>
+      activeFilters.every((filter) => this.evaluateFilter(item, filter)),
+    );
+  }
+
+  isFilterActive(filter?: ColumnFilterState | null): boolean {
+    if (!filter) return false;
+    const { operator, value, valueTo } = filter;
+    const noValueOps = [
+      DynamicDataFilterOperator.IsNull,
+      DynamicDataFilterOperator.IsNotNull,
+      DynamicDataFilterOperator.IsEmpty,
+      DynamicDataFilterOperator.IsNotEmpty,
+    ];
+    if (noValueOps.includes(operator)) return true;
+
+    if (operator === DynamicDataFilterOperator.Between) {
+      return (
+        value !== undefined &&
+        value !== null &&
+        value !== '' &&
+        valueTo !== undefined &&
+        valueTo !== null &&
+        valueTo !== ''
+      );
+    }
+
+    if (operator === DynamicDataFilterOperator.In) {
+      return Array.isArray(value) && value.length > 0;
+    }
+
+    return value !== undefined && value !== null && value !== '';
   }
 
   private evaluateFilter(item: any, filter: ColumnFilterState): boolean {
-    const rawVal = item[filter.field];
+    const rawVal = item?.[filter.field];
     const op = filter.operator;
     const target = filter.value;
     const targetTo = filter.valueTo;
@@ -29,11 +56,34 @@ export class ColumnFilterService {
 
     if (rawVal === null || rawVal === undefined) return false;
 
+    if (rawVal instanceof Date || (typeof rawVal === 'string' && !isNaN(Date.parse(rawVal)) && isNaN(Number(rawVal)))) {
+      const itemTime = new Date(rawVal).getTime();
+      const targetTime = target ? new Date(target as string).getTime() : NaN;
+      const targetToTime = targetTo ? new Date(targetTo as string).getTime() : NaN;
+
+      if (!isNaN(itemTime)) {
+        switch (op) {
+          case DynamicDataFilterOperator.Equal:
+            return new Date(rawVal).toDateString() === new Date(target as string).toDateString();
+          case DynamicDataFilterOperator.GreaterThan:
+            return itemTime > targetTime;
+          case DynamicDataFilterOperator.GreaterThanOrEqual:
+            return itemTime >= targetTime;
+          case DynamicDataFilterOperator.LessThan:
+            return itemTime < targetTime;
+          case DynamicDataFilterOperator.LessThanOrEqual:
+            return itemTime <= targetTime;
+          case DynamicDataFilterOperator.Between:
+            return itemTime >= targetTime && itemTime <= targetToTime;
+        }
+      }
+    }
+
     switch (op) {
       case DynamicDataFilterOperator.Equal:
-        return String(rawVal).toLowerCase() === String(target).toLowerCase();
+        return String(rawVal).trim().toLowerCase() === String(target).trim().toLowerCase();
       case DynamicDataFilterOperator.NotEqual:
-        return String(rawVal).toLowerCase() !== String(target).toLowerCase();
+        return String(rawVal).trim().toLowerCase() !== String(target).trim().toLowerCase();
       case DynamicDataFilterOperator.Contains:
         return String(rawVal).toLowerCase().includes(String(target).toLowerCase());
       case DynamicDataFilterOperator.StartsWith:
@@ -51,7 +101,9 @@ export class ColumnFilterService {
       case DynamicDataFilterOperator.Between:
         return Number(rawVal) >= Number(target) && Number(rawVal) <= Number(targetTo);
       case DynamicDataFilterOperator.In:
-        return Array.isArray(target) ? target.includes(rawVal) : false;
+        return Array.isArray(target)
+          ? target.some((t) => String(t).toLowerCase() === String(rawVal).toLowerCase())
+          : false;
       default:
         return true;
     }
