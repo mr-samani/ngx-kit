@@ -14,7 +14,7 @@ export class ColumnFilterService {
 
   isFilterActive(filter?: ColumnFilterState | null): boolean {
     if (!filter) return false;
-    const { operator, value, valueTo } = filter;
+    const { operator, value, valueTo, values } = filter;
     const noValueOps = [
       DynamicDataFilterOperator.IsNull,
       DynamicDataFilterOperator.IsNotNull,
@@ -35,7 +35,7 @@ export class ColumnFilterService {
     }
 
     if (operator === DynamicDataFilterOperator.In) {
-      return Array.isArray(value) && value.length > 0;
+      return Array.isArray(values) && values.length > 0;
     }
 
     return value !== undefined && value !== null && value !== '';
@@ -46,6 +46,7 @@ export class ColumnFilterService {
     const op = filter.operator;
     const target = filter.value;
     const targetTo = filter.valueTo;
+    const targets = filter.values;
 
     if (op === DynamicDataFilterOperator.IsNull) return rawVal === null || rawVal === undefined;
     if (op === DynamicDataFilterOperator.IsNotNull) return rawVal !== null && rawVal !== undefined;
@@ -56,7 +57,10 @@ export class ColumnFilterService {
 
     if (rawVal === null || rawVal === undefined) return false;
 
-    if (rawVal instanceof Date || (typeof rawVal === 'string' && !isNaN(Date.parse(rawVal)) && isNaN(Number(rawVal)))) {
+    if (
+      rawVal instanceof Date ||
+      (typeof rawVal === 'string' && !isNaN(Date.parse(rawVal)) && isNaN(Number(rawVal)))
+    ) {
       const itemTime = new Date(rawVal).getTime();
       const targetTime = target ? new Date(target as string).getTime() : NaN;
       const targetToTime = targetTo ? new Date(targetTo as string).getTime() : NaN;
@@ -101,8 +105,8 @@ export class ColumnFilterService {
       case DynamicDataFilterOperator.Between:
         return Number(rawVal) >= Number(target) && Number(rawVal) <= Number(targetTo);
       case DynamicDataFilterOperator.In:
-        return Array.isArray(target)
-          ? target.some((t) => String(t).toLowerCase() === String(rawVal).toLowerCase())
+        return Array.isArray(targets)
+          ? targets.some((t) => String(t).toLowerCase() === String(rawVal).toLowerCase())
           : false;
       default:
         return true;

@@ -203,8 +203,8 @@ export class NgxColumnFilter {
 
     if (cur) {
       this.selectedOperator.set(cur.operator);
-      if (type === 'enum' && Array.isArray(cur.value)) {
-        this.selectedEnumValues.set(new Set(cur.value));
+      if (type === 'enum' && Array.isArray(cur.values)) {
+        this.selectedEnumValues.set(new Set(cur.values));
       } else {
         this.filterValue.set(cur.value ?? '');
         this.filterValueTo.set(cur.valueTo ?? '');
@@ -227,11 +227,12 @@ export class NgxColumnFilter {
   protected onApply(): void {
     const type = this.filterType();
     let value = this.filterValue();
+    let values = [];
     let operator = this.selectedOperator();
 
     if (type === 'enum') {
       operator = DynamicDataFilterOperator.In;
-      value = Array.from(this.selectedEnumValues());
+      values = Array.from(this.selectedEnumValues());
     }
 
     this.applyFilter.emit({
@@ -242,6 +243,7 @@ export class NgxColumnFilter {
         this.selectedOperator() === DynamicDataFilterOperator.Between
           ? this.filterValueTo()
           : undefined,
+      values,
     });
     this.isOpen.set(false);
   }

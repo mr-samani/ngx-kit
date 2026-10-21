@@ -34,6 +34,7 @@ export interface ColumnFilterConfig<T = unknown> {
 export interface ColumnFilterState {
   field: string;
   operator: DynamicDataFilterOperator;
-  value: unknown;
-  valueTo?: unknown; // مخصوص اپراتور Between
+  value: any;
+  valueTo?: any; // for Between operator
+  values?: any[]; // for In operator
 }
