@@ -67,6 +67,7 @@
 
               @if (isFilterable(f)) {
                 <ngx-column-filter
+                  [tableEl]="elementRef"
                   [field]="f.column"
                   [config]="f.filterConfig"
                   [currentFilter]="getFilterState(f.column)"

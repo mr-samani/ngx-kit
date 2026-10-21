@@ -7,6 +7,7 @@ import {
   ContentChildren,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   OnInit,
@@ -77,6 +78,8 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   readonly filterChange = output<ColumnFilterState[]>();
 
   // ------------------------------------------------------------ int. state
+  readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
   protected readonly pageIndex = signal(1);
   protected readonly pageSizeS = signal(this.paginationConfig.defaultPageSize);
   protected readonly sorts = signal<SortMeta<T>[]>([]);

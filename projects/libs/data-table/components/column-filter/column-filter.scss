@@ -49,6 +49,8 @@
   font-size: 0.8125rem;
   color: var(--ngx-table-text, #1e293b);
   cursor: default;
+  box-sizing: border-box;
+  visibility: hidden;
 }
 
 .filter-section {

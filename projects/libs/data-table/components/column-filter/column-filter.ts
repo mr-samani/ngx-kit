@@ -30,8 +30,8 @@ import { NGX_TABLE_I18N } from '../../tokens/table-config.token';
 })
 export class NgxColumnFilter {
   protected readonly labels = inject(NGX_TABLE_I18N);
-  private readonly elementRef = inject(ElementRef);
-
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly tableEl = input.required<ElementRef<HTMLElement>>();
   readonly field = input.required<string>();
   readonly config = input<ColumnFilterConfig>();
   readonly currentFilter = input<ColumnFilterState | null>(null);
@@ -132,8 +132,69 @@ export class NgxColumnFilter {
   protected toggleDropdown(event: MouseEvent): void {
     event.stopPropagation();
     const nextState = !this.isOpen();
-    if (nextState) this.syncStateFromInput();
-    this.isOpen.set(nextState);
+    if (nextState) {
+      this.syncStateFromInput();
+      this.isOpen.set(true);
+      this.updatePosition();
+    } else {
+      this.isOpen.set(false);
+    }
+  }
+
+  updatePosition(): void {
+    if (!this.isOpen()) return;
+
+    setTimeout(() => {
+      const popover: HTMLDivElement | null =
+        this.elementRef.nativeElement.querySelector('.filter-popover');
+      if (!popover) return;
+
+      // پیدا کردن کانتینر اسکرول جدول
+      const containerEl =
+        this.tableEl()?.nativeElement ??
+        this.elementRef.nativeElement.closest('.ngx-table-scroll') ??
+        this.elementRef.nativeElement.closest('.ngx-table-wrapper');
+
+      if (!containerEl) {
+        popover.style.visibility = 'visible';
+        return;
+      }
+
+      // ۱. ریست کردن ترنسفورم قبلی تا موقعیت واقعی بدون تغییر سنجیده شود
+      popover.style.transform = 'none';
+
+      const rect = popover.getBoundingClientRect();
+      const container = containerEl.getBoundingClientRect();
+      const margin = 6; // فاصله ایمن از لبه جدول
+
+      let x = 0;
+      const threshold = 10;
+      // اگر از لبه سمت راست کانتینر بیرون زده باشد (حالت ستون‌های آخر):
+      if (rect.right > container.right - margin) {
+        // شیفت به سمت چپ (مقدار منفی)
+        x = container.right - margin - rect.right - threshold;
+      }
+      // اگر از لبه سمت چپ بیرون زده باشد:
+      else if (rect.left < container.left + margin) {
+        // شیفت به سمت راست (مقدار مثبت)
+        x = container.left + margin - rect.left + threshold;
+      }
+
+      // اطمینان از اینکه شیفت به چپ، باعث خروج از سمت چپ کانتینر نشود
+      if (rect.left + x < container.left + margin) {
+        x = container.left + margin - rect.left;
+      }
+
+      // ۲. اعمال جابجایی
+      if (x !== 0) {
+        popover.style.transform = `translateX(${Math.round(x)}px)`;
+      } else {
+        popover.style.transform = 'none';
+      }
+
+      // ۳. نمایش پاپ‌آپ پس از تنظیم موقعیت بدون پرش تصویر (Flicker)
+      popover.style.visibility = 'visible';
+    }, 0);
   }
 
   private syncStateFromInput(): void {
@@ -177,7 +238,10 @@ export class NgxColumnFilter {
       field: this.field(),
       operator,
       value,
-      valueTo: this.selectedOperator() === DynamicDataFilterOperator.Between ? this.filterValueTo() : undefined,
+      valueTo:
+        this.selectedOperator() === DynamicDataFilterOperator.Between
+          ? this.filterValueTo()
+          : undefined,
     });
     this.isOpen.set(false);
   }
@@ -207,7 +271,7 @@ export class NgxColumnFilter {
 
   @HostListener('document:click', ['$event'])
   protected onDocumentClick(event: MouseEvent): void {
-    if (this.isOpen() && !this.elementRef.nativeElement.contains(event.target)) {
+    if (this.isOpen() && !this.elementRef.nativeElement.contains(event.target as HTMLElement)) {
       this.isOpen.set(false);
     }
   }
