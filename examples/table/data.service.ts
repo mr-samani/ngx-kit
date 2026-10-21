@@ -1,7 +1,18 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { randomStrnig } from 'ngx-kit/core';
+import { ColumnFilterService, type ColumnFilterState } from 'ngx-kit/data-table';
 import { delay, Observable, of } from 'rxjs';
 
+export const ROLES = [
+  'Admin',
+  'User',
+  'Manager',
+  'Editor',
+  'Support',
+  'Developer',
+  'Developer',
+  'Guest',
+];
 export class UserDto {
   fullName = '';
   userName = '';
@@ -23,14 +34,21 @@ export interface GetInputDto {
   skipCount: number;
   maxResultCount: number;
   sorting?: string;
+  filters?: ColumnFilterState[];
 }
 
 @Injectable()
 export class DataService {
+  private readonly filterService = inject(ColumnFilterService);
   private readonly allUsers = this.generateUsers(10000);
 
   getUsers(input: GetInputDto): Observable<PagedResult<UserDto>> {
     let items = [...this.allUsers];
+    if (input.filters) {
+      for (let f of input.filters) {
+        items = this.filterService.applyFilters(items, { [f.field]: f });
+      }
+    }
 
     if (input.sorting) {
       const [field, direction] = input.sorting.split(' ');

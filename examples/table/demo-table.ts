@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
-import { DataService, UserDto } from './data.service';
+import { DataService, ROLES, UserDto } from './data.service';
 import { AvatarCellRenderer } from '@demo/shared/renderers/AvatarCellRenderer';
 import { BooleanCellRenderer } from '@demo/shared/renderers/BooleanCellRenderer';
 import { DateCellRenderer } from '@demo/shared/renderers/DateCellRenderer';
@@ -39,17 +39,51 @@ const fields = defineFields<UserDto, typeof renderers>(renderers, [
     width: 220,
     rendererInputs: { nameField: 'fullName', showName: true }, // ✅ fully type-checked
   },
-  { column: 'userName', title: 'Username', width: 220 },
-  { column: 'email', title: 'Email', width: 230, formatter: 'emptyDash' },
-  { column: 'isActive', title: 'Active', renderer: 'boolean', width: 100 },
-  { column: 'status', title: 'Status', renderer: 'status', width: 120 },
-  { column: 'roles', title: 'Roles', renderer: 'roles', width: 240, wrap: true, sortable: false },
+  { column: 'userName', title: 'Username', width: 220, filterable: true },
+  { column: 'email', title: 'Email', width: 230, formatter: 'emptyDash', filterable: true },
+  {
+    column: 'isActive',
+    title: 'Active',
+    renderer: 'boolean',
+    width: 120,
+    filterable: true,
+    filterConfig: {
+      type: 'boolean',
+    },
+  },
+  {
+    column: 'status',
+    title: 'Status',
+    renderer: 'status',
+    width: 120,
+    filterable: true,
+    filterConfig: {
+      type: 'enum',
+    },
+  },
+  {
+    column: 'roles',
+    title: 'Roles',
+    renderer: 'roles',
+    width: 240,
+    wrap: true,
+    sortable: false,
+    filterable: true,
+    filterConfig: {
+      type: 'enum',
+      options: ROLES.map((m) => ({ label: m, value: m })),
+    },
+  },
   {
     column: 'createdAt',
     title: 'Created At',
     renderer: 'date',
     width: 170,
     rendererInputs: { format: 'yyyy/MM/dd HH:mm' },
+    filterable: true,
+    filterConfig: {
+      type: 'date',
+    },
   },
 
   // Uncomment these to see real compile-time errors — these are exactly the
@@ -94,6 +128,7 @@ export class DemoTable {
   }
 
   protected onLazyLoad(event: LazyLoadEvent<UserDto>): void {
+    console.log('ngx-kit/table:LazyLoadEvent', event);
     this.fetch(event);
   }
 
@@ -104,6 +139,7 @@ export class DemoTable {
         skipCount: event.first,
         maxResultCount: event.pageSize,
         sorting: event.sorts?.map((s) => `${s.field} ${s.direction}`).join(','),
+        filters: event.filters,
       })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe((result) => {
