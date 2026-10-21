@@ -31,6 +31,8 @@ import {
 } from '../../types/table-field.types';
 import { NgxPagination } from '../pagination/pagination';
 import { DirectionService } from 'ngx-kit/core';
+import type { ColumnFilterState } from '../../types/filter.type';
+import { ColumnFilterService } from '../../services/column-filter.service';
 
 /**
  * جدول داده‌ی جنریک و Type-Safe.
@@ -62,6 +64,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   protected readonly config = inject(NGX_TABLE_CONFIG);
   protected readonly labels = inject(NGX_TABLE_I18N);
   protected readonly paginationConfig = inject(NGX_PAGINATION_CONFIG);
+  protected readonly columnFilterService = inject(ColumnFilterService);
 
   // ---------------------------------------------------------------- inputs
   readonly fields = input.required<TableField<T, any>[]>();
@@ -87,6 +90,7 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   readonly lazyLoad = output<LazyLoadEvent<T>>();
   readonly sortChange = output<SortMeta<T>[]>();
   readonly columnResize = output<{ field: string; width: number }>();
+  readonly filterChange = output<ColumnFilterState[]>();
 
   // ------------------------------------------------------------ int. state
   protected readonly pageIndex = signal(1);
@@ -106,6 +110,9 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
   private readonly directionService = inject(DirectionService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly resolvedDirection = computed(() => this.directionService.direction());
+
+  protected readonly activeFilters: Record<string, ColumnFilterState> = {};
+
   constructor() {
     effect(() => {
       const ps = this.pageSize();
@@ -357,4 +364,42 @@ export class NgxTable<T extends object> implements OnInit, AfterContentInit {
     }
     return inputs;
   }
+
+/*------------------------------------------------------------------*/
+/*---------------------------FILTERS--------------------------------*/
+/*------------------------------------------------------------------*/
+  isFilterActive(field: string): boolean {
+    const f = this.activeFilters[field];
+    return !!(f && (f.value !== undefined && f.value !== null && f.value !== ''));
+  }
+  onFilterApply(field: string, filterState: ColumnFilterState) {
+    this.activeFilters[field] = filterState;
+
+    if (this.lazyLoad) {
+      // ارسال فیلتر به سرور
+      this.filterChange.emit(Object.values(this.activeFilters));
+    } else {
+      // فیلتر داخلی سمت کلاینت
+      this.processedData = this.columnFilterService.applyFilters(
+        this.originalData,
+        this.activeFilters,
+      );
+    }
+  }
+
+  clearFilter(field: string): void {
+    if (this.activeFilters[field]) {
+      delete this.activeFilters[field];
+
+      if (this.lazyLoad) {
+        const activeFilterList = Object.values(this.activeFilters);
+        this.filterChange.emit(activeFilterList);
+      } else {
+        this.applyDataPipeline();
+      }
+    }
+    this.closeFilterMenu();
+  }
+
+
 }

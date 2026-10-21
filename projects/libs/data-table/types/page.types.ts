@@ -17,3 +17,4 @@ export interface LazyLoadEvent<T> extends PageState {
   sorts?: SortMeta<T>[];
   sorting?: string;
 }
+ 

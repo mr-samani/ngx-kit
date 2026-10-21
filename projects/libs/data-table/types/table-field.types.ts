@@ -1,4 +1,5 @@
 import { InputSignal, TemplateRef, Type } from '@angular/core';
+import type { ColumnFilterConfig } from './filter.type';
 
 // ----------------------------------------------------------------------------
 // قرارداد پایه‌ای که هر کامپوننت رندرر باید پیاده‌سازی کند.
@@ -66,7 +67,7 @@ export interface CellTemplateContext<T extends object> {
 }
 
 /** شکل پایه‌ای مشترک بین همه‌ی ستون‌ها، صرف‌نظر از این‌که renderer دارند یا نه. */
-export interface TableFieldBase<T extends object> {
+export interface TableFieldBase<T extends object, K extends keyof T = keyof T> {
   column: Extract<keyof T, string>;
   title: string;
   /**
@@ -85,6 +86,8 @@ export interface TableFieldBase<T extends object> {
   align?: ColumnAlign;
   prefix?: string;
   formatter?: string | TableCellFormatter<T>;
+  filterable?: boolean;
+  filterConfig?: ColumnFilterConfig<T[K]>;
 }
 
 /** ستون بدون renderer (متن ساده / formatter / cellTemplate دستی). */
