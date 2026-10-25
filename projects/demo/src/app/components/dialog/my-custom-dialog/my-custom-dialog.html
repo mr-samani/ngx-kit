@@ -1,6 +1,8 @@
 <div ngxDialogHeader>this is a header</div>
 <ngx-dialog-body>
-  @if (showData()) {
+  @if (!showData()) {
+    <h4>loading ...</h4>
+  } @else {
     <div id="lipsum">
       <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur euismod sem viverra

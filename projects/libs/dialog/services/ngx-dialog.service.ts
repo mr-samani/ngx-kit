@@ -18,7 +18,7 @@ import {
 } from '../tokens/dialog.tokens';
 import { NgxDialogComponent } from '../components/ngx-dialog.component';
 
-@Injectable()
+@Injectable({providedIn:'root'})
 export class NgxDialogService {
   private readonly overlay = inject(OverlayService);
   private readonly injector = inject(Injector);

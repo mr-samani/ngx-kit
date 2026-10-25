@@ -1,5 +1,5 @@
 import { Component, inject, Injector } from '@angular/core';
-import { Dialog } from 'ngx-kit/dialog';
+import { NgxDialogService } from 'ngx-kit/dialog';
 import { MyCustomDialog } from './my-custom-dialog/my-custom-dialog';
 import { ExampleSourceFile } from '../../shared/showcase/example-showcase.component';
 
@@ -20,12 +20,13 @@ export class DialogDemo {
     },
   ];
   protected readonly injector = inject(Injector);
+  protected readonly dialog = inject(NgxDialogService);
 
   showModal() {
-    Dialog.open(MyCustomDialog, {
+    this.dialog.open(MyCustomDialog, {
       // maxWidth: '1200px',
       // width: '70dvw',
-      injector: this.injector,
+      // injector: this.injector,
     });
   }
 }

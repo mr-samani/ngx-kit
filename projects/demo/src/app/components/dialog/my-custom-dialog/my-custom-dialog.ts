@@ -1,5 +1,5 @@
 import { Component, inject, Injector, signal, type OnInit } from '@angular/core';
-import { Dialog, DIALOG_DATA } from 'ngx-kit/dialog';
+import { DIALOG_DATA, NgxDialogService } from 'ngx-kit/dialog';
 import { MyTestService } from '../test.service';
 
 @Component({
@@ -15,15 +15,15 @@ export class MyCustomDialog {
 
   protected readonly myService = inject(MyTestService);
   protected readonly injector = inject(Injector);
-
+  protected readonly dialog = inject(NgxDialogService);
   ngOnInit(): void {
-    setTimeout(() => {
-      this.showData.set(true);
-    }, 500);
+    //  setTimeout(() => {
+    this.showData.set(true);
+    //  }, 500);
   }
 
   openDialog() {
-    Dialog.open(MyCustomDialog, {
+    this.dialog.open(MyCustomDialog, {
       width: '50dvw',
       height: '50dvh',
       data: {
@@ -32,7 +32,7 @@ export class MyCustomDialog {
       header: {
         showMaximizeButton: false,
       },
-      injector: this.injector,
+      // injector: this.injector,
     });
   }
 }
