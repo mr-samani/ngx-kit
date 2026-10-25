@@ -69,9 +69,6 @@ export class NgxDialogConfig<DataType = any> {
    * dialog - return `false` to block it (e.g. unsaved changes). Does not
    * affect a programmatic `dialogRef.close()` call. */
   beforeClose?: () => boolean;
-
-  /** Prevent the page behind the dialog from scrolling while it's open. Default: true. */
-  lockBodyScroll?: boolean = true;
   /** Move focus into the dialog on open. Default: true. */
   autoFocus?: boolean = true;
   /** Restore focus to the previously focused element on close. Default: true. */

@@ -46,7 +46,6 @@ interface OverlayInstance<T = unknown> {
   canClose?: () => boolean;
   autoFocus: boolean;
   restoreFocus: boolean;
-  lockBodyScroll: boolean;
 
   componentRef?: ComponentRef<T>;
   /** true when `componentRef` was attached directly to the ApplicationRef
@@ -78,7 +77,6 @@ export class OverlayService {
   private globalListenersAttached = false;
   private layoutRaf: number | null = null;
 
-  private bodyScrollLockCount = 0;
   private previousBodyOverflow: string | null = null;
   private previousBodyPaddingRight: string | null = null;
 
@@ -189,7 +187,6 @@ export class OverlayService {
       canClose: options.canClose,
       autoFocus: options.autoFocus ?? true,
       restoreFocus: options.restoreFocus ?? true,
-      lockBodyScroll: options.lockBodyScroll ?? false,
       componentRef,
       attachedToAppRef,
       previousActiveElement: this.getActiveElement(),
@@ -234,7 +231,6 @@ export class OverlayService {
       canClose: options.canClose,
       autoFocus: options.autoFocus ?? true,
       restoreFocus: options.restoreFocus ?? true,
-      lockBodyScroll: options.lockBodyScroll ?? false,
       embeddedView: view,
       appRef,
       previousActiveElement: this.getActiveElement(),
@@ -251,9 +247,6 @@ export class OverlayService {
     // Only matters as a fallback for browsers without the Popover API -
     // real popovers stack by top-layer show order regardless of z-index.
     instance.host.style.zIndex = String(BASE_Z_INDEX + this.overlayStack.length);
-    if (instance.lockBodyScroll) {
-      this.lockBodyScroll();
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -408,9 +401,6 @@ export class OverlayService {
     }
     this.hideHostPopover(instance);
     instance.host.remove();
-    if (instance.lockBodyScroll) {
-      this.unlockBodyScroll();
-    }
     instance.onClosed?.();
     // Only tear down the shared/global listeners once *every* overlay is
     // closed - previously this ran unconditionally on every close, which
@@ -465,43 +455,8 @@ export class OverlayService {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // body scroll lock
-  // ---------------------------------------------------------------------------
 
-  private lockBodyScroll(): void {
-    if (!this.isBrowser) {
-      return;
-    }
-    this.bodyScrollLockCount++;
-    if (this.bodyScrollLockCount > 1) {
-      return;
-    }
-    const body = this.document.body;
-    this.previousBodyOverflow = body.style.overflow;
-    this.previousBodyPaddingRight = body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - this.document.documentElement.clientWidth;
-    body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      const currentPaddingRight = parseFloat(window.getComputedStyle(body).paddingRight) || 0;
-      body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
-    }
-  }
 
-  private unlockBodyScroll(): void {
-    if (this.bodyScrollLockCount === 0) {
-      return;
-    }
-    this.bodyScrollLockCount--;
-    if (this.bodyScrollLockCount > 0) {
-      return;
-    }
-    const body = this.document.body;
-    body.style.overflow = this.previousBodyOverflow ?? '';
-    body.style.paddingRight = this.previousBodyPaddingRight ?? '';
-    this.previousBodyOverflow = null;
-    this.previousBodyPaddingRight = null;
-  }
 
   // ---------------------------------------------------------------------------
   // global listeners
@@ -519,7 +474,6 @@ export class OverlayService {
       this.document.addEventListener('keydown', this.onDocumentKeydown);
       this.document.addEventListener('click', this.onDocumentClick);
       this.document.addEventListener('contextmenu', this.onDocumentContextMenu);
-      this.document.addEventListener('scroll', this.onDocumentScroll, true);
       window.addEventListener('resize', this.onWindowResize);
     }, 0);
   }
@@ -532,7 +486,6 @@ export class OverlayService {
     this.document.removeEventListener('keydown', this.onDocumentKeydown);
     this.document.removeEventListener('click', this.onDocumentClick);
     this.document.removeEventListener('contextmenu', this.onDocumentContextMenu);
-    this.document.removeEventListener('scroll', this.onDocumentScroll, true);
     window.removeEventListener('resize', this.onWindowResize);
   }
 
@@ -604,9 +557,6 @@ export class OverlayService {
     instance.cleanup();
   };
 
-  private readonly onDocumentScroll = (): void => {
-    this.scheduleReposition();
-  };
 
   private readonly onWindowResize = (): void => {
     this.scheduleReposition();
@@ -745,7 +695,6 @@ export class OverlayService {
     overlay.style.visibility = 'visible';
     // NOTE: showPopover() is intentionally NOT called here. It already
     // happened once in renderHost(); calling it again on every reposition
-    // (scroll/resize) throws InvalidStateError since the popover is
     // already open.
   }
 

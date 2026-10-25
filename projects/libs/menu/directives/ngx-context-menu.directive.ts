@@ -1,4 +1,4 @@
-import { Directive, OnDestroy, input, ApplicationRef, ElementRef } from '@angular/core';
+import { Directive, OnDestroy, input, ApplicationRef, ElementRef, inject } from '@angular/core';
 import { OverlayRef, OverlayService, OverlayInstance } from 'ngx-kit/core';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
 
@@ -17,12 +17,14 @@ export class NgxContextMenu implements OnDestroy {
   // پس listener هیچ‌وقت واقعاً حذف نمی‌شد (نشتی حافظه‌ی کامل directive + المنت).
   private readonly boundOnClick = (ev: PointerEvent) => this.onClick(ev);
 
+
+  protected readonly overlay = inject(OverlayService);
+  protected readonly appRef = inject(ApplicationRef);
+  protected readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  
   constructor(
-    private el: ElementRef<HTMLElement>,
-    private appRef: ApplicationRef,
-    private overlayService: OverlayService,
   ) {
-    el.nativeElement.addEventListener('contextmenu', this.boundOnClick);
+    this.el.nativeElement.addEventListener('contextmenu', this.boundOnClick);
   }
 
   ngOnDestroy(): void {
@@ -45,7 +47,7 @@ export class NgxContextMenu implements OnDestroy {
     }
     const t = this.ngxContextMenu().template();
     if (!t) return;
-    this.containerRef = this.overlayService.openTemplate({
+    this.containerRef = this.overlay.openTemplate({
       anchor: this.el.nativeElement,
       point: { x, y },
       template: t,
@@ -54,7 +56,7 @@ export class NgxContextMenu implements OnDestroy {
       placement: 'auto',
       onClosed: () => {
         this.containerRef = undefined;
-        this.overlayService.closeAll();
+        this.overlay.closeAll();
       },
       configure: (instance: OverlayInstance, ref: OverlayRef<NgxMenuPanel>) => {
         this.ngxContextMenu().containerRef = ref;

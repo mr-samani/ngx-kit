@@ -71,7 +71,6 @@ export class NgxDialogService {
       canClose: () => dialogRef.beforeClose?.() ?? true,
       restoreFocus: resolvedConfig.restoreFocus ?? true,
       autoFocus: resolvedConfig.autoFocus ?? true,
-      lockBodyScroll: resolvedConfig.lockBodyScroll ?? true,
       backdropClass: resolvedConfig.backdropClass,
       panelClass: resolvedConfig.panelClass,
       configure: (_instance, ref) => this.applySizing(ref.nativeElement, resolvedConfig),

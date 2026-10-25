@@ -171,10 +171,6 @@ describe('NgxDialogService', () => {
     expect(document.body.style.overflow).not.toBe('hidden');
   });
 
-  it('does not lock body scroll when lockBodyScroll is false', () => {
-    service.open(GreetingContentComponent, { data: { name: 'Sara' }, lockBodyScroll: false });
-    expect(document.body.style.overflow).not.toBe('hidden');
-  });
 
   it('close() is idempotent', () => {
     const ref = service.open(GreetingContentComponent, { data: { name: 'Sara' } });

@@ -68,9 +68,6 @@ export interface BaseOverlayOptions<T = any> {
   /** Restore focus to the previously focused element when the overlay closes. Default: true. */
   restoreFocus?: boolean;
 
-  /** Prevent the page behind the overlay from scrolling while it's open. Default: false. */
-  lockBodyScroll?: boolean;
-
   /** Extra class(es) applied to the backdrop element. */
   backdropClass?: string | string[];
   /** Extra class(es) applied to the overlay panel element. */
