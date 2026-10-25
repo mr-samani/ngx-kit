@@ -62,6 +62,8 @@ interface OverlayInstance<T = unknown> {
   rafId: number | null;
   focusTimeoutId: ReturnType<typeof setTimeout> | null;
   cleanup: () => void;
+
+  resizeObserver: ResizeObserver | null;
 }
 
 @Injectable({
@@ -163,7 +165,7 @@ export class OverlayService {
       const elementInjector = options.injector ?? Injector.NULL;
       componentRef = createComponent<T>(component, {
         environmentInjector: options.environmentInjector ?? this.environmentInjector,
-        elementInjector: options.injector,
+        elementInjector,
       });
       this.applicationRef.attachView(componentRef.hostView);
       attachedToAppRef = true;
@@ -193,8 +195,10 @@ export class OverlayService {
       rafId: null,
       focusTimeoutId: null,
       cleanup: () => {},
+      resizeObserver: null,
     };
     instance.cleanup = () => this.destroyInstance(instance);
+    instance.resizeObserver = this.observeOverlayResize(instance);
     return instance;
   }
 
@@ -237,8 +241,10 @@ export class OverlayService {
       rafId: null,
       focusTimeoutId: null,
       cleanup: () => {},
+      resizeObserver: null,
     };
     instance.cleanup = () => this.destroyInstance(instance);
+    instance.resizeObserver = this.observeOverlayResize(instance);
     return instance;
   }
 
@@ -408,6 +414,22 @@ export class OverlayService {
     if (instance.restoreFocus) {
       this.restoreFocus(instance.previousActiveElement);
     }
+    instance.resizeObserver?.disconnect();
+    instance.resizeObserver = null;
+  }
+
+  private observeOverlayResize(instance: OverlayInstance): ResizeObserver | null {
+    if (typeof ResizeObserver === 'undefined') {
+      return null;
+    }
+
+    const observer = new ResizeObserver(() => {
+      this.scheduleReposition();
+    });
+
+    observer.observe(instance.element);
+
+    return observer;
   }
 
   // ---------------------------------------------------------------------------
@@ -685,9 +707,6 @@ export class OverlayService {
     overlay.style.right = 'auto';
     overlay.style.bottom = 'auto';
     overlay.style.visibility = 'visible';
-    // NOTE: showPopover() is intentionally NOT called here. It already
-    // happened once in renderHost(); calling it again on every reposition
-    // already open.
   }
 
   private getAnchorRect(instance: OverlayInstance): DOMRect {
