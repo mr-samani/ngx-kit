@@ -143,10 +143,10 @@ export class OverlayService {
     viewContainerRef: ViewContainerRef | undefined,
   ): OverlayInstance<T> {
     const host = this.createHostElement(options);
-    const backdrop = this.createBackdropElement(options);
     const element = this.createOverlayElement(options);
 
-    host.appendChild(backdrop);
+    // The full-viewport host also acts as the backdrop. Keeping the panel as
+    // a separate element preserves its intrinsic size and placement geometry.
     host.appendChild(element);
 
     let componentRef: ComponentRef<T>;
@@ -172,7 +172,7 @@ export class OverlayService {
 
     const instance: OverlayInstance<T> = {
       host,
-      backdrop,
+      backdrop: host,
       element,
       anchor: options.anchor,
       point: options.point,
@@ -207,16 +207,16 @@ export class OverlayService {
     },
   ): OverlayInstance {
     const host = this.createHostElement(options);
-    const backdrop = this.createBackdropElement(options);
     const element = this.createOverlayElement(options);
-    host.appendChild(backdrop);
+
+    // As in component overlays, the host itself receives backdrop clicks.
     host.appendChild(element);
     const view = template.createEmbeddedView({});
     appRef.attachView(view);
     element.append(...view.rootNodes);
     const instance: OverlayInstance = {
       host,
-      backdrop,
+      backdrop: host,
       element,
       anchor: options.anchor,
       point: options.point,
@@ -253,10 +253,16 @@ export class OverlayService {
   // DOM
   // ---------------------------------------------------------------------------
 
-  private createHostElement(options: { usePopover?: boolean }): HTMLElement {
+  private createHostElement(options: {
+    usePopover?: boolean;
+    backdropClass?: string | string[];
+  }): HTMLElement {
     const usePopover = this.resolveUsePopover(options);
     const host = this.document.createElement('div');
-    host.className = OVERLAY_HOST_CLASSNAME;
+    // One full-viewport element now serves as both the top-layer host and
+    // backdrop. The separately measured panel below it is intentionally kept.
+    host.className = `${OVERLAY_HOST_CLASSNAME} ngx-ui-overlay-backdrop`;
+    this.addClasses(host, options.backdropClass);
     host.setAttribute('data-ngx-overlay', '');
     host.style.position = 'fixed';
     host.style.inset = '0';
@@ -277,8 +283,9 @@ export class OverlayService {
     host.style.zIndex = String(BASE_Z_INDEX);
     host.style.pointerEvents = 'auto';
 
-    // Popover goes on the ROOT element, not the inner panel. This puts the
-    // whole overlay (backdrop + panel) in the top layer as a single unit,
+    // Popover goes on the full-viewport host/backdrop, not the inner panel.
+    // This puts the backdrop and separately positioned panel in the top layer
+    // as a single unit,
     // so stacking "just works" above everything on the page - including
     // ancestors with `overflow: hidden`, `transform`, or their own z-index
     // stacking contexts, which regular `position: fixed` cannot escape.
@@ -289,17 +296,6 @@ export class OverlayService {
     }
 
     return host;
-  }
-
-  private createBackdropElement(options: { backdropClass?: string | string[] }): HTMLElement {
-    const backdrop = this.document.createElement('div');
-    backdrop.className = 'ngx-ui-overlay-backdrop';
-    backdrop.style.position = 'absolute';
-    backdrop.style.inset = '0';
-    backdrop.style.pointerEvents = 'auto';
-    backdrop.style.background = 'transparent';
-    this.addClasses(backdrop, options.backdropClass);
-    return backdrop;
   }
 
   private createOverlayElement(options: {
@@ -455,9 +451,6 @@ export class OverlayService {
     );
   }
 
-
-
-
   // ---------------------------------------------------------------------------
   // global listeners
   // ---------------------------------------------------------------------------
@@ -556,7 +549,6 @@ export class OverlayService {
     }
     instance.cleanup();
   };
-
 
   private readonly onWindowResize = (): void => {
     this.scheduleReposition();
