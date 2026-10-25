@@ -349,38 +349,7 @@ describe('OverlayService', () => {
     void ref;
   });
 
-  // ---------------------------
-  // BODY SCROLL LOCK
-  // ---------------------------
-  it('should lock and restore body scroll, ref-counted across overlays', () => {
-    const a1 = document.createElement('button');
-    const a2 = document.createElement('button');
-    document.body.appendChild(a1);
-    document.body.appendChild(a2);
-
-    const r1 = service.open({
-      anchor: a1,
-      component: MockComponent,
-      viewContainerRef,
-      lockBodyScroll: true,
-    });
-    expect(document.body.style.overflow).toBe('hidden');
-
-    const r2 = service.open({
-      anchor: a2,
-      component: MockComponent,
-      viewContainerRef,
-      lockBodyScroll: true,
-    });
-    expect(document.body.style.overflow).toBe('hidden');
-
-    r1.close();
-    // still locked - r2 is still open
-    expect(document.body.style.overflow).toBe('hidden');
-
-    r2.close();
-    expect(document.body.style.overflow).not.toBe('hidden');
-  });
+ 
 
   // ---------------------------
   // BACKDROP CLICK

@@ -5,6 +5,7 @@ import {
   HostListener,
   input,
   ApplicationRef,
+  inject,
 } from '@angular/core';
 import { OverlayRef, OverlayService, OverlayInstance, Alignment, Placement } from 'ngx-kit/core';
 import { NgxMenuPanel } from '../components/ngx-menu/menu.component';
@@ -20,11 +21,11 @@ export class NgxMenu implements OnDestroy {
 
   private containerRef?: OverlayRef<NgxMenuPanel>;
 
-  constructor(
-    private el: ElementRef,
-    private appRef: ApplicationRef,
-    private overlayService: OverlayService,
-  ) {}
+  protected readonly overlay = inject(OverlayService);
+  protected readonly appRef = inject(ApplicationRef);
+  protected readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {}
 
   ngOnDestroy(): void {
     this.destroyContainer();
@@ -44,7 +45,7 @@ export class NgxMenu implements OnDestroy {
     }
     const t = this.ngxMenu().template();
     if (!t) return;
-    this.containerRef = this.overlayService.openTemplate({
+    this.containerRef = this.overlay.openTemplate({
       anchor: this.el.nativeElement,
       template: t,
       appRef: this.appRef,
@@ -53,7 +54,7 @@ export class NgxMenu implements OnDestroy {
       panelClass: 'ngx-menu-overlay',
       onClosed: () => {
         this.containerRef = undefined;
-        this.overlayService.closeAll();
+        this.overlay.closeAll();
       },
       configure: (instance: OverlayInstance, ref: OverlayRef<NgxMenuPanel>) => {
         this.ngxMenu().containerRef = ref;

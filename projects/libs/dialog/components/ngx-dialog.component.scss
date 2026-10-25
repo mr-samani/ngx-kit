@@ -38,6 +38,13 @@
 }
 
 ::ng-deep {
+  .ngx-dialog-inner {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    max-height: inherit;
+    height: inherit;
+  }
   .dialog-header {
     display: flex;
     align-items: center;
@@ -95,6 +102,7 @@
     overflow: auto;
     padding: 20px;
     box-sizing: border-box;
+    flex: auto;
   }
 
   .dialog-footer {

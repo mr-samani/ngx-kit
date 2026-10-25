@@ -46,7 +46,6 @@ interface OverlayInstance<T = unknown> {
   canClose?: () => boolean;
   autoFocus: boolean;
   restoreFocus: boolean;
-  lockBodyScroll: boolean;
 
   componentRef?: ComponentRef<T>;
   /** true when `componentRef` was attached directly to the ApplicationRef
@@ -63,6 +62,8 @@ interface OverlayInstance<T = unknown> {
   rafId: number | null;
   focusTimeoutId: ReturnType<typeof setTimeout> | null;
   cleanup: () => void;
+
+  resizeObserver: ResizeObserver | null;
 }
 
 @Injectable({
@@ -78,7 +79,6 @@ export class OverlayService {
   private globalListenersAttached = false;
   private layoutRaf: number | null = null;
 
-  private bodyScrollLockCount = 0;
   private previousBodyOverflow: string | null = null;
   private previousBodyPaddingRight: string | null = null;
 
@@ -145,10 +145,10 @@ export class OverlayService {
     viewContainerRef: ViewContainerRef | undefined,
   ): OverlayInstance<T> {
     const host = this.createHostElement(options);
-    const backdrop = this.createBackdropElement(options);
     const element = this.createOverlayElement(options);
 
-    host.appendChild(backdrop);
+    // The full-viewport host also acts as the backdrop. Keeping the panel as
+    // a separate element preserves its intrinsic size and placement geometry.
     host.appendChild(element);
 
     let componentRef: ComponentRef<T>;
@@ -165,7 +165,7 @@ export class OverlayService {
       const elementInjector = options.injector ?? Injector.NULL;
       componentRef = createComponent<T>(component, {
         environmentInjector: options.environmentInjector ?? this.environmentInjector,
-        elementInjector: options.injector,
+        elementInjector,
       });
       this.applicationRef.attachView(componentRef.hostView);
       attachedToAppRef = true;
@@ -174,7 +174,7 @@ export class OverlayService {
 
     const instance: OverlayInstance<T> = {
       host,
-      backdrop,
+      backdrop: host,
       element,
       anchor: options.anchor,
       point: options.point,
@@ -189,15 +189,16 @@ export class OverlayService {
       canClose: options.canClose,
       autoFocus: options.autoFocus ?? true,
       restoreFocus: options.restoreFocus ?? true,
-      lockBodyScroll: options.lockBodyScroll ?? false,
       componentRef,
       attachedToAppRef,
       previousActiveElement: this.getActiveElement(),
       rafId: null,
       focusTimeoutId: null,
       cleanup: () => {},
+      resizeObserver: null,
     };
     instance.cleanup = () => this.destroyInstance(instance);
+    instance.resizeObserver = this.observeOverlayResize(instance);
     return instance;
   }
 
@@ -210,16 +211,16 @@ export class OverlayService {
     },
   ): OverlayInstance {
     const host = this.createHostElement(options);
-    const backdrop = this.createBackdropElement(options);
     const element = this.createOverlayElement(options);
-    host.appendChild(backdrop);
+
+    // As in component overlays, the host itself receives backdrop clicks.
     host.appendChild(element);
     const view = template.createEmbeddedView({});
     appRef.attachView(view);
     element.append(...view.rootNodes);
     const instance: OverlayInstance = {
       host,
-      backdrop,
+      backdrop: host,
       element,
       anchor: options.anchor,
       point: options.point,
@@ -234,15 +235,16 @@ export class OverlayService {
       canClose: options.canClose,
       autoFocus: options.autoFocus ?? true,
       restoreFocus: options.restoreFocus ?? true,
-      lockBodyScroll: options.lockBodyScroll ?? false,
       embeddedView: view,
       appRef,
       previousActiveElement: this.getActiveElement(),
       rafId: null,
       focusTimeoutId: null,
       cleanup: () => {},
+      resizeObserver: null,
     };
     instance.cleanup = () => this.destroyInstance(instance);
+    instance.resizeObserver = this.observeOverlayResize(instance);
     return instance;
   }
 
@@ -251,19 +253,22 @@ export class OverlayService {
     // Only matters as a fallback for browsers without the Popover API -
     // real popovers stack by top-layer show order regardless of z-index.
     instance.host.style.zIndex = String(BASE_Z_INDEX + this.overlayStack.length);
-    if (instance.lockBodyScroll) {
-      this.lockBodyScroll();
-    }
   }
 
   // ---------------------------------------------------------------------------
   // DOM
   // ---------------------------------------------------------------------------
 
-  private createHostElement(options: { usePopover?: boolean }): HTMLElement {
+  private createHostElement(options: {
+    usePopover?: boolean;
+    backdropClass?: string | string[];
+  }): HTMLElement {
     const usePopover = this.resolveUsePopover(options);
     const host = this.document.createElement('div');
-    host.className = OVERLAY_HOST_CLASSNAME;
+    // One full-viewport element now serves as both the top-layer host and
+    // backdrop. The separately measured panel below it is intentionally kept.
+    host.className = `${OVERLAY_HOST_CLASSNAME} ngx-ui-overlay-backdrop`;
+    this.addClasses(host, options.backdropClass);
     host.setAttribute('data-ngx-overlay', '');
     host.style.position = 'fixed';
     host.style.inset = '0';
@@ -284,8 +289,9 @@ export class OverlayService {
     host.style.zIndex = String(BASE_Z_INDEX);
     host.style.pointerEvents = 'auto';
 
-    // Popover goes on the ROOT element, not the inner panel. This puts the
-    // whole overlay (backdrop + panel) in the top layer as a single unit,
+    // Popover goes on the full-viewport host/backdrop, not the inner panel.
+    // This puts the backdrop and separately positioned panel in the top layer
+    // as a single unit,
     // so stacking "just works" above everything on the page - including
     // ancestors with `overflow: hidden`, `transform`, or their own z-index
     // stacking contexts, which regular `position: fixed` cannot escape.
@@ -296,17 +302,6 @@ export class OverlayService {
     }
 
     return host;
-  }
-
-  private createBackdropElement(options: { backdropClass?: string | string[] }): HTMLElement {
-    const backdrop = this.document.createElement('div');
-    backdrop.className = 'ngx-ui-overlay-backdrop';
-    backdrop.style.position = 'absolute';
-    backdrop.style.inset = '0';
-    backdrop.style.pointerEvents = 'auto';
-    backdrop.style.background = 'transparent';
-    this.addClasses(backdrop, options.backdropClass);
-    return backdrop;
   }
 
   private createOverlayElement(options: {
@@ -408,9 +403,6 @@ export class OverlayService {
     }
     this.hideHostPopover(instance);
     instance.host.remove();
-    if (instance.lockBodyScroll) {
-      this.unlockBodyScroll();
-    }
     instance.onClosed?.();
     // Only tear down the shared/global listeners once *every* overlay is
     // closed - previously this ran unconditionally on every close, which
@@ -422,6 +414,22 @@ export class OverlayService {
     if (instance.restoreFocus) {
       this.restoreFocus(instance.previousActiveElement);
     }
+    instance.resizeObserver?.disconnect();
+    instance.resizeObserver = null;
+  }
+
+  private observeOverlayResize(instance: OverlayInstance): ResizeObserver | null {
+    if (typeof ResizeObserver === 'undefined') {
+      return null;
+    }
+
+    const observer = new ResizeObserver(() => {
+      this.scheduleReposition();
+    });
+
+    observer.observe(instance.element);
+
+    return observer;
   }
 
   // ---------------------------------------------------------------------------
@@ -466,44 +474,6 @@ export class OverlayService {
   }
 
   // ---------------------------------------------------------------------------
-  // body scroll lock
-  // ---------------------------------------------------------------------------
-
-  private lockBodyScroll(): void {
-    if (!this.isBrowser) {
-      return;
-    }
-    this.bodyScrollLockCount++;
-    if (this.bodyScrollLockCount > 1) {
-      return;
-    }
-    const body = this.document.body;
-    this.previousBodyOverflow = body.style.overflow;
-    this.previousBodyPaddingRight = body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - this.document.documentElement.clientWidth;
-    body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      const currentPaddingRight = parseFloat(window.getComputedStyle(body).paddingRight) || 0;
-      body.style.paddingRight = `${currentPaddingRight + scrollbarWidth}px`;
-    }
-  }
-
-  private unlockBodyScroll(): void {
-    if (this.bodyScrollLockCount === 0) {
-      return;
-    }
-    this.bodyScrollLockCount--;
-    if (this.bodyScrollLockCount > 0) {
-      return;
-    }
-    const body = this.document.body;
-    body.style.overflow = this.previousBodyOverflow ?? '';
-    body.style.paddingRight = this.previousBodyPaddingRight ?? '';
-    this.previousBodyOverflow = null;
-    this.previousBodyPaddingRight = null;
-  }
-
-  // ---------------------------------------------------------------------------
   // global listeners
   // ---------------------------------------------------------------------------
 
@@ -519,7 +489,6 @@ export class OverlayService {
       this.document.addEventListener('keydown', this.onDocumentKeydown);
       this.document.addEventListener('click', this.onDocumentClick);
       this.document.addEventListener('contextmenu', this.onDocumentContextMenu);
-      this.document.addEventListener('scroll', this.onDocumentScroll, true);
       window.addEventListener('resize', this.onWindowResize);
     }, 0);
   }
@@ -532,7 +501,6 @@ export class OverlayService {
     this.document.removeEventListener('keydown', this.onDocumentKeydown);
     this.document.removeEventListener('click', this.onDocumentClick);
     this.document.removeEventListener('contextmenu', this.onDocumentContextMenu);
-    this.document.removeEventListener('scroll', this.onDocumentScroll, true);
     window.removeEventListener('resize', this.onWindowResize);
   }
 
@@ -602,10 +570,6 @@ export class OverlayService {
       return;
     }
     instance.cleanup();
-  };
-
-  private readonly onDocumentScroll = (): void => {
-    this.scheduleReposition();
   };
 
   private readonly onWindowResize = (): void => {
@@ -743,10 +707,6 @@ export class OverlayService {
     overlay.style.right = 'auto';
     overlay.style.bottom = 'auto';
     overlay.style.visibility = 'visible';
-    // NOTE: showPopover() is intentionally NOT called here. It already
-    // happened once in renderHost(); calling it again on every reposition
-    // (scroll/resize) throws InvalidStateError since the popover is
-    // already open.
   }
 
   private getAnchorRect(instance: OverlayInstance): DOMRect {
