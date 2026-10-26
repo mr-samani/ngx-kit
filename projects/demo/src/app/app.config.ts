@@ -15,6 +15,7 @@ import { RolesCellRenderer } from './shared/renderers/RolesCellRenderer';
 import { StatusCellRenderer } from './shared/renderers/StatusCellRenderer';
 import { provideNgxMediaDecoder } from 'ngx-kit/media-control';
 import { FfmpegTranscodeDecoder } from './components/media-control/decoders/ffmpeg-transcode-decoder.example';
+import { provideI18n } from 'ngx-kit/lazy-i18n';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,6 +26,10 @@ export const appConfig: ApplicationConfig = {
       }),
     ),
     provideHttpClient(),
+    provideI18n({
+      langs: ['fa', 'en'],
+      defaultLang: 'fa',
+    }),
     provideNgxMediaDecoder(FfmpegTranscodeDecoder),
     provideMonacoEditor({
       baseUrl: 'assets/monaco/min/vs',

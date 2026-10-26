@@ -13,7 +13,12 @@
     "url": "https://github.com/mr-samani/ngx-kit/issues"
   },
   "keywords": [
-    "angular"
+    "angular",
+    "i18n",
+    "translate",
+    "signals",
+    "lazy",
+    "scopes"
   ],
   "peerDependencies": {
     "@angular/common": ">=22.0.0",
@@ -22,5 +27,8 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "bin": {
+    "ngx-lazy-i18n-extract": "./lazy-i18n/bin/extract.mjs"
+  }
 }
