@@ -10,4 +10,9 @@ export const routes: Routes = [
     path: 'components',
     loadChildren: () => import('./components/components.module').then((m) => m.ComponentsModule),
   },
+  {
+    path: 'i18n',
+    loadComponent: () =>
+      import('./translation-demo/translation-demo').then((c) => c.TranslationDemoComponent),
+  },
 ];

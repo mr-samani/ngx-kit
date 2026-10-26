@@ -57,7 +57,7 @@
     }
 
     @if (readmePath() && activeTab() === files().length + 1) {
-      <app-readme-viewer class="showcase-readme" [src]="readmePath()!" />
+      <app-readme-viewer class="showcase-readme" [src]="readmePath()!" dir="ltr"/>
     }
   </div>
 </section>
