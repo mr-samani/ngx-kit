@@ -17,21 +17,22 @@ Flat keys, route-level scopes, pipe, directives, fallbacks and a key extractor C
 
 1. [Install](#install)
 2. [Quick start](#quick-start)
-3. [Concepts](#concepts)
-4. [Using translations](#using-translations)
-5. [Scopes and routing](#scopes-and-routing)
-6. [Language switching](#language-switching)
-7. [Fallbacks and missing keys](#fallbacks-and-missing-keys)
-8. [Interpolation, plurals and ICU](#interpolation-plurals-and-icu)
-9. [Loaders](#loaders)
-10. [Key extractor CLI](#key-extractor-cli)
-11. [Configuration reference](#configuration-reference)
-12. [API reference](#api-reference)
-13. [Testing your app](#testing-your-app)
-14. [Performance notes](#performance-notes)
-15. [Migrating from Transloco](#migrating-from-transloco)
-16. [Limitations](#limitations)
-17. [Developing this library](#developing-this-library)
+3. [Deferred configuration (languages from the backend)](#deferred-configuration-languages-from-the-backend)
+4. [Concepts](#concepts)
+5. [Using translations](#using-translations)
+6. [Scopes and routing](#scopes-and-routing)
+7. [Language switching](#language-switching)
+8. [Fallbacks and missing keys](#fallbacks-and-missing-keys)
+9. [Interpolation, plurals and ICU](#interpolation-plurals-and-icu)
+10. [Loaders](#loaders)
+11. [Key extractor CLI](#key-extractor-cli)
+12. [Configuration reference](#configuration-reference)
+13. [API reference](#api-reference)
+14. [Testing your app](#testing-your-app)
+15. [Performance notes](#performance-notes)
+16. [Migrating from Transloco](#migrating-from-transloco)
+17. [Limitations](#limitations)
+18. [Developing this library](#developing-this-library)
 
 ---
 
@@ -115,6 +116,62 @@ export class RequestsComponent {
   title = translateSignal('Request');
 }
 ```
+
+## Deferred configuration (languages from the backend)
+
+Often the list of languages, the default language and the user's saved language only exist **after** your own
+`APP_INITIALIZER` has talked to the backend. Do not try to build the config earlier (no `setTimeout`, no mutating
+the config token, no async `useFactory`): provide the library **without** languages and finish the setup with
+`I18nService.init()` when you know them.
+
+```ts
+// app.config.ts
+provideHttpClient(),
+provideI18n({ fallbackLangs: ['fa'] }),      // no langs/defaultLang -> no automatic initializer
+provideAppInitializer(() => AppInitializer()),
+```
+
+```ts
+// app-initializer.ts
+export async function AppInitializer(): Promise<void> {
+  const http = inject(HttpClient);
+  const platformLocation = inject(PlatformLocation);
+  const i18n = inject(I18nService);
+  inject(ColorSchemaService).load();
+
+  // 1) appconfig.json  2) /api/Common/InitialApp  (as you do today)
+  const config = await firstValueFrom(http.get<any>(configUrl(platformLocation)));
+  AppConst.apiUrl = config.apiUrl; /* … */
+  const resp = await firstValueFrom(http.get<InitialAppDto>(AppConst.apiUrl + '/api/Common/InitialApp'));
+  AppConst.languageList = resp.languages ?? [];
+  AppConst.defaultLang = resp.defaultLang ?? 'fa';
+
+  // 3) finish the i18n setup and load the first language. AWAIT it: the app starts when translations are ready.
+  await i18n.init({
+    langs: AppConst.languageList.map((l) => l.culture),
+    defaultLang: AppConst.defaultLang,
+    baseUrl: AppConst.apiUrl,          // read at request time, so a value known only now is fine
+    lang: AppConst.currentLanguage,    // optional: user's saved language; ignored if not in `langs`
+  });
+}
+```
+
+What `init()` does: merges the options into the live config (`configure()`), picks the language
+(`lang` if supported, otherwise stored > browser (opt-in) > `defaultLang`), downloads the global file, every scope
+registered so far and the fallback languages, and only then activates the language. It rejects if loading fails, so
+you can catch it in the initializer and show an error page.
+
+Notes:
+
+- `loader` and `autoInit` can only be set in `provideI18n()`. Everything else can be changed later with
+  `i18n.configure({...})`; files that are already downloaded stay cached.
+- When `langs` **and** `defaultLang` are given to `provideI18n()`, an initializer is added automatically
+  (`autoInit` defaults to `true`). Use `autoInit: false` if you prefer to call `init()` yourself.
+- `i18n.langs` is a **signal** (`i18n.langs()`) because the list can arrive after startup. `i18n.ready()` becomes
+  `true` after the first language is active.
+- Scopes registered before `init()` (for example by an early service) are remembered and loaded by `init()`.
+  `whenReady()` and `i18nReadyGuard` also wait for an in-flight `init()` / `use()`.
+- Do not call `use()` without awaiting it inside an initializer: the app would start before the files arrive.
 
 ## Concepts
 
@@ -250,6 +307,11 @@ Use a real ICU library (for example `intl-messageformat`) inside `transpile` for
 
 The default `HttpI18nLoader` uses `HttpClient`, so your interceptors (auth, base URL, retry) apply.
 
+URLs are built as `{baseUrl}/{scope}/{lang}{fileExtension}` (global file: `{baseUrl}/{lang}{fileExtension}`).
+The builder is safe by construction: a missing scope never becomes `undefined`, repeated or trailing slashes
+are collapsed (`'https://api.x.com/'` + no scope -> `https://api.x.com/fa.json`), and the extension may be written
+with or without the dot. `buildI18nUrl()` is exported if you need the same logic in a custom loader.
+
 ```ts
 provideI18n({
   …,
@@ -333,15 +395,16 @@ Add to `package.json` scripts: `"i18n": "ngx-lazy-i18n-extract"`, `"i18n:check":
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `langs` | `string[]` | required | Supported languages. |
-| `defaultLang` | `string` | required | Used when nothing is stored or detected. |
+| `langs` | `string[]` | required before first activation | Supported languages. May be supplied later with `init()`. |
+| `defaultLang` | `string` | required before first activation | Used when nothing is stored or detected. May be supplied later. |
+| `autoInit` | `boolean` | `true` if `langs` and `defaultLang` are given | Add an APP_INITIALIZER that activates the initial language. Provide-time only. |
 | `fallbackLangs` | `string[]` | `[]` | Languages tried, in order, for missing/empty keys. |
 | `missing` | `'key' \| 'empty' \| (key, lang) => string` | `'key'` | What to render for a missing key. |
 | `warnMissing` | `boolean` | `isDevMode()` | Log each missing key once. |
 | `transpile` | `(value, params, lang) => string` | built-in `{{ }}` | Custom message formatter. |
 | `loader` | `Type<I18nLoader>` | `HttpI18nLoader` | Custom loader class. |
 | `baseUrl` | `string` | `'/i18n'` | HTTP loader base. |
-| `fileExtension` | `string` | `''` | HTTP loader extension (e.g. `.json`). |
+| `fileExtension` | `string` | `'.json'` | HTTP loader extension; `''` for none. |
 | `url` | `(lang, scope?) => string` | none | HTTP loader full URL control. |
 | `retries` | `number` | `1` | Retries per failed request (250 ms delay). |
 | `storageKey` | `string \| null` | `'lazy-i18n.lang'` | Persist language; `null` disables. |
@@ -363,7 +426,10 @@ Add to `package.json` scripts: `"i18n": "ngx-lazy-i18n-extract"`, `"i18n:check":
 | `lang: Signal<string>` | Active language. |
 | `dir: Signal<'rtl' \| 'ltr'>` | Direction for the active language. |
 | `revision: Signal<number>` | Changes on every language/dictionary change. |
-| `langs: readonly string[]` | Supported languages. |
+| `langs: Signal<readonly string[]>` | Supported languages (reactive; may arrive after startup). |
+| `ready: Signal<boolean>` | `true` after the first language is active. |
+| `init({ langs, defaultLang, baseUrl, lang, … })` | Complete the config and activate the first language. Use in your own initializer. |
+| `configure(patch)` | Change options after startup (not `loader`/`autoInit`). |
 | `t(key, params?)` | Translate (reactive). |
 | `instant(key, params?)` | Translate (non-reactive). |
 | `select(key, params?)` | `Signal<string>`; `params` may be a function. |
@@ -371,7 +437,7 @@ Add to `package.json` scripts: `"i18n": "ngx-lazy-i18n-extract"`, `"i18n:check":
 | `use(lang)` | Load everything, then activate. |
 | `preload(lang)` | Download without activating. |
 | `registerScope(scope)` | Register and start loading a scope. |
-| `whenReady()` | Resolves when all registered scopes are loaded. Never rejects. |
+| `whenReady()` | Resolves when all registered scopes and any in-flight `init()`/`use()` are done. Never rejects. |
 | `setTranslation(lang, dict, merge = true)` | Inject translations manually. |
 | `detectInitialLang()` | Stored, browser (opt-in) or default. |
 

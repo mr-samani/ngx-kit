@@ -60,3 +60,33 @@ export const RTL_LANGS = new Set(['ar', 'fa', 'he', 'ur', 'ps', 'sd', 'ug', 'yi'
 export function marker<T extends string>(key: T): T {
   return key;
 }
+
+/** Copy only the properties of `patch` that are not `undefined` (so an omitted option never wipes a default). */
+export function assignDefined<T extends object>(target: T, patch: Partial<T>): T {
+  for (const k of Object.keys(patch) as Array<keyof T>) {
+    if (patch[k] !== undefined) target[k] = patch[k] as T[keyof T];
+  }
+  return target;
+}
+
+/**
+ * Build `{base}/{scope}/{lang}{ext}` without ever producing `undefined`, `//` or a trailing slash problem:
+ *   ("/i18n",            undefined, "fa", ".json") -> "/i18n/fa.json"
+ *   ("https://x.com/",   "setting", "fa", "json")  -> "https://x.com/setting/fa.json"
+ *   (undefined | "",     undefined, "fa")          -> "/fa"
+ * The protocol part of `base` ("https://") is left alone.
+ */
+export function buildI18nUrl(
+  base: string | null | undefined,
+  scope: string | null | undefined,
+  lang: string,
+  ext: string | null | undefined = '',
+): string {
+  const trim = (s: string) => s.trim().replace(/^\/+|\/+$/g, '');
+  const e = ext ? (ext.startsWith('.') ? ext : '.' + ext) : '';
+  const path = [scope ? trim(scope) : '', trim(lang) + e]
+    .filter(Boolean)
+    .join('/')
+    .replace(/\/{2,}/g, '/');
+  return `${(base ?? '').trim().replace(/\/+$/, '')}/${path}`;
+}

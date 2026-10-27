@@ -1,18 +1,29 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, Signal, computed, inject, isDevMode, signal } from '@angular/core';
 import { defer, firstValueFrom, from, retry } from 'rxjs';
-import { I18N_CONFIG, I18N_LOADER, type Dictionary, type Params } from '../types/types';
-import { RTL_LANGS, flatten, interpolate } from '../utils/utils';
+import {
+  I18N_CONFIG,
+  I18N_LOADER,
+  type Dictionary,
+  type I18nInitOptions,
+  type I18nRuntimeConfig,
+  type Params,
+} from '../types/types';
+import { RTL_LANGS, assignDefined, flatten, interpolate } from '../utils/utils';
 
 const TAG = '[lazy-i18n]';
+const EMPTY: readonly string[] = [];
+
 @Injectable({ providedIn: 'root' })
 export class I18nService {
   private readonly cfg = inject(I18N_CONFIG);
   private readonly loader = inject(I18N_LOADER);
   private readonly doc = inject(DOCUMENT);
 
-  private readonly _lang = signal(this.cfg.defaultLang);
+  private readonly _lang = signal(this.cfg.defaultLang ?? '');
   private readonly _rev = signal(0);
+  private readonly _langs = signal<readonly string[]>(this.cfg.langs ?? EMPTY);
+  private readonly _ready = signal(false);
   /** Active language (reactive). */
   readonly lang = this._lang.asReadonly();
   /** Bumps whenever the active language or any dictionary changes. */
@@ -20,10 +31,18 @@ export class I18nService {
   readonly dir = computed<'rtl' | 'ltr'>(() =>
     RTL_LANGS.has(this._lang().split('-')[0]) ? 'rtl' : 'ltr',
   );
-  readonly langs: readonly string[] = this.cfg.langs;
+  /** Supported languages (a signal: they may be supplied after startup via `init()` / `configure()`). */
+  readonly langs = this._langs.asReadonly();
+  /** `true` once the first language has been activated. Handy for a splash screen. */
+  readonly ready = this._ready.asReadonly();
 
-  private readonly fallbacks = this.cfg.fallbackLangs ?? [];
-  private readonly warn = this.cfg.warnMissing ?? isDevMode();
+  // read live, so values supplied later through configure() are honoured
+  private get fallbacks(): readonly string[] {
+    return this.cfg.fallbackLangs ?? EMPTY;
+  }
+  private get warn(): boolean {
+    return this.cfg.warnMissing ?? isDevMode();
+  }
   private readonly dicts = new Map<string, Map<string, string>>(); // lang -> flat map
   private readonly loaded = new Set<string>(); // `${lang}|${scope}`
   private readonly inflight = new Map<string, Promise<void>>();
@@ -106,8 +125,63 @@ export class I18nService {
    * Load global + all registered scopes (and fallback languages) for `lang`, THEN activate it.
    * Nothing renders half-translated and no "missing" flash occurs.
    */
-  async use(lang: string): Promise<void> {
-    if (!this.cfg.langs.includes(lang)) throw new Error(`${TAG} Unsupported language "${lang}"`);
+  use(lang: string): Promise<void> {
+    const p = this.activate(lang);
+    // tracked so whenReady() / i18nReadyGuard also wait for an in-flight language change
+    const tracked: Promise<void> = p
+      .then(
+        () => undefined,
+        () => undefined,
+      )
+      .then(() => {
+        this.pending.delete(tracked);
+      });
+    this.pending.add(tracked);
+    return p;
+  }
+
+  /**
+   * Complete the configuration and activate the first language in one call. Use it from your own
+   * APP_INITIALIZER when the language list is only known at runtime (e.g. from the backend):
+   *
+   * ```ts
+   * await i18n.init({ langs: ['fa', 'en'], defaultLang: 'fa', baseUrl: apiUrl, lang: user.lang });
+   * ```
+   * `lang` is used when it is in `langs`; otherwise stored > browser (opt-in) > `defaultLang`.
+   * Rejects when the files cannot be loaded, so the initializer can show an error page.
+   */
+  init(options: I18nInitOptions = {}): Promise<void> {
+    const { lang, ...patch } = options;
+    this.configure(patch);
+    const wanted =
+      lang && (this.cfg.langs ?? EMPTY).includes(lang) ? lang : this.detectInitialLang();
+    return this.use(wanted);
+  }
+
+  /**
+   * Update options after startup (languages, baseUrl, fallbacks, ...). Already downloaded files stay cached.
+   * `loader` and `autoInit` can only be set in `provideI18n()`.
+   */
+  configure(patch: I18nRuntimeConfig): void {
+    assignDefined(this.cfg, patch);
+    this.syncLangs();
+    if (patch.defaultLang && !this._ready()) this._lang.set(patch.defaultLang);
+  }
+
+  private syncLangs(): void {
+    const l = this.cfg.langs ?? EMPTY;
+    if (l !== this._langs()) this._langs.set(l);
+  }
+
+  private async activate(lang: string): Promise<void> {
+    this.syncLangs();
+    const langs = this.cfg.langs ?? EMPTY;
+    if (!langs.length) {
+      throw new Error(
+        `${TAG} No languages configured. Pass "langs" to provideI18n() or call I18nService.init({ langs, defaultLang }) first.`,
+      );
+    }
+    if (!langs.includes(lang)) throw new Error(`${TAG} Unsupported language "${lang}"`);
     const token = ++this.useToken;
     do {
       await this.loadLang(lang);
@@ -115,6 +189,7 @@ export class I18nService {
     if (token !== this.useToken) return; // a newer use() won
     this._lang.set(lang);
     this._rev.update((v) => v + 1);
+    this._ready.set(true);
     this.persist(lang);
     this.applyDocument(lang);
   }
@@ -126,28 +201,33 @@ export class I18nService {
 
   /** Language to start with: stored > browser (opt-in) > default. */
   detectInitialLang(): string {
+    const langs = this.cfg.langs ?? EMPTY;
     const key = this.storageKey();
     try {
       const s = key ? localStorage.getItem(key) : null;
-      if (s && this.cfg.langs.includes(s)) return s;
+      if (s && langs.includes(s)) return s;
     } catch {
       /* storage unavailable (SSR / privacy mode) */
     }
     if (this.cfg.detectBrowserLang && typeof navigator !== 'undefined') {
       for (const n of navigator.languages ?? [navigator.language]) {
-        if (this.cfg.langs.includes(n)) return n;
+        if (langs.includes(n)) return n;
         const base = n.split('-')[0];
-        if (this.cfg.langs.includes(base)) return base;
+        if (langs.includes(base)) return base;
       }
     }
-    return this.cfg.defaultLang;
+    const def = this.cfg.defaultLang ?? '';
+    return langs.includes(def) ? def : (langs[0] ?? def);
   }
 
   // ───────────────────────── scopes ─────────────────────────
 
   /** Register a scope and start loading it for the active language. Idempotent. Used by `provideI18nScope`. */
   registerScope(scope: string): void {
+    if (!scope) return;
     this.scopes.add(scope);
+    // before the first activation only remember it: init()/use() loads every registered scope
+    if (!this._ready()) return;
     const lang = this._lang();
     const p: Promise<void> = Promise.all(
       [lang, ...this.fallbacks.filter((f) => f !== lang)].map((l) =>
@@ -188,6 +268,7 @@ export class I18nService {
   }
 
   private fetch(lang: string, scope?: string): Promise<void> {
+    scope = scope || undefined; // never hand '' / null to a loader
     const id = `${lang}|${scope ?? ''}`;
     if (this.loaded.has(id)) return Promise.resolve();
     let p = this.inflight.get(id);

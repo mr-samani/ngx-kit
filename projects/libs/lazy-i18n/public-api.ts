@@ -2,7 +2,7 @@ import { TrPipe } from './pipes/pipe';
 import { TrDirective, TrKeyDirective } from './directives/directives';
 
 export * from './types/types';
-export { flatten, interpolate, marker } from './utils/utils';
+export { buildI18nUrl, flatten, interpolate, marker } from './utils/utils';
 export { HttpI18nLoader } from './loader/http-loader';
 export { I18nService } from './services/i18n.service';
 export { provideI18n } from './providers/provide-i18n';
