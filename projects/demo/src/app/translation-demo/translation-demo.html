@@ -2,6 +2,12 @@
   lable="Lazy i18n"
   [files]="sourceFiles"
   readmePath="readmes/lazy-i18n/README.md">
+
+<div>
+  <button (click)="changeLangauge()" class="btn btn-primary">Change Language</button>
+</div>
+
+
   <p>Language= {{ lang() }}</p>
   <p>Direction= {{ dir() }}</p>
   <p>hello: {{ 'hello' | tr }}</p>

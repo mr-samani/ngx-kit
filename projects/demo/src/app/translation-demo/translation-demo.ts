@@ -25,4 +25,9 @@ export class TranslationDemoComponent {
   label = computed(() => this.t('orders.count', { n: 123 }));
   lang = this.i18n.lang; // Signal<string>
   dir = this.i18n.dir; // Signal<'rtl' | 'ltr'>
+
+  changeLangauge() {
+    const lang = this.lang() == 'fa' ? 'en' : 'fa';
+    this.i18n.use(lang);
+  }
 }

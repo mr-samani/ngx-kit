@@ -1,3 +1,3 @@
-# NgxInput
+# NGX-KIT
 
 ## Comming Soon...

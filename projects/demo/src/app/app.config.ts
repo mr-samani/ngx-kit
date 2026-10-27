@@ -29,6 +29,7 @@ export const appConfig: ApplicationConfig = {
     provideI18n({
       langs: ['fa', 'en'],
       defaultLang: 'fa',
+      baseUrl: document.baseURI + 'i18n',
     }),
     provideNgxMediaDecoder(FfmpegTranscodeDecoder),
     provideMonacoEditor({
