@@ -15,12 +15,12 @@ import {
   signal,
   type AfterContentInit,
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
 import { DragDropService } from '../services/drag-drop.service';
 import { DragRef, DragAxis } from '../drag-ref';
 import { IPosition } from '../contracts/IPosition';
 import { AutoScroller, findScrollableAncestor, getScrollPosition } from '../utils/auto-scroll';
 import { NgxDragPreview } from './ngx-drag-preview.directive';
+import { localDeltaToViewport } from '../utils/coordinate-transform';
 
 /** Pointer events already claimed by an (inner) draggable. */
 const claimedPointerEvents = new WeakSet<Event>();
@@ -68,7 +68,6 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   readonly _ref = new DragRef<T>();
   readonly dragging = signal(false);
 
-  private readonly doc = inject(DOCUMENT);
   private readonly service = inject(DragDropService);
   private readonly scroller = new AutoScroller();
 
@@ -83,7 +82,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   private removeEscape?: () => void;
   private removeCancel?: () => void;
   private removeLostCapture?: () => void;
-  private scrollTarget: HTMLElement | Window = window;
+  private scrollTarget!: HTMLElement | Window;
   private lastScroll = { left: 0, top: 0 };
   private lastWindowScroll = { left: 0, top: 0 };
   private removeContainerScroll?: () => void;
@@ -99,6 +98,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   }
 
   ngOnInit(): void {
+    this.scrollTarget =
+      this.host.nativeElement.ownerDocument.defaultView ?? this.host.nativeElement;
     this._ref.el = this.dragRootElement()
       ? (this.host.nativeElement.closest(this.dragRootElement()) ?? this.host.nativeElement)
       : this.host.nativeElement;
@@ -173,16 +174,15 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     this.removeUp = this.renderer.listen(this._ref.el, 'pointerup', (ev: PointerEvent) =>
       this.pointerUp(ev),
     );
-    this.removeEscape = this.renderer.listen(this.doc, 'keydown', (ev: KeyboardEvent) => {
+    const doc = this._ref.el.ownerDocument;
+    this.removeEscape = this.renderer.listen(doc, 'keydown', (ev: KeyboardEvent) => {
       if (ev.key === 'Escape' && this.dragging()) this.cancel();
     });
-    this.removeCancel = this.renderer.listen(this.doc, 'pointercancel', (ev: PointerEvent) =>
+    this.removeCancel = this.renderer.listen(doc, 'pointercancel', (ev: PointerEvent) =>
       this.pointerCancel(ev),
     );
-    this.removeLostCapture = this.renderer.listen(
-      this.doc,
-      'lostpointercapture',
-      (ev: PointerEvent) => this.pointerCancel(ev),
+    this.removeLostCapture = this.renderer.listen(doc, 'lostpointercapture', (ev: PointerEvent) =>
+      this.pointerCancel(ev),
     );
   }
   private applyDragUpdate(p: IPosition): void {
@@ -194,26 +194,29 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     if (this._ref.isListDrag && this.autoScroll()) {
       const after = this._ref.activeDropList;
       // Follow the hovered list; outside every list, scroll the page.
-      if (after !== before) this.scroller.retarget(after?.el ?? this.doc.body);
+      if (after !== before) this.scroller.retarget(after?.el ?? this._ref.el.ownerDocument.body);
     }
     this.dragMove.emit(p);
   }
   /** فراخوانی می‌شود دقیقاً وقتی drag واقعاً شروع می‌شود (چه با موس، چه با کیبورد). */
   private startScrollTracking(): void {
+    const win = this._ref.el.ownerDocument.defaultView;
     this.scrollTarget = findScrollableAncestor(this._ref.el);
     this.lastScroll = getScrollPosition(this.scrollTarget);
-    this.lastWindowScroll = { left: window.scrollX, top: window.scrollY };
+    this.lastWindowScroll = { left: win?.scrollX ?? 0, top: win?.scrollY ?? 0 };
 
-    if (this.scrollTarget !== window) {
+    if (win && this.scrollTarget !== win) {
       this.removeContainerScroll = this.renderer.listen(this.scrollTarget, 'scroll', () =>
         this.handleContainerScroll(),
       );
     }
     // همیشه window رو هم جدا گوش می‌دیم؛ چون ممکنه container محلی نداشته باشیم
     // ولی خودِ صفحه اسکرول بشه.
-    this.removeWindowScroll = this.renderer.listen('window', 'scroll', () =>
-      this.handleWindowScroll(),
-    );
+    if (win) {
+      this.removeWindowScroll = this.renderer.listen(win, 'scroll', () =>
+        this.handleWindowScroll(),
+      );
+    }
   }
 
   private handleContainerScroll(): void {
@@ -221,12 +224,15 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     const dx = pos.left - this.lastScroll.left;
     const dy = pos.top - this.lastScroll.top;
     this.lastScroll = pos;
-    this._ref.notifyScroll(dx, dy);
+    const viewportDelta = localDeltaToViewport(this.scrollTarget as HTMLElement, { x: dx, y: dy });
+    this._ref.notifyScroll(viewportDelta.x, viewportDelta.y);
   }
 
   private handleWindowScroll(): void {
-    const left = window.scrollX;
-    const top = window.scrollY;
+    const win = this._ref.el.ownerDocument.defaultView;
+    if (!win) return;
+    const left = win.scrollX;
+    const top = win.scrollY;
     const dx = left - this.lastWindowScroll.left;
     const dy = top - this.lastWindowScroll.top;
     this.lastWindowScroll = { left, top };
@@ -272,12 +278,13 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
 
     if (this.dragging()) {
       // Also when released OUTSIDE every list: endDrag() rolls the drag back and cleans up.
-      if (this._ref.isListDrag) {
-        // The release position is authoritative for the drop target (a fast flick may end with
-        // a pointerup that has no preceding pointermove at that position).
-        const p = { x: e.clientX, y: e.clientY };
-        if (p.x !== this.lastPointer.x || p.y !== this.lastPointer.y) this._ref.dragMove(p);
+      // The release position is authoritative for list sorting (a fast flick may end with
+      // a pointerup that has no preceding pointermove at that position).
+      const p = { x: e.clientX, y: e.clientY };
+      if (this._ref.isListDrag && (p.x !== this.lastPointer.x || p.y !== this.lastPointer.y)) {
+        this._ref.dragMove(p);
       }
+      // endDrag must run for free drags too, otherwise their lifecycle never completes.
       this._ref.endDrag();
       this.service.end(this._ref);
     }
@@ -288,7 +295,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   /** Browser cancelled the pointer (touch takeover, lost capture...). */
   private pointerCancel(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
-    if (this.dragging() && this._ref.isListDrag) {
+    if (this.dragging()) {
       this.cancel();
       return;
     }
@@ -302,6 +309,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   }
 
   private finish(): void {
+    if (this.pointerId >= 0 && this._ref.el.hasPointerCapture?.(this.pointerId)) {
+      this._ref.el.releasePointerCapture(this.pointerId);
+    }
     this.dragging.set(false);
     this.down = false;
     this.scroller.stop();
@@ -354,27 +364,35 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
       this._ref.endDrag();
       this.service.end(this._ref);
       this.dragEnd.emit(this._ref.pointer);
-      this.dragging.set(false);
-      this.stopScrollTracking();
+      this.finish();
     } else if (e.key === 'Escape' && this.dragging()) {
       e.preventDefault();
       this._ref.cancelDrag();
       this.service.end(this._ref);
-      this.dragging.set(false);
+      this.finish();
     }
   }
 
   private isOnHandle(target: EventTarget | null): boolean {
     if (!this.dragHandle()) return true;
     // TODO notsafe instanseof: node.nodeType === Node.ELEMENT_NODE
-    return target instanceof HTMLElement && !!target.closest(this.dragHandle());
+    return isElementTarget(target) && !!target.closest(this.dragHandle());
   }
 
   private isInteractive(target: EventTarget | null): boolean {
     // TODO notsafe instanseof: node.nodeType === Node.ELEMENT_NODE
     return (
-      target instanceof HTMLElement &&
-      !!target.closest('button,a,input,textarea,select,[data-no-drag]')
+      isElementTarget(target) && !!target.closest('button,a,input,textarea,select,[data-no-drag]')
     );
   }
+}
+
+function isElementTarget(target: EventTarget | null): target is HTMLElement {
+  return (
+    !!target &&
+    typeof target === 'object' &&
+    'nodeType' in target &&
+    (target as Node).nodeType === 1 &&
+    'closest' in target
+  );
 }

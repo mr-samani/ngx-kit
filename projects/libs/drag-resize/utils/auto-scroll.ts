@@ -1,4 +1,5 @@
 import { isWindow } from './element.helper';
+import { viewportDeltaToLocal } from './coordinate-transform';
 
 /**
  * Auto-scrolls the nearest scrollable ancestor (or window) while the pointer
@@ -7,7 +8,8 @@ import { isWindow } from './element.helper';
  */
 export class AutoScroller {
   private raf = 0;
-  private container: HTMLElement | Window = window;
+  private container!: HTMLElement | Window;
+  private win?: Window;
   private speed = { x: 0, y: 0 };
   private onTick?: () => void;
   private readonly edge: number;
@@ -20,6 +22,7 @@ export class AutoScroller {
 
   /** onTick اجرا می‌شود بعد از هر گام اسکرول، تا با آخرین موقعیت pointer، sort/placeholder به‌روز شود. */
   start(fromEl: HTMLElement, onTick?: () => void): void {
+    this.win = fromEl.ownerDocument.defaultView ?? undefined;
     this.container = findScrollableAncestor(fromEl);
     this.onTick = onTick;
   }
@@ -36,15 +39,16 @@ export class AutoScroller {
       y: edgeSpeed(clientY, rect.top, rect.bottom, this.edge, this.maxSpeed),
     };
     if ((this.speed.x || this.speed.y) && !this.raf) {
-      this.raf = requestAnimationFrame(this.tick);
+      this.raf = this.win?.requestAnimationFrame(this.tick) ?? 0;
     }
   }
 
   stop(): void {
-    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.raf) this.win?.cancelAnimationFrame(this.raf);
     this.raf = 0;
     this.speed = { x: 0, y: 0 };
     this.onTick = undefined;
+    this.win = undefined;
   }
 
   private tick = (): void => {
@@ -58,15 +62,17 @@ export class AutoScroller {
     if (isWindow(container)) {
       container.scrollBy(this.speed.x, this.speed.y);
     } else {
-      container.scrollLeft += this.speed.x;
-      container.scrollTop += this.speed.y;
+      // Edge speed is measured in viewport pixels; scrollLeft/Top are local to the scroller.
+      const local = viewportDeltaToLocal(container, this.speed);
+      container.scrollLeft += local.x;
+      container.scrollTop += local.y;
     }
 
     // Pointer ثابت مانده ولی محتوا اسکرول شده؛
     // بنابراین موقعیت placeholder/sort را دوباره محاسبه کن.
     this.onTick?.();
 
-    this.raf = requestAnimationFrame(this.tick);
+    this.raf = this.win?.requestAnimationFrame(this.tick) ?? 0;
   };
 }
 
@@ -83,7 +89,7 @@ function getScrollRect(container: HTMLElement | Window): {
   bottom: number;
 } {
   if (isWindow(container)) {
-    return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+    return { left: 0, top: 0, right: container.innerWidth, bottom: container.innerHeight };
   }
   return container.getBoundingClientRect();
 }
@@ -92,7 +98,9 @@ export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
   let node: HTMLElement | null = el;
 
   while (node) {
-    const style = getComputedStyle(node);
+    const win = node.ownerDocument.defaultView;
+    if (!win) break;
+    const style = win.getComputedStyle(node);
     const scrollable = /(auto|scroll|overlay)/.test(style.overflowY + style.overflowX);
 
     if (scrollable && node.scrollHeight > node.clientHeight) {
@@ -102,12 +110,12 @@ export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
     node = node.parentElement;
   }
 
-  return el.ownerDocument.defaultView ?? window;
+  return el.ownerDocument.defaultView ?? el;
 }
 
 export function getScrollPosition(container: HTMLElement | Window): { left: number; top: number } {
   if (isWindow(container)) {
-    return { left: window.scrollX, top: window.scrollY };
+    return { left: container.scrollX, top: container.scrollY };
   }
   return { left: container.scrollLeft, top: container.scrollTop };
 }

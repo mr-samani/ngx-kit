@@ -1,4 +1,5 @@
 import { isElementNode } from '../utils/element.helper';
+import { viewportDeltaToLocal } from '../utils/coordinate-transform';
 import { ScrollFrame } from '../utils/scroll-frame';
 import {
   Axis,
@@ -42,7 +43,7 @@ export interface SortSessionInit {
  */
 export function makeSpacer(container: HTMLElement): Text | null {
   for (const n of Array.from(container.childNodes)) {
-    if (n.nodeType === Node.TEXT_NODE && n.nodeValue && /^\s+$/.test(n.nodeValue)) {
+    if (n.nodeType === 3 && n.nodeValue && /^\s+$/.test(n.nodeValue)) {
       return container.ownerDocument.createTextNode(n.nodeValue);
     }
   }
@@ -281,6 +282,7 @@ export class SortSession {
     const horizontal = this.model.axis === 'x';
     this.entries.forEach((e, i) => {
       const o = offsets[i];
+      // `o` is derived from DOMRect measurements (viewport CSS pixels).
       this.setOffset(e, horizontal ? { x: o, y: 0 } : { x: 0, y: o });
     });
   }
@@ -293,7 +295,8 @@ export class SortSession {
       e.el.style.transform = e.savedTransform;
     } else {
       this.applied.set(e.el, off);
-      e.el.style.transform = `translate3d(${off.x}px, ${off.y}px, 0)${e.base}`;
+      const local = viewportDeltaToLocal(e.el, off, false);
+      e.el.style.transform = `translate3d(${local.x}px, ${local.y}px, 0)${e.base}`;
     }
     this.onOffsetChange?.(e.el, off);
   }
@@ -324,7 +327,8 @@ export class SortSession {
       const dx = first[i].left - last[i].left;
       const dy = first[i].top - last[i].top;
       if (this.animationMs > 0 && (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5)) {
-        e.el.style.transform = `translate3d(${dx}px, ${dy}px, 0)${e.base}`;
+        const local = viewportDeltaToLocal(e.el, { x: dx, y: dy }, false);
+        e.el.style.transform = `translate3d(${local.x}px, ${local.y}px, 0)${e.base}`;
         moved.push(e);
       }
     });
@@ -367,6 +371,6 @@ export class SortSession {
 }
 
 function initialTransform(el: HTMLElement): string {
-  const t = getComputedStyle?.(el)?.transform;
+  const t = el.ownerDocument.defaultView?.getComputedStyle(el).transform;
   return t && t !== 'none' ? ` ${t}` : '';
 }

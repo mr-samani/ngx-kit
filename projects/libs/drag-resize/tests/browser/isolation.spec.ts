@@ -1,4 +1,5 @@
 // @vitest-environment node
+
 import { describe, expect, it } from 'vitest';
 import { items, run, useBrowser } from './fixture';
 
@@ -518,5 +519,103 @@ describe('works without any shared Angular injector between levels (ngTemplateOu
     expect(res.live).toBe('[PH]XY');
     expect(res.drop).toMatchObject({ from: 'other', to: 'children', prev: 0, cur: 0 });
     expect(res.leaks).toEqual([]);
+  });
+});
+
+describe('scaled ancestors', () => {
+  it('free drag converts viewport pointer deltas into the transformed element local space', async () => {
+    const html = `<div id="canvas" style="position:absolute;left:40px;top:30px;transform:scale(.8);transform-origin:top left">
+      <div id="free" data-item style="position:absolute;left:20px;top:20px;width:80px;height:40px;background:#fcc">F</div>
+    </div>`;
+    const result = await run(html, async (H) => {
+      await H.auto();
+      const el = document.getElementById('free')!;
+      const before = el.getBoundingClientRect();
+      const point = H.center(el);
+      H.down(el, point.x, point.y);
+      H.move(point.x + 5, point.y);
+      H.move(point.x + 105, point.y + 40);
+      const during = el.getBoundingClientRect();
+      H.up(point.x + 105, point.y + 40);
+      return {
+        dx: during.left - before.left,
+        dy: during.top - before.top,
+        transform: el.style.transform,
+        dragging: el.classList.contains('ngx-draggable--dragging'),
+        leaks: H.leaks(),
+      };
+    });
+
+    expect(result.dx).toBeCloseTo(100, 0);
+    expect(result.dy).toBeCloseTo(40, 0);
+    expect(result.transform).toContain('translate3d');
+    expect(result.dragging).toBe(false);
+    expect(result.leaks).toEqual([]);
+  });
+
+  it('sorts list items correctly inside nested scaled ancestors', async () => {
+    const html = `<div id="outer" style="transform:scale(.8);transform-origin:top left">
+      <div id="inner" style="transform:scale(.75);transform-origin:top left">
+        <div id="list" data-list style="position:absolute;left:20px;top:20px;width:200px">
+          ${items('ABC')}
+        </div>
+      </div>
+    </div>`;
+    const result = await run(html, async (H) => {
+      await H.auto();
+      const list = document.getElementById('list')!;
+      const a = list.querySelector('[data-id="A"]') as HTMLElement;
+      const c = list.querySelector('[data-id="C"]') as HTMLElement;
+      const start = H.center(a);
+      const end = H.center(c);
+      H.down(a, start.x, start.y);
+      H.move(start.x, start.y + 5);
+      H.move(end.x, end.y + 10);
+      const visual = H.visual(list).join('');
+      H.up(end.x, end.y + 10);
+      return { visual, drop: H.drops[0], leaks: H.leaks() };
+    });
+
+    expect(result.visual).toBe('BC[PH]');
+    expect(result.drop).toMatchObject({ from: 'list', to: 'list', prev: 0, cur: 2 });
+    expect(result.leaks).toEqual([]);
+  });
+});
+
+describe('iframe document isolation', () => {
+  it('uses the iframe ownerDocument for drag lifecycle and does not leave a preview in the parent document', async () => {
+    const result = await run(`<iframe id="frame" style="width:420px;height:260px;border:0"></iframe>`, async (H) => {
+      await H.auto();
+      const frame = document.getElementById('frame') as HTMLIFrameElement;
+      const doc = frame.contentDocument!;
+      doc.open();
+      doc.write(`<style>body{margin:0}.item{position:absolute;left:30px;top:30px;width:80px;height:40px;background:#fcc}</style><div id="inside" class="item">inside</div>`);
+      doc.close();
+      const el = doc.getElementById('inside') as HTMLElement;
+      H.registerItem(el);
+      const before = el.getBoundingClientRect();
+      const x = before.left + before.width / 2;
+      const y = before.top + before.height / 2;
+      const event = (type: string, clientX: number, clientY: number) =>
+        new PointerEvent(type, { bubbles: true, cancelable: true, clientX, clientY, pointerId: 91, button: 0, pointerType: 'mouse' });
+      el.dispatchEvent(event('pointerdown', x, y));
+      el.dispatchEvent(event('pointermove', x + 5, y));
+      el.dispatchEvent(event('pointermove', x + 55, y + 20));
+      const during = el.getBoundingClientRect();
+      el.dispatchEvent(event('pointerup', x + 55, y + 20));
+      return {
+        dx: during.left - before.left,
+        dy: during.top - before.top,
+        parentPreviews: document.querySelectorAll('.ngx-drag-preview').length,
+        iframePreviews: doc.querySelectorAll('.ngx-drag-preview').length,
+        dragging: el.classList.contains('ngx-draggable--dragging'),
+      };
+    });
+
+    expect(result.dx).toBeCloseTo(50, 0);
+    expect(result.dy).toBeCloseTo(20, 0);
+    expect(result.parentPreviews).toBe(0);
+    expect(result.iframePreviews).toBe(0);
+    expect(result.dragging).toBe(false);
   });
 });

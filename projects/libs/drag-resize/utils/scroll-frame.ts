@@ -1,3 +1,5 @@
+import { localDeltaToViewport } from './coordinate-transform';
+
 /**
  * Tracks how far the scrollable ancestors of an element (and the window) have scrolled since
  * the frame was created.
@@ -24,7 +26,7 @@ export class ScrollFrame {
   constructor(
     start: HTMLElement | null,
     includeStart = true,
-    private readonly win: Window = window,
+    private readonly win: Window | null = start?.ownerDocument.defaultView ?? null,
   ) {
     let node: HTMLElement | null = includeStart ? start : (start?.parentElement ?? null);
     const root = start?.ownerDocument.documentElement;
@@ -33,7 +35,7 @@ export class ScrollFrame {
       if (node !== root && scrolls(node)) this.targets.push(node);
       node = node.parentElement;
     }
-    this.targets.push(win);
+    if (win) this.targets.push(win);
     this.origin = this.read();
   }
 
@@ -56,12 +58,15 @@ export class ScrollFrame {
     let x = 0;
     let y = 0;
     for (const t of this.targets) {
-      if (t === this.win) {
+      if (this.win && t === this.win) {
         x += this.win.scrollX;
         y += this.win.scrollY;
       } else {
-        x += (t as HTMLElement).scrollLeft;
-        y += (t as HTMLElement).scrollTop;
+        const el = t as HTMLElement;
+        // Element scroll offsets are local CSS pixels; geometry snapshots are viewport pixels.
+        const delta = localDeltaToViewport(el, { x: el.scrollLeft, y: el.scrollTop });
+        x += delta.x;
+        y += delta.y;
       }
     }
     return { x, y };
@@ -74,8 +79,9 @@ interface Point {
 }
 
 function scrolls(el: HTMLElement): boolean {
-  const s = getComputedStyle?.(el);
+  const s = el.ownerDocument.defaultView?.getComputedStyle(el);
   // `hidden` containers still scroll programmatically; `clip` never does.
-  const scrollish = (v: string) => v === 'auto' || v === 'scroll' || v === 'overlay' || v === 'hidden';
-  return scrollish(s.overflowX) || scrollish(s.overflowY);
+  const scrollish = (v: string) =>
+    v === 'auto' || v === 'scroll' || v === 'overlay' || v === 'hidden';
+  return !!s && (scrollish(s.overflowX) || scrollish(s.overflowY));
 }

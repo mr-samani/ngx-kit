@@ -6,6 +6,7 @@ import { DropListGroupRef } from './drop-list-group-ref';
 import { DragDropService } from './services/drag-drop.service';
 import { checkBoundX, checkBoundY } from './utils/check-boundary';
 import { DragPreviewRef } from './drag-preview-ref';
+import { viewportDeltaToLocal, convertPointBetweenDocuments } from './utils/coordinate-transform';
 
 export type DragAxis = 'x' | 'y' | undefined;
 
@@ -51,6 +52,8 @@ export class DragRef<T = unknown> {
   private sourceDisplay = '';
   private sourcePointerEvents = '';
   private sourceTransition = '';
+  private sourceWillChange = '';
+  private sourceTransform = '';
 
   /** True while a drop-list drag (body preview + placeholder) is in progress. Free drag: always false. */
   private listDrag = false;
@@ -68,7 +71,9 @@ export class DragRef<T = unknown> {
   private resizeListener?: () => void;
 
   init(): void {
-    this.previousTransform = getComputedStyle?.(this.el)?.getPropertyValue?.('transform');
+    this.previousTransform =
+      this.el.ownerDocument.defaultView?.getComputedStyle(this.el).transform ?? '';
+    this.sourceTransform = this.el.style.transform;
   }
 
   withDropList(list: DropListRef<T> | null): this {
@@ -104,7 +109,9 @@ export class DragRef<T = unknown> {
     const list = this.dropList && this.dropList.el === this.el.parentElement ? this.dropList : null;
     this.originDropList = list;
     this.originIndex = list?.getItemIndex(this) ?? -1;
-    this.previousTransform = getComputedStyle(this.el).getPropertyValue('transform');
+    const win = this.el.ownerDocument.defaultView;
+    this.previousTransform = win?.getComputedStyle(this.el).transform ?? '';
+    this.sourceTransform = this.el.style.transform;
 
     this.isDragging.set(true);
 
@@ -113,6 +120,7 @@ export class DragRef<T = unknown> {
     this.sourceDisplay = this.el.style.display;
     this.sourcePointerEvents = this.el.style.pointerEvents;
     this.sourceTransition = this.el.style.transition;
+    this.sourceWillChange = this.el.style.willChange;
 
     this.el.classList.add('ngx-draggable--dragging');
     this.el.style.willChange = 'transform';
@@ -213,7 +221,8 @@ export class DragRef<T = unknown> {
     this.el.style.visibility = this.sourceVisibility;
     this.el.style.display = this.sourceDisplay;
     this.el.style.pointerEvents = this.sourcePointerEvents;
-    this.el.style.willChange = '';
+    this.el.style.willChange = this.sourceWillChange;
+    this.el.style.transition = this.sourceTransition;
     this.el.style.zIndex = this.previousZIndex;
   }
 
@@ -233,7 +242,7 @@ export class DragRef<T = unknown> {
     }
 
     // ---- free drag: unchanged ----
-    this.el.style.transform = this.previousTransform;
+    this.el.style.transform = this.sourceTransform;
     this.el.style.visibility = this.sourceVisibility;
     this.el.style.pointerEvents = this.sourcePointerEvents;
     this.scrollCompensation = { x: 0, y: 0 };
@@ -243,9 +252,23 @@ export class DragRef<T = unknown> {
 
   /** Abort without emitting anything (the directive was destroyed mid-drag). Idempotent. */
   dispose(): void {
-    if (!this.listDrag) return;
+    if (!this.isDragging()) return;
     this.isDragging.set(false);
-    this.finishListDrag(false);
+    this.position.set({ x: 0, y: 0 });
+    if (this.listDrag) {
+      this.finishListDrag(false);
+      return;
+    }
+    this.el.style.transform = this.sourceTransform;
+    this.el.style.visibility = this.sourceVisibility;
+    this.el.style.display = this.sourceDisplay;
+    this.el.style.pointerEvents = this.sourcePointerEvents;
+    this.el.style.transition = this.sourceTransition;
+    this.el.style.willChange = this.sourceWillChange;
+    this.el.style.zIndex = this.previousZIndex;
+    this.el.classList.remove('ngx-draggable--dragging');
+    this.scrollCompensation = { x: 0, y: 0 };
+    this.position.set({ x: 0, y: 0 });
   }
 
   /** True while a drop-list drag is running. */
@@ -303,8 +326,9 @@ export class DragRef<T = unknown> {
 
     const tx = this.moveDx + this.scrollCompensation.x;
     const ty = this.moveDy + this.scrollCompensation.y;
+    const local = viewportDeltaToLocal(this.el, { x: tx, y: ty });
 
-    this.el.style.transform = `${base}translate3d(${tx}px, ${ty}px, 0)`;
+    this.el.style.transform = `${base}translate3d(${local.x}px, ${local.y}px, 0)`;
   }
   // -------------------------------------------------------------------------------------
   // drop-list drag
@@ -312,7 +336,8 @@ export class DragRef<T = unknown> {
 
   private beginListDrag(origin: DropListRef<T>, pointer: IPosition): void {
     const doc = this.el.ownerDocument;
-    const win = doc.defaultView ?? window;
+    const win = doc.defaultView;
+    if (!win) return;
 
     this.dropListsSnapshot = null; // force refreshDropCandidates() to do a full pass below
     this.refreshDropCandidates(origin);
@@ -379,9 +404,11 @@ export class DragRef<T = unknown> {
     if (!origin) return;
 
     this.refreshDropCandidates(origin);
-    const next = this.resolveDropList(pointer);
+    const resolved = this.resolveDropList(pointer);
+    const next = resolved?.list ?? null;
+    const targetPointer = resolved?.pointer ?? pointer;
     if (next === this.activeDropList) {
-      next?.sortItem(this, pointer);
+      next?.sortItem(this, targetPointer);
       return;
     }
 
@@ -396,7 +423,7 @@ export class DragRef<T = unknown> {
     }
 
     this.activeDropList = next;
-    next?.enter(this, pointer.x, pointer.y); // fresh entry, or resumes a still-alive (frozen) session
+    next?.enter(this, targetPointer.x, targetPointer.y); // coordinates belong to the target document
   }
 
   /**
@@ -405,16 +432,30 @@ export class DragRef<T = unknown> {
    * currently active one is kept to avoid flicker, otherwise the smaller one wins. No DOM
    * reads and no `.contains()` calls happen here — everything needed was precomputed above.
    */
-  private resolveDropList(pointer: IPosition): DropListRef<T> | null {
-    let best: DropListRef<T> | null = null;
+  private resolveDropList(pointer: IPosition): { list: DropListRef<T>; pointer: IPosition } | null {
+    let best: { list: DropListRef<T>; pointer: IPosition } | null = null;
     let bestDepth = -1;
+
     for (const { list, depth } of this.dropCandidates) {
-      if (!list._containsPoint(pointer.x, pointer.y)) continue;
+      const targetDocument = list.el?.ownerDocument;
+      if (!targetDocument) continue;
+
+      // Pointer coordinates originate in the draggable's document. A same-origin iframe has
+      // its own viewport coordinate space, so convert before testing its DropList geometry.
+      const targetPoint = convertPointBetweenDocuments(
+        pointer,
+        this.el.ownerDocument,
+        targetDocument,
+      );
+      if (!targetPoint || !list._containsPoint(targetPoint.x, targetPoint.y)) continue;
+
       if (!best || depth > bestDepth) {
-        best = list;
+        best = { list, pointer: targetPoint };
         bestDepth = depth;
-      } else if (depth === bestDepth && best !== this.activeDropList) {
-        if (list === this.activeDropList || list._area() < best._area()) best = list;
+      } else if (depth === bestDepth && best.list !== this.activeDropList) {
+        if (list === this.activeDropList || list._area() < best.list._area()) {
+          best = { list, pointer: targetPoint };
+        }
       }
     }
     return best;
@@ -429,8 +470,7 @@ export class DragRef<T = unknown> {
     const doc = this.el.ownerDocument;
     if (this.scrollListener)
       doc.removeEventListener('scroll', this.scrollListener, { capture: true });
-    if (this.resizeListener)
-      (doc.defaultView ?? window).removeEventListener('resize', this.resizeListener);
+    if (this.resizeListener) doc.defaultView?.removeEventListener('resize', this.resizeListener);
     this.scrollListener = this.resizeListener = undefined;
 
     const target = commit ? this.activeDropList : null;
@@ -452,7 +492,7 @@ export class DragRef<T = unknown> {
     this.el.style.display = this.sourceDisplay;
     this.el.style.pointerEvents = this.sourcePointerEvents;
     this.el.style.transition = this.sourceTransition;
-    this.el.style.willChange = '';
+    this.el.style.willChange = this.sourceWillChange;
     this.el.style.zIndex = this.previousZIndex;
 
     if (event && target) target.onDrop.emit(event);
@@ -461,6 +501,7 @@ export class DragRef<T = unknown> {
   private updatePreview(): void {
     if (!this.preview || !this.preview.element) return;
 
+    // Preview is fixed in the source document's viewport coordinate space.
     this.preview.element.style.transform = `translate3d(${this.moveDx}px, ${this.moveDy}px, 0)`;
   }
 }

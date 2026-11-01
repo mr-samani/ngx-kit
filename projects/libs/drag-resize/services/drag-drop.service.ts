@@ -3,6 +3,7 @@ import { DragRef } from '../drag-ref';
 import { DropListRef } from '../drop-list-ref';
 import { DropListGroupRef } from '../drop-list-group-ref';
 import { isDocumentNode, isElementNode, isShadowRootNode } from '../utils/element.helper';
+import { convertPointBetweenDocuments } from '../utils/coordinate-transform';
 
 @Injectable({ providedIn: 'root' })
 export class DragDropService {
@@ -55,7 +56,9 @@ export class DragDropService {
         continue;
       }
       if (isDocumentNode(node)) {
-        const frame = (node as Document).defaultView?.frameElement;
+        // Same-origin iframe: continue the logical DOM ancestry through its frame element.
+        // This lets a DropList inside an iframe inherit an outer NgxDropListGroup.
+        const frame = node.defaultView?.frameElement;
         if (frame) {
           node = frame;
           continue;
@@ -86,15 +89,13 @@ export class DragDropService {
         continue;
       }
 
-      // iframe Document
-      // 9 === DOCUMENT_NODE
+      // Cross a same-origin iframe boundary so groups can connect lists in both documents.
       if (node.nodeType === 9) {
         const frame = (node as Document).defaultView?.frameElement;
         if (frame) {
           node = frame;
           continue;
         }
-        // root document
         break;
       }
       node = node.parentNode;
@@ -136,12 +137,19 @@ export class DragDropService {
   ): DropListRef | null {
     const source = origin ?? null;
     if (!source) return null;
-
     let best: DropListRef | null = null;
+    const sourceDocument = dragEl?.ownerDocument ?? source.el?.ownerDocument;
+    if (!sourceDocument) return null;
+
     for (const list of this.dropLists()) {
       if (!list.el || !source.isConnectedTo(list)) continue;
       if (dragEl && dragEl !== list.el && dragEl.contains(list.el)) continue;
-      if (!list._containsPoint(point.x, point.y)) continue;
+      const targetPoint = convertPointBetweenDocuments(
+        point,
+        sourceDocument,
+        list.el.ownerDocument,
+      );
+      if (!targetPoint || !list._containsPoint(targetPoint.x, targetPoint.y)) continue;
 
       if (!best) best = list;
       else if (best.el.contains(list.el))

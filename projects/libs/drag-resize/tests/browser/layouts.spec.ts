@@ -1,4 +1,5 @@
 // @vitest-environment node
+
 import { describe, expect, it } from 'vitest';
 import { run, useBrowser } from './fixture';
 

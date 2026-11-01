@@ -3,7 +3,8 @@ import { afterAll, beforeAll } from 'vitest';
 import { bundleHarness } from './build.mjs';
 
 const CHROME =
-  process.env['CHROMIUM_PATH'] ?? '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell';
+  process.env['CHROMIUM_PATH'] ??
+  '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell';
 
 let browser: Browser;
 let code: string;
@@ -17,7 +18,11 @@ export const BASE_CSS = `
 export function useBrowser() {
   beforeAll(async () => {
     code = await bundleHarness();
-    browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+    browser = await chromium.launch({
+      headless: true,
+      executablePath: CHROME,
+      args: ['--no-sandbox'],
+    });
   });
   afterAll(async () => {
     await browser?.close();
@@ -31,7 +36,9 @@ export async function run<R, A = undefined>(
   arg?: A,
   opts: { css?: string; width?: number; height?: number } = {},
 ): Promise<R> {
-  const page: Page = await browser.newPage({ viewport: { width: opts.width ?? 900, height: opts.height ?? 700 } });
+  const page: Page = await browser.newPage({
+    viewport: { width: opts.width ?? 900, height: opts.height ?? 700 },
+  });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   try {

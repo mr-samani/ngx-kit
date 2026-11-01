@@ -2,7 +2,7 @@
 
 ## Design goals
 
-The package uses Angular 22 signals and Pointer Events. Dragging and resizing remain transform/pointer based. Drop-list sorting is snapshot-based and driven by `translate3d`, like Angular CDK Drag & Drop.
+The package uses Angular 22 signals and Pointer Events. Dragging and resizing remain transform/pointer based. DOM access, event listeners, computed styles and animation frames are resolved from each host element's own `ownerDocument` / `defaultView`, so same-origin iframe documents can host independent builder canvases. Drop-list sorting is snapshot-based and driven by `translate3d`, like Angular CDK Drag & Drop.
 
 ### Professional drop-list behavior
 
@@ -10,6 +10,8 @@ When a drag starts inside a drop list:
 
 - the real item remains in its original DOM position as a hidden layout anchor;
 - exactly one placeholder preserves the item's layout space;
+- a lightweight visual clone is moved to the source element's `ownerDocument.body`, so overflow/scroll containers cannot clip the drag;
+- preview styles are not recursively copied; provide a custom `NgxDragPreview` when the preview needs application-specific styling;
 - entering, leaving and switching lists always disposes the previous placeholder before creating the next one;
 - sorting is a pure function of the pointer and a geometry snapshot taken when the drag enters a list, so it is fully reversible (see below);
 - `previousIndex` is captured from the origin list and `currentIndex` is the final placeholder position;
@@ -20,7 +22,7 @@ When a drag starts inside a drop list:
 
 ### How sorting works
 
-Per pointer position the engine answers *"if I release here, where is the item inserted?"*:
+Per pointer position the engine answers _"if I release here, where is the item inserted?"_:
 
 1. **Snapshot.** When a drag enters a list, the rectangles of its items (with the dragged item's placeholder in its slot) are measured once. They are kept valid across page/parent/nested scrolling by shifting the pointer by the scroll delta, so pointer moves perform no layout reads.
 2. **Resolve.** `resolveInsertionIndex(pointer, snapshot)` counts how many siblings precede the pointer. Orientation is derived from the rectangles (row clustering and the order DOM siblings actually land on screen), so column, row, `flex` (incl. `wrap`, `*-reverse`), `grid`, inline/inline-block, floats, RTL and LTR all use one algorithm; `flex-direction`/`direction` are only a fallback for lists of fewer than two items. A small proportional hysteresis (10 % of the sibling's size, max 6 px) prevents flicker on a mid-line.
@@ -36,7 +38,8 @@ The list the drag started in keeps its original slot (a hole) while the pointer 
 - Nested lists: the innermost connected list under the pointer wins; lists inside the dragged element are never targets.
 - Hit testing only counts the visible (clip-aware) part of a list.
 - Custom placeholder templates (`NgxPlaceholder`) are not rendered by the engine (pre-existing).
-- Scaled (`transform: scale`) ancestors are not compensated.
+- Nested 2D transformed ancestors, especially `transform: scale(...)` and CSS `zoom`, are accounted for when converting viewport pointer deltas, scroll deltas, resize deltas and FLIP/sort offsets into local CSS transform values. Drag vector conversion also handles 2D rotation/skew matrices; resize hit zones remain axis-aligned and should not be used on rotated handles. CSS `perspective` / 3D transform chains are not supported.
+- Each iframe is an independent drag/drop document and coordinate space. The library uses the dragged element's `ownerDocument` and `defaultView`; dragging between documents/iframes (especially cross-origin frames) is not supported.
 
 ## Basic drop list
 

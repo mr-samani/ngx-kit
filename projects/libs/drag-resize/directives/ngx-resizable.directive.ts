@@ -1,4 +1,15 @@
-import { Directive, ElementRef, HostListener, input, model, output, signal } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  Renderer2,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import {
   IResizableOutput,
   LogicalResizeDirection,
@@ -6,6 +17,7 @@ import {
 } from '../contracts/IResizableOutput';
 import { clampResizeWithinBoundary } from '../utils/check-boundary';
 import { isRtl, resolveLogicalDirection } from '../utils/rtl';
+import { getLocalToViewportMatrix, viewportDeltaToLocal } from '../utils/coordinate-transform';
 
 const ALL_DIRECTIONS: ResizeDirection[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
 const KEYBOARD_STEP = 8;
@@ -17,7 +29,7 @@ const KEYBOARD_STEP = 8;
     class: 'ngx-resizable',
   },
 })
-export class NgxResizable {
+export class NgxResizable implements OnDestroy {
   disabled = model<boolean>(false);
   readonly minWidth = model<number>(20);
   readonly minHeight = model<number>(20);
@@ -48,7 +60,18 @@ export class NgxResizable {
   private beforeHeight = '';
   private beforeTransform = '';
   private pointerId = -1;
+  private startWidth = 0;
+  private startHeight = 0;
+  private removeDocumentListeners: Array<() => void> = [];
+  private readonly renderer = inject(Renderer2);
   constructor(private readonly el: ElementRef<HTMLElement>) {}
+
+  ngOnDestroy(): void {
+    if (this.resizing()) {
+      this.restoreBeforeResize();
+      this.finish();
+    }
+  }
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(e: PointerEvent): void {
@@ -81,6 +104,10 @@ export class NgxResizable {
     };
 
     this.beforeTransition = element.style.transition;
+    this.beforeWidth = element.style.width;
+    this.beforeHeight = element.style.height;
+    this.startWidth = element.offsetWidth;
+    this.startHeight = element.offsetHeight;
 
     /**
      * Keep DragRef's transform as the immutable base.
@@ -93,12 +120,23 @@ export class NgxResizable {
     this.resizing.set(true);
     element.style.transition = 'none';
     element.setPointerCapture?.(e.pointerId);
+    const doc = element.ownerDocument;
+    this.removeDocumentListeners = [
+      this.renderer.listen(doc, 'pointermove', (event: PointerEvent) => this.onPointerMove(event)),
+      this.renderer.listen(doc, 'pointerup', (event: PointerEvent) => this.onPointerUp(event)),
+      this.renderer.listen(doc, 'pointercancel', (event: PointerEvent) =>
+        this.onPointerCancel(event),
+      ),
+      this.renderer.listen(doc, 'lostpointercapture', (event: PointerEvent) =>
+        this.onPointerCancel(event),
+      ),
+      this.renderer.listen(doc, 'keydown', (event: KeyboardEvent) => this.onDocumentKeyDown(event)),
+    ];
     const out = this.calculate(e);
     this.apply(out);
     this.resizeStart.emit(out);
   }
 
-  @HostListener('document:pointermove', ['$event'])
   onPointerMove(e: PointerEvent): void {
     if (!this.resizing() || e.pointerId !== this.pointerId) {
       return;
@@ -108,7 +146,6 @@ export class NgxResizable {
     this.resizeMove.emit(out);
   }
 
-  @HostListener('document:pointerup', ['$event'])
   onPointerUp(e: PointerEvent): void {
     if (!this.resizing() || e.pointerId !== this.pointerId) {
       return;
@@ -119,7 +156,6 @@ export class NgxResizable {
     this.finish();
   }
 
-  @HostListener('document:keydown', ['$event'])
   onDocumentKeyDown(e: KeyboardEvent): void {
     if (!this.resizing()) {
       return;
@@ -128,11 +164,21 @@ export class NgxResizable {
       return;
     }
     e.preventDefault();
+    this.restoreBeforeResize();
+    this.finish();
+  }
+
+  private onPointerCancel(e: PointerEvent): void {
+    if (!this.resizing() || e.pointerId !== this.pointerId) return;
+    this.restoreBeforeResize();
+    this.finish();
+  }
+
+  private restoreBeforeResize(): void {
     const element = this.el.nativeElement;
     element.style.width = this.beforeWidth;
     element.style.height = this.beforeHeight;
     element.style.transform = this.beforeTransform;
-    this.finish();
   }
 
   @HostListener('keydown', ['$event'])
@@ -160,11 +206,14 @@ export class NgxResizable {
     e.preventDefault();
     const rect = this.el.nativeElement.getBoundingClientRect();
     const width = this.clampGrid(
-      Math.max(this.minWidth(), Math.min(this.maxWidth(), rect.width + dw)),
+      Math.max(this.minWidth(), Math.min(this.maxWidth(), this.el.nativeElement.offsetWidth + dw)),
       'x',
     );
     const height = this.clampGrid(
-      Math.max(this.minHeight(), Math.min(this.maxHeight(), rect.height + dh)),
+      Math.max(
+        this.minHeight(),
+        Math.min(this.maxHeight(), this.el.nativeElement.offsetHeight + dh),
+      ),
       'y',
     );
     this.el.nativeElement.style.width = `${width}px`;
@@ -183,11 +232,15 @@ export class NgxResizable {
   }
 
   private calculate(e: PointerEvent): IResizableOutput {
-    const dx = e.clientX - this.pointer.x;
-    const dy = e.clientY - this.pointer.y;
+    const localDelta = viewportDeltaToLocal(this.el.nativeElement, {
+      x: e.clientX - this.pointer.x,
+      y: e.clientY - this.pointer.y,
+    });
+    const dx = localDelta.x;
+    const dy = localDelta.y;
 
-    let width = this.start.width;
-    let height = this.start.height;
+    let width = this.startWidth;
+    let height = this.startHeight;
     /**
      * East
      */
@@ -226,15 +279,18 @@ export class NgxResizable {
      * This is useful for boundary calculations and
      * emitted resize events.
      */
+    const matrix = getLocalToViewportMatrix(this.el.nativeElement);
+    const scaleX = Math.hypot(matrix.a, matrix.b) || 1;
+    const scaleY = Math.hypot(matrix.c, matrix.d) || 1;
     let left = this.start.left;
     let top = this.start.top;
 
     if (this.direction.includes('w')) {
-      left = this.start.right - width;
+      left = this.start.right - width * scaleX;
     }
 
     if (this.direction.includes('n')) {
-      top = this.start.bottom - height;
+      top = this.start.bottom - height * scaleY;
     }
 
     let moveLeft = left - this.start.left;
@@ -246,13 +302,13 @@ export class NgxResizable {
       const clamped = clampResizeWithinBoundary(
         this.boundary()?.getBoundingClientRect(),
         this.start,
-        width,
-        height,
+        width * scaleX,
+        height * scaleY,
         moveLeft,
         moveTop,
       );
-      width = clamped.width;
-      height = clamped.height;
+      width = clamped.width / scaleX;
+      height = clamped.height / scaleY;
       moveLeft = clamped.left;
       moveTop = clamped.top;
       left = this.start.left + moveLeft;
@@ -322,8 +378,9 @@ export class NgxResizable {
      */
     const baseTransform =
       this.beforeTransform && this.beforeTransform !== 'none' ? `${this.beforeTransform} ` : '';
+    const localCorrection = viewportDeltaToLocal(element, { x: correctionX, y: correctionY });
     element.style.transform =
-      `${baseTransform}translate3d(` + `${correctionX}px, ` + `${correctionY}px, 0)`;
+      `${baseTransform}translate3d(` + `${localCorrection.x}px, ` + `${localCorrection.y}px, 0)`;
   }
 
   private clampGrid(value: number, axis: 'x' | 'y'): number {
@@ -337,7 +394,13 @@ export class NgxResizable {
   private finish(): void {
     this.resizing.set(false);
     this.el.nativeElement.style.transition = this.beforeTransition;
+    const pointerId = this.pointerId;
     this.pointerId = -1;
+    for (const remove of this.removeDocumentListeners) remove();
+    this.removeDocumentListeners = [];
+    if (pointerId >= 0 && this.el.nativeElement.hasPointerCapture?.(pointerId)) {
+      this.el.nativeElement.releasePointerCapture(pointerId);
+    }
     this.beforeTransform = '';
   }
 
@@ -362,10 +425,9 @@ export class NgxResizable {
      * Explicit resize handle has priority.
      */
     // TODO notsafe instanceof:node.nodeType === Node.ELEMENT_NODE
-    const handle =
-      e.target instanceof HTMLElement
-        ? e.target.closest<HTMLElement>('[data-ngx-resize-handle]')
-        : null;
+    const handle = isHTMLElementTarget(e.target)
+      ? e.target.closest<HTMLElement>('[data-ngx-resize-handle]')
+      : null;
 
     if (handle && element.contains(handle)) {
       const raw = handle.dataset['ngxResizeHandle'] as LogicalResizeDirection | undefined;
@@ -410,4 +472,14 @@ export class NgxResizable {
     }
     return this.resolvedDirections().includes(direction) ? direction : null;
   }
+}
+
+function isHTMLElementTarget(target: EventTarget | null): target is HTMLElement {
+  return (
+    !!target &&
+    typeof target === 'object' &&
+    'nodeType' in target &&
+    (target as Node).nodeType === 1 &&
+    'closest' in target
+  );
 }

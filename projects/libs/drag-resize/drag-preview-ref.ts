@@ -64,9 +64,10 @@ export class DragPreviewRef {
       willChange: 'transform',
       zIndex: PREVIEW_Z_INDEX,
     });
+    const win = doc.defaultView;
     if (isRtl(doc.body)) {
       Object.assign(this.element.style, {
-        right: `${window.innerWidth - rect.right}px`,
+        right: `${(win?.innerWidth ?? rect.right) - rect.right}px`,
         left: 'auto',
       });
     } else {
@@ -76,8 +77,8 @@ export class DragPreviewRef {
       });
     }
 
-    doc.body.appendChild(this.element);
-    return  this.element
+    (doc.body ?? doc.documentElement).appendChild(this.element);
+    return this.element;
   }
 
   detach() {

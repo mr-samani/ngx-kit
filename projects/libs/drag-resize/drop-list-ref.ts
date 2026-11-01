@@ -544,11 +544,12 @@ export class DropListRef<T = any> {
 
 /** Orientation to assume while a list has fewer than two items to measure. */
 function fallbackAxis(container: HTMLElement): 'x' | 'y' {
-  const s = getComputedStyle(container);
-  if (s.display.includes('flex')) return s.flexDirection.startsWith('column') ? 'y' : 'x';
-  if (s.display.includes('grid')) return 'y';
+  const win = container.ownerDocument.defaultView;
+  const s = win?.getComputedStyle(container);
+  if (s?.display.includes('flex')) return s.flexDirection.startsWith('column') ? 'y' : 'x';
+  if (s?.display.includes('grid')) return 'y';
   const child = container.firstElementChild;
-  if (child && getComputedStyle(child).display.startsWith('inline')) return 'x';
+  if (child && win?.getComputedStyle(child).display.startsWith('inline')) return 'x';
   return 'y';
 }
 
@@ -566,7 +567,8 @@ function measureHit(el: HTMLElement): HitGeometry | null {
   const clips: HitGeometry['clips'] = [];
   const root = el.ownerDocument.documentElement;
   for (let node = el.parentElement; node && node !== root; node = node.parentElement) {
-    const s = getComputedStyle(node);
+    const s = node.ownerDocument.defaultView?.getComputedStyle(node);
+    if (!s) continue;
     const cx = s.overflowX !== 'visible';
     const cy = s.overflowY !== 'visible';
     if (!cx && !cy) continue;

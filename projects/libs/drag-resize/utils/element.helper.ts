@@ -7,7 +7,7 @@ export abstract class ElementHelper {
     return false;
   }
   public static findParentBySelector(elm: HTMLElement, selector: string): HTMLElement | null {
-    var all = document.querySelectorAll(selector);
+    var all = elm.ownerDocument.querySelectorAll(selector);
     var cur = elm.parentNode as HTMLElement;
     while (cur && !ElementHelper.collectionHas(all, cur)) {
       //keep going up until you find a match
@@ -42,11 +42,11 @@ export function getFirstLevelDraggables(container: HTMLElement): HTMLElement[] {
 }
 
 export function isElementNode(node: Node): node is Element {
-  return node?.nodeType === Node.ELEMENT_NODE;
+  return node?.nodeType === Node.ELEMENT_NODE; // 1
 }
 
 export function isDocumentNode(node: Node | null): node is Document {
-  return node?.nodeType === Node.DOCUMENT_NODE;
+  return node?.nodeType === Node.DOCUMENT_NODE; // 9
 }
 
 export function isShadowRootNode(node: Node | null): node is ShadowRoot {
@@ -54,6 +54,7 @@ export function isShadowRootNode(node: Node | null): node is ShadowRoot {
 }
 
 export function getOwnerWindow(node: Node): Window | null {
+  if (isDocumentNode(node)) return node.defaultView;
   return node?.ownerDocument?.defaultView ?? null;
 }
 export function isWindow(value: unknown): value is Window {

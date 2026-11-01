@@ -40,11 +40,8 @@ function isLogicalDirection(dir: string): dir is LogicalDirectionKey {
  * itself - it's usually set on `<html>`, `<body>`, or some ancestor wrapper.
  */
 export function isRtl(element: HTMLElement): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  return window.getComputedStyle(element).direction === 'rtl';
+  const win = element.ownerDocument.defaultView;
+  return win ? win.getComputedStyle(element).direction === 'rtl' : false;
 }
 
 /**

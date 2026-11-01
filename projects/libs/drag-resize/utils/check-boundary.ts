@@ -85,12 +85,13 @@ export function clampResizeWithinBoundary(
 }
 
 /** Current page zoom level (1 = 100%). Falls back to devicePixelRatio pre visualViewport. */
-export function getPageZoom(): number {
-  return window.visualViewport?.scale ?? window.devicePixelRatio ?? 1;
+export function getPageZoom(element?: HTMLElement): number {
+  const win = element?.ownerDocument.defaultView ?? (typeof window !== 'undefined' ? window : null);
+  return win?.visualViewport?.scale ?? win?.devicePixelRatio ?? 1;
 }
 
 /** Adjusts a raw pointer-derived value for the current page zoom level. */
-export function adjustForZoom(value: number): number {
-  const zoom = getPageZoom();
+export function adjustForZoom(value: number, element?: HTMLElement): number {
+  const zoom = getPageZoom(element);
   return zoom ? value / zoom : value;
 }
