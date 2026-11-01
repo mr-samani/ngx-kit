@@ -33,17 +33,17 @@ describe('routing', () => {
     });
     const h = await RouterTestingHarness.create();
     await h.navigateByUrl('/setting');
-    expect(seen.request).toBe('درخواست');
+    expect(seen['request']).toBe('درخواست');
     await h.navigateByUrl('/setting/deep/er');
-    expect(seen.request).toBe('درخواست');
+    expect(seen['request']).toBe('درخواست');
     await h.navigateByUrl('/orders');
-    expect(seen.title).toBe('سفارش‌ها');
+    expect(seen['title']).toBe('سفارش‌ها');
     expect(FakeLoader.calls.filter((c) => c === 'fa|setting').length).toBe(1);
 
     await TestBed.inject(I18nService).use('en');
     await h.navigateByUrl('/setting');
-    expect(seen.request).toBe('Request');
+    expect(seen['request']).toBe('Request');
     await h.navigateByUrl('/orders');
-    expect(seen.title).toBe('Orders');
+    expect(seen['title']).toBe('Orders');
   });
 });

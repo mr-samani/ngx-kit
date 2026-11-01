@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NgxInputDatePickerComponent } from './ngx-datepicker.component';
-import { DATE_ADAPTERS } from '../../adapters/consts';
 import { GregorianAdapter } from '../../adapters/locales/gregorian.adapter';
+import { DATE_ADAPTERS } from '../../tokens/adapters';
 
 describe('NgxInputDatePickerComponent', () => {
   let component: NgxInputDatePickerComponent;

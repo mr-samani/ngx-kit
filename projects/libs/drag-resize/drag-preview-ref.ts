@@ -1,5 +1,5 @@
 import { ApplicationRef, TemplateRef, type EmbeddedViewRef } from '@angular/core';
-import { isRtl } from './public-api';
+import { isRtl } from './utils/rtl';
 
 /** Above any app chrome (modals, sticky headers) but below the browser's own UI. */
 const PREVIEW_Z_INDEX = '2147483000';

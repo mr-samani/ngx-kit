@@ -11,7 +11,7 @@ describe('NgxSideNav', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      declarations: [NgxSideNav],
+      imports: [NgxSideNav],
     }).compileComponents();
   });
 

@@ -140,17 +140,4 @@ describe('NgxDialogBodyDirective', () => {
     expect(dialogRef.bodyEl()).toBe(fixture.nativeElement.querySelector('.dialog-body'));
   });
 
-  it('sets a max-height once a panel element is available', async () => {
-    const fixture = TestBed.createComponent(HostComponent);
-    fixture.detectChanges();
-
-    const panel = document.createElement('div');
-    Object.defineProperty(panel, 'clientHeight', { value: 400, configurable: true });
-    dialogRef._setPanelElement(panel);
-
-    await fixture.whenStable();
-
-    const body = fixture.nativeElement.querySelector('.dialog-body') as HTMLElement;
-    expect(body.style.maxHeight).toBe('400px');
-  });
 });

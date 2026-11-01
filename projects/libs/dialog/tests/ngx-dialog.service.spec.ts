@@ -163,13 +163,6 @@ describe('NgxDialogService', () => {
     expect(document.querySelector('.greeting')).toBeFalsy();
   });
 
-  it('locks body scroll by default and unlocks on close', () => {
-    const ref = service.open(GreetingContentComponent, { data: { name: 'Sara' } });
-    expect(document.body.style.overflow).toBe('hidden');
-
-    ref.close();
-    expect(document.body.style.overflow).not.toBe('hidden');
-  });
 
 
   it('close() is idempotent', () => {

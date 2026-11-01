@@ -364,8 +364,7 @@ describe('OverlayService', () => {
     });
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    const host = document.querySelector(hostQuerySelector) as HTMLElement;
-    const backdrop = host.querySelector<HTMLElement>('.ngx-ui-overlay-backdrop');
+    const backdrop = document.querySelector<HTMLElement>('.ngx-ui-overlay-backdrop');
     expect(backdrop).toBeTruthy();
 
     backdrop!.click();

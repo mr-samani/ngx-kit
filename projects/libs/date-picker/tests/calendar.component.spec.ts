@@ -36,7 +36,7 @@ describe('NgxCalendarComponent', () => {
     fixture = TestBed.createComponent(NgxCalendarComponent);
     component = fixture.componentInstance;
 
-    fixture.componentRef.instance.locale = 'en';
+    fixture.componentRef.setInput('locale', 'en');
 
     fixture.componentRef.setInput('events', []);
     fixture.componentRef.setInput('resizeAndMovable', true);

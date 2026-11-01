@@ -277,8 +277,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
         // a pointerup that has no preceding pointermove at that position).
         const p = { x: e.clientX, y: e.clientY };
         if (p.x !== this.lastPointer.x || p.y !== this.lastPointer.y) this._ref.dragMove(p);
-        this._ref.endDrag();
       }
+      this._ref.endDrag();
       this.service.end(this._ref);
     }
     this.finish();

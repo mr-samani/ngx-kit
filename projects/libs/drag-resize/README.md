@@ -10,8 +10,6 @@ When a drag starts inside a drop list:
 
 - the real item remains in its original DOM position as a hidden layout anchor;
 - exactly one placeholder preserves the item's layout space;
-- a fully styled visual clone is moved to `document.body`, so overflow/scroll containers cannot clip the drag;
-- the body preview copies computed styles recursively, including CSS custom properties and descendant styles;
 - entering, leaving and switching lists always disposes the previous placeholder before creating the next one;
 - sorting is a pure function of the pointer and a geometry snapshot taken when the drag enters a list, so it is fully reversible (see below);
 - `previousIndex` is captured from the origin list and `currentIndex` is the final placeholder position;
