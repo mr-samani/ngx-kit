@@ -1,3 +1,11 @@
+@if (_routerProgressService.isVisible()) {
+  <div class="router-progress">
+    <div
+      class="router-progress-bar"
+      [style.width.%]="_routerProgressService.progress()"
+    ></div>
+  </div>
+}
 <app-header></app-header>
 <div class="demo-shell">
   <router-outlet />
