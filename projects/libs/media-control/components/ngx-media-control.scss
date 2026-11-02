@@ -88,7 +88,8 @@ button:focus {
   outline: none;
 }
 
-.seek-slider {
+.seek-slider,
+.volume-slider {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
@@ -99,20 +100,22 @@ button:focus {
   cursor: pointer;
 }
 
-.seek-slider::-webkit-slider-thumb {
+.seek-slider::-webkit-slider-thumb,
+.volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 15px;
   height: 15px;
-  background-color: var(--ngx-audio-control-primary);
+  background-color: var(--ngx-audio-control-slider);
   border-radius: 50%;
   cursor: pointer;
 }
 
-.seek-slider::-moz-range-thumb {
+.seek-slider::-moz-range-thumb,
+.volume-slider::-moz-range-thumb {
   width: 15px;
   height: 15px;
-  background-color: var(--ngx-audio-control-primary);
+  background-color: var(--ngx-audio-control-slider);
   border-radius: 50%;
   cursor: pointer;
 }

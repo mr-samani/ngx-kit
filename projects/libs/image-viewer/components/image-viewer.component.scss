@@ -156,5 +156,9 @@
     &--inner {
       gap: 0.3rem;
     }
+    button {
+      inline-size: 28px;
+      block-size: 28px;
+    }
   }
 }

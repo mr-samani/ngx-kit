@@ -4,12 +4,14 @@ import {
   type ExampleSourceFile,
 } from '@demo/shared/showcase/example-showcase.component';
 import { NgxMediaControl, NgxMediaSource } from 'ngx-kit/media-control';
+import { NgxInputColor } from 'ngx-kit/color-picker';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-media-control',
   templateUrl: './media-control.component.html',
   styleUrls: ['./media-control.component.scss'],
-  imports: [ExampleShowcaseComponent, NgxMediaControl],
+  imports: [ExampleShowcaseComponent, NgxMediaControl, NgxInputColor, FormsModule],
 })
 export class DemoMediaControlComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
@@ -42,6 +44,8 @@ export class DemoMediaControlComponent {
       type: 'audio/ogg',
     },
   ];
+
+  color = '';
 
   /** Video, native MP4 — fullscreen/PiP controls appear automatically when the browser supports them. */
   protected readonly videoSource: NgxMediaSource[] = [

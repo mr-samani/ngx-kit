@@ -3,18 +3,29 @@
   [files]="sourceFiles"
   readmePath="readmes/media-control/README.md">
   <h3>Audio (type="audio")</h3>
+
+  <input type="color" [(ngModel)]="color" ngxInputColor />
+
   <ngx-media-control
     class="audio-player"
     type="audio"
     [sources]="audioPlaylist"
     [download]="true"
     (trackChange)="onTrackChange($event)"
-    (error)="onError($event)"></ngx-media-control>
+    (error)="onError($event)"
+    [style.--ngx-audio-control-icon]="color"
+    [style.--ngx-audio-control-slider]="color"
+    [style.--ngx-audio-control-thumb]="color"
+    [style.--ngx-audio-control-primary]="color"></ngx-media-control>
 
   <h3>Video (type="video") — fullscreen / PiP shown when supported</h3>
   <ngx-media-control
     type="video"
     [sources]="videoSource"
     [showList]="false"
-    (error)="onError($event)"></ngx-media-control>
+    (error)="onError($event)"
+    [style.--ngx-audio-control-icon]="color"
+    [style.--ngx-audio-control-slider]="color"
+    [style.--ngx-audio-control-thumb]="color"
+    [style.--ngx-audio-control-primary]="color"></ngx-media-control>
 </app-example-showcase>
