@@ -2,6 +2,15 @@ import { ICategory } from './interfaces/ICategory';
 
 export const MENU_LIST: ICategory[] = [
   {
+    name: 'Localization and translation',
+    items: [
+      {
+        title: 'I18n',
+        url: '/components/i18n',
+      },
+    ],
+  },
+  {
     name: 'Message & Dialog & Notify & Tooltip',
     items: [
       {
