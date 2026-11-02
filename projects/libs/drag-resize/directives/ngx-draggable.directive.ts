@@ -55,6 +55,17 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   readonly keyboardStep = input<number>(DEFAULT_KEYBOARD_STEP);
   /** Auto-scroll the nearest scrollable ancestor while dragging near its edge. */
   readonly autoScroll = input<boolean>(true);
+  /**
+   * Presses that start inside an element matching this selector never start a drag (the element
+   * stays fully usable: text caret, clicks, selection). Handy for editable regions of a block.
+   */
+  readonly noDragSelector = input<string>('[data-no-drag]');
+  /**
+   * When `true`, presses on native interactive controls (`button, a, input, textarea, select`,
+   * `[contenteditable]`) do not start a drag either. Off by default so that a page-builder canvas
+   * block can be grabbed by its own button/link, which is exactly what you want while editing.
+   */
+  readonly ignoreInteractive = input<boolean>(false);
   @Input('data') set data(v: T) {
     this._ref.data = v;
   }
@@ -87,6 +98,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   private lastWindowScroll = { left: 0, top: 0 };
   private removeContainerScroll?: () => void;
   private removeWindowScroll?: () => void;
+  private removeDocKeydown?: () => void;
+  private keyboardDrag = false;
 
   protected readonly renderer = inject(Renderer2);
   constructor(private readonly host: ElementRef<HTMLElement>) {
@@ -140,6 +153,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     this.removeEscape?.();
     this.removeCancel?.();
     this.removeLostCapture?.();
+    this.removeDocKeydown?.();
     this.scroller.stop();
     this.stopScrollTracking();
     // Destroyed mid-drag (e.g. the model changed underneath us): never leave a body clone behind.
@@ -152,7 +166,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     if (
       this.disabled() ||
       e.button !== 0 ||
-      // this.isInteractive(e.target) ||
+      this.isExcluded(e.target) ||
       !this.isOnHandle(e.target)
     )
       return;
@@ -162,19 +176,30 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     claimedPointerEvents.add(e);
     e.preventDefault();
     this.down = true;
+    this.keyboardDrag = false;
     this.pointerId = e.pointerId;
-    this._ref.el.setPointerCapture(this.pointerId);
+    // Pointer capture keeps move/up events flowing to this document even while the pointer is
+    // over an <iframe> (the page-builder canvas). It can throw (pointer already gone, synthetic
+    // events from automation tools) — in that case we simply fall back to plain document events.
+    try {
+      this._ref.el.setPointerCapture(this.pointerId);
+    } catch {
+      /* not capturable: document level listeners below still work inside this document */
+    }
     this.start = { x: e.clientX, y: e.clientY };
     this._ref.boundary = this.boundary();
     this._ref.lockAxis = this.lockAxis();
     this._ref.pointerDown(this.start);
-    this.removeMove = this.renderer.listen(this._ref.el, 'pointermove', (ev: PointerEvent) =>
+    const doc = this._ref.el.ownerDocument;
+    // Listen on the DOCUMENT (captured events bubble up to it): this keeps working when the
+    // dragged element is re-rendered / detached by the framework mid-drag, and it is the same
+    // for real captured events and for events dispatched by test tooling.
+    this.removeMove = this.renderer.listen(doc, 'pointermove', (ev: PointerEvent) =>
       this.pointerMove(ev),
     );
-    this.removeUp = this.renderer.listen(this._ref.el, 'pointerup', (ev: PointerEvent) =>
+    this.removeUp = this.renderer.listen(doc, 'pointerup', (ev: PointerEvent) =>
       this.pointerUp(ev),
     );
-    const doc = this._ref.el.ownerDocument;
     this.removeEscape = this.renderer.listen(doc, 'keydown', (ev: KeyboardEvent) => {
       if (ev.key === 'Escape' && this.dragging()) this.cancel();
     });
@@ -272,9 +297,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   private pointerUp(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
 
-    if (this._ref.el.hasPointerCapture(this.pointerId)) {
-      this._ref.el.releasePointerCapture(this.pointerId);
-    }
+    this.releaseCapture();
 
     if (this.dragging()) {
       // Also when released OUTSIDE every list: endDrag() rolls the drag back and cleans up.
@@ -287,6 +310,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
       // endDrag must run for free drags too, otherwise their lifecycle never completes.
       this._ref.endDrag();
       this.service.end(this._ref);
+      // The browser still fires a `click` on the captured element after the button is released.
+      // After a real drag that click must not select the block / follow its link.
+      this.swallowNextClick();
     }
     this.finish();
     this.dragEnd.emit(this._ref.pointer);
@@ -302,6 +328,17 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     this.pointerUp(e);
   }
 
+  private releaseCapture(): void {
+    if (this.pointerId < 0) return;
+    try {
+      if (this._ref.el.hasPointerCapture?.(this.pointerId)) {
+        this._ref.el.releasePointerCapture(this.pointerId);
+      }
+    } catch {
+      /* element detached or pointer already released */
+    }
+  }
+
   private cancel(): void {
     this._ref.cancelDrag();
     this.service.end(this._ref);
@@ -309,9 +346,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   }
 
   private finish(): void {
-    if (this.pointerId >= 0 && this._ref.el.hasPointerCapture?.(this.pointerId)) {
-      this._ref.el.releasePointerCapture(this.pointerId);
-    }
+    this.releaseCapture();
+    this.removeDocKeydown?.();
+    this.removeDocKeydown = undefined;
     this.dragging.set(false);
     this.down = false;
     this.scroller.stop();
@@ -325,9 +362,19 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     this.removeCancel = this.removeLostCapture = undefined;
   }
 
+  /** Keys already processed (the host listener and the document listener may both see one). */
+  private readonly handledKeys = new WeakSet<Event>();
+
   /** Arrow-key movement for keyboard/assistive-tech users. Shift multiplies the step by 4. */
   private keyDown(e: KeyboardEvent): void {
-    if (this.disabled()) return;
+    if (this.disabled() || this.handledKeys.has(e)) return;
+    // Only the draggable ITSELF being focused means "move me". Arrow keys typed into an input,
+    // a textarea or a contenteditable region inside the block belong to that control (caret
+    // movement), and must never start a drag or be swallowed.
+    if (e.target !== this.host.nativeElement && e.target !== this._ref.el && !this.dragging()) return;
+    if (this.dragging() && isEditableTarget(e.target)) return;
+    this.handledKeys.add(e);
+
     const step = this.keyboardStep() * (e.shiftKey ? 4 : 1);
     const deltas: Record<string, IPosition> = {
       ArrowLeft: { x: -step, y: 0 },
@@ -353,6 +400,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
         this.dragging.set(true);
         this.service.begin(this._ref);
         this.startScrollTracking();
+        this.beginKeyboardSession();
         this.dragStart.emit(origin);
       }
       this._ref.nudge(delta.x, delta.y);
@@ -365,12 +413,50 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
       this.service.end(this._ref);
       this.dragEnd.emit(this._ref.pointer);
       this.finish();
+      this.restoreFocus();
     } else if (e.key === 'Escape' && this.dragging()) {
       e.preventDefault();
       this._ref.cancelDrag();
       this.service.end(this._ref);
       this.finish();
+      this.restoreFocus();
     }
+  }
+
+  /**
+   * A list item is `display:none` while it is being moved, so the browser drops its focus and
+   * the following arrow/Enter/Escape presses would go to <body>. Listen on the document for the
+   * duration of a keyboard drag so the gesture keeps working.
+   */
+  private beginKeyboardSession(): void {
+    this.keyboardDrag = true;
+    this.removeDocKeydown?.();
+    this.removeDocKeydown = this.renderer.listen(
+      this._ref.el.ownerDocument,
+      'keydown',
+      (ev: KeyboardEvent) => this.keyDown(ev),
+    );
+  }
+
+  private restoreFocus(): void {
+    this.removeDocKeydown?.();
+    this.removeDocKeydown = undefined;
+    if (this.keyboardDrag) {
+      this.keyboardDrag = false;
+      this._ref.el.focus?.({ preventScroll: true });
+    }
+  }
+
+  /** Swallow the single `click` the browser dispatches right after a completed drag. */
+  private swallowNextClick(): void {
+    const doc = this._ref.el.ownerDocument;
+    const stop = (ev: Event) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+    };
+    doc.addEventListener('click', stop, { capture: true, once: true });
+    // If no click follows (pointer released elsewhere), do not eat the user's NEXT real click.
+    doc.defaultView?.setTimeout(() => doc.removeEventListener('click', stop, { capture: true }), 0);
   }
 
   private isOnHandle(target: EventTarget | null): boolean {
@@ -379,12 +465,22 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     return isElementTarget(target) && !!target.closest(this.dragHandle());
   }
 
-  private isInteractive(target: EventTarget | null): boolean {
-    // TODO notsafe instanseof: node.nodeType === Node.ELEMENT_NODE
-    return (
-      isElementTarget(target) && !!target.closest('button,a,input,textarea,select,[data-no-drag]')
-    );
+  /** Should a press on `target` be left alone (no drag)? */
+  private isExcluded(target: EventTarget | null): boolean {
+    if (!isElementTarget(target)) return false;
+    const selector = this.noDragSelector();
+    if (selector && target.closest(selector)) return true;
+    return this.ignoreInteractive() && isEditableOrInteractive(target);
   }
+}
+
+function isEditableOrInteractive(el: HTMLElement): boolean {
+  return !!el.closest('button,a[href],input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!isElementTarget(target)) return false;
+  return !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
 }
 
 function isElementTarget(target: EventTarget | null): target is HTMLElement {

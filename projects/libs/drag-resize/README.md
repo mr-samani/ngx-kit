@@ -74,3 +74,39 @@ The emitted event follows the familiar `previousIndex/currentIndex` model, makin
 ```
 
 Resize is pointer based, supports all eight directions, minimum/maximum constraints and optional pixel snapping.
+
+## Page-builder usage (palette in the page, canvas in an `<iframe>`)
+
+```html
+<div NgxDropListGroup>
+  <div NgxDropList>               <!-- palette (host document) -->
+    <div NgxDraggable *ngFor="...">Hero</div>
+  </div>
+  <!-- inside the iframe's document, rendered by the same Angular app: -->
+  <main NgxDropList placeholderFit="stretch" (drop)="onDrop($event)">
+    <section NgxDraggable [noDragSelector]="'[data-no-drag], [contenteditable]'">…</section>
+  </main>
+</div>
+```
+
+What the engine handles for a same-origin iframe canvas:
+
+- pointer capture keeps `pointermove/up` flowing while the pointer is over the iframe; the pointer is converted between the two viewports (iframe offset, border and `transform: scale()` on the `<iframe>` element);
+- scroll and resize listeners are attached to **every** document that hosts a candidate list, so scrolling the canvas (wheel, scrollbar, auto-scroll) re-resolves the insertion point under a still pointer;
+- auto-scroll scrolls the iframe's own scroller using the pointer converted into the iframe's coordinates (and `<html>`/`<body>` scrollers use the window viewport);
+- only the visible part of the iframe counts as "over the list" (a tall canvas does not extend below the iframe), including iframes without `<!doctype>`;
+- the placeholder is sized in the list's own CSS pixels (correct under scaled/zoomed ancestors and scaled iframes). `placeholderFit="stretch"` makes it fill the list's cross axis (a 150px palette tile in a full-width canvas).
+
+Editing inside blocks:
+
+- `[noDragSelector]` (default `[data-no-drag]`) and `[ignoreInteractive]` keep text caret / buttons / inputs usable;
+- arrow keys only move a draggable/resizable when the element itself has focus (not when typed in an input or `contenteditable` inside it);
+- the `click` the browser fires right after a real drag is swallowed (no accidental select / link follow).
+
+Exporting: the directives add `ngx-*` classes, `tabindex="0"`, `aria-grabbed` and `touch-action:none`. Use `getCleanHtml(canvasEl)` (or `stripEditorArtifacts(clone)`) when saving the page.
+
+Known limits: cross-origin iframes (no coordinate access), iframes clipped by an `overflow:hidden` ancestor in the host (not clip-tested), `touch-action:none` on draggables blocks touch scrolling that starts on a block (use `dragHandle`), the sorting preview of items with different collapsing margins is approximated until drop, `transform` on a rotated ancestor for resize hit-zones.
+
+## Tests
+
+`tests/browser/*.spec.ts` run in real Chromium (Playwright + vitest, set `CHROMIUM_PATH`); `tests/browser/page-builder.spec.ts` covers palette → iframe canvas, iframe scroll/auto-scroll, scaled iframes, editing inside blocks, resizing and export cleanup.

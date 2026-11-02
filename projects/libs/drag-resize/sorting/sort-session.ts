@@ -1,5 +1,10 @@
 import { isElementNode } from '../utils/element.helper';
-import { viewportDeltaToLocal } from '../utils/coordinate-transform';
+import {
+  ILinearTransform,
+  applyLinear,
+  getLocalToViewportMatrix,
+  invertLinear,
+} from '../utils/coordinate-transform';
 import { ScrollFrame } from '../utils/scroll-frame';
 import {
   Axis,
@@ -108,6 +113,13 @@ export class SortSession {
   /** undefined = not created yet, null = this layout has no whitespace separators. */
   private spacer: Text | null | undefined;
   private readonly onOffsetChange?: (el: HTMLElement, offset: Point) => void;
+  /**
+   * viewport → local-CSS-pixel matrix of the container's coordinate space. Every slot is a direct
+   * child of the container, so ONE matrix serves all of them. It is computed lazily and kept for
+   * the whole session: walking the ancestor chain with `getComputedStyle` on every displacement
+   * would put style reads on the hot path (see the "zero style reads per move" test).
+   */
+  private inverse: ILinearTransform | null | undefined;
 
   constructor(init: SortSessionInit) {
     this.spacer = init.spacer;
@@ -192,6 +204,7 @@ export class SortSession {
     if (this.disposed) return;
     const target = this.targetIdx;
     this.clearDisplacement();
+    this.inverse = undefined; // the viewport may have changed the ancestors' transforms
     this.snapshot();
     this.frame = new ScrollFrame(this.container, true);
     if (this.mode === 'transform') {
@@ -295,10 +308,17 @@ export class SortSession {
       e.el.style.transform = e.savedTransform;
     } else {
       this.applied.set(e.el, off);
-      const local = viewportDeltaToLocal(e.el, off, false);
+      const local = this.toLocal(off);
       e.el.style.transform = `translate3d(${local.x}px, ${local.y}px, 0)${e.base}`;
     }
     this.onOffsetChange?.(e.el, off);
+  }
+
+  private toLocal(delta: Point): Point {
+    if (this.inverse === undefined) {
+      this.inverse = invertLinear(getLocalToViewportMatrix(this.container, true));
+    }
+    return applyLinear(this.inverse, delta);
   }
 
   // ---------------------------------------------------------------------------------------
@@ -327,7 +347,7 @@ export class SortSession {
       const dx = first[i].left - last[i].left;
       const dy = first[i].top - last[i].top;
       if (this.animationMs > 0 && (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5)) {
-        const local = viewportDeltaToLocal(e.el, { x: dx, y: dy }, false);
+        const local = this.toLocal({ x: dx, y: dy });
         e.el.style.transform = `translate3d(${local.x}px, ${local.y}px, 0)${e.base}`;
         moved.push(e);
       }

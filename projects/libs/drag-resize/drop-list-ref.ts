@@ -14,6 +14,7 @@ import {
 } from './sorting/layout-geometry';
 import { SortSession, makeSpacer } from './sorting/sort-session';
 import { isRtl } from './utils/rtl';
+import { convertSizeBetweenDocuments, getLocalScale } from './utils/coordinate-transform';
 import { ScrollFrame } from './utils/scroll-frame';
 import { isElementNode } from './utils/element.helper';
 
@@ -37,6 +38,14 @@ export class DropListRef<T = any> {
   dropListGroup?: DropListGroupRef | null;
   /** Duration (ms) of the sibling slide animation. `0` disables animation. */
   sortAnimationDuration = 200;
+  /**
+   * How the auto-generated placeholder is sized.
+   *  - `'item'` (default): exactly the dragged item's footprint.
+   *  - `'stretch'`: only the MAIN axis follows the item; the cross axis fills the list. This is
+   *    what a page-builder canvas wants when a small palette tile is dragged into a full-width
+   *    column of blocks (the tile's own width means nothing there).
+   */
+  placeholderFit: 'item' | 'stretch' = 'item';
 
   readonly _draggables = new Set<DragRef<T>>();
   readonly onDrop = new EventEmitter<IDropEvent<T>>();
@@ -526,14 +535,39 @@ export class DropListRef<T = any> {
 
     placeholder.style.display = drag.originalDisplay;
 
+    // `rect` is in the VIEWPORT pixels of the dragged item's document. CSS sizes are local to the
+    // list: convert across an (optionally scaled) iframe boundary first, then through the
+    // list's own scaled/zoomed ancestors. Without this a placeholder inside a `scale(.5)` canvas
+    // would be drawn at half the size it reserves.
+    const inTarget =
+      convertSizeBetweenDocuments(
+        { x: rect.width, y: rect.height },
+        drag.el.ownerDocument,
+        this.el.ownerDocument,
+      ) ?? { x: rect.width, y: rect.height };
+    const scale = getLocalScale(this.el);
+    const width = Math.abs(inTarget.x) / scale.x;
+    const height = Math.abs(inTarget.y) / scale.y;
+
     // Occupies exactly the dragged item's footprint, so the gap reserved in the list — and the
     // sibling-displacement math derived from it — matches the item's real size.
-    set('width', `${rect.width}px`);
-    set('height', `${rect.height}px`);
-    // set('min-width', `${rect.width}px`);
-    // set('min-height', `${rect.height}px`);
-    // set('max-width', `${rect.width}px`);
-    // set('max-height', `${rect.height}px`);
+    const axis = this.placeholderFit === 'stretch' ? fallbackAxis(this.el) : null;
+    if (axis === 'y') {
+      // vertical stack: the width is whatever the list gives its children
+      set('width', 'auto');
+      set('max-width', 'none');
+      if (placeholder.style.display === 'inline' || placeholder.style.display === 'inline-block') {
+        placeholder.style.display = 'block';
+      }
+    } else {
+      set('width', `${width}px`);
+    }
+    if (axis === 'x') {
+      set('height', 'auto');
+      set('max-height', 'none');
+    } else {
+      set('height', `${height}px`);
+    }
     set('visibility', 'visible');
     set('opacity', '0.16');
     set('pointer-events', 'none');
@@ -566,6 +600,24 @@ function measureHit(el: HTMLElement): HitGeometry | null {
 
   const clips: HitGeometry['clips'] = [];
   const root = el.ownerDocument.documentElement;
+  // The visible window of the document itself. Matters for a list inside an <iframe>: a tall
+  // canvas extends far below the iframe's viewport, and a pointer that is already outside the
+  // frame (toolbar, footer) must not count as "over the list".
+  const ownerWin = el.ownerDocument.defaultView;
+  if (ownerWin?.frameElement) {
+    // In quirks mode (an iframe written without <!doctype>) `documentElement.clientHeight` is the
+    // height of the CONTENT, and the viewport size lives on <body> instead.
+    const sizer = el.ownerDocument.compatMode === 'CSS1Compat' ? root : (el.ownerDocument.body ?? root);
+    clips.push({
+      box: {
+        left: 0,
+        top: 0,
+        right: sizer.clientWidth || ownerWin.innerWidth,
+        bottom: sizer.clientHeight || ownerWin.innerHeight,
+      },
+      frame: new ScrollFrame(null, false, null), // the window clip never moves with scrolling
+    });
+  }
   for (let node = el.parentElement; node && node !== root; node = node.parentElement) {
     const s = node.ownerDocument.defaultView?.getComputedStyle(node);
     if (!s) continue;

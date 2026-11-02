@@ -1,5 +1,5 @@
 import { isWindow } from './element.helper';
-import { viewportDeltaToLocal } from './coordinate-transform';
+import { convertPointBetweenDocuments, viewportDeltaToLocal } from './coordinate-transform';
 
 /**
  * Auto-scrolls the nearest scrollable ancestor (or window) while the pointer
@@ -10,6 +10,8 @@ export class AutoScroller {
   private raf = 0;
   private container!: HTMLElement | Window;
   private win?: Window;
+  /** Document the pointer coordinates (`update(x, y)`) are expressed in. */
+  private pointerDoc?: Document;
   private speed = { x: 0, y: 0 };
   private onTick?: () => void;
   private readonly edge: number;
@@ -23,6 +25,7 @@ export class AutoScroller {
   /** onTick اجرا می‌شود بعد از هر گام اسکرول، تا با آخرین موقعیت pointer، sort/placeholder به‌روز شود. */
   start(fromEl: HTMLElement, onTick?: () => void): void {
     this.win = fromEl.ownerDocument.defaultView ?? undefined;
+    this.pointerDoc = fromEl.ownerDocument;
     this.container = findScrollableAncestor(fromEl);
     this.onTick = onTick;
   }
@@ -33,10 +36,24 @@ export class AutoScroller {
   }
 
   update(clientX: number, clientY: number): void {
+    // The scroll container may live in another document (a page-builder iframe). Its rect is in
+    // THAT document's viewport pixels, so bring the pointer into the same space first.
+    let x = clientX;
+    let y = clientY;
+    const containerDoc = documentOf(this.container);
+    if (this.pointerDoc && containerDoc && containerDoc !== this.pointerDoc) {
+      const p = convertPointBetweenDocuments({ x, y }, this.pointerDoc, containerDoc);
+      if (!p) {
+        this.speed = { x: 0, y: 0 };
+        return;
+      }
+      x = p.x;
+      y = p.y;
+    }
     const rect = getScrollRect(this.container);
     this.speed = {
-      x: edgeSpeed(clientX, rect.left, rect.right, this.edge, this.maxSpeed),
-      y: edgeSpeed(clientY, rect.top, rect.bottom, this.edge, this.maxSpeed),
+      x: edgeSpeed(x, rect.left, rect.right, this.edge, this.maxSpeed),
+      y: edgeSpeed(y, rect.top, rect.bottom, this.edge, this.maxSpeed),
     };
     if ((this.speed.x || this.speed.y) && !this.raf) {
       this.raf = this.win?.requestAnimationFrame(this.tick) ?? 0;
@@ -49,6 +66,7 @@ export class AutoScroller {
     this.speed = { x: 0, y: 0 };
     this.onTick = undefined;
     this.win = undefined;
+    this.pointerDoc = undefined;
   }
 
   private tick = (): void => {
@@ -91,7 +109,21 @@ function getScrollRect(container: HTMLElement | Window): {
   if (isWindow(container)) {
     return { left: 0, top: 0, right: container.innerWidth, bottom: container.innerHeight };
   }
-  return container.getBoundingClientRect();
+  // A scroller taller than the screen (or partly outside it) is only "edge-sensitive" at the
+  // edges the user can actually see: clip its rect to the document viewport.
+  const r = container.getBoundingClientRect();
+  const win = container.ownerDocument.defaultView;
+  if (!win) return r;
+  return {
+    left: Math.max(r.left, 0),
+    top: Math.max(r.top, 0),
+    right: Math.min(r.right, win.innerWidth),
+    bottom: Math.min(r.bottom, win.innerHeight),
+  };
+}
+
+function documentOf(container: HTMLElement | Window): Document | null {
+  return isWindow(container) ? container.document : container.ownerDocument;
 }
 
 export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
@@ -103,7 +135,11 @@ export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
     const style = win.getComputedStyle(node);
     const scrollable = /(auto|scroll|overlay)/.test(style.overflowY + style.overflowX);
 
-    if (scrollable && node.scrollHeight > node.clientHeight) {
+    if (scrollable && (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth)) {
+      // <html>/<body> scroll the whole document: their own rect spans the full (tall) page, so
+      // edge detection must use the window's viewport instead.
+      const doc = node.ownerDocument;
+      if (node === doc.documentElement || node === doc.body) return win;
       return node;
     }
 

@@ -119,7 +119,11 @@ export class NgxResizable implements OnDestroy {
 
     this.resizing.set(true);
     element.style.transition = 'none';
-    element.setPointerCapture?.(e.pointerId);
+    try {
+      element.setPointerCapture?.(e.pointerId);
+    } catch {
+      /* synthetic / already-ended pointer: document listeners below still receive the events */
+    }
     const doc = element.ownerDocument;
     this.removeDocumentListeners = [
       this.renderer.listen(doc, 'pointermove', (event: PointerEvent) => this.onPointerMove(event)),
@@ -186,6 +190,11 @@ export class NgxResizable implements OnDestroy {
     if (this.disabled()) {
       return;
     }
+    // Only when the resizable element itself is focused: arrow keys pressed inside an input /
+    // contenteditable that lives in the block are caret movement, not a resize request.
+    if (e.target !== this.el.nativeElement) {
+      return;
+    }
 
     const rtl = isRtl(this.el.nativeElement);
     const step = this.keyboardStep() * (e.shiftKey ? 4 : 1);
@@ -216,8 +225,9 @@ export class NgxResizable implements OnDestroy {
       ),
       'y',
     );
-    this.el.nativeElement.style.width = `${width}px`;
-    this.el.nativeElement.style.height = `${height}px`;
+    const styled = this.toStyleSize(width, height);
+    this.el.nativeElement.style.width = `${styled.width}px`;
+    this.el.nativeElement.style.height = `${styled.height}px`;
     const out: IResizableOutput = {
       width,
       height,
@@ -298,9 +308,10 @@ export class NgxResizable implements OnDestroy {
     /**
      * Boundary constraint.
      */
-    if (this.boundary) {
+    const boundaryEl = this.boundary();
+    if (boundaryEl) {
       const clamped = clampResizeWithinBoundary(
-        this.boundary()?.getBoundingClientRect(),
+        boundaryEl.getBoundingClientRect(),
         this.start,
         width * scaleX,
         height * scaleY,
@@ -342,8 +353,9 @@ export class NgxResizable implements OnDestroy {
      * Changing width/height may cause the browser to re-layout
      * the element, especially for relative/flex/grid/static layouts.
      */
-    element.style.width = `${out.width}px`;
-    element.style.height = `${out.height}px`;
+    const style = this.toStyleSize(out.width, out.height);
+    element.style.width = `${style.width}px`;
+    element.style.height = `${style.height}px`;
 
     /**
      * Force/read layout after changing the size.
@@ -383,9 +395,31 @@ export class NgxResizable implements OnDestroy {
       `${baseTransform}translate3d(` + `${localCorrection.x}px, ` + `${localCorrection.y}px, 0)`;
   }
 
+  /**
+   * `offsetWidth/Height` (what we measure and report) are BORDER-box sizes. The inline
+   * `width/height` we write are interpreted according to `box-sizing`: for the CSS default
+   * (`content-box`) writing the border-box number would make a padded/bordered block jump by
+   * its padding+border the instant a resize starts. Convert so the box is exactly the size
+   * reported in `IResizableOutput`.
+   */
+  private toStyleSize(width: number, height: number): { width: number; height: number } {
+    const el = this.el.nativeElement;
+    const cs = el.ownerDocument.defaultView?.getComputedStyle(el);
+    if (!cs || cs.boxSizing === 'border-box') return { width, height };
+    const px = (v: string) => Number.parseFloat(v) || 0;
+    const extraX =
+      px(cs.paddingLeft) + px(cs.paddingRight) + px(cs.borderLeftWidth) + px(cs.borderRightWidth);
+    const extraY =
+      px(cs.paddingTop) + px(cs.paddingBottom) + px(cs.borderTopWidth) + px(cs.borderBottomWidth);
+    return { width: Math.max(0, width - extraX), height: Math.max(0, height - extraY) };
+  }
+
   private clampGrid(value: number, axis: 'x' | 'y'): number {
-    const grid = typeof this.grid() === 'number' ? this.grid : (this.grid() as any)?.[axis];
-    if (!grid || grid <= 0) {
+    const g = this.grid();
+    // NOTE: the previous code returned the input *signal function* for a numeric grid, so every
+    // snapped size became NaN and the resize silently stopped working.
+    const grid = typeof g === 'number' ? g : g?.[axis];
+    if (!grid || !Number.isFinite(grid) || grid <= 0) {
       return value;
     }
     return Math.round(value / grid) * grid;
@@ -398,8 +432,12 @@ export class NgxResizable implements OnDestroy {
     this.pointerId = -1;
     for (const remove of this.removeDocumentListeners) remove();
     this.removeDocumentListeners = [];
-    if (pointerId >= 0 && this.el.nativeElement.hasPointerCapture?.(pointerId)) {
-      this.el.nativeElement.releasePointerCapture(pointerId);
+    try {
+      if (pointerId >= 0 && this.el.nativeElement.hasPointerCapture?.(pointerId)) {
+        this.el.nativeElement.releasePointerCapture(pointerId);
+      }
+    } catch {
+      /* already released */
     }
     this.beforeTransform = '';
   }

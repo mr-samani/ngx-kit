@@ -542,7 +542,9 @@ describe('scaled ancestors', () => {
         dy: during.top - before.top,
         transform: el.style.transform,
         dragging: el.classList.contains('ngx-draggable--dragging'),
-        leaks: H.leaks(),
+        // A FREE drag keeps its new position as an inline transform on purpose (that IS the
+        // result of the drag); everything else a drag creates must be gone.
+        leaks: H.leaks().filter((l: string) => !l.startsWith('style of free')),
       };
     });
 

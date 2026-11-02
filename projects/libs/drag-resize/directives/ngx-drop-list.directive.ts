@@ -34,6 +34,13 @@ export class NgxDropList<T = any> implements OnInit, OnDestroy, AfterContentInit
   @Input() set disableSort(value: boolean) {
     this._ref.disableSort = value === true;
   }
+  /** `'stretch'`: the placeholder only copies the item's size along the list's main axis. */
+  @Input() set placeholderFit(value: 'item' | 'stretch' | null | undefined) {
+    this._ref.placeholderFit = value === 'stretch' ? 'stretch' : 'item';
+  }
+  @Input() set sortAnimationDuration(value: number | null | undefined) {
+    this._ref.sortAnimationDuration = value == null ? 200 : Math.max(0, value);
+  }
   @Output() readonly drop = new EventEmitter<IDropEvent<T>>();
   @ContentChild(NgxPlaceholder, {
     descendants: true,

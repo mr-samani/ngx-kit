@@ -19,23 +19,59 @@ export function viewportDeltaToLocal(
   delta: ICoordinatePoint,
   includeElementTransform = true,
 ): ICoordinatePoint {
-  const matrix = getLocalToViewportMatrix(element, includeElementTransform);
+  const inverse = invertLinear(getLocalToViewportMatrix(element, includeElementTransform));
+  return applyLinear(inverse, delta);
+}
+
+/**
+ * Inverse of a 2D linear transform, or `null` when it is not invertible (zero-scale ancestor).
+ * Exposed so hot paths (every pointer move) can compute the matrix ONCE per drag instead of
+ * walking the ancestor chain with `getComputedStyle` on every event.
+ */
+export function invertLinear(matrix: ILinearTransform): ILinearTransform | null {
   const determinant = matrix.a * matrix.d - matrix.b * matrix.c;
-
-  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-8) {
-    // A zero-scale ancestor has no invertible coordinate space. Avoid NaN/Infinity.
-    return { x: 0, y: 0 };
-  }
-
-  const inverseA = matrix.d / determinant;
-  const inverseB = -matrix.b / determinant;
-  const inverseC = -matrix.c / determinant;
-  const inverseD = matrix.a / determinant;
-
+  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-8) return null;
   return {
-    x: inverseA * delta.x + inverseC * delta.y,
-    y: inverseB * delta.x + inverseD * delta.y,
+    a: matrix.d / determinant,
+    b: -matrix.b / determinant,
+    c: -matrix.c / determinant,
+    d: matrix.a / determinant,
   };
+}
+
+/** Applies a linear transform to a vector. A `null` matrix (see `invertLinear`) yields `{0,0}`. */
+export function applyLinear(matrix: ILinearTransform | null, delta: ICoordinatePoint): ICoordinatePoint {
+  if (!matrix) return { x: 0, y: 0 };
+  return {
+    x: matrix.a * delta.x + matrix.c * delta.y,
+    y: matrix.b * delta.x + matrix.d * delta.y,
+  };
+}
+
+/**
+ * Converts a SIZE measured in the viewport pixels of `fromDocument` into the viewport pixels of
+ * `toDocument` (they differ when the iframe element is scaled, e.g. a zoomed-out device preview).
+ * Returns `null` when the documents are unrelated / cross-origin.
+ */
+export function convertSizeBetweenDocuments(
+  size: ICoordinatePoint,
+  fromDocument: Document,
+  toDocument: Document,
+): ICoordinatePoint | null {
+  if (fromDocument === toDocument) return { ...size };
+  const a = convertPointBetweenDocuments({ x: 0, y: 0 }, fromDocument, toDocument);
+  const b = convertPointBetweenDocuments({ x: size.x, y: size.y }, fromDocument, toDocument);
+  if (!a || !b) return null;
+  return { x: b.x - a.x, y: b.y - a.y };
+}
+
+/**
+ * Axis scale (always positive) between `element`'s local CSS pixels and viewport pixels,
+ * i.e. how many screen pixels one CSS pixel inside `element` occupies. Rotation is ignored.
+ */
+export function getLocalScale(element: HTMLElement): ICoordinatePoint {
+  const m = getLocalToViewportMatrix(element);
+  return { x: Math.hypot(m.a, m.b) || 1, y: Math.hypot(m.c, m.d) || 1 };
 }
 
 export function localDeltaToViewport(

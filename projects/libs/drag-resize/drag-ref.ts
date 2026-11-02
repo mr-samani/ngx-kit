@@ -6,7 +6,13 @@ import { DropListGroupRef } from './drop-list-group-ref';
 import { DragDropService } from './services/drag-drop.service';
 import { checkBoundX, checkBoundY } from './utils/check-boundary';
 import { DragPreviewRef } from './drag-preview-ref';
-import { viewportDeltaToLocal, convertPointBetweenDocuments } from './utils/coordinate-transform';
+import {
+  ILinearTransform,
+  applyLinear,
+  convertPointBetweenDocuments,
+  getLocalToViewportMatrix,
+  invertLinear,
+} from './utils/coordinate-transform';
 
 export type DragAxis = 'x' | 'y' | undefined;
 
@@ -69,6 +75,14 @@ export class DragRef<T = unknown> {
   private lastEffective: IPosition = { x: 0, y: 0 };
   private scrollListener?: () => void;
   private resizeListener?: () => void;
+  /**
+   * Every document that hosts a candidate list (the source document, plus any same-origin iframe
+   * such as a page-builder canvas) needs its own scroll/resize listeners: `scroll` does not cross
+   * the iframe boundary, so scrolling the canvas never reaches a listener on the parent page.
+   */
+  private readonly documentListeners = new Map<Document, () => void>();
+  /** viewport → local matrix of the dragged element, computed once per free drag. */
+  private freeDragInverse: ILinearTransform | null | undefined;
 
   init(): void {
     this.previousTransform =
@@ -103,6 +117,7 @@ export class DragRef<T = unknown> {
     this.moveDx = 0;
     this.moveDy = 0;
     this.scrollCompensation = { x: 0, y: 0 };
+    this.freeDragInverse = undefined;
 
     // Only draggables that are direct children of their drop list take part in sorting.
     // Everything else is a plain free drag.
@@ -326,7 +341,11 @@ export class DragRef<T = unknown> {
 
     const tx = this.moveDx + this.scrollCompensation.x;
     const ty = this.moveDy + this.scrollCompensation.y;
-    const local = viewportDeltaToLocal(this.el, { x: tx, y: ty });
+    if (this.freeDragInverse === undefined) {
+      // Includes the element's own (pre-drag) transform: the translate is appended after it.
+      this.freeDragInverse = invertLinear(getLocalToViewportMatrix(this.el, true));
+    }
+    const local = applyLinear(this.freeDragInverse, { x: tx, y: ty });
 
     this.el.style.transform = `${base}translate3d(${local.x}px, ${local.y}px, 0)`;
   }
@@ -357,9 +376,40 @@ export class DragRef<T = unknown> {
       for (const l of this.cachedLists) l._refresh();
       this.updateDropTarget(this.lastEffective);
     };
-    // Capture: `scroll` does not bubble, and any ancestor (or the page) may be the one scrolling.
-    doc.addEventListener('scroll', this.scrollListener, { capture: true, passive: true });
-    win.addEventListener('resize', this.resizeListener, { passive: true });
+    this.syncDocumentListeners();
+  }
+
+  /**
+   * Keeps scroll/resize listeners attached to every document that currently hosts a candidate
+   * list. Capture: `scroll` does not bubble, and any ancestor (or the page) may be scrolling.
+   */
+  private syncDocumentListeners(): void {
+    if (!this.scrollListener || !this.resizeListener) return;
+    const scroll = this.scrollListener;
+    const resize = this.resizeListener;
+
+    const wanted = new Set<Document>([this.el.ownerDocument]);
+    for (const list of this.cachedLists) {
+      const doc = list.el?.ownerDocument;
+      if (doc) wanted.add(doc);
+    }
+
+    for (const [doc, remove] of this.documentListeners) {
+      if (!wanted.has(doc)) {
+        remove();
+        this.documentListeners.delete(doc);
+      }
+    }
+    for (const doc of wanted) {
+      const win = doc.defaultView;
+      if (!win || this.documentListeners.has(doc)) continue;
+      doc.addEventListener('scroll', scroll, { capture: true, passive: true });
+      win.addEventListener('resize', resize, { passive: true });
+      this.documentListeners.set(doc, () => {
+        doc.removeEventListener('scroll', scroll, { capture: true });
+        win.removeEventListener('resize', resize);
+      });
+    }
   }
 
   /**
@@ -386,6 +436,7 @@ export class DragRef<T = unknown> {
     }
     this.dropCandidates = next;
     this.cachedLists = next.map((c) => c.list);
+    this.syncDocumentListeners();
   }
 
   /**
@@ -467,10 +518,8 @@ export class DragRef<T = unknown> {
    * regardless of how the drag ended. Only then is the drop event emitted.
    */
   private finishListDrag(commit: boolean): void {
-    const doc = this.el.ownerDocument;
-    if (this.scrollListener)
-      doc.removeEventListener('scroll', this.scrollListener, { capture: true });
-    if (this.resizeListener) doc.defaultView?.removeEventListener('resize', this.resizeListener);
+    for (const remove of this.documentListeners.values()) remove();
+    this.documentListeners.clear();
     this.scrollListener = this.resizeListener = undefined;
 
     const target = commit ? this.activeDropList : null;

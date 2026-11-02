@@ -22,6 +22,8 @@ import {
   NGX_DROPLIST_GROUP,
 } from '../../directives/ngx-drop-list-group.directive';
 import { DragDropService } from '../../services/drag-drop.service';
+import { NgxResizable } from '../../directives/ngx-resizable.directive';
+export { getCleanHtml, stripEditorArtifacts } from '../../utils/export-cleanup';
 
 class DomRenderer {
   listen(target: any, name: string, cb: (e: any) => void): () => void {
@@ -100,7 +102,11 @@ export function registerItem(el: HTMLElement, opts: { data?: any; handle?: strin
       break;
     }
   }
-  const providers: any[] = [{ provide: DragDropService, useValue: svc }];
+  const providers: any[] = [
+    { provide: DragDropService, useValue: svc },
+    // NgxDraggable injects Renderer2 for its pointer/keyboard listeners.
+    { provide: Renderer2, useValue: new DomRenderer() },
+  ];
   if (list) providers.push({ provide: NGX_DROPLIST, useValue: list });
   if (groupDir) providers.push({ provide: NGX_DROPLIST_GROUP, useValue: groupDir });
   const inj = makeInjector(providers);
@@ -109,6 +115,77 @@ export function registerItem(el: HTMLElement, opts: { data?: any; handle?: strin
   dir.ngOnInit();
   items.set(el, dir);
   return dir;
+}
+
+/** NgxResizable has no template wiring in the harness: call `onPointerDown` etc. directly. */
+export function registerResizable(el: HTMLElement, overrides: Record<string, unknown> = {}) {
+  const inj = makeInjector([
+    { provide: DragDropService, useValue: svc },
+    { provide: Renderer2, useValue: new DomRenderer() },
+  ]);
+  const dir = runInInjectionContext(inj, () => new NgxResizable(new ElementRef(el)));
+  // Signal inputs are normally bound by the template compiler; replace them with constants.
+  for (const [k, v] of Object.entries(overrides)) (dir as any)[k] = () => v;
+  return dir;
+}
+
+/**
+ * Page-builder fixture: fills `#frame` (a same-origin iframe) with a canvas of `n` 80px blocks,
+ * registers the canvas as a drop list connected to the host's grouped lists, and records its
+ * drops in `drops` like `auto()` does for host lists.
+ */
+export function setupCanvas(n: number, extraCss = '') {
+  const frame = document.getElementById('frame') as HTMLIFrameElement;
+  const doc = frame.contentDocument!;
+  doc.open();
+  doc.write(
+    `<style>html,body{margin:0}#canvas{width:400px}.blk{height:80px;box-sizing:border-box;` +
+      `border-bottom:1px solid #999;background:#efe}${extraCss}</style><div id="canvas"></div>`,
+  );
+  doc.close();
+  const canvas = doc.getElementById('canvas') as HTMLElement;
+  for (let i = 0; i < n; i++) {
+    const d = doc.createElement('div');
+    d.className = 'blk';
+    d.dataset['id'] = 'b' + i;
+    d.textContent = 'b' + i;
+    canvas.appendChild(d);
+  }
+  const list = registerList(canvas, { grouped: true });
+  list._ref.sortAnimationDuration = 0;
+  list.drop.subscribe((e: any) =>
+    drops.push({
+      prev: e.previousIndex,
+      cur: e.currentIndex,
+      from: e.previousContainer.el.id,
+      to: e.container.el.id,
+      item: (e.item.el as HTMLElement).dataset['id'] || e.item.el.id,
+      over: e.isPointerOverContainer,
+    }),
+  );
+  canvas.querySelectorAll<HTMLElement>('.blk').forEach((b) => registerItem(b));
+  return { frame, doc, canvas, list };
+}
+
+/** Screen position (host viewport) of a point given in the iframe's own CSS pixels. */
+export function framePoint(frame: HTMLIFrameElement, x: number, y: number) {
+  const r = frame.getBoundingClientRect();
+  const sx = frame.offsetWidth ? r.width / frame.offsetWidth : 1;
+  const sy = frame.offsetHeight ? r.height / frame.offsetHeight : 1;
+  return { x: r.left + frame.clientLeft * sx + x * sx, y: r.top + frame.clientTop * sy + y * sy };
+}
+
+/** Everything transient a finished drag must not leave behind, in the IFRAME document. */
+export function frameLeaks(doc: Document): string[] {
+  const out: string[] = [];
+  const n = (sel: string) => doc.querySelectorAll(sel).length;
+  if (n('.ngx-drag-placeholder')) out.push('placeholder left in iframe');
+  if (n('.ngx-drag-preview')) out.push('preview left in iframe');
+  doc.querySelectorAll<HTMLElement>('#canvas > *').forEach((c) => {
+    if (c.style.transform) out.push(`transform left on ${c.dataset['id']}`);
+    if (c.classList.contains('ngx-draggable--dragging')) out.push('dragging class left');
+  });
+  return out;
 }
 
 export function destroyItem(el: HTMLElement) {
