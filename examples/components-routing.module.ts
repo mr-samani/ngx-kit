@@ -9,6 +9,13 @@ const routes: Routes = [
     component: Components,
     children: [
       { path: '', redirectTo: 'color-picker', pathMatch: 'full' },
+
+      {
+        path: 'i18n',
+        loadComponent: () =>
+          import('./translation-demo/translation-demo').then((c) => c.TranslationDemoComponent),
+      },
+
       {
         path: 'color-picker',
         loadComponent: () =>
