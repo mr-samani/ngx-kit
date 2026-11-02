@@ -1,6 +1,11 @@
-<ngx-side-nav [width]="300" [breakpoint]="960" class="side-nav" mode="overlay">
-  <app-side-nav ngxDrawerMenu></app-side-nav>
+<app-header [showMenuButton]="true" (onToggleMenu)="mnuBtn.click()"></app-header>
+
+<ngx-side-nav [width]="300" [breakpoint]="960" class="side-nav" mode="overlay" #sideNav>
+  <app-side-nav
+    ngxDrawerMenu
+    (onMenuItemClick)="sideNav.shouldShowOverlay() ? sideNav.closeMenu() : ''"></app-side-nav>
   <button
+    #mnuBtn
     ngxDrawerMenuToggle
     [hideOnBreakPoint]="true"
     type="button"
@@ -13,7 +18,6 @@
         stroke-width="1.8"
         stroke-linecap="round" />
     </svg>
-    <span>Components</span>
   </button>
   <router-outlet />
 </ngx-side-nav>
