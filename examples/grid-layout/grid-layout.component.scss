@@ -4,7 +4,9 @@
   padding: 20px;
   grid-template-columns: 1fr 25%;
 }
-
+ngx-grid-item {
+  overflow: hidden;
+}
 .settings-panel {
   border: 1px solid #dddddd3f;
   border-radius: 8px;
@@ -187,7 +189,7 @@
 
 @media (max-width: 992px) {
   .advanced-demo {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
   .settings-panel {
     width: 100%;
