@@ -35,7 +35,8 @@
             queryParams: 'ignored',
             matrixParams: 'ignored',
             fragment: 'exact',
-          }">
+          }"
+          (click)="onMenuItemClick.emit()">
           <span class="example-icon">
             {{ fragment.icon ?? '✦' }}
           </span>
@@ -95,7 +96,7 @@
         matrixParams: 'ignored',
         fragment: 'ignored',
       }"
-      (click)="openMenuItem(item)">
+      (click)="openMenuItem(item); onMenuItemClick.emit()">
       <span class="example-icon">
         {{ item.icon ?? '✦' }}
       </span>

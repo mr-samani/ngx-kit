@@ -15,7 +15,7 @@ import { RouterProgressService } from './shared/services/router-progress.service
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterModule, Header],
+  imports: [RouterModule],
 })
 export class AppComponent {
   protected readonly _router = inject(Router);

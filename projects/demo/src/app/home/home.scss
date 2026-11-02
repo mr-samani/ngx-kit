@@ -1,8 +1,5 @@
 :host {
   display: block;
-  max-inline-size: 1200px;
-  margin-inline: auto;
-  padding: 2rem 1.25rem 4rem;
 }
 
 .hero {
@@ -36,6 +33,12 @@
     padding-inline-start: 0.6rem;
     border-inline-start: 3px solid light-dark(#2563eb, #3b82f6);
   }
+}
+
+.inner {
+  max-inline-size: 1200px;
+  margin-inline: auto;
+  padding: 2rem 1.25rem 4rem;
 }
 
 .card-grid {

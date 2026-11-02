@@ -36,7 +36,7 @@ export class NgxSideNav implements OnInit, OnDestroy {
   readonly width = input<number>(270);
   readonly breakpoint = input<number | null>(null);
   readonly mode = input<NgxSideNavMode>('push');
-  shouldShowOverlay = signal(false);
+  readonly shouldShowOverlay = signal(false);
 
   private mediaQuery?: MediaQueryList;
   readonly isMatchMediaQuery = signal(false);
@@ -101,6 +101,7 @@ export class NgxSideNav implements OnInit, OnDestroy {
     }
   }
   closeMenu() {
+    if (this.open() == false) return;
     this.open.set(false);
     this.shouldShowOverlay.set(false);
   }

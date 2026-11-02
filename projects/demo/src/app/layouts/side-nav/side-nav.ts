@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  output,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { IAppMenu } from '@demo/shared/interfaces/IAppMenu';
@@ -15,6 +22,7 @@ import { filter, map, startWith } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SideNavComponent {
+  readonly onMenuItemClick = output();
   private readonly router = inject(Router);
 
   readonly list = MENU_LIST;

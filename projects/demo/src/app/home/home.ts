@@ -4,6 +4,7 @@ import { ICategory } from '@demo/shared/interfaces/ICategory';
 import { MENU_LIST } from '@demo/shared/menu-items';
 import { PreviewCardComponent } from '@demo/shared/preview-card/preview-card.component';
 import { DarkModeService } from '@demo/shared/services/dark-mode.service';
+import { Header } from '@demo/layouts/header/header';
 
 const ICONS: Record<string, string> = {
   Menu: '☰',
@@ -26,7 +27,7 @@ const ICONS: Record<string, string> = {
 
 @Component({
   selector: 'app-home',
-  imports: [RouterModule, PreviewCardComponent],
+  imports: [RouterModule, PreviewCardComponent, Header],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

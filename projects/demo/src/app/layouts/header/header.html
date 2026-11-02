@@ -1,12 +1,10 @@
 <header class="topbar">
   <div class="brand">
-    <!-- <button
-      type="button"
-      class="icon-button menu-button"
-      (click)="sidebarCollapsed.update((v) => !v)">
-      ☰
-    </button> -->
-
+    @if (showMenuButton()) {
+      <button type="button" class="icon-button menu-button" (click)="onToggleMenu.emit()">
+        ☰
+      </button>
+    }
     <div class="brand-mark" routerLink="/">
       <span>NK</span>
     </div>

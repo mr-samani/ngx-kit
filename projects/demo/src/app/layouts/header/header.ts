@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DarkModeService } from '@demo/shared/services/dark-mode.service';
 import { DirectionService } from '@demo/shared/services/direction.service';
@@ -13,4 +13,7 @@ import { DirectionService } from '@demo/shared/services/direction.service';
 export class Header {
   protected darkMode = inject(DarkModeService);
   protected direction = inject(DirectionService);
+
+  readonly showMenuButton = input<boolean>(false);
+  readonly onToggleMenu = output();
 }
