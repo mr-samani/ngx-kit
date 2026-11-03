@@ -13,6 +13,7 @@ export class AutoScroller {
   /** Document the pointer coordinates (`update(x, y)`) are expressed in. */
   private pointerDoc?: Document;
   private speed = { x: 0, y: 0 };
+  private carry = { x: 0, y: 0 };
   private onTick?: () => void;
   private readonly edge: number;
   private readonly maxSpeed: number;
@@ -64,6 +65,7 @@ export class AutoScroller {
     if (this.raf) this.win?.cancelAnimationFrame(this.raf);
     this.raf = 0;
     this.speed = { x: 0, y: 0 };
+    this.carry = { x: 0, y: 0 };
     this.onTick = undefined;
     this.win = undefined;
     this.pointerDoc = undefined;
@@ -77,13 +79,22 @@ export class AutoScroller {
 
     const container = this.container;
 
-    if (isWindow(container)) {
-      container.scrollBy(this.speed.x, this.speed.y);
-    } else {
-      // Edge speed is measured in viewport pixels; scrollLeft/Top are local to the scroller.
-      const local = viewportDeltaToLocal(container, this.speed);
-      container.scrollLeft += local.x;
-      container.scrollTop += local.y;
+    // Edge speed is measured in viewport pixels; an element's scrollLeft/Top are local to it.
+    const local = isWindow(container) ? this.speed : viewportDeltaToLocal(container, this.speed);
+    // Browsers snap scroll offsets to whole pixels, so a slow speed (< 1px/frame, i.e. when the
+    // pointer has just entered the edge zone) would never move anything. Carry the remainder.
+    this.carry.x += local.x;
+    this.carry.y += local.y;
+    const dx = Math.trunc(this.carry.x);
+    const dy = Math.trunc(this.carry.y);
+    this.carry.x -= dx;
+    this.carry.y -= dy;
+
+    if (dx || dy) {
+      // `behavior: 'instant'` matters: with `scroll-behavior: smooth` on <html> or on the scroller
+      // (very common in apps) every per-frame scroll would start a new animation that cancels the
+      // previous one, and the list would not move at all.
+      container.scrollBy({ left: dx, top: dy, behavior: 'instant' });
     }
 
     // Pointer ثابت مانده ولی محتوا اسکرول شده؛
