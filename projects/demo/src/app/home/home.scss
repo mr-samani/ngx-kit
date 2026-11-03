@@ -122,3 +122,12 @@
     }
   }
 }
+
+@media (max-width: 500px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+  .preview-img-container {
+    block-size: 100px;
+  }
+}
