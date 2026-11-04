@@ -225,11 +225,6 @@ export const MENU_LIST: ICategory[] = [
         ],
       },
       {
-        title: 'kanban',
-        description: '',
-        url: '/components/kanban',
-      },
-      {
         title: 'Drop List',
         description: '',
         url: '/components/drop-list',

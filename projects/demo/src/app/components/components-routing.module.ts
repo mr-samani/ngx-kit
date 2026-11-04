@@ -117,11 +117,6 @@ const routes: Routes = [
           import('./drag-resize/drag-resize.component').then((c) => c.DragResizeComponent),
       },
       {
-        path: 'kanban',
-        loadComponent: () =>
-          import('./kanban-view/kanban-view.component').then((c) => c.KanbanViewComponent),
-      },
-      {
         path: 'drop-list',
         loadChildren: () =>
           import('./drop-list/drop-list.module').then((m) => m.DropListDemoModule),
