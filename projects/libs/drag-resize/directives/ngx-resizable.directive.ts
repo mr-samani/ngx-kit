@@ -17,16 +17,61 @@ import {
 } from '../contracts/IResizableOutput';
 import { clampResizeWithinBoundary } from '../utils/check-boundary';
 import { isRtl, resolveLogicalDirection } from '../utils/rtl';
-import { getLocalToViewportMatrix, viewportDeltaToLocal } from '../utils/coordinate-transform';
+import {
+  applyLinear,
+  getLocalToViewportMatrix,
+  invertLinear,
+  viewportDeltaToLocal,
+} from '../utils/coordinate-transform';
 
 const ALL_DIRECTIONS: ResizeDirection[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
 const KEYBOARD_STEP = 8;
 
+/**
+ * Elements matching this selector keep their normal pointer/touch behaviour.
+ * Add data-ngx-resize-ignore to any custom interactive widget that should never
+ * initiate resizing when it is close to the panel edge.
+ */
+const INTERACTIVE_SELECTOR = [
+  'input',
+  'textarea',
+  'select',
+  'option',
+  'button',
+  'a',
+  'summary',
+  '[contenteditable="true"]',
+  'audio',
+  'video',
+  'iframe',
+  'label',
+  '[role="textbox"]',
+  '[role="menuitem"]',
+  '[role="tab"]',
+  'mat-slider',
+  'mat-select',
+  'mat-checkbox',
+  'mat-radio-button',
+  'mat-slide-toggle',
+  '.mat-mdc-slider',
+  '.mat-mdc-select',
+  '[role="button"]',
+  '[role="slider"]',
+  '[role="switch"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="combobox"]',
+  '[role="listbox"]',
+  '[data-ngx-resize-ignore]',
+].join(',');
+
 @Directive({
   selector: '[NgxResizable],[ngxResizable]',
   host: {
-    '[style.touch-action]': '"none"',
     class: 'ngx-resizable',
+    // Do not set touch-action:none on the whole panel: it breaks nested controls.
+    //  '[style.touch-action]': '"none"',
+    '[attr.aria-keyshortcuts]': '"ArrowLeft ArrowRight ArrowUp ArrowDown"',
   },
 })
 export class NgxResizable implements OnDestroy {
@@ -46,24 +91,25 @@ export class NgxResizable implements OnDestroy {
   readonly resizeStart = output<IResizableOutput>();
   readonly resizeMove = output<IResizableOutput>();
   readonly resizeEnd = output<IResizableOutput>();
-
   readonly resizing = signal(false);
   private direction: ResizeDirection = 'se';
-
   private start!: DOMRect;
-  private pointer = {
-    x: 0,
-    y: 0,
-  };
+  private pointer = { x: 0, y: 0 };
   private beforeTransition = '';
   private beforeWidth = '';
   private beforeHeight = '';
-  private beforeTransform = '';
+  private beforeTranslate = '';
+  private baseComputedTranslate = 'none';
+  private keyboardBaseTranslate: string | null = null;
+  private keyboardBaseInlineTranslate = '';
+  private startMatrix = { a: 1, b: 0, c: 0, d: 1 };
+  private pointerInverse = invertLinear({ a: 1, b: 0, c: 0, d: 1 });
   private pointerId = -1;
   private startWidth = 0;
   private startHeight = 0;
   private removeDocumentListeners: Array<() => void> = [];
   private readonly renderer = inject(Renderer2);
+
   constructor(private readonly el: ElementRef<HTMLElement>) {}
 
   ngOnDestroy(): void {
@@ -75,55 +121,45 @@ export class NgxResizable implements OnDestroy {
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(e: PointerEvent): void {
-    if (this.disabled() || e.button !== 0) {
-      return;
-    }
+    if (this.disabled() || e.button !== 0 || this.resizing()) return;
 
     const dir = this.hitDirection(e);
+    if (dir) this.beginResize(e, dir);
+  }
 
-    if (!dir) {
-      return;
-    }
-
+  /** Entry point used by the typed NgxResizeHandle directive. */
+  beginResize(e: PointerEvent, direction: LogicalResizeDirection): void {
+    if (this.disabled() || e.button !== 0 || this.resizing()) return;
+    const dir = resolveLogicalDirection(direction, isRtl(this.el.nativeElement)) as ResizeDirection;
+    if (!this.resolvedDirections().includes(dir)) return;
     e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
     const element = this.el.nativeElement;
     this.direction = dir;
     this.pointerId = e.pointerId;
-    /**
-     * This is the actual visual rectangle.
-     * It already contains any transform created by DragRef.
-     */
     this.start = element.getBoundingClientRect();
-
-    this.pointer = {
-      x: e.clientX,
-      y: e.clientY,
-    };
+    this.pointer = { x: e.clientX, y: e.clientY };
 
     this.beforeTransition = element.style.transition;
     this.beforeWidth = element.style.width;
     this.beforeHeight = element.style.height;
-    this.startWidth = element.offsetWidth;
-    this.startHeight = element.offsetHeight;
-
-    /**
-     * Keep DragRef's transform as the immutable base.
-     *
-     * Resize will temporarily add its own translation
-     * on top of this transform.
-     */
-    this.beforeTransform = element.style.transform;
+    this.beforeTranslate = element.style.translate;
+    this.baseComputedTranslate =
+      element.ownerDocument.defaultView?.getComputedStyle(element).translate ?? 'none';
+    this.keyboardBaseTranslate = null;
+    this.startMatrix = getLocalToViewportMatrix(element);
+    this.pointerInverse = invertLinear(this.startMatrix);
+    this.startWidth = readBorderBoxSize(element, 'x');
+    this.startHeight = readBorderBoxSize(element, 'y');
 
     this.resizing.set(true);
     element.style.transition = 'none';
+
     try {
       element.setPointerCapture?.(e.pointerId);
     } catch {
-      /* synthetic / already-ended pointer: document listeners below still receive the events */
+      // Document listeners remain as a fallback.
     }
+
     const doc = element.ownerDocument;
     this.removeDocumentListeners = [
       this.renderer.listen(doc, 'pointermove', (event: PointerEvent) => this.onPointerMove(event)),
@@ -136,37 +172,29 @@ export class NgxResizable implements OnDestroy {
       ),
       this.renderer.listen(doc, 'keydown', (event: KeyboardEvent) => this.onDocumentKeyDown(event)),
     ];
+
     const out = this.calculate(e);
     this.apply(out);
     this.resizeStart.emit(out);
   }
 
-  onPointerMove(e: PointerEvent): void {
-    if (!this.resizing() || e.pointerId !== this.pointerId) {
-      return;
-    }
+  private onPointerMove(e: PointerEvent): void {
+    if (!this.resizing() || e.pointerId !== this.pointerId) return;
     const out = this.calculate(e);
     this.apply(out);
     this.resizeMove.emit(out);
   }
 
-  onPointerUp(e: PointerEvent): void {
-    if (!this.resizing() || e.pointerId !== this.pointerId) {
-      return;
-    }
+  private onPointerUp(e: PointerEvent): void {
+    if (!this.resizing() || e.pointerId !== this.pointerId) return;
     const out = this.calculate(e);
     this.apply(out);
     this.resizeEnd.emit(out);
     this.finish();
   }
 
-  onDocumentKeyDown(e: KeyboardEvent): void {
-    if (!this.resizing()) {
-      return;
-    }
-    if (e.key !== 'Escape') {
-      return;
-    }
+  private onDocumentKeyDown(e: KeyboardEvent): void {
+    if (!this.resizing() || e.key !== 'Escape') return;
     e.preventDefault();
     this.restoreBeforeResize();
     this.finish();
@@ -182,136 +210,205 @@ export class NgxResizable implements OnDestroy {
     const element = this.el.nativeElement;
     element.style.width = this.beforeWidth;
     element.style.height = this.beforeHeight;
-    element.style.transform = this.beforeTransform;
+    element.style.translate = this.beforeTranslate;
   }
 
+  /**
+   * Keyboard resizing respects the configured directions.
+   * The arrow keys move the active physical edge:
+   * - if only west is enabled, horizontal keys operate on west;
+   * - if only east is enabled, horizontal keys operate on east;
+   * - north/south follow the same rule vertically.
+   * Disabled axes are never modified.
+   */
   @HostListener('keydown', ['$event'])
   onHandleKeyDown(e: KeyboardEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    // Only when the resizable element itself is focused: arrow keys pressed inside an input /
-    // contenteditable that lives in the block are caret movement, not a resize request.
-    if (e.target !== this.el.nativeElement) {
-      return;
-    }
+    if (this.disabled() || this.resizing()) return;
+    if (e.target !== this.el.nativeElement) return;
+    if (this.isEditableTarget(e.target)) return;
 
-    const rtl = isRtl(this.el.nativeElement);
-    const step = this.keyboardStep() * (e.shiftKey ? 4 : 1);
+    const allowed = this.resolvedDirections();
+    const horizontalEdge = this.chooseAxisEdge(allowed, 'x', e.key);
+    const verticalEdge = this.chooseAxisEdge(allowed, 'y', e.key);
+
     let dw = 0;
     let dh = 0;
-    if (e.key === 'ArrowRight') {
-      dw = rtl ? -step : step;
-    } else if (e.key === 'ArrowLeft') {
-      dw = rtl ? step : -step;
-    } else if (e.key === 'ArrowDown') {
-      dh = step;
-    } else if (e.key === 'ArrowUp') {
-      dh = -step;
+    const configuredStep = this.keyboardStep();
+    const step =
+      (Number.isFinite(configuredStep) ? Math.max(1, configuredStep) : KEYBOARD_STEP) *
+      (e.shiftKey ? 4 : 1);
+
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      if (!horizontalEdge) return;
+      const positive = e.key === 'ArrowRight';
+      const rtl = isRtl(this.el.nativeElement);
+      const physicalDelta = (positive ? 1 : -1) * (rtl ? -1 : 1);
+      // East edge follows pointer direction; west edge moves the opposite way
+      // relative to the resulting width.
+      dw = horizontalEdge === 'e' ? physicalDelta * step : -physicalDelta * step;
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      if (!verticalEdge) return;
+      const physicalDelta = e.key === 'ArrowDown' ? 1 : -1;
+      dh = verticalEdge === 's' ? physicalDelta * step : -physicalDelta * step;
     } else {
       return;
     }
 
     e.preventDefault();
-    const rect = this.el.nativeElement.getBoundingClientRect();
-    const width = this.clampGrid(
-      Math.max(this.minWidth(), Math.min(this.maxWidth(), this.el.nativeElement.offsetWidth + dw)),
-      'x',
-    );
-    const height = this.clampGrid(
-      Math.max(
-        this.minHeight(),
-        Math.min(this.maxHeight(), this.el.nativeElement.offsetHeight + dh),
-      ),
-      'y',
-    );
-    const styled = this.toStyleSize(width, height);
-    this.el.nativeElement.style.width = `${styled.width}px`;
-    this.el.nativeElement.style.height = `${styled.height}px`;
+
+    const element = this.el.nativeElement;
+    const oldWidth = readBorderBoxSize(element, 'x');
+    const oldHeight = readBorderBoxSize(element, 'y');
+    let width = oldWidth;
+    let height = oldHeight;
+
+    if (dw !== 0) {
+      width = this.clampSize(oldWidth + dw, 'x');
+    }
+    if (dh !== 0) {
+      height = this.clampSize(oldHeight + dh, 'y');
+    }
+
+    // Keep the opposite edge fixed for west/north keyboard resizing.
+    const rect = element.getBoundingClientRect();
+    const matrix = getLocalToViewportMatrix(element);
+    const scaleX = Math.hypot(matrix.a, matrix.b) || 1;
+    const scaleY = Math.hypot(matrix.c, matrix.d) || 1;
+    let moveLeft = horizontalEdge === 'w' ? (oldWidth - width) * scaleX : 0;
+    let moveTop = verticalEdge === 'n' ? (oldHeight - height) * scaleY : 0;
+
+    const boundary = this.boundary();
+    if (boundary) {
+      const clamped = clampResizeWithinBoundary(
+        boundary.getBoundingClientRect(),
+        rect,
+        width * scaleX,
+        height * scaleY,
+        moveLeft,
+        moveTop,
+      );
+      width = clamped.width / scaleX;
+      height = clamped.height / scaleY;
+      moveLeft = clamped.left;
+      moveTop = clamped.top;
+    }
+
+    // Keyboard resize keeps a stable base translation and recomputes the total offset
+    // on every key press. This prevents an ever-growing chain of calc()/translate values.
+    if (this.keyboardBaseTranslate === null) {
+      const computed = element.ownerDocument.defaultView?.getComputedStyle(element);
+      this.keyboardBaseTranslate = computed?.translate ?? 'none';
+      this.keyboardBaseInlineTranslate = element.style.translate;
+    }
+
+    const style = this.toStyleSize(width, height);
+    element.style.width = `${style.width}px`;
+    element.style.height = `${style.height}px`;
+    element.style.translate = this.keyboardBaseInlineTranslate;
+
+    // Keep the opposite edge fixed without touching `transform` (owned by NgxDraggable).
+    const current = element.getBoundingClientRect();
+    const correctionX = rect.left + moveLeft - current.left;
+    const correctionY = rect.top + moveTop - current.top;
+    if (correctionX || correctionY) {
+      const local = viewportDeltaToLocal(element, { x: correctionX, y: correctionY });
+      writeTranslateWithOffset(element, this.keyboardBaseTranslate, local);
+    } else {
+      element.style.translate = this.keyboardBaseInlineTranslate;
+    }
+
     const out: IResizableOutput = {
       width,
       height,
-      moveLeft: 0,
-      moveTop: 0,
-      left: rect.left,
-      top: rect.top,
-      direction: 'se',
+      moveLeft,
+      moveTop,
+      left: rect.left + moveLeft,
+      top: rect.top + moveTop,
+      direction: this.keyboardDirection(
+        horizontalEdge as 'w' | 'e' | null,
+        verticalEdge as 'n' | 's' | null,
+      ),
     };
+    this.resizeStart.emit(out);
     this.resizeMove.emit(out);
     this.resizeEnd.emit(out);
   }
 
+  private chooseAxisEdge(
+    allowed: ResizeDirection[],
+    axis: 'x' | 'y',
+    key: string,
+  ): 'w' | 'e' | 'n' | 's' | null {
+    if (axis === 'x') {
+      const hasWest = allowed.some((d) => d.includes('w'));
+      const hasEast = allowed.some((d) => d.includes('e'));
+      if (key === 'ArrowLeft') {
+        if (hasWest) return 'w';
+        if (hasEast) return 'e';
+      }
+      if (key === 'ArrowRight') {
+        if (hasEast) return 'e';
+        if (hasWest) return 'w';
+      }
+    } else {
+      const hasNorth = allowed.some((d) => d.includes('n'));
+      const hasSouth = allowed.some((d) => d.includes('s'));
+      if (key === 'ArrowUp') {
+        if (hasNorth) return 'n';
+        if (hasSouth) return 's';
+      }
+      if (key === 'ArrowDown') {
+        if (hasSouth) return 's';
+        if (hasNorth) return 'n';
+      }
+    }
+    return null;
+  }
+
+  private keyboardDirection(
+    horizontal: 'w' | 'e' | null,
+    vertical: 'n' | 's' | null,
+  ): ResizeDirection {
+    if (horizontal && vertical) return `${vertical}${horizontal}` as ResizeDirection;
+    return horizontal ?? vertical ?? 'se';
+  }
+
+  private isEditableTarget(target: EventTarget | null): boolean {
+    if (!isElementTarget(target)) return false;
+    return !!target.closest(INTERACTIVE_SELECTOR);
+  }
+
   private calculate(e: PointerEvent): IResizableOutput {
-    const localDelta = viewportDeltaToLocal(this.el.nativeElement, {
+    const delta = applyLinear(this.pointerInverse, {
       x: e.clientX - this.pointer.x,
       y: e.clientY - this.pointer.y,
     });
-    const dx = localDelta.x;
-    const dy = localDelta.y;
-
     let width = this.startWidth;
     let height = this.startHeight;
-    /**
-     * East
-     */
-    if (this.direction.includes('e')) {
-      width += dx;
-    }
 
-    /**
-     * West
-     */
-    if (this.direction.includes('w')) {
-      width -= dx;
-    }
+    if (this.direction.includes('e')) width += delta.x;
+    if (this.direction.includes('w')) width -= delta.x;
+    if (this.direction.includes('s')) height += delta.y;
+    if (this.direction.includes('n')) height -= delta.y;
 
-    /**
-     * South
-     */
-    if (this.direction.includes('s')) {
-      height += dy;
-    }
+    width = this.clampSize(width, 'x');
+    height = this.clampSize(height, 'y');
 
-    /**
-     * North
-     */
-    if (this.direction.includes('n')) {
-      height -= dy;
-    }
-
-    width = this.clampGrid(Math.max(this.minWidth(), Math.min(this.maxWidth(), width)), 'x');
-
-    height = this.clampGrid(Math.max(this.minHeight(), Math.min(this.maxHeight(), height)), 'y');
-
-    /**
-     * Calculate the intended visual position.
-     *
-     * This is useful for boundary calculations and
-     * emitted resize events.
-     */
-    const matrix = getLocalToViewportMatrix(this.el.nativeElement);
-    const scaleX = Math.hypot(matrix.a, matrix.b) || 1;
-    const scaleY = Math.hypot(matrix.c, matrix.d) || 1;
+    const scaleX = Math.hypot(this.startMatrix.a, this.startMatrix.b) || 1;
+    const scaleY = Math.hypot(this.startMatrix.c, this.startMatrix.d) || 1;
     let left = this.start.left;
     let top = this.start.top;
 
-    if (this.direction.includes('w')) {
-      left = this.start.right - width * scaleX;
-    }
-
-    if (this.direction.includes('n')) {
-      top = this.start.bottom - height * scaleY;
-    }
+    if (this.direction.includes('w')) left = this.start.right - width * scaleX;
+    if (this.direction.includes('n')) top = this.start.bottom - height * scaleY;
 
     let moveLeft = left - this.start.left;
     let moveTop = top - this.start.top;
-    /**
-     * Boundary constraint.
-     */
-    const boundaryEl = this.boundary();
-    if (boundaryEl) {
+
+    const boundary = this.boundary();
+    if (boundary) {
       const clamped = clampResizeWithinBoundary(
-        boundaryEl.getBoundingClientRect(),
+        boundary.getBoundingClientRect(),
         this.start,
         width * scaleX,
         height * scaleY,
@@ -339,90 +436,59 @@ export class NgxResizable implements OnDestroy {
 
   private apply(out: IResizableOutput): void {
     const element = this.el.nativeElement;
-    /**
-     * Always reset to the transform that existed before
-     * this resize operation started.
-     *
-     * This prevents resize corrections from accumulating.
-     */
-    element.style.transform = this.beforeTransform;
+    element.style.translate = this.beforeTranslate;
 
-    /**
-     * Apply the actual size first.
-     *
-     * Changing width/height may cause the browser to re-layout
-     * the element, especially for relative/flex/grid/static layouts.
-     */
     const style = this.toStyleSize(out.width, out.height);
     element.style.width = `${style.width}px`;
     element.style.height = `${style.height}px`;
 
-    /**
-     * Force/read layout after changing the size.
-     */
     const current = element.getBoundingClientRect();
-
-    /**
-     * These are the positions where the element MUST visually be.
-     *
-     * `out.moveLeft` / `out.moveTop` are calculated in `calculate()`
-     * from the original visual rectangle.
-     */
     const targetLeft = this.start.left + out.moveLeft;
     const targetTop = this.start.top + out.moveTop;
-
-    /**
-     * Browser's actual position after width/height changed.
-     *
-     * The difference between target and current position is the
-     * correction that must be applied using transform.
-     */
     const correctionX = targetLeft - current.left;
     const correctionY = targetTop - current.top;
-    const hasCorrection = correctionX !== 0 || correctionY !== 0;
-    if (!hasCorrection) {
-      element.style.transform = this.beforeTransform;
+
+    if (!correctionX && !correctionY) {
+      element.style.translate = this.beforeTranslate;
       return;
     }
-    /**
-     * Preserve DragRef's existing transform and add only the
-     * correction required by Resize.
-     */
-    const baseTransform =
-      this.beforeTransform && this.beforeTransform !== 'none' ? `${this.beforeTransform} ` : '';
-    const localCorrection = viewportDeltaToLocal(element, { x: correctionX, y: correctionY });
-    element.style.transform =
-      `${baseTransform}translate3d(` + `${localCorrection.x}px, ` + `${localCorrection.y}px, 0)`;
+
+    const local = viewportDeltaToLocal(element, { x: correctionX, y: correctionY });
+    writeTranslateWithOffset(element, this.baseComputedTranslate, local);
   }
 
-  /**
-   * `offsetWidth/Height` (what we measure and report) are BORDER-box sizes. The inline
-   * `width/height` we write are interpreted according to `box-sizing`: for the CSS default
-   * (`content-box`) writing the border-box number would make a padded/bordered block jump by
-   * its padding+border the instant a resize starts. Convert so the box is exactly the size
-   * reported in `IResizableOutput`.
-   */
   private toStyleSize(width: number, height: number): { width: number; height: number } {
     const el = this.el.nativeElement;
     const cs = el.ownerDocument.defaultView?.getComputedStyle(el);
     if (!cs || cs.boxSizing === 'border-box') return { width, height };
+
     const px = (v: string) => Number.parseFloat(v) || 0;
     const extraX =
       px(cs.paddingLeft) + px(cs.paddingRight) + px(cs.borderLeftWidth) + px(cs.borderRightWidth);
     const extraY =
       px(cs.paddingTop) + px(cs.paddingBottom) + px(cs.borderTopWidth) + px(cs.borderBottomWidth);
-    return { width: Math.max(0, width - extraX), height: Math.max(0, height - extraY) };
+
+    return {
+      width: Math.max(0, width - extraX),
+      height: Math.max(0, height - extraY),
+    };
   }
 
-  private clampGrid(value: number, axis: 'x' | 'y'): number {
-    const g = this.grid();
-    // NOTE: the previous code returned the input *signal function* for a numeric grid, so every
-    // snapped size became NaN and the resize silently stopped working.
-    const grid = typeof g === 'number' ? g : g?.[axis];
-    if (!grid || !Number.isFinite(grid) || grid <= 0) {
-      return value;
-    }
-    return Math.round(value / grid) * grid;
+  private clampSize(value: number, axis: 'x' | 'y'): number {
+    const minInput = axis === 'x' ? this.minWidth() : this.minHeight();
+    const maxInput = axis === 'x' ? this.maxWidth() : this.maxHeight();
+    const min = Number.isFinite(minInput) ? Math.max(0, minInput) : 0;
+    const max = Number.isFinite(maxInput) ? Math.max(min, maxInput) : Infinity;
+    const bounded = Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
+
+    const grid = this.grid();
+    const step = typeof grid === 'number' ? grid : grid?.[axis];
+    if (!step || !Number.isFinite(step) || step <= 0) return bounded;
+
+    // Snap relative to the minimum, then clamp again so grid rounding can never
+    // violate the configured min/max constraints.
+    const snapped = min + Math.round((bounded - min) / step) * step;
+    return Math.min(max, Math.max(min, snapped));
   }
 
   private finish(): void {
@@ -430,16 +496,21 @@ export class NgxResizable implements OnDestroy {
     this.el.nativeElement.style.transition = this.beforeTransition;
     const pointerId = this.pointerId;
     this.pointerId = -1;
+
     for (const remove of this.removeDocumentListeners) remove();
     this.removeDocumentListeners = [];
+
     try {
       if (pointerId >= 0 && this.el.nativeElement.hasPointerCapture?.(pointerId)) {
         this.el.nativeElement.releasePointerCapture(pointerId);
       }
     } catch {
-      /* already released */
+      // Pointer capture may already have been released.
     }
-    this.beforeTransform = '';
+    this.beforeTranslate = '';
+    this.baseComputedTranslate = 'none';
+    this.keyboardBaseTranslate = null;
+    this.keyboardBaseInlineTranslate = '';
   }
 
   private resolvedDirections(): ResizeDirection[] {
@@ -453,66 +524,46 @@ export class NgxResizable implements OnDestroy {
 
   private hitDirection(e: PointerEvent): ResizeDirection | null {
     const element = this.el.nativeElement;
+    const target = e.target;
+
+    // Explicit handles are allowed even when they are inside the panel.
+    const handle = isElementTarget(target)
+      ? target.closest<HTMLElement>('[data-ngx-resize-handle]')
+      : null;
+
+    if (handle && element.contains(handle)) {
+      const raw = handle.dataset['ngxResizeHandle'] as LogicalResizeDirection | undefined;
+      if (!raw) return null;
+      const resolved = resolveLogicalDirection(raw, isRtl(element)) as ResizeDirection;
+      return this.resolvedDirections().includes(resolved) ? resolved : null;
+    }
+
+    // Never steal pointer events from nested interactive controls.
+    if (isElementTarget(target) && target.closest(INTERACTIVE_SELECTOR)) return null;
+
     const rect = element.getBoundingClientRect();
     const edge = Math.min(12, Math.max(6, Math.min(rect.width, rect.height) * 0.18));
     const isLeft = e.clientX - rect.left <= edge;
     const isRight = rect.right - e.clientX <= edge;
     const isTop = e.clientY - rect.top <= edge;
     const isBottom = rect.bottom - e.clientY <= edge;
-    /**
-     * Explicit resize handle has priority.
-     */
-    // TODO notsafe instanceof:node.nodeType === Node.ELEMENT_NODE
-    const handle = isHTMLElementTarget(e.target)
-      ? e.target.closest<HTMLElement>('[data-ngx-resize-handle]')
-      : null;
 
-    if (handle && element.contains(handle)) {
-      const raw = handle.dataset['ngxResizeHandle'] as LogicalResizeDirection | undefined;
+    const candidates: ResizeDirection[] = [];
+    if (isTop && isLeft) candidates.push('nw', 'n', 'w');
+    else if (isTop && isRight) candidates.push('ne', 'n', 'e');
+    else if (isBottom && isLeft) candidates.push('sw', 's', 'w');
+    else if (isBottom && isRight) candidates.push('se', 's', 'e');
+    else if (isTop) candidates.push('n');
+    else if (isRight) candidates.push('e');
+    else if (isBottom) candidates.push('s');
+    else if (isLeft) candidates.push('w');
 
-      if (!raw) {
-        return null;
-      }
-      const resolved = resolveLogicalDirection(raw, isRtl(element)) as ResizeDirection;
-      return this.resolvedDirections().includes(resolved) ? resolved : null;
-    }
-
-    /**
-     * These are PHYSICAL screen directions.
-     *
-     * left  -> w
-     * right -> e
-     *
-     * RTL is handled only when a logical direction
-     * such as "start" / "end" is requested.
-     */
-    const direction =
-      isTop && isLeft
-        ? 'nw'
-        : isTop && isRight
-          ? 'ne'
-          : isBottom && isLeft
-            ? 'sw'
-            : isBottom && isRight
-              ? 'se'
-              : isTop
-                ? 'n'
-                : isRight
-                  ? 'e'
-                  : isBottom
-                    ? 's'
-                    : isLeft
-                      ? 'w'
-                      : null;
-
-    if (!direction) {
-      return null;
-    }
-    return this.resolvedDirections().includes(direction) ? direction : null;
+    const allowed = new Set(this.resolvedDirections());
+    return candidates.find((candidate) => allowed.has(candidate)) ?? null;
   }
 }
 
-function isHTMLElementTarget(target: EventTarget | null): target is HTMLElement {
+function isElementTarget(target: EventTarget | null): target is Element {
   return (
     !!target &&
     typeof target === 'object' &&
@@ -520,4 +571,70 @@ function isHTMLElementTarget(target: EventTarget | null): target is HTMLElement 
     (target as Node).nodeType === 1 &&
     'closest' in target
   );
+}
+
+function readBorderBoxSize(element: HTMLElement, axis: 'x' | 'y'): number {
+  const win = element.ownerDocument.defaultView;
+  const style = win?.getComputedStyle(element);
+  if (!style) return axis === 'x' ? element.offsetWidth : element.offsetHeight;
+
+  const horizontal = axis === 'x';
+  const size = Number.parseFloat(horizontal ? style.width : style.height) || 0;
+  if (style.boxSizing === 'border-box') return size;
+
+  const px = (value: string) => Number.parseFloat(value) || 0;
+  return (
+    size +
+    (horizontal
+      ? px(style.paddingLeft) +
+        px(style.paddingRight) +
+        px(style.borderLeftWidth) +
+        px(style.borderRightWidth)
+      : px(style.paddingTop) +
+        px(style.paddingBottom) +
+        px(style.borderTopWidth) +
+        px(style.borderBottomWidth))
+  );
+}
+
+/**
+ * Compose a resize-only offset with the existing CSS individual `translate` value.
+ * Keeping the original CSS tokens (instead of parseFloat) preserves percentages, calc(),
+ * and variables. The `transform` channel remains exclusively owned by NgxDraggable.
+ */
+function writeTranslateWithOffset(
+  element: HTMLElement,
+  baseValue: string,
+  offset: { x: number; y: number },
+): void {
+  const [baseX, baseY, baseZ] = splitCssComponents(
+    !baseValue || baseValue === 'none' ? '0px 0px 0px' : baseValue,
+  );
+  const x = offset.x ? `calc(${baseX ?? '0px'} ${formatOffset(offset.x)})` : (baseX ?? '0px');
+  const y = offset.y ? `calc(${baseY ?? '0px'} ${formatOffset(offset.y)})` : (baseY ?? '0px');
+  element.style.translate = `${x} ${y} ${baseZ ?? '0px'}`;
+}
+
+function splitCssComponents(value: string): string[] {
+  const result: string[] = [];
+  let depth = 0;
+  let token = '';
+  for (const char of value.trim()) {
+    if (char === '(') depth++;
+    if (char === ')') depth = Math.max(0, depth - 1);
+    if (/\s/.test(char) && depth === 0) {
+      if (token) result.push(token);
+      token = '';
+    } else {
+      token += char;
+    }
+  }
+  if (token) result.push(token);
+  return result;
+}
+
+function formatOffset(value: number): string {
+  return value < 0
+    ? `- ${Number(Math.abs(value).toFixed(4))}px`
+    : `+ ${Number(value.toFixed(4))}px`;
 }
