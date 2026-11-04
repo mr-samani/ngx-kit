@@ -1,0 +1,307 @@
+<!-- Icon sprite: <use> works for the lifted card too, because that clone lives in the same document. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-story" viewBox="0 0 24 24">
+      <path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z" />
+    </symbol>
+    <symbol id="i-task" viewBox="0 0 24 24">
+      <rect x="4" y="4" width="16" height="16" rx="3.5" />
+      <path d="m8.5 12.5 2.5 2.5 4.5-5" />
+    </symbol>
+    <symbol id="i-bug" viewBox="0 0 24 24">
+      <path d="M9 7.5a3 3 0 0 1 6 0" />
+      <rect x="7" y="7.5" width="10" height="12" rx="5" />
+      <path d="M12 11v8M3.5 13H7M17 13h3.5M4.5 7.5l3 2M19.5 7.5l-3 2M4.5 19l3-2.5M19.5 19l-3-2.5" />
+    </symbol>
+    <symbol id="i-epic" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></symbol>
+    <symbol id="i-spike" viewBox="0 0 24 24">
+      <path d="M9 3h6M10 3v6l-5.5 10a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3" />
+      <path d="M7.5 14.5h9" />
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+    <symbol id="i-comment" viewBox="0 0 24 24">
+      <path d="M20 15a2 2 0 0 1-2 2H9l-5 4V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z" />
+    </symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24">
+      <path d="m20 11-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7" />
+    </symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="10" rx="2.5" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-4-4" />
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></symbol>
+    <symbol id="i-p-highest" viewBox="0 0 24 24"><path d="m6 11 6-6 6 6M6 19l6-6 6 6" /></symbol>
+    <symbol id="i-p-high" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6" /></symbol>
+    <symbol id="i-p-medium" viewBox="0 0 24 24"><path d="M5 9h14M5 15h14" /></symbol>
+    <symbol id="i-p-low" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+  </defs>
+</svg>
+
+<div class="kanban">
+  <!-- ───────── top bar ───────── -->
+  <header class="topbar">
+    <div class="heading">
+      <p class="crumbs">{{ t().crumbs }}</p>
+      <h1>{{ t().title }}</h1>
+      <p class="sprint">
+        <span class="pill">{{ t().sprint }}</span>
+        <span class="muted">{{ t().sprintDates }}</span>
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <b>{{ n(totalTasks()) }}</b>
+        <span>{{ t().tasks }}</span>
+      </div>
+      <div class="stat">
+        <b>{{ n(totalPoints()) }}</b>
+        <span>{{ t().points }}</span>
+      </div>
+      <div class="stat wide">
+        <b>{{ pct(progressPct()) }}</b>
+        <div
+          class="meter"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="progressPct()"
+          [attr.aria-label]="t().done">
+          @for (col of columns(); track col.id) {
+            <i [style.--h]="col.hue" [style.flex-grow]="points(col)"></i>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="search">
+        <svg class="ico" aria-hidden="true"><use href="#i-search" /></svg>
+        <input
+          type="search"
+          [value]="query()"
+          (input)="onSearch($event)"
+          [placeholder]="t().search"
+          [attr.aria-label]="t().search" />
+        @if (query().trim()) {
+          <span class="found">{{ n(matchCount()) }} {{ t().matches }}</span>
+        }
+      </label>
+
+      <div class="seg" role="group" [attr.aria-label]="t().language">
+        @for (l of langs; track l.id) {
+          <button type="button" [attr.aria-pressed]="lang() === l.id" (click)="setLang(l.id)">
+            {{ l.label }}
+          </button>
+        }
+      </div>
+      <div class="seg" role="group" [attr.aria-label]="t().direction">
+        @for (d of dirs; track d) {
+          <button type="button" [attr.aria-pressed]="dir() === d" (click)="dir.set(d)">
+            {{ d.toUpperCase() }}
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- ───────── board ───────── -->
+  <div class="board" ngxDropListGroup>
+    @for (col of columns(); track col.id) {
+      <section
+        class="column"
+        [class.over-wip]="overWip(col)"
+        [style.--h]="col.hue"
+        [attr.aria-labelledby]="'col-' + col.id">
+        <header class="col-head">
+          <span class="dot" aria-hidden="true"></span>
+          <h2 [id]="'col-' + col.id">{{ col.title[lang()] }}</h2>
+          <span class="count">{{ n(count(col)) }}</span>
+          @if (col.wipLimit) {
+            <span class="wip" [class.hot]="overWip(col)" [title]="t().wip">
+              {{ t().wip }} {{ n(count(col)) }}/{{ n(col.wipLimit) }}
+            </span>
+          }
+          <span class="grow"></span>
+          <span class="pts">{{ n(points(col)) }} {{ t().sp }}</span>
+        </header>
+
+        <div class="col-body">
+          @for (section of col.sections; track section.id) {
+            <div class="section" [class.collapsed]="section.collapsed">
+              <div class="sec-head">
+                <button
+                  type="button"
+                  class="sec-toggle"
+                  [attr.aria-expanded]="!section.collapsed"
+                  [attr.aria-controls]="'list-' + section.id"
+                  [title]="section.collapsed ? t().expand : t().collapse"
+                  (click)="toggle(section.id)">
+                  <svg class="chev" aria-hidden="true"><use href="#i-chevron" /></svg>
+                  <span class="sec-title">{{ section.title[lang()] }}</span>
+                  <span class="count">{{ n(section.tasks.length) }}</span>
+                </button>
+                <span class="sec-pts">{{ n(sectionPoints(section)) }} {{ t().sp }}</span>
+                <button
+                  type="button"
+                  class="icon-btn"
+                  [title]="t().add"
+                  [attr.aria-label]="t().add"
+                  (click)="add(section.id)">
+                  <svg class="ico" aria-hidden="true"><use href="#i-plus" /></svg>
+                </button>
+              </div>
+
+              <div class="sec-collapse" [attr.inert]="section.collapsed ? '' : null">
+                <div class="sec-clip">
+                  <div
+                    class="inner"
+                    ngxDropList
+                    role="list"
+                    [id]="'list-' + section.id"
+                    [attr.aria-label]="section.title[lang()]"
+                    [attr.data-empty]="t().empty"
+                    [data]="section.tasks"
+                    (drop)="onDrop($event)">
+                    @for (task of section.tasks; track task.id) {
+                      <article
+                        class="card"
+                        ngxDraggable
+                        role="listitem"
+                        [class.dim]="!matches(task)"
+                        [class.blocked]="task.blocked"
+                        [class.is-done]="col.done"
+                        [attr.data-type]="task.type"
+                        [attr.aria-label]="task.key + ': ' + task.title[lang()]">
+                        <div class="top">
+                          <span class="type" [title]="t().type[task.type]">
+                            <svg class="ico" aria-hidden="true">
+                              <use [attr.href]="'#i-' + task.type" />
+                            </svg>
+                          </span>
+                          <span class="key">{{ task.key }}</span>
+                          @if (task.blocked) {
+                            <span class="flag">
+                              <svg class="ico" aria-hidden="true"><use href="#i-lock" /></svg>
+                              {{ t().blocked }}
+                            </span>
+                          }
+                          <span class="grow"></span>
+                          @if (col.done) {
+                            <span class="check" [title]="t().done">
+                              <svg class="ico" aria-hidden="true"><use href="#i-check" /></svg>
+                            </span>
+                          } @else {
+                            <span
+                              class="prio"
+                              [attr.data-p]="task.priority"
+                              [title]="t().priority[task.priority]">
+                              <svg class="ico" aria-hidden="true">
+                                <use [attr.href]="'#i-p-' + task.priority" />
+                              </svg>
+                            </span>
+                          }
+                        </div>
+
+                        <h3 class="title">{{ task.title[lang()] }}</h3>
+
+                        @if (task.description) {
+                          <p class="desc">{{ task.description[lang()] }}</p>
+                        }
+
+                        @if (task.labels.length) {
+                          <ul class="labels">
+                            @for (id of task.labels; track id) {
+                              <li [style.--h]="labels[id].hue">{{ labels[id].text[lang()] }}</li>
+                            }
+                          </ul>
+                        }
+
+                        @if (task.subtasks; as st) {
+                          <div
+                            class="progress"
+                            [attr.title]="n(st.done) + '/' + n(st.total) + ' ' + t().subtasks">
+                            <span
+                              class="track"
+                              role="progressbar"
+                              aria-valuemin="0"
+                              aria-valuemax="100"
+                              [attr.aria-valuenow]="progress(task)"
+                              [attr.aria-label]="t().subtasks">
+                              <i
+                                [style.inline-size.%]="progress(task)"
+                                [class.full]="st.done === st.total"></i>
+                            </span>
+                            <span class="frac">{{ n(st.done) }}/{{ n(st.total) }}</span>
+                          </div>
+                        }
+
+                        <div class="foot">
+                          <div class="meta">
+                            @if (due(task); as d) {
+                              @if (!col.done) {
+                                <span class="due" [attr.data-state]="d.state">
+                                  <svg class="ico" aria-hidden="true"><use href="#i-cal" /></svg>
+                                  {{ d.text }}
+                                </span>
+                              }
+                            }
+                            @if (task.comments) {
+                              <span class="stat-chip">
+                                <svg class="ico" aria-hidden="true"><use href="#i-comment" /></svg>
+                                {{ n(task.comments) }}
+                              </span>
+                            }
+                            @if (task.attachments) {
+                              <span class="stat-chip">
+                                <svg class="ico" aria-hidden="true"><use href="#i-clip" /></svg>
+                                {{ n(task.attachments) }}
+                              </span>
+                            }
+                          </div>
+
+                          @if (task.points !== undefined) {
+                            <span class="points" [title]="t().points">{{ n(task.points) }}</span>
+                          }
+                          <div
+                            class="avatars"
+                            [attr.aria-label]="assigneeNames(task)"
+                            [title]="assigneeNames(task)">
+                            @for (id of visibleAssignees(task); track id) {
+                              <span class="avatar" [style.--h]="people.get(id)!.hue">
+                                {{ people.get(id)!.initials[lang()] }}
+                              </span>
+                            }
+                            @if (task.assignees.length > 3) {
+                              <span class="avatar more">+{{ n(task.assignees.length - 3) }}</span>
+                            }
+                          </div>
+                        </div>
+                      </article>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <footer class="hint" aria-live="polite">
+    <span>{{ t().hint }}</span>
+    @if (lastMoveText()) {
+      <b class="moved">{{ lastMoveText() }}</b>
+    }
+  </footer>
+</div>
