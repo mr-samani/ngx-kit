@@ -219,7 +219,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     if (this._ref.isListDrag && this.autoScroll()) {
       const after = this._ref.activeDropList;
       // Follow the hovered list; outside every list, scroll the page.
-      if (after !== before) this.scroller.retarget(after?.el ?? this._ref.el.ownerDocument.body);
+      if (after !== before)
+        this.scroller.retarget(after?.el ?? this._ref.dropList?.el ?? this._ref.el);
     }
     this.dragMove.emit(p);
   }
@@ -371,7 +372,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     // Only the draggable ITSELF being focused means "move me". Arrow keys typed into an input,
     // a textarea or a contenteditable region inside the block belong to that control (caret
     // movement), and must never start a drag or be swallowed.
-    if (e.target !== this.host.nativeElement && e.target !== this._ref.el && !this.dragging()) return;
+    if (e.target !== this.host.nativeElement && e.target !== this._ref.el && !this.dragging())
+      return;
     if (this.dragging() && isEditableTarget(e.target)) return;
     this.handledKeys.add(e);
 
@@ -403,7 +405,13 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
         this.beginKeyboardSession();
         this.dragStart.emit(origin);
       }
-      this._ref.nudge(delta.x, delta.y);
+      // Holding the key down repeats faster than the 200ms slide animation settles.
+      if (e.repeat && this._ref.isListDrag) return;
+      const name = (
+        { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' } as const
+      )[e.key as 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown'];
+      // List items hop by whole slots / neighbouring lists; free drags move by `keyboardStep` px.
+      if (!this._ref.nudgeToSlot(name)) this._ref.nudge(delta.x, delta.y);
       this.dragMove.emit(this._ref.pointer);
       return;
     }
@@ -475,7 +483,9 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
 }
 
 function isEditableOrInteractive(el: HTMLElement): boolean {
-  return !!el.closest('button,a[href],input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+  return !!el.closest(
+    'button,a[href],input,textarea,select,[contenteditable]:not([contenteditable="false"])',
+  );
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

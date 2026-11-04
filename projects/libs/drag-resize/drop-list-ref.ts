@@ -62,6 +62,11 @@ export class DropListRef<T = any> {
   readonly childLists = new Set<DropListRef<any>>();
 
   private session: SortSession | null = null;
+
+  /** Main axis of this list: the measured one while sorting, else a CSS-based guess. */
+  getAxis(): 'x' | 'y' | 'grid' {
+    return this.session?.axis ?? fallbackAxis(this.el);
+  }
   private placeholder?: PlaceHolderRef;
   customPlaceholder?: PlaceHolderRef;
   private activeDrag: DragRef<T> | null = null;
@@ -539,12 +544,11 @@ export class DropListRef<T = any> {
     // list: convert across an (optionally scaled) iframe boundary first, then through the
     // list's own scaled/zoomed ancestors. Without this a placeholder inside a `scale(.5)` canvas
     // would be drawn at half the size it reserves.
-    const inTarget =
-      convertSizeBetweenDocuments(
-        { x: rect.width, y: rect.height },
-        drag.el.ownerDocument,
-        this.el.ownerDocument,
-      ) ?? { x: rect.width, y: rect.height };
+    const inTarget = convertSizeBetweenDocuments(
+      { x: rect.width, y: rect.height },
+      drag.el.ownerDocument,
+      this.el.ownerDocument,
+    ) ?? { x: rect.width, y: rect.height };
     const scale = getLocalScale(this.el);
     const width = Math.abs(inTarget.x) / scale.x;
     const height = Math.abs(inTarget.y) / scale.y;
@@ -607,7 +611,8 @@ function measureHit(el: HTMLElement): HitGeometry | null {
   if (ownerWin?.frameElement) {
     // In quirks mode (an iframe written without <!doctype>) `documentElement.clientHeight` is the
     // height of the CONTENT, and the viewport size lives on <body> instead.
-    const sizer = el.ownerDocument.compatMode === 'CSS1Compat' ? root : (el.ownerDocument.body ?? root);
+    const sizer =
+      el.ownerDocument.compatMode === 'CSS1Compat' ? root : (el.ownerDocument.body ?? root);
     clips.push({
       box: {
         left: 0,

@@ -8,7 +8,9 @@ import { convertPointBetweenDocuments, viewportDeltaToLocal } from './coordinate
  */
 export class AutoScroller {
   private raf = 0;
-  private container!: HTMLElement | Window;
+  /** Nearest scroller per axis: a kanban column scrolls vertically while its BOARD scrolls horizontally. */
+  private containerX!: HTMLElement | Window;
+  private containerY!: HTMLElement | Window;
   private win?: Window;
   /** Document the pointer coordinates (`update(x, y)`) are expressed in. */
   private pointerDoc?: Document;
@@ -27,38 +29,47 @@ export class AutoScroller {
   start(fromEl: HTMLElement, onTick?: () => void): void {
     this.win = fromEl.ownerDocument.defaultView ?? undefined;
     this.pointerDoc = fromEl.ownerDocument;
-    this.container = findScrollableAncestor(fromEl);
+    this.retarget(fromEl);
     this.onTick = onTick;
   }
 
   /** فقط container را عوض می‌کند بدون قطع حلقه‌ی در حال اجرا یا صفر کردن speed. */
   retarget(fromEl: HTMLElement): void {
-    this.container = findScrollableAncestor(fromEl);
+    this.containerX = findScrollableAncestorForAxis(fromEl, 'x');
+    this.containerY = findScrollableAncestorForAxis(fromEl, 'y');
   }
 
   update(clientX: number, clientY: number): void {
-    // The scroll container may live in another document (a page-builder iframe). Its rect is in
-    // THAT document's viewport pixels, so bring the pointer into the same space first.
-    let x = clientX;
-    let y = clientY;
-    const containerDoc = documentOf(this.container);
-    if (this.pointerDoc && containerDoc && containerDoc !== this.pointerDoc) {
-      const p = convertPointBetweenDocuments({ x, y }, this.pointerDoc, containerDoc);
-      if (!p) {
-        this.speed = { x: 0, y: 0 };
-        return;
-      }
-      x = p.x;
-      y = p.y;
-    }
-    const rect = getScrollRect(this.container);
     this.speed = {
-      x: edgeSpeed(x, rect.left, rect.right, this.edge, this.maxSpeed),
-      y: edgeSpeed(y, rect.top, rect.bottom, this.edge, this.maxSpeed),
+      x: this.axisSpeed(this.containerX, 'x', clientX, clientY),
+      y: this.axisSpeed(this.containerY, 'y', clientX, clientY),
     };
     if ((this.speed.x || this.speed.y) && !this.raf) {
       this.raf = this.win?.requestAnimationFrame(this.tick) ?? 0;
     }
+  }
+
+  private axisSpeed(
+    container: HTMLElement | Window,
+    axis: 'x' | 'y',
+    clientX: number,
+    clientY: number,
+  ): number {
+    // The scroll container may live in another document (a page-builder iframe). Its rect is in
+    // THAT document's viewport pixels, so bring the pointer into the same space first.
+    let x = clientX;
+    let y = clientY;
+    const containerDoc = documentOf(container);
+    if (this.pointerDoc && containerDoc && containerDoc !== this.pointerDoc) {
+      const p = convertPointBetweenDocuments({ x, y }, this.pointerDoc, containerDoc);
+      if (!p) return 0;
+      x = p.x;
+      y = p.y;
+    }
+    const rect = getScrollRect(container);
+    return axis === 'x'
+      ? edgeSpeed(x, rect.left, rect.right, this.edge, this.maxSpeed)
+      : edgeSpeed(y, rect.top, rect.bottom, this.edge, this.maxSpeed);
   }
 
   stop(): void {
@@ -71,16 +82,13 @@ export class AutoScroller {
     this.pointerDoc = undefined;
   }
 
-  private tick = (): void => {
-    if (!this.speed.x && !this.speed.y) {
-      this.raf = 0;
-      return;
-    }
-
-    const container = this.container;
-
-    // Edge speed is measured in viewport pixels; an element's scrollLeft/Top are local to it.
-    const local = isWindow(container) ? this.speed : viewportDeltaToLocal(container, this.speed);
+  /** Scrolls one container by a speed measured in viewport pixels (carrying sub-pixel remainders). */
+  private scrollContainer(container: HTMLElement | Window, sx: number, sy: number): void {
+    if (!sx && !sy) return;
+    // An element's scrollLeft/Top are local to it; a window's are viewport pixels already.
+    const local = isWindow(container)
+      ? { x: sx, y: sy }
+      : viewportDeltaToLocal(container, { x: sx, y: sy });
     // Browsers snap scroll offsets to whole pixels, so a slow speed (< 1px/frame, i.e. when the
     // pointer has just entered the edge zone) would never move anything. Carry the remainder.
     this.carry.x += local.x;
@@ -89,12 +97,23 @@ export class AutoScroller {
     const dy = Math.trunc(this.carry.y);
     this.carry.x -= dx;
     this.carry.y -= dy;
+    // `behavior: 'instant'` matters: with `scroll-behavior: smooth` on <html> or on the scroller
+    // (very common in apps) every per-frame scroll would start a new animation that cancels the
+    // previous one, and the list would not move at all.
+    if (dx || dy) container.scrollBy({ left: dx, top: dy, behavior: 'instant' });
+  }
 
-    if (dx || dy) {
-      // `behavior: 'instant'` matters: with `scroll-behavior: smooth` on <html> or on the scroller
-      // (very common in apps) every per-frame scroll would start a new animation that cancels the
-      // previous one, and the list would not move at all.
-      container.scrollBy({ left: dx, top: dy, behavior: 'instant' });
+  private tick = (): void => {
+    if (!this.speed.x && !this.speed.y) {
+      this.raf = 0;
+      return;
+    }
+
+    if (this.containerX === this.containerY) {
+      this.scrollContainer(this.containerX, this.speed.x, this.speed.y);
+    } else {
+      this.scrollContainer(this.containerX, this.speed.x, 0);
+      this.scrollContainer(this.containerY, 0, this.speed.y);
     }
 
     // Pointer ثابت مانده ولی محتوا اسکرول شده؛
@@ -146,7 +165,10 @@ export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
     const style = win.getComputedStyle(node);
     const scrollable = /(auto|scroll|overlay)/.test(style.overflowY + style.overflowX);
 
-    if (scrollable && (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth)) {
+    if (
+      scrollable &&
+      (node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth)
+    ) {
       // <html>/<body> scroll the whole document: their own rect spans the full (tall) page, so
       // edge detection must use the window's viewport instead.
       const doc = node.ownerDocument;
@@ -157,6 +179,29 @@ export function findScrollableAncestor(el: HTMLElement): HTMLElement | Window {
     node = node.parentElement;
   }
 
+  return el.ownerDocument.defaultView ?? el;
+}
+
+/** Nearest ancestor that can scroll along ONE axis (`<html>`/`<body>` resolve to the window). */
+export function findScrollableAncestorForAxis(
+  el: HTMLElement,
+  axis: 'x' | 'y',
+): HTMLElement | Window {
+  let node: HTMLElement | null = el;
+  while (node) {
+    const win = node.ownerDocument.defaultView;
+    if (!win) break;
+    const style = win.getComputedStyle(node);
+    const overflow = axis === 'x' ? style.overflowX : style.overflowY;
+    const canScroll =
+      axis === 'x' ? node.scrollWidth > node.clientWidth : node.scrollHeight > node.clientHeight;
+    if (/(auto|scroll|overlay)/.test(overflow) && canScroll) {
+      const doc = node.ownerDocument;
+      if (node === doc.documentElement || node === doc.body) return win;
+      return node;
+    }
+    node = node.parentElement;
+  }
   return el.ownerDocument.defaultView ?? el;
 }
 

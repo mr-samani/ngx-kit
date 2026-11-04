@@ -76,4 +76,39 @@ describe('horizontal auto-scroll', () => {
     });
     expect(r.x).toBeGreaterThan(100);
   });
+
+  it('kanban: a vertically scrolling column inside a horizontally scrolling board scrolls BOTH axes', async () => {
+    const card = (i: number) => `<div class="it" data-item data-id="c${i}" style="width:auto;height:40px;margin:4px">${i}</div>`;
+    const col = (id: string, n: number) =>
+      `<div id="${id}" data-list style="position:static;flex:none;width:300px;height:200px;overflow-y:auto">` +
+      Array.from({ length: n }, (_, i) => card(i)).join('') +
+      `</div>`;
+    const html =
+      `${CSS}<div id="board" data-group style="position:absolute;left:20px;top:20px;width:400px;height:240px;overflow-x:auto;overflow-y:hidden;display:flex;gap:10px">` +
+      col('c1', 20) + col('c2', 20) + col('c3', 3) +
+      `</div>`;
+    const r = await run(html, async (H: any) => {
+      await H.auto();
+      const board = document.getElementById('board')!;
+      const c1 = document.getElementById('c1')!;
+      const first = c1.querySelector('[data-item]') as HTMLElement;
+      const p = H.center(first);
+      H.down(first, p.x, p.y);
+      H.move(p.x + 5, p.y + 5);
+      const br = board.getBoundingClientRect();
+      // bottom edge of the column (vertical scroller) ...
+      const cr = c1.getBoundingClientRect();
+      H.move(cr.left + 100, cr.bottom - 8);
+      await new Promise((res) => setTimeout(res, 500));
+      const colScrollTop = c1.scrollTop;
+      // ... then the right edge of the board (horizontal scroller), still over a column
+      H.move(br.right - 8, cr.top + 100);
+      await new Promise((res) => setTimeout(res, 700));
+      const boardScrollLeft = board.scrollLeft;
+      H.up(br.right - 8, cr.top + 100);
+      return { colScrollTop, boardScrollLeft };
+    });
+    expect(r.colScrollTop).toBeGreaterThan(50);
+    expect(r.boardScrollLeft).toBeGreaterThan(50);
+  });
 });

@@ -110,3 +110,8 @@ Known limits: cross-origin iframes (no coordinate access), iframes clipped by an
 ## Tests
 
 `tests/browser/*.spec.ts` run in real Chromium (Playwright + vitest, set `CHROMIUM_PATH`); `tests/browser/page-builder.spec.ts` covers palette → iframe canvas, iframe scroll/auto-scroll, scaled iframes, editing inside blocks, resizing and export cleanup.
+
+## Keyboard & auto-scroll (kanban boards)
+
+- Focus a card and press an arrow key to lift it. **One press = one slot**; at the edge of a list the card hops to the neighbouring connected list (Left/Right between columns, Up/Down between the sections of a column). Enter drops, Esc cancels.
+- Auto-scroll picks the nearest scroller **per axis**, so a column that scrolls vertically inside a board that scrolls horizontally scrolls both ways; with the pointer outside every list it uses the dragged item's own scrollers.

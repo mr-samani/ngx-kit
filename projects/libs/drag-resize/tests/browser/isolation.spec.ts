@@ -128,14 +128,12 @@ describe('keyboard, destruction and preview fidelity', () => {
       await H.auto();
       const a = document.getElementById('a')!;
       const B = a.querySelector('[data-id=B]') as HTMLElement;
-      H.key(B, 'ArrowDown', { shiftKey: true });
-      H.key(B, 'ArrowDown', { shiftKey: true }); // 2 x 32px from B's centre (80) -> 144
+      H.key(B, 'ArrowDown'); // one press = one SLOT (an 8px step could never cross a card's centre)
       const live = H.visual(a).join('');
       H.key(B, 'Enter');
       const committed = { drop: H.drops[0], leaks: H.leaks() };
 
-      H.key(B, 'ArrowDown', { shiftKey: true });
-      H.key(B, 'ArrowDown', { shiftKey: true });
+      H.key(B, 'ArrowDown');
       const live2 = H.visual(a).join('');
       H.key(B, 'Escape'); // keyboard mode handles Escape on the host element
       return { live, committed, live2, after: H.visual(a).join(''), drops: H.drops.length, leaks: H.leaks() };
