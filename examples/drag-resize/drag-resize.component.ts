@@ -3,6 +3,7 @@ import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DirectionService } from 'ngx-kit/core';
+import { NgxResizeHandle } from 'ngx-kit/drag-resize';
 
 type PositionMode = 'static' | 'relative' | 'absolute' | 'fixed';
 
@@ -20,7 +21,7 @@ interface DemoEvent {
 
 @Component({
   selector: 'app-drag-resize',
-  imports: [CommonModule, NgxDraggable, NgxResizable],
+  imports: [CommonModule, NgxDraggable, NgxResizable, NgxResizeHandle],
   templateUrl: './drag-resize.component.html',
   styleUrl: './drag-resize.component.scss',
 })
