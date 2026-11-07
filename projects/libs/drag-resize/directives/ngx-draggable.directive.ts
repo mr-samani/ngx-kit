@@ -64,6 +64,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
    * When `true`, presses on native interactive controls (`button, a, input, textarea, select`,
    * `[contenteditable]`) do not start a drag either. Off by default so that a page-builder canvas
    * block can be grabbed by its own button/link, which is exactly what you want while editing.
+   * @default false
    */
   readonly ignoreInteractive = input<boolean>(false);
   @Input('data') set data(v: T) {
@@ -163,18 +164,13 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
   }
 
   private pointerDown(e: PointerEvent): void {
-    if (
-      this.disabled() ||
-      e.button !== 0 ||
-      this.isExcluded(e.target) ||
-      !this.isOnHandle(e.target)
-    )
-      return;
+    if (this.disabled() || e.button !== 0 || !this.isOnHandle(e.target)) return;
     // Nested draggables: pointerdown bubbles, so without this an ancestor draggable would start
     // its own drag from the very same gesture. The innermost enabled draggable claims it.
     if (claimedPointerEvents.has(e)) return;
     claimedPointerEvents.add(e);
-    e.preventDefault();
+    if (this.ignoreInteractive()) e.preventDefault();
+
     this.down = true;
     this.keyboardDrag = false;
     this.pointerId = e.pointerId;
@@ -472,20 +468,6 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     // TODO notsafe instanseof: node.nodeType === Node.ELEMENT_NODE
     return isElementTarget(target) && !!target.closest(this.dragHandle());
   }
-
-  /** Should a press on `target` be left alone (no drag)? */
-  private isExcluded(target: EventTarget | null): boolean {
-    if (!isElementTarget(target)) return false;
-    const selector = this.noDragSelector();
-    if (selector && target.closest(selector)) return true;
-    return this.ignoreInteractive() && isEditableOrInteractive(target);
-  }
-}
-
-function isEditableOrInteractive(el: HTMLElement): boolean {
-  return !!el.closest(
-    'button,a[href],input,textarea,select,[contenteditable]:not([contenteditable="false"])',
-  );
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

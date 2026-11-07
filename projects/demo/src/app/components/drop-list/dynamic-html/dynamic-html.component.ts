@@ -27,4 +27,8 @@ export class DynamicHtmlComponent implements OnInit {
     console.log('Drop event: ', ev);
     moveItemInArray(list, ev.previousIndex, ev.currentIndex);
   }
+
+  alert(txt: string) {
+    alert(txt);
+  }
 }
