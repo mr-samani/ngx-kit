@@ -13,6 +13,7 @@ import {
   forwardRef,
   inject,
   OnInit,
+  DOCUMENT,
 } from '@angular/core';
 import { getOffsetPosition } from '../utils/get-offset-position';
 import { startDragSession } from '../utils/drag-session';
@@ -67,6 +68,8 @@ export class SliderComponent implements OnInit, OnDestroy, ControlValueAccessor,
   private thumbRect?: DOMRect;
   private stopDrag?: () => void;
   private readonly cd = inject(ChangeDetectorRef);
+  private readonly doc = inject(DOCUMENT);
+
   constructor() {}
   ngOnInit(): void {
     this.myControl.setValidators([Validators.min(this.min), Validators.max(this.max)]);
@@ -123,6 +126,7 @@ export class SliderComponent implements OnInit, OnDestroy, ControlValueAccessor,
     this.updatePosition(ev);
     this.stopDrag?.();
     this.stopDrag = startDragSession({
+      doc: this.doc,
       onMove: (moveEv) => this.updatePosition(moveEv),
       onEnd: () => {
         this.isDragging = false;

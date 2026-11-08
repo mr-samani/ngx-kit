@@ -142,7 +142,7 @@ function multiplyLinear(left: ILinearTransform, right: ILinearTransform): ILinea
 
 /**
  * Converts a client-space point from one same-origin Document viewport to another.
- * The conversion walks both frameElement chains through their common top-level document.
+ * The conversion walks both frameElement chains through their common top-level document
  * Cross-origin frame boundaries cannot be inspected and return null.
  */
 export function convertPointBetweenDocuments(

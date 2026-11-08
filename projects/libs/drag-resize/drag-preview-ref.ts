@@ -86,7 +86,7 @@ export class DragPreviewRef {
 
       const preview = dragEl.cloneNode(true) as HTMLElement;
       this.element = preview;
-      // Avoid duplicated ids in the document.
+      // Avoid duplicated ids in the document
       this.element.removeAttribute('id');
       this.element.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
       copyVisualStyles(dragEl, this.element);

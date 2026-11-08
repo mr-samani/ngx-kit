@@ -540,7 +540,6 @@ export class DropListRef<T = any> {
 
     placeholder.style.display = drag.originalDisplay;
 
-    // `rect` is in the VIEWPORT pixels of the dragged item's document. CSS sizes are local to the
     // list: convert across an (optionally scaled) iframe boundary first, then through the
     // list's own scaled/zoomed ancestors. Without this a placeholder inside a `scale(.5)` canvas
     // would be drawn at half the size it reserves.

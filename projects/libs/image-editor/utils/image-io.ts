@@ -46,9 +46,13 @@ export function canvasToBlob(
  * کراپ روون بمونه؛ خروجی نهایی (save) همیشه از روی تصویر اصلیِ کامل رندر
  * می‌شه، نه از روی این کپی.
  */
-export function createWorkingCopy(img: HTMLImageElement, maxSize = 1200): HTMLCanvasElement {
+export function createWorkingCopy(
+  doc: Document,
+  img: HTMLImageElement,
+  maxSize = 1200,
+): HTMLCanvasElement {
   const { width, height } = fitWithin(img.naturalWidth, img.naturalHeight, maxSize, maxSize);
-  const canvas = document.createElement('canvas');
+  const canvas = doc.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d')!;

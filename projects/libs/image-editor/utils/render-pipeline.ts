@@ -4,6 +4,7 @@ import { fitWithin } from './image-io';
 
 /** تصویر مبدأ رو با زاویه‌ی داده‌شده روی یه canvas جدید (به اندازه‌ی bounding-box نتیجه) می‌چرخونه */
 export function renderRotated(
+  doc: Document,
   source: CanvasImageSource,
   width: number,
   height: number,
@@ -15,7 +16,7 @@ export function renderRotated(
   const newW = Math.max(1, Math.round(width * cos + height * sin));
   const newH = Math.max(1, Math.round(width * sin + height * cos));
 
-  const canvas = document.createElement('canvas');
+  const canvas = doc.createElement('canvas');
   canvas.width = newW;
   canvas.height = newH;
   const ctx = canvas.getContext('2d')!;
@@ -48,6 +49,7 @@ function buildCssFilter(adjustments: NgxImageEditorAdjustments): string {
  * محدودیت دلخواه کاربر).
  */
 export function renderComposite(
+  doc: Document,
   source: CanvasImageSource,
   sourceWidth: number,
   sourceHeight: number,
@@ -58,7 +60,7 @@ export function renderComposite(
 ): HTMLCanvasElement {
   const { width: outW, height: outH } = fitWithin(crop.width, crop.height, maxWidth, maxHeight);
 
-  const canvas = document.createElement('canvas');
+  const canvas = doc.createElement('canvas');
   canvas.width = Math.max(1, outW);
   canvas.height = Math.max(1, outH);
   const ctx = canvas.getContext('2d')!;

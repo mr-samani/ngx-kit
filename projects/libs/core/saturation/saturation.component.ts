@@ -1,5 +1,6 @@
 import {
   Component,
+  DOCUMENT,
   ElementRef,
   EventEmitter,
   HostListener,
@@ -8,6 +9,7 @@ import {
   Output,
   ViewChild,
   forwardRef,
+  inject,
 } from '@angular/core';
 import {
   NG_VALUE_ACCESSOR,
@@ -57,6 +59,7 @@ export class SaturationComponent implements ControlValueAccessor, OnDestroy {
   private saturationRect?: DOMRect;
   private thumbRect?: DOMRect;
   private stopDrag?: () => void;
+  private readonly doc = inject(DOCUMENT);
 
   constructor() {}
 
@@ -117,6 +120,7 @@ export class SaturationComponent implements ControlValueAccessor, OnDestroy {
     this.updatePosition(ev);
     this.stopDrag?.();
     this.stopDrag = startDragSession({
+      doc: this.doc,
       onMove: (moveEv) => this.updatePosition(moveEv),
       onEnd: () => {
         this.isDragging = false;

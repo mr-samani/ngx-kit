@@ -10,6 +10,7 @@ import {
   inject,
   signal,
   effect,
+  DOCUMENT,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NgxInfiniteScrollDirection, NgxInfiniteScrollEvent } from '../types/infinite-scroll.types';
@@ -98,6 +99,7 @@ export class NgxInfiniteScroll implements AfterViewInit {
   private readonly zone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly doc = inject(DOCUMENT);
 
   private readonly ready = signal(false);
   private previousConfiguration?: {
@@ -369,7 +371,7 @@ export class NgxInfiniteScroll implements AfterViewInit {
     }
 
     if (typeof container === 'string' && container.trim()) {
-      const scope: ParentNode = this.fromRoot() ? document : this.hostRef.nativeElement;
+      const scope: ParentNode = this.fromRoot() ? this.doc : this.hostRef.nativeElement;
       return scope.querySelector<HTMLElement>(container) ?? this.hostRef.nativeElement;
     }
 
@@ -393,7 +395,7 @@ export class NgxInfiniteScroll implements AfterViewInit {
   }
 
   private createSentinel(position: 'top' | 'bottom'): HTMLElement {
-    const node = document.createElement('span');
+    const node = this.doc.createElement('span');
     node.dataset['ngxInfiniteScrollSentinel'] = position;
     node.setAttribute('aria-hidden', 'true');
     node.style.display = 'block';
@@ -450,9 +452,9 @@ export class NgxInfiniteScroll implements AfterViewInit {
   }
 
   private getDocumentScroller(): HTMLElement | null {
-    if (typeof document === 'undefined') return null;
-    return document.scrollingElement?.nodeType === Node.ELEMENT_NODE
-      ? (document.scrollingElement as HTMLElement)
+    if (typeof this.doc === 'undefined') return null;
+    return this.doc.scrollingElement?.nodeType === Node.ELEMENT_NODE
+      ? (this.doc.scrollingElement as HTMLElement)
       : null;
   }
 
@@ -474,8 +476,8 @@ export class NgxInfiniteScroll implements AfterViewInit {
       element: null,
       scrollTop: window.scrollY,
       scrollHeight: Math.max(
-        document.documentElement.scrollHeight,
-        document.body?.scrollHeight ?? 0,
+        this.doc.documentElement.scrollHeight,
+        this.doc.body?.scrollHeight ?? 0,
       ),
     };
   }

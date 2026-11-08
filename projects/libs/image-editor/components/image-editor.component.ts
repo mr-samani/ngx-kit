@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
   ElementRef,
   computed,
   effect,
@@ -53,6 +54,7 @@ export class NgxImageEditor {
 
   defaultLocalization = inject(NGX_IMAGE_EDITOR_LOCALIZATION);
   localize = input<NgxImageEditorLocalization>(this.defaultLocalization);
+  private readonly doc = inject(DOCUMENT);
 
   saved = output<NgxImageEditorResult>();
   cancelled = output<void>();
@@ -98,7 +100,7 @@ export class NgxImageEditor {
   protected readonly rotatedWorkingCanvas = computed(() => {
     const wc = this.workingCanvas();
     if (!wc) return null;
-    return renderRotated(wc, wc.width, wc.height, this.rotation());
+    return renderRotated(this.doc, wc, wc.width, wc.height, this.rotation());
   });
 
   protected readonly panelSize = computed(() => {
@@ -144,7 +146,16 @@ export class NgxImageEditor {
     const rc = this.rotatedWorkingCanvas();
     const c = this.crop();
     if (!rc || c.width <= 0 || c.height <= 0) return null;
-    const canvas = renderComposite(rc, rc.width, rc.height, c, this.adjustments(), 480, 480);
+    const canvas = renderComposite(
+      this.doc,
+      rc,
+      rc.width,
+      rc.height,
+      c,
+      this.adjustments(),
+      480,
+      480,
+    );
     return canvas.toDataURL('image/png');
   });
 
@@ -165,7 +176,7 @@ export class NgxImageEditor {
       loadImage(src)
         .then((img) => {
           this.originalImage.set(img);
-          this.workingCanvas.set(createWorkingCopy(img));
+          this.workingCanvas.set(createWorkingCopy(this.doc, img));
           this.resetAdjustments();
         })
         .catch((err) => this.loadError.set(err?.message ?? 'Failed to load image'))
@@ -304,6 +315,7 @@ export class NgxImageEditor {
       const scaleToOriginal = original.naturalWidth / working.width;
 
       const rotatedFull = renderRotated(
+        this.doc,
         original,
         original.naturalWidth,
         original.naturalHeight,
@@ -319,6 +331,7 @@ export class NgxImageEditor {
       };
 
       const finalCanvas = renderComposite(
+        this.doc,
         rotatedFull,
         rotatedFull.width,
         rotatedFull.height,

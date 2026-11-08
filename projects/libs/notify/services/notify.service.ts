@@ -201,7 +201,6 @@ export class NgxNotifyService {
       this.configureContainer(payload.options);
     }
 
-    // Use DOCUMENT rather than the global document.
     const host = this.doc.createElement('div');
 
     this.container!.appendChild(host);

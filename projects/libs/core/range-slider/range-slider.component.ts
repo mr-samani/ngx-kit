@@ -12,6 +12,8 @@ import {
   ViewChild,
   forwardRef,
   OnInit,
+  inject,
+  DOCUMENT,
 } from '@angular/core';
 import { getOffsetPosition } from '../utils/get-offset-position';
 import { startDragSession } from '../utils/drag-session';
@@ -105,6 +107,8 @@ export class RangeSliderComponent implements OnInit, OnDestroy, ControlValueAcce
   private thumbRect?: DOMRect;
   private stopDrag?: () => void;
 
+  private readonly doc = inject(DOCUMENT);
+
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
   ngOnInit(): void {}
   ngOnDestroy(): void {
@@ -179,6 +183,7 @@ export class RangeSliderComponent implements OnInit, OnDestroy, ControlValueAcce
 
     this.stopDrag?.();
     this.stopDrag = startDragSession({
+      doc: this.doc,
       onMove: (moveEv) => this.updateThumbPosition(moveEv),
       onEnd: () => {
         this.isDragging = false;

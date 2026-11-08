@@ -586,7 +586,6 @@ export class DragRef<T = unknown> {
       const targetDocument = list.el?.ownerDocument;
       if (!targetDocument) continue;
 
-      // Pointer coordinates originate in the draggable's document. A same-origin iframe has
       // its own viewport coordinate space, so convert before testing its DropList geometry.
       const targetPoint = convertPointBetweenDocuments(
         pointer,

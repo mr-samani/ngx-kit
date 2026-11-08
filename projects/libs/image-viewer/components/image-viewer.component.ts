@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
   DestroyRef,
   ElementRef,
   HostListener,
@@ -70,6 +71,7 @@ export class NgxImageViewer {
   private readonly stageEl = viewChild<ElementRef<HTMLElement>>('stage');
   private readonly hostElRef = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly doc = inject(DOCUMENT);
 
   private pinchStartDistance = 0;
   private pinchStartZoom = 1;
@@ -199,8 +201,8 @@ export class NgxImageViewer {
 
   protected toggleFullscreen(): void {
     const el = this.hostElRef.nativeElement;
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
+    if (this.doc.fullscreenElement) {
+      this.doc.exitFullscreen();
     } else {
       el.requestFullscreen?.();
     }
@@ -223,6 +225,7 @@ export class NgxImageViewer {
     const startY = this.clientYOf(ev);
     this.stopPanDrag?.();
     this.stopPanDrag = startDragSession({
+      doc: this.doc,
       onMove: (moveEv) => {
         this.panX.set(startPanX + (this.clientXOf(moveEv) - startX));
         this.panY.set(startPanY + (this.clientYOf(moveEv) - startY));
