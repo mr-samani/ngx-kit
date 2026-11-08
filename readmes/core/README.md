@@ -65,29 +65,8 @@ const browser = inject(BrowserService);
 browser.prefersDarkMode; // boolean — read once at service construction time
 ```
 
-## Utilities
 
-### `startDragSession(callbacks)`
 
-Replaces the problematic `@HostListener('document:mousemove', ...)` pattern, which keeps a listener attached to `document` for the entire lifetime of the component — even when nothing is being dragged (a real performance issue on pages with many simultaneous instances). This function only adds a listener for the duration of an actual drag and removes it itself; `touchmove` is handled with `{passive: false}`, so dragging on mobile doesn't also scroll the page.
-
-```ts
-import { startDragSession } from 'ngx-kit/core';
-
-let stop: (() => void) | undefined;
-
-function onPointerDown(ev: MouseEvent | TouchEvent) {
-  stop?.();
-  stop = startDragSession({
-    onMove: (ev) => {
-      /* update position */
-    },
-    onEnd: () => {
-      stop = undefined;
-    },
-  });
-}
-```
 
 > If your component is `OnPush` and uses `startDragSession` (instead of `@HostListener`), make sure to call `ChangeDetectorRef.markForCheck()` inside `onMove`/`onEnd` yourself — unlike `@HostListener`, which automatically marks the view dirty, a manual `addEventListener` does not.
 
