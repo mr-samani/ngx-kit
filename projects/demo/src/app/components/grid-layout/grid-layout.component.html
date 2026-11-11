@@ -1,118 +1,506 @@
-<div class="advanced-demo">
-  <!-- Grid -->
-  <div class="grid-container">
-    <ngx-grid-layout
-      #ngxGridLayout
-      [editMode]="gridSettings.editMode"
-      [options]="gridOptions"
-      (layoutChange)="onLayoutChange($event)">
-      @for (item of items(); track item.id) {
-        <ngx-grid-item [id]="item.id" [config]="item.config" [ngClass]="'item-' + item.type">
-          <div class="item-wrapper">
-            <div class="item-header">
-              <span class="item-icon">{{ item.icon }}</span>
-              <h4>{{ item.title }}</h4>
-            </div>
-            <div class="item-body">
-              <p>id={{ item.id }}</p>
-              {{ item.description }}
-            </div>
-            @if (gridSettings.editMode) {}
-            <button type="button" class="remove-btn" (click)="removeItem(item.id)">🗑️</button>
-          </div>
-        </ngx-grid-item>
-      }
-    </ngx-grid-layout>
-  </div>
-  <!-- پنل تنظیمات -->
-  <div class="settings-panel">
-    <h3>⚙️ Grid Setting</h3>
-
-    <div class="setting-group">
-      <label>
-        <input type="checkbox" [(ngModel)]="gridSettings.editMode" />
-        {{ gridSettings.editMode ? '🔓 Edit Mode' : '🔒 View Mode' }}
-      </label>
+<div class="grid-studio">
+  <header class="studio-hero">
+    <div class="hero-copy">
+      <p class="eyebrow">
+        <span class="live-dot"></span>
+        INTERACTIVE LAYOUT STUDIO
+      </p>
+      <h1>
+        Make space for
+        <span>good ideas.</span>
+      </h1>
+      <p class="hero-description">
+        Shape your dashboard in real time. Drag, resize, and arrange every widget just the way you
+        like it.
+      </p>
     </div>
-    <button (click)="addRandomItem()">➕ Add Random Item</button>
-
-    <button (click)="resetToDefault()">🔄 Reset</button>
-
-    <div class="setting-group">
-      <label>Columns Count:</label>
-      <input type="range" [(ngModel)]="gridOptions.cols" min="6" max="24" step="2" />
-      <span>{{ gridOptions.cols }}</span>
-    </div>
-
-    <div class="setting-group">
-      <label>Row Height(px):</label>
-      <input type="range" [(ngModel)]="gridOptions.rowHeight" min="40" max="120" step="10" />
-      <span>{{ gridOptions.rowHeight }}</span>
-    </div>
-
-    <div class="setting-group">
-      <label>Space (gap):</label>
-      <input type="range" [(ngModel)]="gridOptions.gap" min="0" max="30" step="5" />
-      <span>{{ gridOptions.gap }}px</span>
-    </div>
-
-    <div class="demo-choice">
-      <button
-        type="button"
-        class="demo-choice-item"
-        [class.active]="gridOptions.compact === 'none'"
-        (click)="gridOptions.compact = 'none'">
-        None
-      </button>
-      <button
-        type="button"
-        class="demo-choice-item"
-        [class.active]="gridOptions.compact === 'vertical'"
-        (click)="gridOptions.compact = 'vertical'">
-        Vertical
-      </button>
-      <button
-        type="button"
-        class="demo-choice-item"
-        [class.active]="gridOptions.compact === 'horizontal'"
-        (click)="gridOptions.compact = 'horizontal'">
-        Horizontal
-      </button>
-    </div>
-
-    @if (gridOptions.gridBackgroundConfig) {
-      <div class="setting-group">
-        <h4>🎨 Colors</h4>
-
-        <label>Border Color:</label>
-        <input
-          class="input-color"
-          type="color"
-          ngxInputColor
-          [(ngModel)]="gridOptions.gridBackgroundConfig.borderColor" />
-
-        <label>Gap Color:</label>
-        <input
-          class="input-color"
-          type="color"
-          ngxInputColor
-          [(ngModel)]="gridOptions.gridBackgroundConfig.gapColor" />
-
-        <label>Row Color:</label>
-        <input
-          class="input-color"
-          type="color"
-          ngxInputColor
-          [(ngModel)]="gridOptions.gridBackgroundConfig.rowColor" />
-
-        <label>Column Color:</label>
-        <input
-          class="input-color"
-          type="color"
-          ngxInputColor
-          [(ngModel)]="gridOptions.gridBackgroundConfig.columnColor" />
+    <div class="hero-actions">
+      <div class="live-indicator">
+        <span></span>
+        LIVE CANVAS
       </div>
-    }
-    <button (click)="update()" class="preset-btn">Update</button>
+      <button type="button" class="button button--quiet" (click)="resetToDefault()">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M3.5 9a6.5 6.5 0 1 1 1.9 4.6M3.5 4.5V9h4.5" />
+        </svg>
+        Reset layout
+      </button>
+      <button type="button" class="button button--primary" (click)="addRandomItem()">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M10 4v12M4 10h12" />
+        </svg>
+        Add widget
+      </button>
+    </div>
+    <div class="hero-orb hero-orb--one"></div>
+    <div class="hero-orb hero-orb--two"></div>
+  </header>
+
+  <section class="studio-summary" aria-label="Grid summary">
+    <article class="summary-card">
+      <span class="summary-icon summary-icon--violet" aria-hidden="true">▦</span>
+      <div class="summary-copy">
+        <span class="summary-label">WIDGETS</span>
+        <strong>{{ items().length }}</strong>
+      </div>
+      <span class="summary-note">on your canvas</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-icon summary-icon--blue" aria-hidden="true">↔</span>
+      <div class="summary-copy">
+        <span class="summary-label">GRID COLUMNS</span>
+        <strong>{{ gridOptions.cols }}</strong>
+      </div>
+      <span class="summary-note">fully adjustable</span>
+    </article>
+    <article class="summary-card">
+      <span class="summary-icon summary-icon--mint" aria-hidden="true">✦</span>
+      <div class="summary-copy">
+        <span class="summary-label">LAYOUT MODE</span>
+        <strong class="summary-mode">
+          @switch (gridOptions.compact) {
+            @case ('none') {
+              Free
+            }
+            @case ('horizontal') {
+              Horizontal
+            }
+            @default {
+              Vertical
+            }
+          }
+        </strong>
+      </div>
+      <span class="summary-note">change anytime</span>
+    </article>
+  </section>
+
+  <div class="studio-layout">
+    <section class="canvas-panel" aria-labelledby="canvas-title">
+      <div class="panel-heading">
+        <div>
+          <p class="section-eyebrow">YOUR WORKSPACE</p>
+          <h2 id="canvas-title">Dashboard canvas</h2>
+        </div>
+        <div class="canvas-indicators">
+          <span class="canvas-chip">
+            <span class="chip-dot"></span>
+            {{ gridOptions.cols }} columns
+          </span>
+          <span class="canvas-chip canvas-chip--mode" [class.is-editing]="gridSettings.editMode">
+            <span class="chip-dot"></span>
+            {{ gridSettings.editMode ? 'Edit mode' : 'View mode' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="grid-container">
+        <ngx-grid-layout
+          #ngxGridLayout
+          [editMode]="gridSettings.editMode"
+          [options]="gridOptions"
+          (layoutChange)="onLayoutChange($event)">
+          @for (item of items(); track item.id) {
+            <ngx-grid-item [id]="item.id" [config]="item.config">
+              <article
+                class="widget-card"
+                [class.widget-card--chart]="item.type === 'chart'"
+                [class.widget-card--stats]="item.type === 'stats'"
+                [class.widget-card--cost]="item.type === 'cost'"
+                [class.widget-card--info]="item.type === 'info'"
+                [class.widget-card--content]="item.type === 'content'"
+                [class.widget-card--income]="item.type === 'income'"
+                [class.widget-card--static]="item.type === 'Static'">
+                <header class="widget-heading">
+                  <div class="widget-title">
+                    <span class="widget-icon" aria-hidden="true">{{ item.icon || '✦' }}</span>
+                    <div class="widget-title-copy">
+                      <p class="widget-category">{{ item.type || 'CUSTOM WIDGET' }}</p>
+                      <h3>{{ item.title }}</h3>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="remove-btn"
+                    [attr.aria-label]="'Remove ' + item.title"
+                    title="Remove widget"
+                    (click)="removeItem(item.id)">
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M4.5 6h11M8 6V4.5h4V6m2.5 0-.7 9h-7.6l-.7-9M8.2 9v3.5m3.6-3.5v3.5" />
+                    </svg>
+                  </button>
+                </header>
+
+                <div class="widget-content">
+                  @switch (item.type) {
+                    @case ('chart') {
+                      <div class="chart-summary">
+                        <div>
+                          <span class="metric-label">Monthly sales</span>
+                          <strong class="metric-value">$128,430</strong>
+                        </div>
+                        <span class="trend-chip">
+                          <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="m3 10 3-3 2.5 2.5L13 5" />
+                            <path d="M9.5 5H13v3.5" />
+                          </svg>
+                          12.8%
+                        </span>
+                      </div>
+                      <div class="sales-chart" aria-hidden="true">
+                        <svg viewBox="0 0 560 112" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient
+                              [attr.id]="'sales-area-' + item.id"
+                              x1="0"
+                              x2="0"
+                              y1="0"
+                              y2="1">
+                              <stop
+                                offset="0%"
+                                stop-color="var(--chart-accent)"
+                                stop-opacity=".24" />
+                              <stop
+                                offset="100%"
+                                stop-color="var(--chart-accent)"
+                                stop-opacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <path class="chart-grid-lines" d="M0 20h560M0 55h560M0 90h560" />
+                          <path
+                            class="chart-area"
+                            [attr.fill]="'url(#sales-area-' + item.id + ')'"
+                            d="M0 82 C30 77 44 68 70 72 S110 53 140 60 S178 38 210 50 S250 66 280 42 S324 36 350 45 S397 22 422 33 S464 48 490 26 S530 20 560 12 V112 H0Z" />
+                          <path
+                            class="chart-line"
+                            d="M0 82 C30 77 44 68 70 72 S110 53 140 60 S178 38 210 50 S250 66 280 42 S324 36 350 45 S397 22 422 33 S464 48 490 26 S530 20 560 12" />
+                          <circle cx="560" cy="12" r="4" />
+                        </svg>
+                        <div class="chart-labels">
+                          <span>01</span>
+                          <span>05</span>
+                          <span>10</span>
+                          <span>15</span>
+                          <span>20</span>
+                          <span>25</span>
+                          <span>30</span>
+                        </div>
+                      </div>
+                    }
+                    @case ('stats') {
+                      <div class="metric-row">
+                        <strong class="metric-value">8,294</strong>
+                        <span class="trend-chip">+8.2%</span>
+                      </div>
+                      <p class="widget-caption">Visitors this month</p>
+                      <div class="mini-bars" aria-hidden="true">
+                        <span style="--bar-height: 36%"></span>
+                        <span style="--bar-height: 54%"></span>
+                        <span style="--bar-height: 43%"></span>
+                        <span style="--bar-height: 70%"></span>
+                        <span style="--bar-height: 58%"></span>
+                        <span style="--bar-height: 82%"></span>
+                        <span style="--bar-height: 100%"></span>
+                      </div>
+                    }
+                    @case ('cost') {
+                      <div class="metric-row">
+                        <div>
+                          <span class="metric-label">Operating costs</span>
+                          <strong class="metric-value">$24,860</strong>
+                        </div>
+                        <span class="trend-chip trend-chip--neutral">−3.4%</span>
+                      </div>
+                      <div class="expense-bars" aria-hidden="true">
+                        <span style="--bar-height: 46%"></span>
+                        <span style="--bar-height: 72%"></span>
+                        <span style="--bar-height: 55%"></span>
+                        <span style="--bar-height: 88%"></span>
+                        <span style="--bar-height: 62%"></span>
+                        <span style="--bar-height: 41%"></span>
+                        <span style="--bar-height: 31%"></span>
+                      </div>
+                      <div class="chart-labels">
+                        <span>W1</span>
+                        <span>W2</span>
+                        <span>W3</span>
+                        <span>W4</span>
+                      </div>
+                    }
+                    @case ('info') {
+                      <div class="conversion-layout">
+                        <div class="conversion-ring">
+                          <div>
+                            <strong>94.8%</strong>
+                            <span>of target</span>
+                          </div>
+                        </div>
+                        <div class="conversion-copy">
+                          <span class="trend-chip">+4.2%</span>
+                          <p>Conversion is up this month. Keep the momentum going.</p>
+                        </div>
+                      </div>
+                    }
+                    @case ('content') {
+                      <div class="workspace-health">
+                        <span class="health-icon" aria-hidden="true">
+                          <svg viewBox="0 0 20 20">
+                            <path d="m5 10 3.2 3.2L15.5 6" />
+                          </svg>
+                        </span>
+                        <div>
+                          <strong>Everything in sync</strong>
+                          <p>4 teams · 18 shared reports</p>
+                        </div>
+                      </div>
+                      <div class="team-row">
+                        <div class="avatar-stack" aria-hidden="true">
+                          <span>A</span>
+                          <span>M</span>
+                          <span>J</span>
+                          <span>+2</span>
+                        </div>
+                        <span class="team-caption">Your team is on track</span>
+                      </div>
+                    }
+                    @case ('income') {
+                      <div class="income-summary">
+                        <div>
+                          <span class="metric-label">Monthly income</span>
+                          <strong class="metric-value">$86,420</strong>
+                        </div>
+                        <span class="trend-chip">+8.6%</span>
+                      </div>
+                      <div class="goal-track" aria-hidden="true"><span></span></div>
+                      <div class="goal-caption">
+                        <span>68% of $125,000 goal</span>
+                        <strong>$38,580 to go</strong>
+                      </div>
+                    }
+                    @case ('Static') {
+                      <div class="static-widget-message">
+                        <span class="static-lock" aria-hidden="true">⌑</span>
+                        <div>
+                          <strong>Pinned in place</strong>
+                          <p>This widget stays right where you put it.</p>
+                        </div>
+                      </div>
+                      <span class="static-tag">
+                        <svg viewBox="0 0 16 16" aria-hidden="true">
+                          <rect x="4" y="7" width="8" height="6" rx="1.5" />
+                          <path d="M6 7V5a2 2 0 0 1 4 0v2" />
+                        </svg>
+                        STATIC WIDGET
+                      </span>
+                    }
+                    @default {
+                      <div class="custom-widget-message">
+                        <span aria-hidden="true">✦</span>
+                        <div>
+                          <strong>Ready for your ideas</strong>
+                          <p>
+                            {{
+                              item.description || 'Drag and resize this widget to make it yours.'
+                            }}
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </article>
+            </ngx-grid-item>
+          }
+        </ngx-grid-layout>
+      </div>
+
+      <footer class="canvas-footer">
+        <span>
+          <i class="legend-dot"></i>
+          Drag cards to rearrange
+        </span>
+        <span>
+          <i class="legend-resize"></i>
+          Resize from the corners
+        </span>
+      </footer>
+    </section>
+
+    <aside class="settings-panel" aria-labelledby="settings-title">
+      <header class="settings-heading">
+        <div>
+          <p class="section-eyebrow">MAKE IT YOURS</p>
+          <h2 id="settings-title">Grid controls</h2>
+        </div>
+        <span class="settings-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20">
+            <path d="M3 5h14M5.5 10h9M8 15h4" />
+            <circle cx="7" cy="5" r="1.5" />
+            <circle cx="12.5" cy="10" r="1.5" />
+            <circle cx="10" cy="15" r="1.5" />
+          </svg>
+        </span>
+      </header>
+
+      <label class="edit-toggle">
+        <span class="edit-toggle-copy">
+          <strong>Edit mode</strong>
+          <small>Move and resize your widgets</small>
+        </span>
+        <span class="toggle-control">
+          <input type="checkbox" [(ngModel)]="gridSettings.editMode" aria-label="Edit mode" />
+          <span class="toggle-track"></span>
+        </span>
+      </label>
+
+      <section class="control-section">
+        <div class="control-heading">
+          <h3>Compaction</h3>
+          <p>Choose how empty space is filled.</p>
+        </div>
+        <div class="compact-options" role="group" aria-label="Grid compaction mode">
+          <button
+            type="button"
+            class="compact-option"
+            [class.is-selected]="gridOptions.compact === 'none'"
+            [attr.aria-pressed]="gridOptions.compact === 'none'"
+            (click)="gridOptions.compact = 'none'">
+            <span class="compact-icon" aria-hidden="true">↗</span>
+            Free
+          </button>
+          <button
+            type="button"
+            class="compact-option"
+            [class.is-selected]="gridOptions.compact === 'vertical'"
+            [attr.aria-pressed]="gridOptions.compact === 'vertical'"
+            (click)="gridOptions.compact = 'vertical'">
+            <span class="compact-icon" aria-hidden="true">↕</span>
+            Vertical
+          </button>
+          <button
+            type="button"
+            class="compact-option"
+            [class.is-selected]="gridOptions.compact === 'horizontal'"
+            [attr.aria-pressed]="gridOptions.compact === 'horizontal'"
+            (click)="gridOptions.compact = 'horizontal'">
+            <span class="compact-icon" aria-hidden="true">↔</span>
+            Horizontal
+          </button>
+        </div>
+      </section>
+
+      <section class="control-section dimensions-section">
+        <div class="control-heading">
+          <h3>Grid dimensions</h3>
+          <p>Fine-tune the canvas spacing.</p>
+        </div>
+
+        <label class="range-label" for="grid-columns">
+          <span>Columns</span>
+          <output>{{ gridOptions.cols }}</output>
+        </label>
+        <input
+          id="grid-columns"
+          class="range-input"
+          type="range"
+          min="6"
+          max="24"
+          step="2"
+          aria-label="Grid columns"
+          [(ngModel)]="gridOptions.cols" />
+
+        <label class="range-label" for="grid-row-height">
+          <span>Row height</span>
+          <output>
+            {{ gridOptions.rowHeight }}
+            <small>px</small>
+          </output>
+        </label>
+        <input
+          id="grid-row-height"
+          class="range-input"
+          type="range"
+          min="40"
+          max="120"
+          step="10"
+          aria-label="Row height"
+          [(ngModel)]="gridOptions.rowHeight" />
+
+        <label class="range-label" for="grid-gap">
+          <span>Widget spacing</span>
+          <output>
+            {{ gridOptions.gap }}
+            <small>px</small>
+          </output>
+        </label>
+        <input
+          id="grid-gap"
+          class="range-input"
+          type="range"
+          min="0"
+          max="30"
+          step="5"
+          aria-label="Widget spacing"
+          [(ngModel)]="gridOptions.gap" />
+      </section>
+
+      @if (gridOptions.gridBackgroundConfig) {
+        <details class="appearance-details">
+          <summary>
+            <span>
+              <strong>Canvas appearance</strong>
+              <small>Grid colors and contrast</small>
+            </span>
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m5 7.5 5 5 5-5" />
+            </svg>
+          </summary>
+          <div class="color-controls">
+            <label for="grid-border-color">
+              Border
+              <input
+                id="grid-border-color"
+                type="text"
+                ngxInputColor
+                [(ngModel)]="gridOptions.gridBackgroundConfig.borderColor" />
+            </label>
+            <label for="grid-gap-color">
+              Spacing
+              <input
+                id="grid-gap-color"
+                type="text"
+                ngxInputColor
+                [(ngModel)]="gridOptions.gridBackgroundConfig.gapColor" />
+            </label>
+            <label for="grid-row-color">
+              Rows
+              <input
+                id="grid-row-color"
+                type="text"
+                ngxInputColor
+                [(ngModel)]="gridOptions.gridBackgroundConfig.rowColor" />
+            </label>
+            <label for="grid-column-color">
+              Columns
+              <input
+                id="grid-column-color"
+                type="text"
+                ngxInputColor
+                [(ngModel)]="gridOptions.gridBackgroundConfig.columnColor" />
+            </label>
+          </div>
+        </details>
+      }
+
+      <div class="settings-footer">
+        <button type="button" class="button button--apply" (click)="update()">
+          Apply to canvas
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M4 10h11m-4-4 4 4-4 4" />
+          </svg>
+        </button>
+        <p>Changes are ready when you are.</p>
+      </div>
+    </aside>
   </div>
 </div>
