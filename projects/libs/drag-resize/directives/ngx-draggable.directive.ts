@@ -269,6 +269,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
 
   private pointerMove(e: PointerEvent): void {
     if (!this.down || e.pointerId !== this.pointerId) return;
+    if (this._ref.el.classList.contains('ngx-resizable--resizing')) return;
     const p = { x: e.clientX, y: e.clientY };
     this.lastPointer = p;
     if (
@@ -296,7 +297,8 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
 
     this.releaseCapture();
 
-    if (this.dragging()) {
+    const didDrag = this.dragging();
+    if (didDrag) {
       // Also when released OUTSIDE every list: endDrag() rolls the drag back and cleans up.
       // The release position is authoritative for list sorting (a fast flick may end with
       // a pointerup that has no preceding pointermove at that position).
@@ -312,7 +314,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
       this.swallowNextClick();
     }
     this.finish();
-    this.dragEnd.emit(this._ref.pointer);
+    if (didDrag) this.dragEnd.emit(this._ref.pointer);
   }
 
   /** Browser cancelled the pointer (touch takeover, lost capture...). */

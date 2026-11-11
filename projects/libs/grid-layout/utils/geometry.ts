@@ -54,6 +54,19 @@ export function spanToHeightPx(spanRows: number, m: GridMetrics): number {
   return spanRows * m.rowHeight + Math.max(0, spanRows - 1) * m.gap;
 }
 
+export function resizeItem(
+  config: GridItemConfig,
+  out: { width: number; height: number; left: number; top: number },
+  m: GridMetrics,
+  rtl: boolean,
+): GridItemConfig {
+  const w = Math.max(1, Math.round((out.width + m.gap) / (m.colWidth + m.gap)));
+  const h = Math.max(1, Math.round((out.height + m.gap) / (m.rowHeight + m.gap)));
+  const x = leftToCol(out.left, w, m, rtl);
+  const y = topToRow(out.top, m);
+  return { ...config, x, y, w, h };
+}
+
 /** Physical left px (as above) -> nearest logical column index. Inverse of `colToLeft`. */
 export function leftToCol(leftPx: number, spanCols: number, m: GridMetrics, rtl: boolean): number {
   if (!rtl) return Math.round((leftPx - m.padding) / (m.colWidth + m.gap));

@@ -125,14 +125,18 @@ export function trySwap<T extends LayoutNode>(
  * Removes gaps by pulling every non-static item as far toward the start of the
  * grid as it can go without overlapping another item, in reading order.
  */
-export function compact<T extends LayoutNode>(items: readonly T[], mode: CompactMode): T[] {
+export function compact<T extends LayoutNode>(
+  items: readonly T[],
+  mode: CompactMode,
+  excludeId?: string,
+): T[] {
   const arr = clone(items);
   if (mode === 'none') return arr;
   const canX = mode === 'horizontal' || mode === 'both';
   const canY = mode === 'vertical' || mode === 'both';
   const sorted = [...arr].sort((a, b) => a.config.y - b.config.y || a.config.x - b.config.x);
   for (const item of sorted) {
-    if (isStatic(item)) continue;
+    if (isStatic(item) || item.id === excludeId) continue;
     if (canY) {
       let y = item.config.y;
       while (y > 0 && !getFirstCollision(arr, item.id, { ...item.config, y: y - 1 })) y--;

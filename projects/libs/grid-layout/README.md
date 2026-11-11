@@ -61,4 +61,4 @@ Use `[dir]="'rtl'"` or `options.rtl = 'auto'`. Logical `x=0` is always the start
 | `allowOverlap` | Allow items to occupy the same cells.             |
 | `pushItems`    | Push siblings away during interaction.            |
 | `rtl`          | `true`, `false`, or `auto`.                       |
-| `animate`      | Reserved for the visual animation layer.          |
+| `animate`      | Animate item position and size changes.            |

@@ -6,7 +6,16 @@ import {
   GridItemConfig,
 } from '../options/grid-item-config';
 import { LayoutOutput } from '../options/layout-output';
-import { computeMetrics, leftToCol, placeItem, topToRow, GridMetrics } from '../utils/geometry';
+import {
+  computeMetrics,
+  leftToCol,
+  placeItem,
+  resizeItem,
+  spanToHeightPx,
+  spanToWidthPx,
+  topToRow,
+  GridMetrics,
+} from '../utils/geometry';
 import { compact, maxOccupiedRow, moveItem, trySwap, findFreeSpot } from '../utils/compaction';
 import { isRtl } from 'ngx-kit/drag-resize';
 
@@ -62,6 +71,7 @@ export class GridLayoutService {
   readonly items = signal<readonly GridItemState[]>([]);
   readonly editMode = signal(true);
   readonly activeId = signal<string | null>(null);
+  readonly metricsVersion = signal(0);
   readonly isInteracting = computed(() => this.activeId() !== null);
   readonly height = computed(() => this.calculateHeight(this.items(), this.options()));
 
@@ -79,6 +89,8 @@ export class GridLayoutService {
   private previewItems = signal<readonly GridItemState[] | null>(null);
   private _element!: HTMLElement;
   private placeholder?: HTMLElement;
+  private preservedPositionId: string | null = null;
+  private positionFrame?: { window: Window; id: number };
 
   constructor() {
     effect(() => {
@@ -157,11 +169,13 @@ export class GridLayoutService {
     // signal to force the `rtl` computed to re-evaluate now that the element,
     // and therefore its computed `direction`, is known.
     this.rtlTick.update((n) => n + 1);
+    this.metricsVersion.update((version) => version + 1);
     this.applyCss();
   }
 
   /** Recomputes pixel positions after the surface resizes. Call from a `ResizeObserver`. */
   refreshMetrics(): void {
+    this.metricsVersion.update((version) => version + 1);
     this.applyCss();
   }
 
@@ -172,12 +186,29 @@ export class GridLayoutService {
     return this.editMode() && !item.config.static && (item.config.isResizable ?? true);
   }
 
+  getResizeBounds(config: GridItemConfig): {
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
+  } {
+    const m = this.metrics();
+    return {
+      minWidth: spanToWidthPx(config.minW ?? 1, m),
+      minHeight: spanToHeightPx(config.minH ?? 1, m),
+      maxWidth: config.maxW ? spanToWidthPx(config.maxW, m) : Infinity,
+      maxHeight: config.maxH ? spanToHeightPx(config.maxH, m) : Infinity,
+    };
+  }
+
   // ---- Pointer-driven interaction (drag / resize) ----------------------------------
 
   begin(id: string): void {
     const target = this.items().find((x) => x.id === id);
     if (!target) return;
 
+    this.cancelPositionFrame();
+    this.preservedPositionId = null;
     this.startItems = this.items().map((x) => ({ ...x, config: { ...x.config } }));
     this.startConfig = { ...target.config };
     this.previewItems.set(null);
@@ -194,7 +225,14 @@ export class GridLayoutService {
 
   resize(
     id: string,
-    out: { width: number; height: number; moveLeft: number; moveTop: number },
+    out: {
+      width: number;
+      height: number;
+      moveLeft: number;
+      moveTop: number;
+      left: number;
+      top: number;
+    },
   ): void {
     const target = this.items().find((x) => x.id === id);
     if (!target?.element) return;
@@ -202,15 +240,27 @@ export class GridLayoutService {
     this.preview(id, next);
   }
 
-  end(id: string): void {
+  end(id: string, animateFromCurrentPosition = false): void {
     if (this.activeId() !== id) return;
+
+    const target = this.items().find((x) => x.id === id);
+    const canAnimateFromCurrent =
+      animateFromCurrentPosition && this.options().animate && !!target?.element;
+    if (canAnimateFromCurrent && target?.element) {
+      this.preserveCurrentPosition(id, target.element);
+    } else {
+      this.cancelPositionFrame();
+      this.preservedPositionId = null;
+    }
 
     const preview = this.previewItems();
     if (preview) {
       this.items.set(preview.map((x) => ({ ...x, config: { ...x.config } })));
     }
-    const target = this.items().find((x) => x.id === id);
-    if (target?.element) target.element.style.transform = '';
+    if (target?.element && !canAnimateFromCurrent) {
+      target.element.style.transform = '';
+      target.element.style.translate = '';
+    }
 
     this.previewItems.set(null);
     this.activeId.set(null);
@@ -220,6 +270,7 @@ export class GridLayoutService {
     // Final normalization/compaction happens only after the preview is committed.
     this.settle(id);
     this.applyCss();
+    if (canAnimateFromCurrent) this.animateToCommittedPosition(id, target!.element!);
     this.emit();
   }
 
@@ -290,7 +341,7 @@ export class GridLayoutService {
       });
     }
     if (!opt.allowOverlap && opt.compact !== 'none') {
-      candidate = compact(candidate, opt.compact);
+      candidate = compact(candidate, opt.compact, id);
     }
 
     this.previewItems.set(candidate);
@@ -311,34 +362,25 @@ export class GridLayoutService {
 
   private screenResizeToGrid(
     item: GridItemState,
-    out: { width: number; height: number; moveLeft: number; moveTop: number },
+    out: {
+      width: number;
+      height: number;
+      moveLeft: number;
+      moveTop: number;
+      left: number;
+      top: number;
+    },
   ): GridItemConfig {
     const m = this.metrics();
-    const gap = m.gap;
-    let w = Math.max(1, Math.round((out.width + gap) / (m.colWidth + gap)));
-    let h = Math.max(1, Math.round((out.height + gap) / (m.rowHeight + gap)));
-    let x = item.config.x;
-    let y = item.config.y;
-    // moveLeft/moveTop are physical (viewport) deltas from the resizable directive;
-    // moving the item's *start* edge left/up in physical space means, in RTL, that
-    // the logical column count grows from the *end* instead — handled by re-deriving
-    // x from the resulting physical box rather than from moveLeft directly.
-    if (this.rtl()) {
-      // 'w' handle grows width to the right physically but that's the grid's logical end;
-      // recompute x from the (possibly shifted) physical left edge captured via the element.
-      const r = item.element!.getBoundingClientRect();
-      const containerRect = this._element.getBoundingClientRect();
-      const leftPx = r.left + out.moveLeft - containerRect.left;
-      x = leftToCol(leftPx, w, m, true);
-    } else {
-      //if (out.moveLeft) x += Math.round(out.moveLeft / (m.colWidth + gap));
-      if (out.moveLeft) {
-        const rightEdge = item.config.x + item.config.w;
-        x = rightEdge - w;
-      }
-    }
-    if (out.moveTop) y += Math.round(out.moveTop / (m.rowHeight + gap));
-    return this.clamp({ ...item.config, x, y, w, h });
+    const surfaceRect = this._element.getBoundingClientRect();
+    return this.clamp(
+      resizeItem(
+        item.config,
+        { ...out, left: out.left - surfaceRect.left, top: out.top - surfaceRect.top },
+        m,
+        this.rtl(),
+      ),
+    );
   }
 
   private clamp(c: GridItemConfig): GridItemConfig {
@@ -384,7 +426,7 @@ export class GridLayoutService {
           },
         );
       }
-      if (opt.compact !== 'none') arr = compact(arr, opt.compact);
+      if (opt.compact !== 'none') arr = compact(arr, opt.compact, activeId);
     }
     // Compaction/push are deterministic pure functions: if they didn't change
     // anything, keep the previous array reference instead of writing an
@@ -410,7 +452,7 @@ export class GridLayoutService {
       // While dragging/resizing, the real active element is moved by
       // ngxDraggable/ngxResizable. Never fight those directives by writing
       // left/top/width/height here.
-      if (item.id === activeId) continue;
+      if (item.id === activeId || item.id === this.preservedPositionId) continue;
 
       const box = placeItem(item.config, m, rtl);
       const style = item.element.style;
@@ -448,6 +490,51 @@ export class GridLayoutService {
   private metrics(): GridMetrics {
     const rect = this._element?.getBoundingClientRect() ?? ({ width: 0 } as DOMRect);
     return computeMetrics(rect.width, this.options());
+  }
+
+  private preserveCurrentPosition(id: string, element: HTMLElement): void {
+    const rect = element.getBoundingClientRect();
+    const surfaceRect = this._element.getBoundingClientRect();
+    const computed = element.ownerDocument.defaultView?.getComputedStyle(element);
+    const width = Number.parseFloat(computed?.width ?? '');
+    const height = Number.parseFloat(computed?.height ?? '');
+
+    this.preservedPositionId = id;
+    element.style.transition = 'none';
+    element.style.left = `${rect.left - surfaceRect.left}px`;
+    element.style.top = `${rect.top - surfaceRect.top}px`;
+    element.style.width = `${Number.isFinite(width) ? width : rect.width}px`;
+    element.style.height = `${Number.isFinite(height) ? height : rect.height}px`;
+    element.style.transform = '';
+    element.style.translate = '';
+    element.getBoundingClientRect();
+  }
+
+  private animateToCommittedPosition(id: string, element: HTMLElement): void {
+    const window = element.ownerDocument.defaultView;
+    if (!window) {
+      this.preservedPositionId = null;
+      this.applyCss();
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      this.positionFrame = undefined;
+      if (this.preservedPositionId !== id) return;
+      element.style.transition = this.options().animate
+        ? 'left .18s ease, top .18s ease, width .18s ease, height .18s ease'
+        : 'none';
+      element.getBoundingClientRect();
+      this.preservedPositionId = null;
+      this.applyCss();
+    });
+    this.positionFrame = { window, id: frameId };
+  }
+
+  private cancelPositionFrame(): void {
+    if (!this.positionFrame) return;
+    this.positionFrame.window.cancelAnimationFrame(this.positionFrame.id);
+    this.positionFrame = undefined;
   }
 
   private resolveRtl(): boolean {

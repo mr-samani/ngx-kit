@@ -152,6 +152,7 @@ export class NgxResizable implements OnDestroy {
     this.startHeight = readBorderBoxSize(element, 'y');
 
     this.resizing.set(true);
+    element.classList.add('ngx-resizable--resizing');
     element.style.transition = 'none';
 
     try {
@@ -493,6 +494,7 @@ export class NgxResizable implements OnDestroy {
 
   private finish(): void {
     this.resizing.set(false);
+    this.el.nativeElement.classList.remove('ngx-resizable--resizing');
     this.el.nativeElement.style.transition = this.beforeTransition;
     const pointerId = this.pointerId;
     this.pointerId = -1;

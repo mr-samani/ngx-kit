@@ -79,12 +79,14 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
     this.drag.dragEnd.subscribe(() => this.onDragEnd());
     this.resize.resizeStart.subscribe(() => this.onResizeStart());
     this.resize.resizeMove.subscribe((v) => this.onResizeMove(v));
-    this.resize.resizeEnd.subscribe(() => this.onResizeEnd());
+    this.resize.resizeEnd.subscribe((v) => this.onResizeEnd(v));
 
     // Keep the hosted directives in sync with per-item state: static items and
     // items explicitly marked non-draggable/non-resizable stop reacting entirely.
     effect(() => {
       const id = this.itemId();
+      this.service.metricsVersion();
+      this.service.options();
       const item = id ? this.service.items().find((x) => x.id === id) : undefined;
       this.drag.disabled.set(!item || !this.service.isItemDraggable(item));
       this.resize.disabled.set(!item || !this.service.isItemResizable(item));
@@ -123,18 +125,33 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
   onResizeStart = (): void => {
     this.resizing.set(true);
     const id = this.itemId();
-    if (id) this.service.begin(id);
+    if (id) {
+      const item = this.service.items().find((x) => x.id === id);
+      if (item) this.applySizeConstraints(item.config);
+      this.service.begin(id);
+    }
   };
   onResizeMove = (v: {
     width: number;
     height: number;
     moveLeft: number;
     moveTop: number;
+    left: number;
+    top: number;
   }): void => {
     const id = this.itemId();
     if (id) this.service.resize(id, v);
   };
-  onResizeEnd = (): void => {
+  onResizeEnd = (v: {
+    width: number;
+    height: number;
+    moveLeft: number;
+    moveTop: number;
+    left: number;
+    top: number;
+  }): void => {
+    const id = this.itemId();
+    if (id) this.service.resize(id, v);
     this.resizing.set(false);
     this.finishInteraction();
   };
@@ -165,20 +182,16 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
   private finishInteraction(): void {
     const id = this.itemId();
     if (!id) return;
-    this.service.end(id);
+    this.service.end(id, true);
     this.layoutChange.emit(this.service.items().find((x) => x.id === id)?.config ?? this.config());
   }
 
   /** Converts the item's min/max cell counts (config) into px for the resize directive. */
   private applySizeConstraints(config: GridItemConfig): void {
-    const cellPx = this.el.nativeElement.getBoundingClientRect();
-    const cols = Math.max(1, config.w);
-    const rows = Math.max(1, config.h);
-    const colPx = cellPx.width / cols || 1;
-    const rowPx = cellPx.height / rows || 1;
-    this.resize.minWidth.set((config.minW ?? 1) * colPx);
-    this.resize.minHeight.set((config.minH ?? 1) * rowPx);
-    this.resize.maxWidth.set(config.maxW ? config.maxW * colPx : Infinity);
-    this.resize.maxHeight.set(config.maxH ? config.maxH * rowPx : Infinity);
+    const bounds = this.service.getResizeBounds(config);
+    this.resize.minWidth.set(bounds.minWidth);
+    this.resize.minHeight.set(bounds.minHeight);
+    this.resize.maxWidth.set(bounds.maxWidth);
+    this.resize.maxHeight.set(bounds.maxHeight);
   }
 }

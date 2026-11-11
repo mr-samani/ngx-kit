@@ -3,6 +3,7 @@ import { GridLayoutOptions } from '../options/options';
 import { normalizeGridItem } from '../options/grid-item-config';
 import { collides } from '../utils/collision';
 import { compact, moveItem, trySwap } from '../utils/compaction';
+import { colToLeft, computeMetrics, resizeItem, spanToWidthPx } from '../utils/geometry';
 
 const node = (
   id: string,
@@ -83,6 +84,13 @@ describe('compact', () => {
     expect(result.find((x) => x.id === 'a')!.config.y).toBe(0);
     expect(result.find((x) => x.id === 'b')!.config.y).toBe(2);
   });
+  it('keeps the active item at its preview position while compacting siblings', () => {
+    const items = [node('active', 0, 3, 2, 2), node('sibling', 0, 8, 2, 2)];
+    const result = compact(items, 'vertical', 'active');
+
+    expect(result.find((x) => x.id === 'active')!.config.y).toBe(3);
+    expect(result.find((x) => x.id === 'sibling')!.config.y).toBe(5);
+  });
 });
 
 describe('trySwap', () => {
@@ -106,5 +114,42 @@ describe('trySwap', () => {
       { x: 1, y: 0, w: 2, h: 2 } as any,
     );
     expect(result).toBeNull();
+  });
+});
+
+describe('resizeItem', () => {
+  it('converts resized spans using both cell dimensions and inter-cell gaps', () => {
+    const metrics = computeMetrics(140, { cols: 4, rowHeight: 50, gap: 20 });
+    const resized = resizeItem(
+      { x: 0, y: 0, w: 1, h: 1 },
+      {
+        width: spanToWidthPx(2, metrics),
+        height: 50,
+        left: 0,
+        top: 0,
+      },
+      metrics,
+      false,
+    );
+
+    expect(resized.w).toBe(2);
+  });
+
+  it('places a resized item from the final physical box in RTL', () => {
+    const metrics = computeMetrics(500, { cols: 4, rowHeight: 50, gap: 10 });
+    const targetLeft = colToLeft(0, 3, metrics, true);
+    const resized = resizeItem(
+      { x: 1, y: 0, w: 2, h: 1 },
+      {
+        width: spanToWidthPx(3, metrics),
+        height: 50,
+        left: targetLeft,
+        top: 0,
+      },
+      metrics,
+      true,
+    );
+
+    expect(resized).toMatchObject({ x: 0, w: 3 });
   });
 });
