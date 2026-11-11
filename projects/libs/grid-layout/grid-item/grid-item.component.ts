@@ -71,6 +71,8 @@ export class NgxGridItemComponent implements OnDestroy, OnInit {
     return !this.resize.disabled() && this.service.editMode();
   });
   constructor() {
+    this.drag.ignoreInteractive.set(true);
+
     // `takeUntilDestroyed()` releases these subscriptions on destroy — the
     // event for every grid item ever created (real damage in layouts where
     // items are added/removed dynamically, e.g. via *ngFor + trackBy).

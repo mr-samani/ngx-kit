@@ -27,6 +27,7 @@ function clone<T extends LayoutNode>(items: readonly T[]): T[] {
  * Moves `id` to grid cell (x, y) and, unless overlap is explicitly allowed,
  * cascades any resulting collisions by pushing the colliding items out of the
  * way (downward for vertical-flow grids, rightward for horizontal-flow ones).
+ * A horizontal push that reaches the column edge continues in the next free row.
  * Static items are treated as fixed obstacles: they block, but never move.
  * Pure function — returns a new array, never mutates its input.
  */
@@ -38,15 +39,33 @@ export function moveItem<T extends LayoutNode>(
   opts: MoveOptions,
   depth = 0,
 ): T[] {
-  let arr = clone(items);
-  const item = arr.find((i) => i.id === id);
-  if (!item || isStatic(item)) return arr;
+  const arr = clone(items);
+  const succeeded = moveItemInPlace(arr, id, x, y, opts, new Set(), depth);
+  return succeeded ? arr : clone(items);
+}
 
+function moveItemInPlace<T extends LayoutNode>(
+  items: T[],
+  id: string,
+  x: number,
+  y: number,
+  opts: MoveOptions,
+  moving: Set<string>,
+  depth: number,
+): boolean {
+  const arr = items;
+  const item = arr.find((i) => i.id === id);
+  if (!item || isStatic(item)) return true;
+  if (depth > arr.length + 24 || moving.has(id)) return false;
+
+  moving.add(id);
   item.config.x = x;
   item.config.y = y;
   clampToCols(item.config, opts.cols);
-
-  if (opts.allowOverlap || depth > arr.length + 24) return arr;
+  if (opts.allowOverlap) {
+    moving.delete(id);
+    return true;
+  }
 
   const compareFn = compareForCompaction(opts.compact);
   let guard = 0;
@@ -56,36 +75,58 @@ export function moveItem<T extends LayoutNode>(
       (i) => i.id !== id && isStatic(i) && collides(mover.config, i.config),
     );
     if (staticBlocker) {
+      const previousX = mover.config.x;
+      const previousY = mover.config.y;
       if (opts.compact === 'horizontal') {
         mover.config.x = staticBlocker.config.x + staticBlocker.config.w;
       } else {
         mover.config.y = staticBlocker.config.y + staticBlocker.config.h;
       }
       clampToCols(mover.config, opts.cols);
-      continue; // the new position may collide with something else — re-check from the top.
+      if (mover.config.x === previousX && mover.config.y === previousY) {
+        if (!movePastCollisions(arr, mover, opts)) {
+          moving.delete(id);
+          return false;
+        }
+      }
+      continue;
     }
 
-    const blockers = arr
+    const blocker = arr
       .filter((i) => i.id !== id && !isStatic(i) && collides(mover.config, i.config))
-      .sort(compareFn);
-    if (blockers.length === 0) break;
-    arr = pushAway(arr, mover, blockers[0], opts, depth + 1);
+      .sort(compareFn)[0];
+    if (!blocker) {
+      moving.delete(id);
+      return true;
+    }
+
+    const targetX =
+      opts.compact === 'horizontal' ? mover.config.x + mover.config.w : blocker.config.x;
+    const targetY =
+      opts.compact === 'horizontal' ? blocker.config.y : mover.config.y + mover.config.h;
+    if (!moveItemInPlace(arr, blocker.id, targetX, targetY, opts, moving, depth + 1)) {
+      if (!movePastCollisions(arr, mover, opts)) {
+        moving.delete(id);
+        return false;
+      }
+    }
   }
-  return arr;
+
+  moving.delete(id);
+  return false;
 }
 
-function pushAway<T extends LayoutNode>(
-  items: T[],
-  mover: T,
-  blocked: T,
-  opts: MoveOptions,
-  depth: number,
-): T[] {
-  const targetX =
-    opts.compact === 'horizontal' ? mover.config.x + mover.config.w : blocked.config.x;
-  const targetY =
-    opts.compact === 'horizontal' ? blocked.config.y : mover.config.y + mover.config.h;
-  return moveItem(items, blocked.id, targetX, targetY, opts, depth);
+function movePastCollisions<T extends LayoutNode>(items: T[], item: T, opts: MoveOptions): boolean {
+  const spot = findFreeSpot(
+    items,
+    { ...item.config, x: 0, y: item.config.y + item.config.h },
+    opts.cols,
+    item.id,
+  );
+  if (opts.maxRows && spot.y + item.config.h > opts.maxRows) return false;
+  item.config.x = spot.x;
+  item.config.y = spot.y;
+  return true;
 }
 
 function compareForCompaction(mode: CompactMode) {

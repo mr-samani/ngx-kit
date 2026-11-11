@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { signal } from '@angular/core';
+import { describe, expect, it, vi } from 'vitest';
+import { GridItemConfig, normalizeGridItem } from '../options/grid-item-config';
 import { GridLayoutOptions } from '../options/options';
-import { normalizeGridItem } from '../options/grid-item-config';
+import { LayoutOutput } from '../options/layout-output';
+import { GridLayoutService } from '../services/grid-layout.service';
 import { collides } from '../utils/collision';
 import { compact, moveItem, trySwap } from '../utils/compaction';
 import { colToLeft, computeMetrics, resizeItem, spanToWidthPx } from '../utils/geometry';
+
+vi.mock('ngx-kit/drag-resize', () => ({ isRtl: () => false }));
 
 const node = (
   id: string,
@@ -26,6 +31,25 @@ describe('grid model', () => {
       void mode;
       expect(new GridLayoutOptions()).toBeTruthy();
     }
+  });
+});
+
+describe('grid compaction options', () => {
+  it('recompacts and emits when the compact mode changes', () => {
+    const options = signal(new GridLayoutOptions());
+    const items = signal([{ id: 'item', config: new GridItemConfig(4, 2, 1, 1) }]);
+    let emitted: LayoutOutput[] | undefined;
+    const service = Object.assign(Object.create(GridLayoutService.prototype), {
+      options,
+      items,
+      activeId: signal<string | null>(null),
+      layoutListener: (layout: LayoutOutput[]) => (emitted = layout),
+    }) as GridLayoutService;
+
+    service.setOptions({ compact: 'horizontal', pushItems: false });
+
+    expect(items()[0].config).toMatchObject({ x: 0, y: 2 });
+    expect(emitted).toMatchObject([{ id: 'item', x: 0, y: 2 }]);
   });
 });
 
@@ -70,6 +94,53 @@ describe('moveItem (push algorithm)', () => {
     });
     expect(result[0].config.x).toBe(8);
   });
+  it('pushes a horizontal collision chain when there is room', () => {
+    const items = [node('a', 0, 0, 1, 1), node('b', 1, 0, 1, 1), node('c', 2, 0, 1, 1)];
+    const result = moveItem(items, 'a', 1, 0, {
+      cols: 4,
+      compact: 'horizontal',
+      allowOverlap: false,
+    });
+
+    expect(result.map((item) => item.config.x)).toEqual([1, 2, 3]);
+    expect(collides(result[0].config, result[1].config)).toBe(false);
+    expect(collides(result[1].config, result[2].config)).toBe(false);
+  });
+  it('moves a horizontal push overflow to the next free row', () => {
+    const items = [
+      node('a', 0, 0, 1, 1),
+      node('b', 1, 0, 1, 1),
+      node('c', 2, 0, 1, 1),
+      node('d', 3, 0, 1, 1),
+    ];
+    const result = moveItem(items, 'a', 1, 0, {
+      cols: 4,
+      compact: 'horizontal',
+      allowOverlap: false,
+    });
+
+    expect(result.map((item) => [item.config.x, item.config.y])).toEqual([
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [0, 1],
+    ]);
+    for (let i = 0; i < result.length; i++) {
+      for (let j = i + 1; j < result.length; j++) {
+        expect(collides(result[i].config, result[j].config)).toBe(false);
+      }
+    }
+  });
+  it('still applies a move when overlap is allowed', () => {
+    const items = [node('a', 0, 0, 1, 1), node('b', 1, 0, 1, 1)];
+    const result = moveItem(items, 'a', 1, 0, {
+      cols: 4,
+      compact: 'horizontal',
+      allowOverlap: true,
+    });
+
+    expect(result[0].config.x).toBe(1);
+  });
 });
 
 describe('compact', () => {
@@ -77,6 +148,19 @@ describe('compact', () => {
     const items = [node('a', 0, 5, 2, 2)];
     const result = compact(items, 'vertical');
     expect(result[0].config.y).toBe(0);
+  });
+  it('packs items toward the start edge in horizontal mode', () => {
+    const items = [node('a', 4, 0, 2, 1), node('b', 2, 2, 1, 1)];
+    const result = compact(items, 'horizontal');
+
+    expect(result.find((x) => x.id === 'a')!.config).toMatchObject({ x: 0, y: 0 });
+    expect(result.find((x) => x.id === 'b')!.config).toMatchObject({ x: 0, y: 2 });
+  });
+  it('performs vertical then horizontal compaction in both mode', () => {
+    const items = [node('a', 5, 4, 2, 2), node('b', 0, 0, 2, 2)];
+    const result = compact(items, 'both');
+
+    expect(result.find((x) => x.id === 'a')!.config).toMatchObject({ x: 2, y: 0 });
   });
   it('leaves static items in place but lets others compact around them', () => {
     const items = [node('a', 0, 0, 2, 2, { static: true }), node('b', 0, 5, 2, 2)];
@@ -90,6 +174,24 @@ describe('compact', () => {
 
     expect(result.find((x) => x.id === 'active')!.config.y).toBe(3);
     expect(result.find((x) => x.id === 'sibling')!.config.y).toBe(5);
+  });
+  it('compacts the active placeholder upward in vertical mode', () => {
+    const items = [node('blocker', 0, 0, 2, 1), node('active', 0, 4, 2, 1)];
+    const result = compact(items, 'vertical');
+
+    expect(result.find((x) => x.id === 'active')!.config.y).toBe(1);
+  });
+  it('compacts the active placeholder toward the start edge in horizontal mode', () => {
+    const items = [node('blocker', 0, 0, 2, 1), node('active', 5, 0, 2, 1)];
+    const result = compact(items, 'horizontal');
+
+    expect(result.find((x) => x.id === 'active')!.config.x).toBe(2);
+  });
+  it('does not compact the active placeholder in none mode', () => {
+    const items = [node('active', 0, 4, 2, 1)];
+    const result = compact(items, 'none');
+
+    expect(result[0].config.y).toBe(4);
   });
 });
 

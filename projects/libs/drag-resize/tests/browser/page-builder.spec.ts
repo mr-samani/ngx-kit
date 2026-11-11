@@ -238,7 +238,7 @@ describe('palette (host document) → canvas (iframe)', () => {
 
 describe('editing inside draggable blocks', () => {
   const LIST = `<div id="a" data-list style="left:20px;top:20px;width:200px">
-    <div class="it" data-item data-id="A"><input id="inp" value="hello"><span id="ro" data-no-drag>no drag</span></div>
+    <div class="it" data-item data-id="A"><input id="inp" value="hello"><button id="del" type="button">delete</button><span id="ro" data-no-drag>no drag</span></div>
     <div class="it" data-item data-id="B">B</div></div>`;
 
   it('arrow keys typed inside an <input> of a block neither start a drag nor get swallowed', async () => {
@@ -280,7 +280,7 @@ describe('editing inside draggable blocks', () => {
     expect(r).toEqual({ dragging: 0, drops: 0 });
   });
 
-  it('ignoreInteractive: a press on an <input> does not start a drag, a press on the block does', async () => {
+  it('ignoreInteractive: interactive controls keep their clicks and do not start a drag', async () => {
     const r = await run(LIST, async (H) => {
       await H.auto();
       const A = document.querySelector('[data-id=A]') as HTMLElement;
@@ -291,14 +291,31 @@ describe('editing inside draggable blocks', () => {
       H.move(ci.x, ci.y + 30);
       const onInput = A.classList.contains('ngx-draggable--dragging') ? 1 : 0;
       H.up(ci.x, ci.y + 30);
+      const button = document.getElementById('del')!;
+      let buttonClicks = 0;
+      button.addEventListener('click', () => buttonClicks++);
+      const cb = H.center(button);
+      const pointerDown = new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: cb.x,
+        clientY: cb.y,
+        pointerId: 1,
+        button: 0,
+      });
+      button.dispatchEvent(pointerDown);
+      H.move(cb.x, cb.y + 30);
+      const onButton = A.classList.contains('ngx-draggable--dragging') ? 1 : 0;
+      H.up(cb.x, cb.y + 30);
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       const r2 = A.getBoundingClientRect();
       H.down(A, r2.right - 3, r2.bottom - 3);
       H.move(r2.right - 3, r2.bottom + 20);
       const onBlock = A.classList.contains('ngx-draggable--dragging') ? 1 : 0;
       H.up(r2.right - 3, r2.bottom + 20);
-      return { onInput, onBlock };
+      return { onInput, onButton, onBlock, buttonClicks, pointerPrevented: pointerDown.defaultPrevented };
     });
-    expect(r).toEqual({ onInput: 0, onBlock: 1 });
+    expect(r).toEqual({ onInput: 0, onButton: 0, onBlock: 1, buttonClicks: 1, pointerPrevented: false });
   });
 
   it('the click the browser fires after a real drag is swallowed, a normal click is not', async () => {

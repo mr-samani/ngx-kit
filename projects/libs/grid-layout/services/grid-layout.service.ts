@@ -107,9 +107,16 @@ export class GridLayoutService {
     this.layoutListener = onLayout;
   }
   setOptions(value: Partial<IGridLayoutOptions>): void {
-    const next = Object.assign(new GridLayoutOptions(), this.options(), value);
-    if (optionsEqual(this.options(), next)) return;
+    const current = this.options();
+    const next = Object.assign(new GridLayoutOptions(), current, value);
+    if (optionsEqual(current, next)) return;
+    const compactChanged = current.compact !== next.compact;
     this.options.set(next);
+    if (compactChanged && next.compact !== 'none' && !this.activeId()) {
+      const before = this.items();
+      this.settle();
+      if (this.items() !== before) this.emit();
+    }
   }
   setEditMode(value: boolean): void {
     this.editMode.set(value);
@@ -341,7 +348,7 @@ export class GridLayoutService {
       });
     }
     if (!opt.allowOverlap && opt.compact !== 'none') {
-      candidate = compact(candidate, opt.compact, id);
+      candidate = compact(candidate, opt.compact);
     }
 
     this.previewItems.set(candidate);

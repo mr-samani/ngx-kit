@@ -4,7 +4,7 @@ import path from 'node:path';
 const here = path.dirname(fileURLToPath(import.meta.url));
 export async function bundleHarness() {
   const res = await build({
-    entryPoints: [path.join(here, 'projects/libs/drag-resize/tests/browser', 'harness.ts')],
+    entryPoints: [path.join(here, 'harness.ts')],
     bundle: true,
     write: false,
     format: 'iife',

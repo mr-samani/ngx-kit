@@ -66,7 +66,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
    * block can be grabbed by its own button/link, which is exactly what you want while editing.
    * @default false
    */
-  readonly ignoreInteractive = input<boolean>(false);
+  readonly ignoreInteractive = model<boolean>(false);
   @Input('data') set data(v: T) {
     this._ref.data = v;
   }
@@ -168,8 +168,11 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     // Nested draggables: pointerdown bubbles, so without this an ancestor draggable would start
     // its own drag from the very same gesture. The innermost enabled draggable claims it.
     if (claimedPointerEvents.has(e)) return;
+    if (this.ignoreInteractive() && isInteractiveTarget(e.target)) {
+      claimedPointerEvents.add(e);
+      return;
+    }
     claimedPointerEvents.add(e);
-    if (this.ignoreInteractive()) e.preventDefault();
 
     this.down = true;
     this.keyboardDrag = false;
@@ -475,6 +478,11 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!isElementTarget(target)) return false;
   return !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+}
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  if (!isElementTarget(target)) return false;
+  return !!target.closest('button,a,input,textarea,select,[contenteditable]');
 }
 
 function isElementTarget(target: EventTarget | null): target is HTMLElement {
