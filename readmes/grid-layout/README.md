@@ -14,6 +14,11 @@ The rewrite is intentionally signal-first. Inputs use Angular signal inputs, out
 - `compact: 'horizontal'` — pack toward the start edge.
 - `compact: 'both'` — perform both passes.
 
+Changing to a compaction mode immediately reflows existing items. Switching to
+`'none'` preserves their current positions and disables further compaction;
+collision handling still follows `allowOverlap` and `pushItems`. `flow` is a
+separate option.
+
 ### RTL
 
 Use `[dir]="'rtl'"` or `options.rtl = 'auto'`. Logical `x=0` is always the start-most column. The rendering layer maps that logical coordinate to the physical left/right edge. This keeps persisted layouts direction-independent.

@@ -60,22 +60,22 @@
       <button
         type="button"
         class="demo-choice-item"
-        [class.active]="gridOptions.flow === 'free'"
-        (click)="gridOptions.flow = 'free'">
-        Free
+        [class.active]="gridOptions.compact === 'none'"
+        (click)="gridOptions.compact = 'none'">
+        None
       </button>
       <button
         type="button"
         class="demo-choice-item"
-        [class.active]="gridOptions.flow === 'vertical'"
-        (click)="gridOptions.flow = 'vertical'">
+        [class.active]="gridOptions.compact === 'vertical'"
+        (click)="gridOptions.compact = 'vertical'">
         Vertical
       </button>
       <button
         type="button"
         class="demo-choice-item"
-        [class.active]="gridOptions.flow === 'horizontal'"
-        (click)="gridOptions.flow = 'horizontal'">
+        [class.active]="gridOptions.compact === 'horizontal'"
+        (click)="gridOptions.compact = 'horizontal'">
         Horizontal
       </button>
     </div>
