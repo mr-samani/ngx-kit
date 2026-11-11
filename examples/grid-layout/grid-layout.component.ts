@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   GridItemConfig,
@@ -20,7 +19,7 @@ export interface SampleLayout {
 }
 @Component({
   selector: 'app-grid-layout',
-  imports: [CommonModule, FormsModule, NgxGridLayoutModule, NgxInputColor],
+  imports: [FormsModule, NgxGridLayoutModule, NgxInputColor],
   templateUrl: './grid-layout.component.html',
   styleUrl: './grid-layout.component.scss',
 })
@@ -57,7 +56,7 @@ export class GridLayoutComponent implements OnInit {
       type: 'chart',
       icon: '📊',
       title: 'Sales chart',
-      description: 'Monthly sales statistics',
+      description: 'Monthly sales overview',
       config: new GridItemConfig(0, 0, 6, 3),
     },
     {
@@ -65,7 +64,7 @@ export class GridLayoutComponent implements OnInit {
       type: 'stats',
       icon: '📈',
       title: 'Total statistics',
-      description: 'Information',
+      description: 'A snapshot of your audience',
       config: new GridItemConfig(6, 0, 3, 2),
     },
     {
@@ -73,7 +72,7 @@ export class GridLayoutComponent implements OnInit {
       type: 'info',
       icon: 'ℹ️',
       title: 'Info statistics',
-      description: 'Details',
+      description: 'Conversion performance',
       config: new GridItemConfig(9, 0, 3, 2),
     },
     {
@@ -81,65 +80,73 @@ export class GridLayoutComponent implements OnInit {
       type: 'content',
       icon: '📝',
       title: 'Content statistics',
-      description: 'Content and information',
+      description: 'Your workspace health',
       config: new GridItemConfig(0, 3, 4, 2),
     },
     {
       id: 'chart-2',
-      type: 'chart',
+      type: 'cost',
       icon: '📉',
       title: 'Cost chart',
-      description: 'Cost analysis',
+      description: 'Operating expenses',
       config: new GridItemConfig(4, 3, 4, 2),
     },
     {
       id: 'stats-2',
-      type: 'stats',
+      type: 'income',
       icon: '💰',
       title: 'Income',
-      description: 'Total income',
+      description: 'Monthly revenue',
       config: new GridItemConfig(8, 3, 4, 2),
     },
     {
       id: 'STATIC',
       type: 'Static',
       icon: 'S',
-      title: 'Static',
-      description: 'this item is static and can not change',
+      title: 'Pinned widget',
+      description: 'This widget stays right where you put it.',
       config: new GridItemConfig(7, 7, 2, 2, true),
     },
   ];
 
   ngOnInit(): void {
-    this.items.set(JSON.parse(JSON.stringify(this.DEFAULT_ITEMS)));
+    this.items.set(this.copyItems(this.DEFAULT_ITEMS));
   }
 
   onLayoutChange(layout: LayoutOutput[]): void {
-    console.log('📐 Layout changed:', layout);
-    // اعمال layout به items
-    layout.forEach((layoutItem) => {
-      const item = this.items().find((i) => i.id === layoutItem.id);
-      if (item) {
-        item.config = new GridItemConfig(layoutItem.x, layoutItem.y, layoutItem.w, layoutItem.h);
-      }
-    });
+    const positions = new Map(layout.map((item) => [item.id, item] as const));
+    this.items.update((items) =>
+      items.map((item) => {
+        const position = positions.get(item.id);
+        if (!position) return item;
+        return {
+          ...item,
+          config: Object.assign(new GridItemConfig(), item.config, {
+            x: position.x,
+            y: position.y,
+            w: position.w,
+            h: position.h,
+          }),
+        };
+      }),
+    );
   }
 
-  update() {
+  update(): void {
     this.ngxGridLayout()?.update(this.gridOptions);
   }
 
   addRandomItem(): void {
-    const newNumber = this.items.length + 1;
+    const newNumber = this.items().length + 1;
     const randomW = Math.floor(Math.random() * 3) + 2; // 2-4
     const randomH = Math.floor(Math.random() * 2) + 2; // 2-3
 
     const newItem: SampleLayout = {
       id: `test-${Date.now()}`,
-      icon: newNumber.toString(),
-      title: `آیتم ${newNumber}`,
-      description: '',
-      type: '',
+      icon: '✦',
+      title: `New widget ${newNumber}`,
+      description: 'Drag and resize this widget to make it yours.',
+      type: 'custom',
       config: new GridItemConfig(0, 0, randomW, randomH),
     };
 
@@ -147,17 +154,21 @@ export class GridLayoutComponent implements OnInit {
   }
 
   removeItem(id: string): void {
-    const index = this.items().findIndex((item) => item.id === id);
-    if (index > -1) {
-      this.items().splice(index, 1);
-    }
+    this.items.update((items) => items.filter((item) => item.id !== id));
     this.update();
   }
 
   resetToDefault(): void {
-    this.items.set(JSON.parse(JSON.stringify(this.DEFAULT_ITEMS)));
+    this.items.set(this.copyItems(this.DEFAULT_ITEMS));
     setTimeout(() => {
       this.update();
     });
+  }
+
+  private copyItems(items: readonly SampleLayout[]): SampleLayout[] {
+    return items.map((item) => ({
+      ...item,
+      config: Object.assign(new GridItemConfig(), item.config),
+    }));
   }
 }
