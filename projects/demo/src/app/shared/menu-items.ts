@@ -222,6 +222,12 @@ export const MENU_LIST: ICategory[] = [
             description: 'Resize side pan',
             icon: '🔛',
           },
+          {
+            id: 'interaction',
+            title: 'Interaction',
+            description: 'Enable interaction with child of draggable items',
+            icon: '✦',
+          },
         ],
       },
       {
