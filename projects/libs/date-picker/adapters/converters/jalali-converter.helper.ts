@@ -291,8 +291,17 @@ export namespace Jalali {
    * @returns Date object of the jalaali calendar dates
    */
   export function jalaaliToDateObject(jy: any, jm: any, jd: any, h = 0, m = 0, s = 0, ms = 0) {
-    const { gy, gm, gd } = toGregorian(jy, jm, jd);
-    const date = new Date(Date.UTC(gy, gm - 1, gd, h, m, s, ms));
+    // Normalise month overflow/underflow (e.g. month 13 or 0) before converting.
+    const total = jy * 12 + (jm - 1);
+    const ny = Math.floor(total / 12);
+    const nm = total - ny * 12 + 1;
+    const { gy, gm, gd } = toGregorian(ny, nm, jd);
+    // IMPORTANT: build a *local* date. The rest of the library reads local
+    // getters (getDate/getMonth/...); a UTC midnight date shifts one day back
+    // for every timezone west of UTC.
+    const date = new Date(gy, gm - 1, gd, h, m, s, ms);
+    // Years 0-99 are mapped to 1900-1999 by the Date constructor.
+    if (gy >= 0 && gy < 100) date.setFullYear(gy);
 
     return date;
   }

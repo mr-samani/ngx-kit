@@ -1,3 +1,4 @@
+import { genFormatDate } from '../../helpers/date-format.helper';
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../calendar-date';
 import { FormatType } from '../consts';
@@ -96,12 +97,18 @@ export class HijriAdapter implements IDateAdapter {
   formatDate(date: CalendarDate, format: FormatType): string | null {
     if (!date) return null;
 
+    // Custom patterns such as 'yyyy/MM/dd' are rendered with the shared pattern
+    // formatter (like the Gregorian and Jalali adapters). Only the named presets
+    // use the Intl calendar names.
+    if (!['full', 'long', 'medium', 'short'].includes(format)) {
+      return genFormatDate(date, format, this.longMonths, this.longDays);
+    }
+
     const jsDate = this.getDate(date);
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
+    const options: Intl.DateTimeFormatOptions =
+      format === 'short'
+        ? { year: 'numeric', month: 'numeric', day: 'numeric' }
+        : { year: 'numeric', month: 'long', day: 'numeric' };
 
     if (format === 'full') {
       options.weekday = 'long';

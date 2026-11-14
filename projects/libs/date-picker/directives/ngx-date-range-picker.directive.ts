@@ -9,6 +9,7 @@ import {
   input,
   Input,
   model,
+  OnDestroy,
   Output,
   Renderer2,
   ViewContainerRef,
@@ -24,7 +25,7 @@ import {
 import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { NgxDateRange } from '../models/range';
-import { NGX_DATE_CONFIG, NgxDateConfig } from '../tokens/config';
+import { NGX_DATE_CONFIG, NgxDateConfig, NgxDateTheme } from '../tokens/config';
 import { NgxDateRangePickerComponent } from '../components/date-range-picker/ngx-date-range-picker.component';
 import { compareDate, deserialize, sameDate } from '../helpers/date.helper';
 import { normalizeDateRange } from '../helpers/date-range.helper';
@@ -51,7 +52,7 @@ import { IDateAdapter } from '../adapters/IAdapter';
     },
   ],
 })
-export class NgxInputDateRangePicker implements ControlValueAccessor, Validator {
+export class NgxInputDateRangePicker implements ControlValueAccessor, Validator, OnDestroy {
   protected readonly _config = inject(NGX_DATE_CONFIG);
 
   protected readonly dateAdapterRegistry = inject(DateAdapterRegistry);
@@ -65,6 +66,7 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
 
   readonly config = model<NgxDateConfig>(this._config);
   readonly locale = input<string>(this._config.locale ?? 'en');
+  readonly theme = input<NgxDateTheme>(this._config.theme ?? 'auto');
 
   readonly min = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
   readonly max = input<Date | null, Date | null | undefined>(null, { transform: deserialize });
@@ -134,6 +136,10 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
     this.renderer.setProperty(this.el.nativeElement, 'disabled', disabled);
   }
 
+  ngOnDestroy(): void {
+    this.destroyDatePicker();
+  }
+
   toggle() {
     if (this.isDisabled) return;
 
@@ -151,6 +157,8 @@ export class NgxInputDateRangePicker implements ControlValueAccessor, Validator 
       margin: 4,
       configure: (instance, ref) => {
         ref.componentRef?.setInput('locale', this.locale());
+        ref.componentRef?.setInput('theme', this.theme());
+        ref.componentRef?.setInput('displayFormat', this.displayFormat);
         ref.componentRef?.setInput('min', this.minDate);
         ref.componentRef?.setInput('max', this.maxDate);
         instance.updateConfig(this.config());

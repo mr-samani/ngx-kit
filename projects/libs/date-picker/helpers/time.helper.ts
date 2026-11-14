@@ -5,7 +5,7 @@ export function convertSecondsToTime(givenSeconds: number): string {
   const dateObj = new Date(givenSeconds * 1000);
   const hours = dateObj.getUTCHours();
   const minutes = dateObj.getUTCMinutes();
-  const seconds = dateObj.getSeconds();
+  const seconds = dateObj.getUTCSeconds();
   const h = hours > 0 ? hours.toString().padStart(2, '0') + ':' : '';
   const timeString =
     h + minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
@@ -17,7 +17,7 @@ export function convertSecondsToTime(givenSeconds: number): string {
  */
 export function convertNumberToTime(num: number): string {
   const hour = Math.floor(num);
-  const min = 60 * (num - hour);
+  const min = Math.round(60 * (num - hour));
 
   const t = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
   return t;

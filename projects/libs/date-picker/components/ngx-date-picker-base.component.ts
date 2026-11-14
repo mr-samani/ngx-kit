@@ -1,26 +1,52 @@
-import { clampDate, clampMonth, clampYear, compareDate } from '../helpers/date.helper';
+import { clampDate, compareDate, deserialize, sameDate } from '../helpers/date.helper';
 import { IDateAdapter } from '../adapters/IAdapter';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents, MsEventViewer } from '../models/events';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
-import { Directive, effect, inject, input, model, signal } from '@angular/core';
+import { computed, Directive, effect, inject, input, model, signal } from '@angular/core';
 import { CalendarView, DatePickerView } from '../models/view';
 import { DateViewDay, DateViewMonth, DateViewWeek, DateViewYear } from '../models/date';
 import { convertNumberToTime } from '../helpers/time.helper';
-import { deserialize, sameDate } from '../helpers/date.helper';
-import { NGX_DATE_CONFIG, NgxCalendarLocalization, NgxDateConfig } from '../tokens/config';
+import { shiftYearMonth } from '../helpers/calendar-nav.helper';
+import {
+  NGX_DATE_CONFIG,
+  NgxCalendarLocalization,
+  NgxDateConfig,
+  NgxDateTheme,
+} from '../tokens/config';
 
-@Directive()
+/** Number of years shown on one page of the year picker (4 columns x 5 rows). */
+export const YEARS_PER_PAGE = 20;
+/** The month grid always has six rows so the picker never changes height. */
+export const MONTH_GRID_CELLS = 42;
+
+@Directive({
+  host: {
+    '[attr.data-theme]': 'theme()',
+  },
+})
 export abstract class NgxDatePickerBase {
   protected readonly _config = inject(NGX_DATE_CONFIG);
 
   readonly locale = input<string>(this._config.locale ?? 'en');
 
-  localize = input<NgxCalendarLocalization>(
-    this._config.localization ?? new NgxCalendarLocalization(),
-  );
+  /** `light`, `dark` or `auto` (follows the page / OS colour scheme). */
+  readonly theme = input<NgxDateTheme>(this._config.theme ?? 'auto');
+
+  /** Optional overrides of the built-in labels (merged over the config labels). */
+  readonly localize = input<Partial<NgxCalendarLocalization> | null | undefined>(null);
 
   readonly config = model<NgxDateConfig>(this._config);
+
+  /** Final labels: defaults < config.localization < `localize` input. */
+  readonly labels = computed<NgxCalendarLocalization>(() =>
+    Object.assign(
+      new NgxCalendarLocalization(),
+      this.config().localization,
+      this.localize() ?? {},
+    ),
+  );
+
   protected dateAdapterRegistry = inject(DateAdapterRegistry);
   adapter: IDateAdapter = this.dateAdapterRegistry.resolve(this.locale());
 
@@ -40,6 +66,9 @@ export abstract class NgxDatePickerBase {
   viewWeeks: DateViewWeek[] = [];
   readonly displayMonth = signal('');
 
+  /** First year of the page currently shown in the year picker. */
+  yearPageStart = 0;
+
   minDate: Date | null = null;
   maxDate: Date | null = null;
 
@@ -50,7 +79,7 @@ export abstract class NgxDatePickerBase {
       const minChanged = !sameDate(minDate, this.minDate);
       const maxChanged = !sameDate(maxDate, this.maxDate);
       if (!minChanged && !maxChanged) return;
-      
+
       this.minDate = minDate;
       this.maxDate = maxDate;
       this.onDateBoundsChange();
@@ -81,7 +110,8 @@ export abstract class NgxDatePickerBase {
 
     if (callback) callback();
   }
-  renderِDatePicker(
+
+  renderDatePicker(
     view: DatePickerView,
     selected?: CalendarDate,
     events?: MsEvents[],
@@ -92,10 +122,10 @@ export abstract class NgxDatePickerBase {
         this.renderDay(selected, events);
         break;
       case 'month':
-        this.renderMonth();
+        this.renderMonth(selected);
         break;
       case 'year':
-        this.renderYear();
+        this.renderYear(selected);
         break;
     }
 
@@ -104,28 +134,39 @@ export abstract class NgxDatePickerBase {
     if (callback) callback();
   }
 
-  renderYear() {
-    this.viewYears = [];
-    const s = this.currYear() - 10;
-    const e = this.currYear() + 10;
+  /** Aligns the year page so that it contains `year`. */
+  alignYearPage(year: number = this.currYear()) {
+    this.yearPageStart = Math.floor(year / YEARS_PER_PAGE) * YEARS_PER_PAGE;
+  }
 
-    for (let i = s; i < e; i++) {
+  renderYear(selected?: CalendarDate) {
+    this.viewYears = [];
+    const today = this.adapter.today();
+    // the page is aligned by the caller when the year view opens; it is kept as is
+    // while the user pages back and forth
+    if (!this.yearPageStart) this.alignYearPage();
+    const s = this.yearPageStart;
+
+    for (let i = s; i < s + YEARS_PER_PAGE; i++) {
       this.viewYears.push({
         year: i,
-        selected: i === this.currYear(),
+        selected: selected?.year === i,
+        isToday: today.year === i,
         active: this.checkActiveYear(i),
       });
     }
   }
 
-  renderMonth() {
+  renderMonth(selected?: CalendarDate) {
     this.viewMonths = [];
+    const today = this.adapter.today();
 
     for (let i = 0; i < this.months.length; i++) {
       this.viewMonths.push({
         month: i,
         displayMonth: this.months[i],
-        selected: i === this.currMonth(),
+        selected: selected?.year === this.currYear() && selected.month === i,
+        isToday: today.year === this.currYear() && today.month === i,
         active: this.checkActiveMonth(this.currYear(), i),
       });
     }
@@ -177,7 +218,9 @@ export abstract class NgxDatePickerBase {
   }
 
   /**
-   * Renders a 6-row month grid and attaches events to every visible day.
+   * Renders a fixed 6-row month grid (42 cells) and attaches events to every
+   * visible day. Leading/trailing cells belong to the neighbouring months
+   * (`outside`); they stay selectable as long as they are inside min/max.
    *
    * The event list is normalized to MsEventViewer so the template can draw
    * continuation edges similar to FullCalendar's month view.
@@ -185,72 +228,39 @@ export abstract class NgxDatePickerBase {
   renderDay(selected?: CalendarDate, events?: MsEvents[]) {
     this.viewDays = [];
 
-    const firstDayOfMonth = this.adapter.firstDayofMonth(this.currYear(), this.currMonth());
-    const lastDateOfMonth = this.adapter.lastDateofMonth(this.currYear(), this.currMonth());
-    const lastDayOfMonth = this.adapter.lastDayofMonth(this.currYear(), this.currMonth());
-    const lastDateOfLastMonth = this.adapter.lastDateofLastMonth(this.currYear(), this.currMonth());
+    const year = this.currYear();
+    const month = this.currMonth();
+    const leading = this.adapter.firstDayofMonth(year, month);
+    const monthLength = this.adapter.lastDateofMonth(year, month);
+    const prev = shiftYearMonth(year, month, -1);
+    const next = shiftYearMonth(year, month, 1);
+    const prevLength = this.adapter.lastDateofLastMonth(year, month);
 
-    for (let i = firstDayOfMonth; i > 0; i--) {
-      const day = lastDateOfLastMonth - i + 1;
-      const date = this.adapter.getDate({
-        locale: this.locale(),
-        year: this.currYear(),
-        month: this.currMonth() - 1,
-        day,
-      });
+    const todayDate = this.adapter.getDate(this.adapter.today());
+    const selectedDate = selected ? (selected.date ?? this.adapter.getDate(selected)) : null;
 
+    const push = (day: number, y: number, m: number, outside: boolean) => {
+      const date = this.adapter.getDate({ locale: this.locale(), year: y, month: m, day });
+      const column = this.viewDays.length % 7;
       this.viewDays.push({
         day,
-        active: false,
-        isToday: false,
-        selected: false,
-        date,
-        events: this.getEvents(date, events),
-      });
-    }
-
-    for (let day = 1; day <= lastDateOfMonth; day++) {
-      const today = this.adapter.today();
-      const isToday =
-        day === today.day && this.currMonth() === today.month && this.currYear() === today.year;
-
-      const date = this.adapter.getDate({
-        locale: this.locale(),
-        year: this.currYear(),
-        month: this.currMonth(),
-        day,
-      });
-
-      this.viewDays.push({
-        day,
+        outside,
+        label: this.adapter.formatDate(
+          { locale: this.locale(), year: y, month: m, day, dayOfWeek: column },
+          'EEEE d MMMM yyyy',
+        ) ?? '',
         active: this.checkActiveDate(date),
-        isToday,
-        selected:
-          day === selected?.day &&
-          selected.month === this.currMonth() &&
-          selected.year === this.currYear(),
+        isToday: sameDate(date, todayDate),
+        selected: !!selectedDate && sameDate(date, selectedDate),
         date,
         events: this.getEvents(date, events),
       });
-    }
+    };
 
-    for (let i = lastDayOfMonth; i < 6; i++) {
-      const day = i - lastDayOfMonth + 1;
-      const date = this.adapter.getDate({
-        locale: this.locale(),
-        year: this.currYear(),
-        month: this.currMonth() + 1,
-        day,
-      });
-
-      this.viewDays.push({
-        day,
-        active: false,
-        isToday: false,
-        selected: false,
-        date,
-        events: this.getEvents(date, events),
-      });
+    for (let i = leading; i > 0; i--) push(prevLength - i + 1, prev.year, prev.month, true);
+    for (let day = 1; day <= monthLength; day++) push(day, year, month, false);
+    for (let day = 1; this.viewDays.length < MONTH_GRID_CELLS; day++) {
+      push(day, next.year, next.month, true);
     }
   }
 
@@ -259,24 +269,34 @@ export abstract class NgxDatePickerBase {
     return c === 0;
   }
 
+  /** A month is selectable when at least one of its days is inside min/max. */
   checkActiveMonth(year: number, month: number) {
-    const fd = this.adapter.getDate({ locale: this.locale(), year, month, day: 1 });
-    const ld = this.adapter.getDate({
+    const first = this.adapter.getDate({ locale: this.locale(), year, month, day: 1 });
+    const last = this.adapter.getDate({
       locale: this.locale(),
       year,
       month,
       day: this.adapter.lastDateofMonth(year, month),
     });
-
-    const min = this.adapter.getStartOf(this.minDate, 'month');
-    const max = this.adapter.getLastOf(this.maxDate, 'month');
-
-    return clampMonth(fd, min, max) === 0 && clampMonth(ld, min, max) === 0;
+    return this.overlapsBounds(first, last);
   }
 
+  /** A year is selectable when at least one of its days is inside min/max. */
   checkActiveYear(year: number) {
-    const d = this.adapter.getDate({ locale: this.locale(), year, month: 1, day: 1 });
-    return clampYear(d, this.minDate, this.maxDate) === 0;
+    const first = this.adapter.getDate({ locale: this.locale(), year, month: 0, day: 1 });
+    const last = this.adapter.getDate({
+      locale: this.locale(),
+      year,
+      month: 11,
+      day: this.adapter.lastDateofMonth(year, 11),
+    });
+    return this.overlapsBounds(first, last);
+  }
+
+  private overlapsBounds(first: Date, last: Date): boolean {
+    if (this.maxDate && compareDate(first, this.maxDate) > 0) return false;
+    if (this.minDate && compareDate(last, this.minDate) < 0) return false;
+    return true;
   }
 
   protected getEvents(date: Date, events?: MsEvents[]): MsEventViewer[] {

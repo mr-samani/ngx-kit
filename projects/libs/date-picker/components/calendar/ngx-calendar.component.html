@@ -1,20 +1,20 @@
 <div class="wrapper" [class.is-interacting]="!!interaction">
   <div class="header">
     <div class="nxt-prv-buttons">
-      <button type="button" class="previous dtp-btn" (click)="previous()" title="Previous">
+      <button type="button" class="previous dtp-btn" (click)="previous()" [title]="labels().previous">
         <ng-template
           [ngTemplateOutlet]="
-            _config.previousButtonTemplate || defaultPreviousBTNTemplate
+            config().previousButtonTemplate || defaultPreviousBTNTemplate
           "></ng-template>
       </button>
-      @if (_config.todayButton) {
+      @if (config().todayButton) {
         <button type="button" class="today dtp-btn" (click)="gotoToday()">
-          {{ localize().today }}
+          {{ labels().today }}
         </button>
       }
-      <button type="button" class="next dtp-btn" (click)="next()" title="Next">
+      <button type="button" class="next dtp-btn" (click)="next()" [title]="labels().next">
         <ng-template
-          [ngTemplateOutlet]="_config.nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
+          [ngTemplateOutlet]="config().nextButtonTemplate || defaultNextBTNTemplate"></ng-template>
       </button>
     </div>
 
@@ -26,28 +26,28 @@
         class="dtp-btn"
         (click)="changeView('month')"
         [class.active]="view === 'month'">
-        {{ localize().month }}
+        {{ labels().month }}
       </button>
       <button
         type="button"
         class="dtp-btn"
         (click)="changeView('week')"
         [class.active]="view === 'week'">
-        {{ localize().week }}
+        {{ labels().week }}
       </button>
       <button
         type="button"
         class="dtp-btn"
         (click)="changeView('day')"
         [class.active]="view === 'day'">
-        {{ localize().day }}
+        {{ labels().day }}
       </button>
       <button
         type="button"
         class="dtp-btn"
         (click)="changeView('event')"
         [class.active]="view === 'event'">
-        {{ localize().event }}
+        {{ labels().event }}
       </button>
     </div>
   </div>
@@ -94,8 +94,9 @@
                     "
                     [style.gridColumn]="event.startColumn + 1 + ' / ' + (event.endColumn + 2)"
                     [style.gridRow]="event.lane + 1"
-                    [style.background]="event.backgroundColor || event.color || null"
-                    [style.borderColor]="event.borderColor || event.color || null"
+                    [style.--ev]="event.color || null"
+                    [style.background]="event.backgroundColor || null"
+                    [style.borderColor]="event.borderColor || null"
                     [style.color]="event.textColor || null"
                     [title]="event.title || ''"
                     (pointerdown)="startMonthEventInteraction($event, event)"
@@ -103,7 +104,7 @@
                       onclickEvent($event, { date: event.start, day: 0, active: true }, event)
                     ">
                     @if (event.isStart) {
-                      <span class="event-title">{{ event.title || 'Untitled event' }}</span>
+                      <span class="event-title">{{ event.title || labels().untitledEvent }}</span>
                     } @else {
                       <span class="event-title continuation-title">{{ event.title || '' }}</span>
                     }
@@ -153,11 +154,9 @@
                 ">
                 <span
                   class="event-dot"
-                  [style.background]="
-                    item.event.backgroundColor || item.event.color || null
-                  "></span>
+                  [style.background]="item.event.color || item.event.backgroundColor || null"></span>
                 <span class="event-copy">
-                  <strong>{{ item.event.title || 'Untitled event' }}</strong>
+                  <strong>{{ item.event.title || labels().untitledEvent }}</strong>
                   <small>
                     {{ formatEventDate(item.start) }}
                     @if (item.end.getTime() !== item.start.getTime()) {
@@ -168,7 +167,7 @@
               </button>
             }
           } @else {
-            <div class="empty-events">No events for this month.</div>
+            <div class="empty-events">{{ labels().noEvents }}</div>
           }
         </div>
       }
@@ -197,7 +196,7 @@
     <div
       class="all-day-row"
       [style.gridTemplateColumns]="'64px repeat(' + weekDays.length + ', minmax(0, 1fr))'">
-      <div class="all-day-label">All day</div>
+      <div class="all-day-label">{{ labels().allDay }}</div>
       @for (day of weekDays; track day.date.getTime(); let i = $index) {
         <div class="all-day-cell">
           @for (
@@ -209,13 +208,14 @@
               class="timed-event all-day-event"
               [class.continues-before]="event.continuesBefore"
               [class.continues-after]="event.continuesAfter"
-              [style.background]="event.backgroundColor || event.color || null"
-              [style.borderColor]="event.borderColor || event.color || null"
+              [style.--ev]="event.color || null"
+                    [style.background]="event.backgroundColor || null"
+              [style.borderColor]="event.borderColor || null"
               [style.color]="event.textColor || null"
               [title]="event.title || ''"
               (pointerdown)="startTimedEventInteraction($event, event)"
               (click)="onTimedEventClick($event, event, day.date)">
-              <span>{{ event.title || 'Untitled event' }}</span>
+              <span>{{ event.title || labels().untitledEvent }}</span>
               @if (resizeAndMovable()) {
                 @if (event.isStart) {
                   <span
@@ -267,13 +267,14 @@
               [style.height.px]="event.height"
               [style.insetInlineStart.%]="event.column * (100 / event.columnCount)"
               [style.width.%]="100 / event.columnCount - 1"
-              [style.background]="event.backgroundColor || event.color || null"
-              [style.borderColor]="event.borderColor || event.color || null"
+              [style.--ev]="event.color || null"
+                    [style.background]="event.backgroundColor || null"
+              [style.borderColor]="event.borderColor || null"
               [style.color]="event.textColor || null"
               [title]="event.title || ''"
               (pointerdown)="startTimedEventInteraction($event, event)"
               (click)="onTimedEventClick($event, event, day.date)">
-              <strong>{{ event.title || 'Untitled event' }}</strong>
+              <strong>{{ event.title || labels().untitledEvent }}</strong>
               @if (event.height >= 42) {
                 <small>
                   {{ formatTime(event.start.getHours() * 60 + event.start.getMinutes()) }}

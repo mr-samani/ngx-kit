@@ -69,6 +69,33 @@ provideDateAdapters({ locale: 'ja', useClass: MyJapaneseAdapter });
 
 The Hijri and Chinese calendars (which are table/astronomical-based, unlike the formulaic Gregorian/Jalali ones) cache their computation results internally — since rendering a calendar month calls the date computation separately for every day cell, without caching this could take several hundred milliseconds for years far from today.
 
+## Theming
+
+Light/dark follow the page (`color-scheme`) by default; force one with `theme="light" | "dark"`.
+Every colour is a CSS custom property, e.g.:
+
+```css
+ngx-date-picker, ngx-date-range-picker, ngx-calendar {
+  --ngx-dp-accent: #6d28d9;      /* selected day, today ring, focus */
+  --ngx-dp-accent-ink: #fff;
+  --ngx-dp-accent-soft: #ede9fe; /* range band */
+  --ngx-dp-surface: #fff;  --ngx-dp-ink: #161b27;  --ngx-dp-muted: #5f6a7d;
+  --ngx-dp-line: #e3e7ee;  --ngx-dp-hover: #edf0f5;
+  --ngx-dp-radius: 16px;   --ngx-dp-cell-size: 40px;  --ngx-dp-font-size: 14px;
+}
+```
+
+Labels are configurable through `provideDateAdapters({ localization: { today: 'امروز', clear: 'پاک کردن' } })`
+or the `[localize]` input; missing labels fall back to English.
+
+## Keyboard
+
+Arrow keys move between days, `Home`/`End` jump to the week edges, `PageUp`/`PageDown` change month. Arrows are mirrored in RTL.
+
 ## Dark mode and RTL
 
 Supported automatically (the Jalali/Hijri calendars are naturally RTL too).
+
+## Known limitation
+
+Chinese leap months (闰) are mapped onto the regular month of the same number.

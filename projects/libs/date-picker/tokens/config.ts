@@ -1,5 +1,8 @@
 import { InjectionToken, TemplateRef } from '@angular/core';
 import type { DateAdapterRegistration } from '../adapters/consts';
+
+export type NgxDateTheme = 'light' | 'dark' | 'auto';
+
 export class NgxCalendarLocalization {
   clear = 'Clear';
   today = 'Today';
@@ -7,15 +10,26 @@ export class NgxCalendarLocalization {
   /** Range picker labels. */
   rangeStart = 'Start date';
   rangeEnd = 'End date';
+  dateRange = 'Date range';
+  selectDate = 'Select a date';
+  selectDateRange = 'Select date range';
 
   day = 'Day';
   month = 'Month';
   week = 'Week';
   year = 'Year';
   event = 'Event';
+
+  previous = 'Previous';
+  next = 'Next';
+  selectMonth = 'Select month';
+  selectYear = 'Select year';
+  allDay = 'All day';
+  noEvents = 'No events for this month.';
+  untitledEvent = 'Untitled event';
 }
 export class NgxDateConfig {
-  localization?: NgxCalendarLocalization = new NgxCalendarLocalization();
+  localization?: Partial<NgxCalendarLocalization> = new NgxCalendarLocalization();
   previousButtonTemplate?: TemplateRef<any>;
   nextButtonTemplate?: TemplateRef<any>;
   caretDownIconTemplate?: TemplateRef<any>;
@@ -24,6 +38,7 @@ export class NgxDateConfig {
   clearButton?: boolean = true;
 
   locale?: string = 'en';
+  theme?: NgxDateTheme = 'auto';
 
   adapters?: DateAdapterRegistration[];
 }

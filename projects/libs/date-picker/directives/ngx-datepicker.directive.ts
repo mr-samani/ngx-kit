@@ -10,6 +10,7 @@ import {
   Input,
   model,
   output,
+  OnDestroy,
   Output,
   Renderer2,
   signal,
@@ -27,7 +28,7 @@ import { NgxInputDatePickerComponent } from '../components/datepicker/ngx-datepi
 import { clampDate, deserialize, isValid, sameDate } from '../helpers/date.helper';
 import { OverlayRef, OverlayService } from 'ngx-kit/core';
 import { IDateAdapter } from '../adapters/IAdapter';
-import { NgxDateConfig } from '../tokens/config';
+import { NgxDateConfig, NgxDateTheme } from '../tokens/config';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
 import { FormatType } from '../adapters/consts';
 import { NGX_DATE_CONFIG } from '../tokens/config';
@@ -53,12 +54,13 @@ import { NGX_DATE_CONFIG } from '../tokens/config';
     },
   ],
 })
-export class NgxInputDatePicker implements ControlValueAccessor, Validator {
+export class NgxInputDatePicker implements ControlValueAccessor, Validator, OnDestroy {
   protected readonly dateAdapterRegistry = inject(DateAdapterRegistry);
   protected readonly _config = inject(NGX_DATE_CONFIG);
 
   readonly openOnCLick = input<boolean>(true);
-  readonly change = output<Date>();
+  readonly change = output<Date | null>();
+  readonly theme = input<NgxDateTheme>(this._config.theme ?? 'auto');
   private value?: Date | null;
   private pickerRef?: OverlayRef<NgxInputDatePickerComponent>;
   adapter!: IDateAdapter;
@@ -175,11 +177,12 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
       margin: 2,
       configure: (instance, ref) => {
         ref.componentRef?.setInput('locale', this.locale());
+        ref.componentRef?.setInput('theme', this.theme());
         ref.componentRef?.setInput('min', this.minDate);
         ref.componentRef?.setInput('max', this.maxDate);
         instance.updateConfig(this.config());
         instance.writeValue(this.value);
-        instance.change.subscribe((c: Date) => {
+        instance.change.subscribe((c: Date | null) => {
           this.value = c;
           this.emitChange(c);
           this.destroyDatePicker();
@@ -197,7 +200,7 @@ export class NgxInputDatePicker implements ControlValueAccessor, Validator {
     this.pickerRef?.close();
     this.pickerRef = undefined;
   }
-  private async emitChange(c: Date) {
+  private emitChange(c: Date | null) {
     this._formatValue(c);
     this._onChange(c);
     this.change.emit(c);

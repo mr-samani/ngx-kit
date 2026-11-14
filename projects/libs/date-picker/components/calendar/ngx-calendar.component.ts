@@ -72,7 +72,16 @@ interface EventInteractionState {
 export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   resizeAndMovable = input<boolean>(false);
 
-  @Input() view: CalendarView = 'month';
+  private _view: CalendarView = 'month';
+  /** Active view. Changing it from the parent re-renders the calendar. */
+  @Input() set view(v: CalendarView) {
+    if (v === this._view) return;
+    this._view = v;
+    if (this.anchorDate()) this.renderCalendar(v);
+  }
+  get view(): CalendarView {
+    return this._view;
+  }
 
   private _events: MsEvents[] = [];
   @Input() set events(val: MsEvents[]) {
@@ -165,7 +174,11 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
     switch (view) {
       case 'month':
-        super.renderCalendar('month', undefined, this.renderEvents);
+        super.renderCalendar(
+          'month',
+          this.selected ? this.adapter.toLocale(this.selected) : undefined,
+          this.renderEvents,
+        );
         this.buildMonthEventSegments();
         break;
       case 'week':

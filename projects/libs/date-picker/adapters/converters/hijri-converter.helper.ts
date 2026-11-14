@@ -1,132 +1,113 @@
-/**
- * منطق تبدیل تاریخ هجری قمری (Umm al-Qura) <-> میلادی
- * جدا از آداپتر، تا قابل تست و استفاده‌ی مستقل باشد.
- */
+import { normalizeYearMonth } from '../../helpers/calendar-nav.helper';
+
 const HIJRI_LOCALE = 'ar-SA-u-ca-islamic-umalqura';
+const MEAN_MONTH_DAYS = 29.530588;
 const ONE_DAY_MS = 86400000;
+
+/** Local noon keeps day arithmetic safe around DST transitions. */
+function atNoon(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+}
+function addDays(d: Date, days: number): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days, 12);
+}
+function atMidnight(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
 
 export namespace HijriConverter {
   export interface HijriDate {
     day: number;
-    month: number; // صفر-پایه: محرم = 0
+    month: number; // zero-based: Muharram = 0
     year: number;
   }
 
-  const parser = new Intl.DateTimeFormat(HIJRI_LOCALE, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-  });
+  // Created lazily so that merely importing the library never touches Intl
+  // (SSR runtimes / workers with a stripped ICU would otherwise crash at import).
+  let parser: Intl.DateTimeFormat | null = null;
+  function getParser(): Intl.DateTimeFormat {
+    return (parser ??= new Intl.DateTimeFormat(HIJRI_LOCALE, {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    }));
+  }
 
-  /** تبدیل اعداد عربی/فارسی به لاتین */
+  /** Arabic-Indic / Persian digits -> latin */
   function toLatinDigits(str: string): string {
     return str
       .replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d) => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)])
       .replace(/[۰۱۲۳۴۵۶۷۸۹]/g, (d) => '0123456789'['۰۱۲۳۴۵۶۷۸۹'.indexOf(d)]);
   }
 
-  /** استخراج تاریخ هجری از یک Date میلادی */
+  /** Reads the Hijri date of a Gregorian `Date`. */
   export function parse(date: Date): HijriDate {
-    const parts = parser.formatToParts(date);
-    return {
-      day: parseInt(toLatinDigits(parts.find((p) => p.type === 'day')!.value), 10),
-      month: parseInt(toLatinDigits(parts.find((p) => p.type === 'month')!.value), 10) - 1,
-      year: parseInt(toLatinDigits(parts.find((p) => p.type === 'year')!.value), 10),
-    };
+    const parts = getParser().formatToParts(date);
+    const num = (type: string) =>
+      parseInt(toLatinDigits(parts.find((p) => p.type === type)?.value ?? '0'), 10);
+    return { day: num('day'), month: num('month') - 1, year: num('year') };
   }
 
   /**
-   * پیدا کردن آخرین «روز اول ماه هجری» که در همان روز seed یا
-   * قبل از آن باشد (جستجوی فقط روبه‌عقب، حداکثر 35 روز).
-   *
-   * نکته‌ی مهم: این جستجو باید فقط روبه‌عقب باشد، نه «نزدیک‌ترین
-   * در هر دو جهت». جستجوی دوجهته باعث می‌شد وقتی الگوریتم می‌خواهد
-   * یک قدم به عقب برود (-5 روز)، چون فاصله‌ی جلو هنوز کمتر بود،
-   * دوباره به همان ماهِ قبلی برگردد و لوپ هیچ‌وقت واقعاً عقب نرود.
+   * Finds the latest "first day of a Hijri month" at or before `seed`
+   * (backward-only search, at most 35 days).
    */
   function firstOfMonthAtOrBefore(seed: Date): Date {
     for (let i = 0; i <= 35; i++) {
-      const test = new Date(seed);
-      test.setDate(test.getDate() - i);
-      if (parse(test).day === 1) {
-        return test;
-      }
+      const test = addDays(seed, -i);
+      if (parse(test).day === 1) return test;
     }
-    // عملاً نباید به اینجا برسیم
     return seed;
   }
 
-  /**
-   * پیدا کردن JS Date معادل «روز اول» یک ماه هجری دلخواه.
-   *
-   * به‌جای تکیه به یک فرمولِ تخمینیِ سال میلادی (که می‌تواند تا یک
-   * سال کامل خطا داشته باشد و جستجوی محدودِ ±35 روزه را شکست بدهد —
-   * همان باگی که باعث می‌شد lastDateofMonth عدد ۳۱ به‌جای ۲۹ بدهد)،
-   * از «امروز» -که همیشه با Intl به‌درستی قابل‌خواندن است- به‌عنوان
-   * لنگر شروع می‌کنیم و ماه‌به‌ماه جلو/عقب می‌رویم. هر قدم (چه
-   * `+30` چه `-5`) probe را به داخلِ بدنه‌ی ماهِ هدف می‌برد (نه قبل
-   * از آن)، پس جستجوی «آخرین day1 در همان روز یا قبل‌تر» همیشه
-   * دقیقاً day1 همان ماه هدف را پیدا می‌کند.
-   */
-  // نتیجه‌ی firstDayOfMonth فقط تابعی از (year, month) هست و در طول عمر
-  // صفحه هیچ‌وقت عوض نمی‌شه، پس کش‌کردنش کاملاً امنه. اهمیتش اینجاست که
-  // renderCalendar (در ngx-date-picker-base.component) برای هر سلولِ روزِ
-  // نمایش‌داده‌شده در گرید ماه (~۳۰ تا ۴۲ تا) یک‌بار adapter.getDate() صدا
-  // می‌زنه، و هرکدوم به toGregorian() → firstDayOfMonth() ختم می‌شه — یعنی
-  // بدون کش، این جست‌وجوی نسبتاً سنگین (که خودش می‌تونه تا حدود ۱۲۰۰ بار
-  // تکرار داخلی و هر بار تا ۳۵ فراخوانی Intl.DateTimeFormat داشته باشه) به
-  // ازای هر بار رندر یک ماه، ده‌ها بار برای همون (year, month) تکرار می‌شد —
-  // مخصوصاً وقتی کاربر به سال‌های دور از «امروز» ناوبری می‌کنه، محسوس کند بود.
+  // The result only depends on (year, month), so it is safe to cache. Rendering
+  // one month calls getDate() for every visible cell, which would otherwise
+  // repeat this relatively expensive search dozens of times.
   const firstDayOfMonthCache = new Map<string, Date>();
 
+  /**
+   * Gregorian `Date` (local midnight) of the first day of a Hijri month.
+   * Starting from today (always readable through Intl) the search jumps by the
+   * mean month length and corrects itself, so far-away years need only a few
+   * iterations. `month` may overflow/underflow and is carried into the year.
+   */
   export function firstDayOfMonth(year: number, month: number): Date {
+    ({ year, month } = normalizeYearMonth(year, month));
     const cacheKey = `${year}-${month}`;
     const cached = firstDayOfMonthCache.get(cacheKey);
     if (cached) return new Date(cached);
 
-    let anchorDate = firstOfMonthAtOrBefore(new Date());
-    let h = parse(anchorDate);
+    let anchor = firstOfMonthAtOrBefore(atNoon(new Date()));
+    let h = parse(anchor);
 
-    // سقف ایمنی برای جلوگیری از لوپ بی‌نهایت (≈ 100 سال هجری)
     let guard = 0;
-    while ((h.year !== year || h.month !== month) && guard < 1200) {
-      const targetIsLater = year > h.year || (year === h.year && month > h.month);
-      const probe = new Date(anchorDate);
-      // طول هر ماه هجری 29 یا 30 روز است؛ +30 همیشه به داخل ماه
-      // بعد می‌رسد و -5 همیشه داخل بدنه‌ی ماه قبل می‌ماند.
-      probe.setDate(probe.getDate() + (targetIsLater ? 30 : -5));
-      anchorDate = firstOfMonthAtOrBefore(probe);
-      h = parse(anchorDate);
+    while ((h.year !== year || h.month !== month) && guard < 200) {
+      const diff = (year - h.year) * 12 + (month - h.month);
+      // aim for the middle of the target month, then search backwards for day 1
+      const probe = addDays(anchor, Math.round(diff * MEAN_MONTH_DAYS) + 14);
+      anchor = firstOfMonthAtOrBefore(probe);
+      h = parse(anchor);
       guard++;
     }
-    firstDayOfMonthCache.set(cacheKey, anchorDate);
-    return anchorDate;
+
+    const result = atMidnight(anchor);
+    firstDayOfMonthCache.set(cacheKey, result);
+    return new Date(result);
   }
 
-  /** تبدیل سال/ماه/روز هجری به Date میلادی */
+  /** Hijri year/month/day -> Gregorian `Date` (local midnight). */
   export function toGregorian(year: number, month: number, day: number): Date {
     const first = firstDayOfMonth(year, month);
-    const result = new Date(first);
-    result.setDate(result.getDate() + (day - 1));
-    return result;
+    return new Date(first.getFullYear(), first.getMonth(), first.getDate() + (day - 1));
   }
 
-  /**
-   * تعداد واقعیِ روزهای یک ماه هجری.
-   *
-   * نکته‌ی مهم (باگ قبلی): نباید از `Date.getDate()` روی «روز قبل از
-   * شروع ماه بعد» استفاده کرد، چون آن عدد، شماره‌ی روز در تقویم
-   * میلادیِ همان Date است، نه طول ماه هجری.
-   * روش درست: فاصله‌ی روزها بین «اول این ماه» و «اول ماه بعد».
-   */
+  /** Real number of days in a Hijri month (29 or 30). */
   export function daysInMonth(year: number, month: number): number {
-    const nextMonth = (month + 1) % 12;
-    const nextYear = month === 11 ? year + 1 : year;
+    const n = normalizeYearMonth(year, month);
+    const next = normalizeYearMonth(n.year, n.month + 1);
 
-    const first = firstDayOfMonth(year, month);
-    const nextFirst = firstDayOfMonth(nextYear, nextMonth);
-
-    const diffMs = nextFirst.getTime() - first.getTime();
-    return Math.round(diffMs / ONE_DAY_MS);
+    const first = firstDayOfMonth(n.year, n.month);
+    const nextFirst = firstDayOfMonth(next.year, next.month);
+    return Math.round((nextFirst.getTime() - first.getTime()) / ONE_DAY_MS);
   }
 }

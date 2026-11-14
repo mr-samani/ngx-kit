@@ -4,6 +4,12 @@ import { DatePickerView } from '../../models/view';
 import { IDateAdapter } from '../IAdapter';
 import { CalendarDate } from '../calendar-date';
 import { FormatType } from '../consts';
+import { normalizeYearMonth } from '../../helpers/calendar-nav.helper';
+
+/** Supported range of the Jalaali conversion algorithm. */
+const MIN_JALALI_YEAR = -60;
+const MAX_JALALI_YEAR = 3176;
+const clampYear = (y: number) => Math.min(MAX_JALALI_YEAR, Math.max(MIN_JALALI_YEAR, y));
 
 export class JalaliAdapter implements IDateAdapter {
   // shanbeh
@@ -18,7 +24,7 @@ export class JalaliAdapter implements IDateAdapter {
       'اردیبهشت',
       'خرداد',
       'تیر',
-      'مردادا',
+      'مرداد',
       'شهریور',
       'مهر',
       'آبان',
@@ -35,7 +41,7 @@ export class JalaliAdapter implements IDateAdapter {
     return ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
   }
   get longDays() {
-    return ['شنبه', 'یک شنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه'];
+    return ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
   }
 
   constructor() {}
@@ -70,21 +76,8 @@ export class JalaliAdapter implements IDateAdapter {
    * getting last date of month
    */
   lastDateofMonth(year: number, month: number) {
-    const monthLengths = [
-      31,
-      31,
-      31,
-      31,
-      31,
-      31,
-      30,
-      30,
-      30,
-      30,
-      30,
-      Jalali.isLeapJalaaliYear(year) ? 30 : 29,
-    ];
-    return monthLengths[month];
+    const n = normalizeYearMonth(clampYear(year), month);
+    return Jalali.jalaaliMonthLength(n.year, n.month + 1);
   }
   /**
    * getting last day of month
@@ -98,26 +91,8 @@ export class JalaliAdapter implements IDateAdapter {
    * getting last date of previous month
    */
   lastDateofLastMonth(year: number, month: number) {
-    month--;
-    if (month < 0) {
-      month = 11;
-      year--;
-    }
-    const monthLengths = [
-      31,
-      31,
-      31,
-      31,
-      31,
-      31,
-      30,
-      30,
-      30,
-      30,
-      30,
-      Jalali.isLeapJalaaliYear(year) ? 30 : 29,
-    ];
-    return monthLengths[month];
+    const n = normalizeYearMonth(clampYear(year), month - 1);
+    return Jalali.jalaaliMonthLength(n.year, n.month + 1);
   }
   /**
    * تبدیل تاریخ جلالی به میلادی برای نمایش
@@ -126,9 +101,11 @@ export class JalaliAdapter implements IDateAdapter {
    * @returns
    */
   getDate(date: CalendarDate): Date {
+    // month is zero-based and may overflow/underflow (-1 / 12): it is normalised
+    // by jalaaliToDateObject.
     let d = Jalali.jalaaliToDateObject(
-      date.year,
-      date.month ? date.month + 1 : 1,
+      clampYear(date.year),
+      (date.month ?? 0) + 1,
       date.day ?? 1,
       date.hours ?? 0,
       date.minutes ?? 0,
@@ -210,7 +187,7 @@ export class JalaliAdapter implements IDateAdapter {
     let jDate = Jalali.toJalaali(date);
     switch (t) {
       case 'year':
-        return Jalali.jalaaliToDateObject(jDate.jy, 12, 0);
+        return Jalali.jalaaliToDateObject(jDate.jy, 12, this.lastDateofMonth(jDate.jy, 11));
       case 'month':
         // console.log(jDate.jy, '-', jDate.jm, '-', this.lastDateofMonth(jDate.jy, jDate.jm));
         return Jalali.jalaaliToDateObject(

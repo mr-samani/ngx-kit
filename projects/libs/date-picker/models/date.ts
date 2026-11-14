@@ -18,6 +18,10 @@ export class DateViewMonth extends DateModel {
 
 export class DateViewDay extends DateModel {
   day!: number;
+  /** true for the leading/trailing days that belong to the previous/next month */
+  outside?: boolean;
+  /** accessible full date, e.g. "Saturday 14 November 2026" */
+  label?: string;
   events?: MsEventViewer[];
   inRange?: boolean;
   rangeStart?: boolean;

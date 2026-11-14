@@ -11,6 +11,8 @@
  * شود. این یک محدودیتِ آگاهانه است، نه باگ سهوی؛ برای رفع کامل باید
  * فیلد isLeapMonth به CalendarDate اضافه و در همه‌جا (toLocale,
  */
+import { normalizeYearMonth } from '../../helpers/calendar-nav.helper';
+
 const CHINESE_LOCALE = 'zh-CN-u-ca-chinese';
 
 /**
@@ -54,169 +56,137 @@ const CHINESE_MONTH_MAP: Record<string, number> = {
   闰腊月: 11,
 };
 
+const MEAN_MONTH_DAYS = 29.530588;
+
+/** Local noon keeps day arithmetic safe around DST transitions. */
+function atNoon(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+}
+function addDays(d: Date, days: number): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days, 12);
+}
+function atMidnight(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 export namespace ChineseConverter {
   export interface ChineseDate {
     day: number;
-    month: number; // صفر-پایه
+    month: number; // zero-based
     year: number;
     isLeapMonth: boolean;
   }
 
-  const parser = new Intl.DateTimeFormat(CHINESE_LOCALE, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-  });
+  // Created lazily so that merely importing the library never touches Intl.
+  let parser: Intl.DateTimeFormat | null = null;
+  function getParser(): Intl.DateTimeFormat {
+    return (parser ??= new Intl.DateTimeFormat(CHINESE_LOCALE, {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    }));
+  }
 
-  /** تبدیل ارقام تمام‌عرض/فول‌ویدث به لاتین */
+  /** full-width digits -> latin */
   function toLatinDigits(str: string): string {
     return str.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0));
   }
 
-  /** استخراج تاریخ چینی از یک Date میلادی - با تشخیص ماه کبیسه */
+  /** Reads the Chinese lunisolar date (leap month aware) of a Gregorian `Date`. */
   export function parse(date: Date): ChineseDate {
-    const parts = parser.formatToParts(date);
+    const parts = getParser().formatToParts(date);
 
-    const dayPart = parts.find((p) => p.type === 'day')!;
-    const monthPart = parts.find((p) => p.type === 'month')!;
-    const yearPart = parts.find((p) => p.type === 'year' || p.type === ('relatedYear' as any))!;
+    const dayPart = parts.find((p) => p.type === 'day');
+    const monthPart = parts.find((p) => p.type === 'month');
+    const yearPart = parts.find((p) => p.type === 'year' || p.type === ('relatedYear' as any));
 
-    const day = parseInt(toLatinDigits(dayPart.value), 10);
-    const isLeapMonth = monthPart.value.includes('闰');
-    const month = CHINESE_MONTH_MAP[monthPart.value] ?? 0;
-    const year = parseInt(toLatinDigits(yearPart.value), 10);
+    const day = parseInt(toLatinDigits(dayPart?.value ?? '1'), 10);
+    const monthText = monthPart?.value ?? '';
+    const isLeapMonth = monthText.includes('闰') || monthText.includes('閏');
+    const month = CHINESE_MONTH_MAP[monthText.replace('閏', '闰')] ?? 0;
+    const year = parseInt(toLatinDigits(yearPart?.value ?? '0'), 10);
 
     return { day, month, year, isLeapMonth };
   }
 
   /**
-   * پیدا کردن آخرین «روز اول ماهِ چینیِ غیرکبیسه» که در همان روز
-   * seed یا قبل از آن باشد (جستجوی فقط روبه‌عقب، حداکثر 45 روز).
-   *
-   * نکته‌ی مهم: این جستجو باید فقط روبه‌عقب باشد، نه «نزدیک‌ترین
-   * در هر دو جهت». نسخه‌ی قبلی نزدیک‌ترین day1 را در هر دو جهت
-   * برمی‌گرداند که باعث می‌شد وقتی الگوریتم می‌خواهد یک قدم به
-   * عقب برود (-5 روز)، چون فاصله‌ی جلو هنوز کمتر بود، دوباره به
-   * همان ماهِ قبلی برگردد و لوپ هیچ‌وقت واقعاً عقب نرود (لوپ
-   * بی‌نهایت/گیر کردن روی یک ماه ثابت).
+   * Latest "first day of a non-leap Chinese month" at or before `seed`
+   * (backward-only search, at most 65 days).
    */
   function firstOfMonthAtOrBefore(seed: Date): Date {
     for (let i = 0; i <= 65; i++) {
-      const test = new Date(seed);
-      test.setDate(test.getDate() - i);
+      const test = addDays(seed, -i);
       const c = parse(test);
-      if (c.day === 1 && !c.isLeapMonth) {
-        return test;
-      }
+      if (c.day === 1 && !c.isLeapMonth) return test;
     }
-    // عملاً نباید به اینجا برسیم
     return seed;
   }
 
-  /**
-   * پیدا کردن JS Date معادل «روز اول» یک ماه چینیِ غیرکبیسه‌ی دلخواه.
-   *
-   * نسخه‌ی قبلی فرض می‌کرد فیلد `year` بازگشتی از Intl برای
-   * `zh-CN-u-ca-chinese` همان شماره‌ی سال در دوره‌ی ۶۰ساله است
-   * (epoch هوانگ‌دی)، در حالی‌که در عمل همان سال میلادی برمی‌گردد
-   * (مثلاً 2026). با فرمول `year - 2697` این عدد منفی و کاملاً
-   * نادرست می‌شد (مثلاً ‎-671‎) و جستجوی ±45 روزه همیشه شکست
-   * می‌خورد و روی fallback (یک تاریخ کاملاً غلط) می‌افتاد —
-   * همان باگی که باعث می‌شد طول ماه فقط چند روز نمایش داده شود.
-   *
-   * راه‌حل: مثل آداپتر هجری، از «امروز» -که همیشه با Intl به‌درستی
-   * قابل‌خواندن است- به‌عنوان لنگر شروع می‌کنیم و ماه‌به‌ماه
-   * جلو/عقب می‌رویم.
-   *
-   * نکته‌ی اضافیِ مخصوص تقویم چینی: بر خلاف هجری، اینجا «ماه
-   * کبیسه» هم وجود دارد. وقتی دقیقاً بین دو ماهِ عادیِ متوالی یک
-   * ماه کبیسه فاصله افتاده باشد (مثلاً 五月 عادی -> 闰五月 -> 五月
-   * بعدی، یعنی واقعاً ماه پنجم بعدی)، فاصله‌ی واقعی حدود 59 روز
-   * می‌شود نه ~30 روز، و یک قدمِ ثابتِ `+30` فقط وسطِ همان ماه
-   * کبیسه می‌افتد؛ چون جستجوی عقب ماه کبیسه را نادیده می‌گیرد،
-   * به همان ماهِ عادیِ قبلی برمی‌گردد و پیشرفتی حاصل نمی‌شود.
-   * برای همین، اگر یک قدم هیچ پیشرفتی نداشت (anchor عوض نشد)،
-   * قدم را بزرگ‌تر می‌کنیم تا از روی ماه کبیسه‌ی احتمالی بپرد.
-   */
-  // نتیجه‌ی firstDayOfMonth فقط تابعی از (year, month) هست، پس کش‌کردنش
-  // امنه. دلیل اهمیتش دقیقاً مثل نسخه‌ی هجریه: renderCalendar برای هر
-  // سلولِ روزِ گرید ماه یک‌بار adapter.getDate() صدا می‌زنه که به
-  // toGregorian() → firstDayOfMonth() ختم می‌شه؛ بدون کش، این جست‌وجوی
-  // نسبتاً سنگین (که با وجود ماه‌های کبیسه می‌تونه چند برابر هجری هم سنگین‌تر
-  // باشه) به ازای هر رندر ماه، ده‌ها بار برای همون (year, month) تکرار می‌شد.
+  // The result only depends on (year, month) so it is cached (see HijriConverter).
   const firstDayOfMonthCache = new Map<string, Date>();
 
+  /**
+   * Gregorian `Date` (local midnight) of the first day of a (non-leap) Chinese
+   * month. Starts from today and jumps by the mean month length; when a leap
+   * month swallows the probe (no progress) the probe is pushed further on.
+   * `month` may overflow/underflow and is carried into the year.
+   */
   export function firstDayOfMonth(year: number, month: number): Date {
+    ({ year, month } = normalizeYearMonth(year, month));
     const cacheKey = `${year}-${month}`;
     const cached = firstDayOfMonthCache.get(cacheKey);
     if (cached) return new Date(cached);
 
-    let anchorDate = firstOfMonthAtOrBefore(new Date());
-    let c = parse(anchorDate);
+    let anchor = firstOfMonthAtOrBefore(atNoon(new Date()));
+    let c = parse(anchor);
 
-    // سقف ایمنی برای جلوگیری از لوپ بی‌نهایت (≈ 100 سال چینی)
     let guard = 0;
-    while ((c.year !== year || c.month !== month) && guard < 1300) {
-      const targetIsLater = year > c.year || (year === c.year && month > c.month);
-
-      let newAnchor = anchorDate;
-      // طول هر ماه عادی 29 یا 30 روز است؛ اما اگر بینِ این ماه و
-      // ماهِ بعد/قبل یک ماه کبیسه فاصله افتاده باشد، باید قدم را
-      // بزرگ‌تر کنیم (به اندازه‌ی حداکثر یک ماهِ کبیسه‌ی اضافه).
-      for (const step of targetIsLater ? [30, 60, 90] : [-5, -35, -65]) {
-        const probe = new Date(anchorDate);
-        probe.setDate(probe.getDate() + step);
-        newAnchor = firstOfMonthAtOrBefore(probe);
-        if (newAnchor.getTime() !== anchorDate.getTime()) {
-          break;
-        }
-      }
-
-      anchorDate = newAnchor;
-      c = parse(anchorDate);
+    let stuck = 0;
+    while ((c.year !== year || c.month !== month) && guard < 300) {
+      const diff = (year - c.year) * 12 + (month - c.month);
+      const direction = diff >= 0 ? 1 : -1;
+      const probe = addDays(
+        anchor,
+        Math.round(diff * MEAN_MONTH_DAYS) + 14 + stuck * 30 * direction,
+      );
+      const next = firstOfMonthAtOrBefore(probe);
+      stuck = next.getTime() === anchor.getTime() ? stuck + 1 : 0;
+      anchor = next;
+      c = parse(anchor);
       guard++;
     }
-    firstDayOfMonthCache.set(cacheKey, anchorDate);
-    return anchorDate;
+
+    const result = atMidnight(anchor);
+    firstDayOfMonthCache.set(cacheKey, result);
+    return new Date(result);
   }
 
-  /** تبدیل سال/ماه/روز چینی به Date میلادی */
+  /** Chinese year/month/day -> Gregorian `Date` (local midnight). */
   export function toGregorian(year: number, month: number, day: number): Date {
     const first = firstDayOfMonth(year, month);
-    const result = new Date(first);
-    result.setDate(result.getDate() + (day - 1));
-    return result;
+    return new Date(first.getFullYear(), first.getMonth(), first.getDate() + (day - 1));
   }
 
-  /**
-   * تعداد واقعیِ روزهای یک ماه چینی (۲۹ یا ۳۰).
-   *
-   * نکته: بر خلاف نسخه‌ی هجری، اینجا از شماره‌ی روزِ خروجیِ خودِ
-   * تقویم چینی (`parse(test).day`) استفاده می‌کنیم نه از
-   * `Date.getDate()` میلادی، چون آن مقدار به اشتباه طول ماه را
-   * بر اساس تقویم میلادی محاسبه می‌کرد.
-   */
   const daysInMonthCache = new Map<string, number>();
 
+  /** Real number of days of a Chinese month (29 or 30). */
   export function daysInMonth(year: number, month: number): number {
-    const cacheKey = `${year}-${month}`;
+    const n = normalizeYearMonth(year, month);
+    const cacheKey = `${n.year}-${n.month}`;
     const cached = daysInMonthCache.get(cacheKey);
     if (cached !== undefined) return cached;
 
-    const first = firstDayOfMonth(year, month);
+    const first = atNoon(firstDayOfMonth(n.year, n.month));
 
     for (let i = 1; i <= 31; i++) {
-      const test = new Date(first);
-      test.setDate(test.getDate() + i);
+      const test = addDays(first, i);
       const c = parse(test);
-      if (c.year !== year || c.month !== month || c.isLeapMonth) {
-        const last = new Date(test);
-        last.setDate(last.getDate() - 1);
-        const result = parse(last).day;
+      if (c.year !== n.year || c.month !== n.month || c.isLeapMonth) {
+        const result = parse(addDays(test, -1)).day;
         daysInMonthCache.set(cacheKey, result);
         return result;
       }
     }
-    return 29; // fallback ایمن
+    return 29; // safe fallback
   }
 }

@@ -1,27 +1,43 @@
+@use '../../styles/picker' as p;
+
 :host {
-  --ngx-color-bg: light-dark(#fff, #171a24);
-  --ngx-color-text: light-dark(#16181d, #f7f7f8);
-  --ngx-border-color: light-dark(#e1e4ea, #303541);
-  --ngx-muted: color-mix(in srgb, var(--ngx-color-text) 55%, transparent);
-  --ngx-event-bg: light-dark(#eef0ff, #2f3150);
-  --ngx-event-text: light-dark(#3547a4, #dce1ff);
-  --ngx-today: #3f51b5;
+  @include p.tokens;
+  display: block;
+  // legacy aliases used by the rules below
+  --ngx-color-bg: var(--_surface);
+  --ngx-color-text: var(--_ink);
+  --ngx-border-color: var(--_line);
+  --ngx-muted: var(--_muted);
+  --ngx-today: var(--_accent);
+  --ev: var(--_accent);
+  --ngx-event-bg: color-mix(in srgb, var(--ev) 15%, var(--_surface));
+  --ngx-event-text: color-mix(in srgb, var(--ev) 72%, var(--_ink));
 }
+@include p.theme-switch;
 
 .wrapper {
   background: var(--ngx-color-bg);
   color: var(--ngx-color-text);
   border: 1px solid var(--ngx-border-color);
-  border-radius: 10px;
+  border-radius: var(--_radius);
+  box-shadow: var(--_shadow);
+  border: 0;
   overflow: hidden;
+  font-variant-numeric: tabular-nums;
 
   .dtp-btn {
     background: none;
     border: none;
     color: inherit;
-    border-radius: 6px;
-    padding: 5px 12px;
-    box-shadow: 0 0 4px rgb(0 0 0 / 12%);
+    font: inherit;
+    border-radius: calc(var(--_radius) * 0.6);
+    padding: 6px 12px;
+    font-weight: 600;
+    box-shadow: none;
+    &:focus-visible {
+      outline: 2px solid var(--_accent);
+      outline-offset: 2px;
+    }
     transition:
       background 160ms ease,
       transform 160ms ease;
@@ -35,7 +51,8 @@
     }
 
     &.active {
-      background: rgb(127 127 160 / 24%);
+      background: var(--_accent);
+      color: var(--_accent-ink);
     }
     svg {
       fill: currentColor;
@@ -127,12 +144,12 @@
     opacity: 0.48;
   }
   &.selected {
-    outline: 2px solid rgb(63 81 181 / 30%);
+    background: var(--_accent-soft);
     outline-offset: -2px;
   }
   &.today .day-number {
-    background: rgb(63 81 181 / 10%);
-    color: var(--ngx-today);
+    background: var(--_accent);
+    color: var(--_accent-ink);
     font-weight: 800;
   }
 }
@@ -165,8 +182,9 @@
   height: 22px;
   margin-inline: 2px;
   padding: 2px 7px;
-  border: 1px solid transparent;
-  border-radius: 5px;
+  border: 0;
+  border-inline-start: 3px solid var(--ev);
+  border-radius: 6px;
   overflow: hidden;
   background: var(--ngx-event-bg);
   color: var(--ngx-event-text);
@@ -349,8 +367,8 @@
   }
 
   &.today strong {
-    background: var(--ngx-today);
-    color: white;
+    background: var(--_accent);
+    color: var(--_accent-ink);
   }
 
   &:hover {
@@ -435,8 +453,9 @@
   z-index: 2;
   min-width: 24px;
   padding: 4px 7px;
-  border: 1px solid transparent;
-  border-radius: 5px;
+  border: 0;
+  border-inline-start: 3px solid var(--ev);
+  border-radius: 6px;
   overflow: hidden;
   background: var(--ngx-event-bg);
   color: var(--ngx-event-text);
@@ -548,6 +567,7 @@
 }
 
 :host-context([dir='rtl']) {
+  /* chevrons mirror in RTL */
   .nxt-prv-buttons .previous svg {
     transform: rotate(180deg);
   }
@@ -568,5 +588,11 @@
   .view-mode {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
   }
 }
