@@ -3,7 +3,19 @@ import { IDateAdapter } from '../adapters/IAdapter';
 import { CalendarDate } from '../adapters/calendar-date';
 import { MsEvents, MsEventViewer } from '../models/events';
 import { DateAdapterRegistry } from '../adapters/date-adapter-registry';
-import { computed, Directive, effect, inject, input, model, signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  model,
+  signal,
+  untracked,
+} from '@angular/core';
 import { CalendarView, DatePickerView } from '../models/view';
 import { DateViewDay, DateViewMonth, DateViewWeek, DateViewYear } from '../models/date';
 import { convertNumberToTime } from '../helpers/time.helper';
@@ -15,8 +27,11 @@ import {
   NgxDateTheme,
 } from '../tokens/config';
 
-/** Number of years shown on one page of the year picker (4 columns x 5 rows). */
-export const YEARS_PER_PAGE = 20;
+/** Years loaded around the current year when the year list opens, and per scroll step. */
+export const YEAR_WINDOW = 40;
+export const YEAR_STEP = 30;
+/** Row pitch of the month/year wheels in px (38px row + 2px gap) - keep in sync with the SCSS. */
+export const WHEEL_STEP = 40;
 /** The month grid always has six rows so the picker never changes height. */
 export const MONTH_GRID_CELLS = 42;
 
@@ -66,8 +81,14 @@ export abstract class NgxDatePickerBase {
   viewWeeks: DateViewWeek[] = [];
   readonly displayMonth = signal('');
 
-  /** First year of the page currently shown in the year picker. */
-  yearPageStart = 0;
+  /** Year list window: the list is extended on scroll ("infinite"), bounded by min/max. */
+  yearFrom = 0;
+  yearTo = 0;
+  private yearsBusy = false;
+  private wheelTimers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
+
+  protected readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly injectorRef = inject(Injector);
 
   minDate: Date | null = null;
   maxDate: Date | null = null;
@@ -82,7 +103,8 @@ export abstract class NgxDatePickerBase {
 
       this.minDate = minDate;
       this.maxDate = maxDate;
-      this.onDateBoundsChange();
+      // untracked: re-rendering reads/writes signals, which must not become dependencies
+      untracked(() => this.onDateBoundsChange());
     });
   }
 
@@ -134,27 +156,127 @@ export abstract class NgxDatePickerBase {
     if (callback) callback();
   }
 
-  /** Aligns the year page so that it contains `year`. */
-  alignYearPage(year: number = this.currYear()) {
-    this.yearPageStart = Math.floor(year / YEARS_PER_PAGE) * YEARS_PER_PAGE;
+  /** First / last year the list may show (calendar range, narrowed by min/max). */
+  protected yearBounds(): [number, number] {
+    let [lo, hi] = this.adapter.yearRange ?? [-100000, 100000];
+    if (this.minDate) lo = Math.max(lo, this.adapter.toLocale(this.minDate).year);
+    if (this.maxDate) hi = Math.min(hi, this.adapter.toLocale(this.maxDate).year);
+    return [lo, Math.max(lo, hi)];
+  }
+
+  /** Re-centres the year list on `year`. */
+  resetYearWindow(year: number = this.currYear()) {
+    const [lo, hi] = this.yearBounds();
+    this.yearFrom = Math.max(lo, year - YEAR_WINDOW);
+    this.yearTo = Math.min(hi, year + YEAR_WINDOW);
   }
 
   renderYear(selected?: CalendarDate) {
     this.viewYears = [];
     const today = this.adapter.today();
-    // the page is aligned by the caller when the year view opens; it is kept as is
-    // while the user pages back and forth
-    if (!this.yearPageStart) this.alignYearPage();
-    const s = this.yearPageStart;
+    if (!this.yearTo) this.resetYearWindow();
+    const bounded = !!(this.minDate || this.maxDate);
 
-    for (let i = s; i < s + YEARS_PER_PAGE; i++) {
+    for (let i = this.yearFrom; i <= this.yearTo; i++) {
       this.viewYears.push({
         year: i,
         selected: selected?.year === i,
         isToday: today.year === i,
-        active: this.checkActiveYear(i),
+        // without min/max every year is valid: skip the (costly for Hijri/Chinese) check
+        active: bounded ? this.checkActiveYear(i) : true,
       });
     }
+  }
+
+  /**
+   * Scroll handler of the year list: loads more years when the user gets close to an edge, so
+   * the list feels endless without rendering hundreds of years up front.
+   */
+  onYearListScroll(ev: Event, selected?: CalendarDate) {
+    const el = ev.target as HTMLElement;
+    if (this.yearsBusy) return;
+    const [lo, hi] = this.yearBounds();
+    const edge = 90;
+
+    if (el.scrollTop < edge && this.yearFrom > lo) {
+      this.yearsBusy = true;
+      const before = el.scrollHeight;
+      const top = el.scrollTop;
+      this.yearFrom = Math.max(lo, this.yearFrom - YEAR_STEP);
+      this.renderYear(selected);
+      afterNextRender(
+        () => {
+          // keep what the user is looking at in place after prepending
+          el.scrollTop = top + (el.scrollHeight - before);
+          this.yearsBusy = false;
+        },
+        { injector: this.injectorRef },
+      );
+    } else if (el.scrollHeight - el.scrollTop - el.clientHeight < edge && this.yearTo < hi) {
+      this.yearsBusy = true;
+      this.yearTo = Math.min(hi, this.yearTo + YEAR_STEP);
+      this.renderYear(selected);
+      afterNextRender(() => (this.yearsBusy = false), { injector: this.injectorRef });
+    }
+  }
+
+  /** The selected date the lists should mark (overridden by the single date picker). */
+  protected listsSelected(): CalendarDate | undefined {
+    return undefined;
+  }
+
+  /** Puts the current month and year in the middle of their wheels. */
+  scrollListsToCurrent() {
+    afterNextRender(
+      () => {
+        const root = this.hostEl.nativeElement;
+        root.querySelectorAll<HTMLElement>('.list').forEach((list) => {
+          const index = Array.from(list.children).findIndex((c) => c.classList.contains('current'));
+          if (index >= 0) list.scrollTop = index * WHEEL_STEP;
+        });
+      },
+      { injector: this.injectorRef },
+    );
+  }
+
+  /**
+   * Scroll handler of a month/year wheel. When the wheel stops (debounced) the row in the middle
+   * becomes the selection - like the date wheels of iOS. The year wheel also loads more years.
+   */
+  onWheelScroll(ev: Event, kind: 'month' | 'year') {
+    const list = ev.target as HTMLElement;
+    if (kind === 'year') this.onYearListScroll(ev, this.listsSelected());
+
+    clearTimeout(this.wheelTimers.get(list));
+    this.wheelTimers.set(
+      list,
+      setTimeout(() => {
+        this.wheelTimers.delete(list);
+        if (!list.isConnected) return;
+        const i = Math.round(list.scrollTop / WHEEL_STEP);
+        if (kind === 'year') {
+          const item = this.viewYears[i];
+          if (item?.active && item.year !== this.currYear()) {
+            this.currYear.set(item.year);
+            this.renderMonth(this.listsSelected());
+            this.displayMonth.set(this.months[this.currMonth()] ?? '');
+          }
+        } else {
+          const item = this.viewMonths[i];
+          if (item?.active && item.month !== this.currMonth()) {
+            this.currMonth.set(item.month);
+            this.renderMonth(this.listsSelected());
+            this.displayMonth.set(this.months[this.currMonth()] ?? '');
+          }
+        }
+      }, 110),
+    );
+  }
+
+  /** Smoothly centres the tapped row; the wheel then selects it when it settles. */
+  protected centerRow(ev: Event, index: number) {
+    const list = (ev.currentTarget as HTMLElement).parentElement;
+    list?.scrollTo({ top: index * WHEEL_STEP, behavior: 'smooth' });
   }
 
   renderMonth(selected?: CalendarDate) {

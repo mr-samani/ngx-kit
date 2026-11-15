@@ -13,6 +13,8 @@ import { IDateAdapter } from '../IAdapter';
  */
 export class HijriAdapter implements IDateAdapter {
   /** یکشنبه = 0 (هم‌خوان با تقویم میلادی برای سادگی) */
+  /** range covered by the Umm al-Qura tables of ICU */
+  yearRange: readonly [number, number] = [1300, 1600];
   startOfWeek = 0;
   weekStartDay = 0;
 

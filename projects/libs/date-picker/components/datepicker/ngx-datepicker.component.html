@@ -21,57 +21,57 @@
     </div>
   }
 
-  <div class="nav">
-    <button
-      type="button"
-      class="icon-btn"
-      (click)="previous()"
-      [disabled]="prevDisabled || isDisabled"
-      [attr.aria-label]="labels().previous">
-      @if (config().previousButtonTemplate; as tpl) {
-        <ng-container [ngTemplateOutlet]="tpl" />
-      } @else {
-        <svg class="flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
-      }
-    </button>
+  <div class="nav" [class.picking]="view() !== 'day'">
+    @if (view() === 'day') {
+      <button
+        type="button"
+        class="icon-btn"
+        (click)="previous()"
+        [disabled]="prevDisabled || isDisabled"
+        [attr.aria-label]="labels().previous">
+        @if (config().previousButtonTemplate; as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" />
+        } @else {
+          <svg class="flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+        }
+      </button>
+    }
 
     <div class="titles">
-      @if (view() === 'year') {
-        <span class="static-title" aria-live="polite">{{ yearRangeLabel }}</span>
-      } @else {
-        <button
-          type="button"
-          class="pill"
-          (click)="toggleView('month')"
-          [attr.aria-expanded]="view() === 'month'"
-          [attr.aria-label]="labels().selectMonth">
-          {{ displayMonth() }}
-          <ng-container *ngTemplateOutlet="caret" />
-        </button>
-        <button
-          type="button"
-          class="pill"
-          (click)="toggleView('year')"
-          [attr.aria-expanded]="false"
-          [attr.aria-label]="labels().selectYear">
-          {{ currYear() }}
-          <ng-container *ngTemplateOutlet="caret" />
-        </button>
-      }
+      <button
+        type="button"
+        class="pill"
+        (click)="toggleView('month')"
+        [attr.aria-expanded]="view() !== 'day'"
+        [attr.aria-label]="labels().selectMonth">
+        {{ displayMonth() }}
+        <ng-container *ngTemplateOutlet="caret" />
+      </button>
+      <button
+        type="button"
+        class="pill"
+        (click)="toggleView('year')"
+        [attr.aria-expanded]="view() !== 'day'"
+        [attr.aria-label]="labels().selectYear">
+        {{ currYear() }}
+        <ng-container *ngTemplateOutlet="caret" />
+      </button>
     </div>
 
-    <button
-      type="button"
-      class="icon-btn"
-      (click)="next()"
-      [disabled]="nextDisabled || isDisabled"
-      [attr.aria-label]="labels().next">
-      @if (config().nextButtonTemplate; as tpl) {
-        <ng-container [ngTemplateOutlet]="tpl" />
-      } @else {
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-      }
-    </button>
+    @if (view() === 'day') {
+      <button
+        type="button"
+        class="icon-btn"
+        (click)="next()"
+        [disabled]="nextDisabled || isDisabled"
+        [attr.aria-label]="labels().next">
+        @if (config().nextButtonTemplate; as tpl) {
+          <ng-container [ngTemplateOutlet]="tpl" />
+        } @else {
+          <svg class="flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        }
+      </button>
+    }
   </div>
 
   @switch (view()) {
@@ -105,47 +105,51 @@
         </div>
       </div>
     }
-    @case ('month') {
+    @default {
       <div class="panel">
-        <div class="months" role="group" [attr.aria-label]="labels().selectMonth">
-          @for (item of viewMonths; track item.month) {
-            <button
-              type="button"
-              class="cell"
-              [class.disabled]="!item.active"
-              [class.today]="item.isToday"
-              [class.selected]="item.selected"
-              [disabled]="!item.active || isDisabled"
-              [attr.aria-pressed]="!!item.selected"
-              (click)="selectMonth($event, item)">
-              {{ item.displayMonth }}
-            </button>
-          }
-        </div>
-      </div>
-    }
-    @case ('year') {
-      <div class="panel">
-        <div class="years" role="group" [attr.aria-label]="labels().selectYear">
-          @for (item of viewYears; track item.year) {
-            <button
-              type="button"
-              class="cell"
-              [class.disabled]="!item.active"
-              [class.today]="item.isToday"
-              [class.selected]="item.selected"
-              [disabled]="!item.active || isDisabled"
-              [attr.aria-pressed]="!!item.selected"
-              (click)="selectYear($event, item)">
-              {{ item.year }}
-            </button>
-          }
+        <div class="lists">
+          <div class="list months" role="listbox" [attr.aria-label]="labels().selectMonth" (scroll)="onWheelScroll($event, 'month')">
+            @for (item of viewMonths; track item.month; let i = $index) {
+              <button
+                type="button"
+                class="opt"
+                role="option"
+                [class.current]="item.month === currMonth()"
+                [class.today]="item.isToday"
+                [class.disabled]="!item.active"
+                [disabled]="!item.active || isDisabled"
+                [attr.aria-selected]="item.month === currMonth()"
+                (click)="tapMonth($event, item, i)">
+                {{ item.displayMonth }}
+              </button>
+            }
+          </div>
+          <div class="list years" role="listbox" [attr.aria-label]="labels().selectYear" (scroll)="onWheelScroll($event, 'year')">
+            @for (item of viewYears; track item.year; let i = $index) {
+              <button
+                type="button"
+                class="opt"
+                role="option"
+                [class.current]="item.year === currYear()"
+                [class.today]="item.isToday"
+                [class.disabled]="!item.active"
+                [disabled]="!item.active || isDisabled"
+                [attr.aria-selected]="item.year === currYear()"
+                (click)="tapYear($event, item, i)">
+                {{ item.year }}
+              </button>
+            }
+          </div>
         </div>
       </div>
     }
   }
 
-  @if (config().clearButton || config().todayButton) {
+  @if (view() !== 'day') {
+    <div class="footer">
+      <button type="button" class="action primary" (click)="changeView('day')">{{ labels().done }}</button>
+    </div>
+  } @else if (config().clearButton || config().todayButton) {
     <div class="footer">
       @if (config().clearButton) {
         <button type="button" class="action" (click)="clear()" [disabled]="!selected || isDisabled">

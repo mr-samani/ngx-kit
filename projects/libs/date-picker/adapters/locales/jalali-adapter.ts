@@ -12,6 +12,7 @@ const MAX_JALALI_YEAR = 3176;
 const clampYear = (y: number) => Math.min(MAX_JALALI_YEAR, Math.max(MIN_JALALI_YEAR, y));
 
 export class JalaliAdapter implements IDateAdapter {
+  yearRange: readonly [number, number] = [MIN_JALALI_YEAR, MAX_JALALI_YEAR];
   // shanbeh
   startOfWeek = 1;
   weekStartDay = 6;

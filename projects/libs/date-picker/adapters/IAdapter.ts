@@ -8,6 +8,11 @@ export interface IDateAdapter {
   get shortDays(): string[];
   get longDays(): string[];
   /** Display index used by existing month-grid APIs. */
+  /**
+   * Optional [first, last] year this calendar can convert reliably. The year list of the
+   * pickers never scrolls beyond it (and beyond `min` / `max`).
+   */
+  yearRange?: readonly [number, number];
   startOfWeek: number;
   /** Native JavaScript weekday (0=Sunday ... 6=Saturday) where a week starts. */
   weekStartDay: number;

@@ -5,6 +5,7 @@ export type NgxDateTheme = 'light' | 'dark' | 'auto';
 
 export class NgxCalendarLocalization {
   clear = 'Clear';
+  done = 'Done';
   today = 'Today';
 
   /** Range picker labels. */

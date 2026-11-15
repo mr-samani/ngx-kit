@@ -5,6 +5,7 @@ import { CalendarDate } from '../calendar-date';
 import { FormatType } from '../consts';
 
 export class GregorianAdapter implements IDateAdapter {
+  yearRange: readonly [number, number] = [1, 9999];
   startOfWeek = 0;
   weekStartDay = 0;
   get longMonths() {

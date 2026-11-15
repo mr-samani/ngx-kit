@@ -14,6 +14,7 @@ import { IDateAdapter } from '../IAdapter';
  */
 export class ChineseAdapter implements IDateAdapter {
   /** یکشنبه = 0 */
+  yearRange: readonly [number, number] = [1900, 2200];
   startOfWeek = 0;
   weekStartDay = 0;
 

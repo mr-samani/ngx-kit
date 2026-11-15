@@ -13,6 +13,7 @@ import {
   OnInit,
   Output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -36,7 +37,7 @@ import { DateViewDay, DateViewMonth, DateViewYear } from '../../models/date';
 import { DatePickerView } from '../../models/view';
 import { NgxDateRange } from '../../models/range';
 import { NgxDateConfig } from '../../tokens/config';
-import { NgxDatePickerBase, YEARS_PER_PAGE } from '../ngx-date-picker-base.component';
+import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 
 @Component({
   selector: 'ngx-date-range-picker',
@@ -86,7 +87,6 @@ export class NgxDateRangePickerComponent
 
   prevDisabled = false;
   nextDisabled = false;
-  yearRangeLabel = '';
 
   protected _onChange = (_value: NgxDateRange<Date>) => {};
   protected _onTouched = () => {};
@@ -96,9 +96,14 @@ export class NgxDateRangePickerComponent
   constructor() {
     super();
     effect(() => {
-      this.adapter = this.dateAdapterRegistry.resolve(this.locale());
+      const locale = this.locale();
       this.displayFormat();
-      this.init();
+      // init() reads and writes currYear / currMonth / view: they must not be dependencies,
+      // otherwise every month/year change re-ran init() and reset the view.
+      untracked(() => {
+        this.adapter = this.dateAdapterRegistry.resolve(locale);
+        this.init();
+      });
     });
   }
 
@@ -162,6 +167,11 @@ export class NgxDateRangePickerComponent
   }
 
   override renderDatePicker(view: DatePickerView) {
+    if (view !== 'day') {
+      // month + year lists are shown together
+      this.renderMonth();
+      view = 'year';
+    }
     super.renderDatePicker(view, undefined, [], () => {
       this.applyRangeState();
       this.updateNavState(view);
@@ -195,7 +205,7 @@ export class NgxDateRangePickerComponent
     const locale = this.adapter.toLocale(this.clampToBounds(anchor));
     this.currYear.set(locale.year);
     this.currMonth.set(locale.month ?? 0);
-    this.alignYearPage();
+    this.resetYearWindow();
     this.renderDatePicker(this.view());
   }
 
@@ -218,29 +228,21 @@ export class NgxDateRangePickerComponent
     const first = (yy: number, mm: number) =>
       this.adapter.getDate({ locale: this.locale(), year: yy, month: mm, day: 1 });
 
-    let prevEnd: Date;
-    let nextStart: Date;
-    if (view === 'year') {
-      prevEnd = last(this.yearPageStart - 1, 11);
-      nextStart = first(this.yearPageStart + YEARS_PER_PAGE, 0);
-      this.yearRangeLabel = `${this.yearPageStart} – ${this.yearPageStart + YEARS_PER_PAGE - 1}`;
-    } else if (view === 'month') {
-      prevEnd = last(y - 1, 11);
-      nextStart = first(y + 1, 0);
-    } else {
-      const p = shiftYearMonth(y, m, -1);
-      const n = shiftYearMonth(y, m, 1);
-      prevEnd = last(p.year, p.month);
-      nextStart = first(n.year, n.month);
-    }
+    // the arrows only exist in the day view (month/year are chosen from the lists)
+    const p = shiftYearMonth(y, m, -1);
+    const n = shiftYearMonth(y, m, 1);
+    const prevEnd = last(p.year, p.month);
+    const nextStart = first(n.year, n.month);
     this.prevDisabled = !!this.minDate && compareDate(prevEnd, this.minDate) < 0;
     this.nextDisabled = !!this.maxDate && compareDate(nextStart, this.maxDate) > 0;
   }
 
+  /** `month` / `year` both open the two side-by-side lists (months | years). */
   changeView(view: DatePickerView) {
-    if (view === 'year') this.alignYearPage();
+    if (view !== 'day') this.resetYearWindow();
     this.view.set(view);
     this.renderDatePicker(view);
+    if (view !== 'day') this.scrollListsToCurrent();
   }
 
   toggleView(view: DatePickerView) {
@@ -252,7 +254,7 @@ export class NgxDateRangePickerComponent
     const l = this.adapter.toLocale(this.clampToBounds(new Date()));
     this.currYear.set(l.year);
     this.currMonth.set(l.month ?? 0);
-    this.alignYearPage();
+    this.resetYearWindow();
     this.changeView('day');
   }
 
@@ -266,17 +268,10 @@ export class NgxDateRangePickerComponent
 
   private step(direction: 1 | -1) {
     if ((direction === 1 && this.nextDisabled) || (direction === -1 && this.prevDisabled)) return;
-    const view = this.view();
-    if (view === 'year') {
-      this.yearPageStart += direction * YEARS_PER_PAGE;
-    } else if (view === 'month') {
-      this.currYear.update((y) => y + direction);
-    } else {
-      const n = shiftYearMonth(this.currYear(), this.currMonth(), direction);
-      this.currYear.set(n.year);
-      this.currMonth.set(n.month);
-    }
-    this.renderDatePicker(view);
+    const n = shiftYearMonth(this.currYear(), this.currMonth(), direction);
+    this.currYear.set(n.year);
+    this.currMonth.set(n.month);
+    this.renderDatePicker('day');
   }
 
   selectDay(event: Event, item: DateViewDay) {
@@ -304,20 +299,19 @@ export class NgxDateRangePickerComponent
     }
   }
 
-  selectMonth(event: Event, item: DateViewMonth) {
-    event.stopPropagation();
-    if (item.active) {
-      this.currMonth.set(item.month);
-      this.changeView('day');
-    }
+  /** Tap a month: centre it (the wheel selects it); tap the centred one to confirm. */
+  tapMonth(ev: Event, item: DateViewMonth, index: number) {
+    ev.stopPropagation();
+    if (!item.active) return;
+    if (item.month === this.currMonth()) this.changeView('day');
+    else this.centerRow(ev, index);
   }
 
-  selectYear(event: Event, item: DateViewYear) {
-    event.stopPropagation();
-    if (item.active) {
-      this.currYear.set(item.year);
-      this.changeView('month');
-    }
+  tapYear(ev: Event, item: DateViewYear, index: number) {
+    ev.stopPropagation();
+    if (!item.active) return;
+    if (item.year === this.currYear()) this.changeView('day');
+    else this.centerRow(ev, index);
   }
 
   onDayEnter(item: DateViewDay) {

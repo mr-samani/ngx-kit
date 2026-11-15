@@ -11,12 +11,13 @@ import {
   OnInit,
   Output,
   signal,
+  untracked,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { clampDate, compareDate, deserialize, isValid } from '../../helpers/date.helper';
 import { shiftYearMonth } from '../../helpers/calendar-nav.helper';
 import { NgxDateConfig } from '../../tokens/config';
-import { NgxDatePickerBase, YEARS_PER_PAGE } from '../ngx-date-picker-base.component';
+import { NgxDatePickerBase } from '../ngx-date-picker-base.component';
 import { DatePickerView } from '../../models/view';
 import { CalendarDate } from '../../adapters/calendar-date';
 import {
@@ -73,7 +74,6 @@ export class NgxInputDatePickerComponent
   prevDisabled = false;
   nextDisabled = false;
   todayDisabled = false;
-  yearRangeLabel = '';
 
   weekDays: { min: string; name: string }[] = [];
   protected _onChange = (value: Date | null) => {};
@@ -83,10 +83,15 @@ export class NgxInputDatePickerComponent
   constructor() {
     super();
     effect(() => {
-      this.adapter = this.dateAdapterRegistry.resolve(this.locale());
-      // the selected date is a real Date; re-express it in the new calendar
-      if (this.selected?.date) this.selected = this.adapter.toLocale(this.selected.date);
-      this.init();
+      const locale = this.locale();
+      // Only the locale is a dependency. init() reads and writes currYear / currMonth / view:
+      // tracking them made every month/year change re-run init(), which reset the view.
+      untracked(() => {
+        this.adapter = this.dateAdapterRegistry.resolve(locale);
+        // the selected date is a real Date; re-express it in the new calendar
+        if (this.selected?.date) this.selected = this.adapter.toLocale(this.selected.date);
+        this.init();
+      });
     });
   }
 
@@ -115,7 +120,7 @@ export class NgxInputDatePickerComponent
     const l = this.adapter.toLocale(anchor);
     this.currYear.set(l.year);
     this.currMonth.set(l.month ?? 0);
-    this.alignYearPage();
+    this.resetYearWindow();
     this.renderDatePicker(this.view());
   }
 
@@ -166,6 +171,11 @@ export class NgxInputDatePickerComponent
   }
 
   override renderDatePicker(view: DatePickerView) {
+    if (view !== 'day') {
+      // month + year lists are shown together
+      this.renderMonth(this.selected);
+      view = 'year';
+    }
     super.renderDatePicker(view, this.selected, [], () => {
       this.updateSummary();
       this.updateNavState(view);
@@ -199,21 +209,11 @@ export class NgxInputDatePickerComponent
     const first = (yy: number, mm: number) =>
       this.adapter.getDate({ locale: this.locale(), year: yy, month: mm, day: 1 });
 
-    let prevEnd: Date;
-    let nextStart: Date;
-    if (view === 'year') {
-      prevEnd = last(this.yearPageStart - 1, 11);
-      nextStart = first(this.yearPageStart + YEARS_PER_PAGE, 0);
-      this.yearRangeLabel = `${this.yearPageStart} – ${this.yearPageStart + YEARS_PER_PAGE - 1}`;
-    } else if (view === 'month') {
-      prevEnd = last(y - 1, 11);
-      nextStart = first(y + 1, 0);
-    } else {
-      const p = shiftYearMonth(y, m, -1);
-      const n = shiftYearMonth(y, m, 1);
-      prevEnd = last(p.year, p.month);
-      nextStart = first(n.year, n.month);
-    }
+    // the arrows only exist in the day view (month/year are chosen from the lists)
+    const p = shiftYearMonth(y, m, -1);
+    const n = shiftYearMonth(y, m, 1);
+    const prevEnd = last(p.year, p.month);
+    const nextStart = first(n.year, n.month);
     this.prevDisabled = !!this.minDate && compareDate(prevEnd, this.minDate) < 0;
     this.nextDisabled = !!this.maxDate && compareDate(nextStart, this.maxDate) > 0;
 
@@ -226,7 +226,7 @@ export class NgxInputDatePickerComponent
     const l = this.adapter.toLocale(this.clampToBounds(new Date()));
     this.currYear.set(l.year);
     this.currMonth.set(l.month ?? 0);
-    this.alignYearPage();
+    this.resetYearWindow();
     this.changeView('day');
   }
 
@@ -236,10 +236,19 @@ export class NgxInputDatePickerComponent
     this.commit(new Date());
   }
 
+  /**
+   * `day` shows the month grid; `month` and `year` both show the two side-by-side lists
+   * (months | years) - the view only decides which list is the one that was asked for.
+   */
   changeView(v: DatePickerView) {
-    if (v === 'year') this.alignYearPage();
+    if (v !== 'day') {
+      this.resetYearWindow();
+      // the lists always need both the month and the year rows
+      this.renderMonth(this.selected);
+    }
     this.view.set(v);
-    this.renderDatePicker(v);
+    this.renderDatePicker(v === 'day' ? 'day' : 'year');
+    if (v !== 'day') this.scrollListsToCurrent();
   }
 
   /** Opens `v`, or goes back to the day grid when it is already open. */
@@ -257,17 +266,10 @@ export class NgxInputDatePickerComponent
 
   private step(direction: 1 | -1) {
     if ((direction === 1 && this.nextDisabled) || (direction === -1 && this.prevDisabled)) return;
-    const view = this.view();
-    if (view === 'year') {
-      this.yearPageStart += direction * YEARS_PER_PAGE;
-    } else if (view === 'month') {
-      this.currYear.update((y) => y + direction);
-    } else {
-      const n = shiftYearMonth(this.currYear(), this.currMonth(), direction);
-      this.currYear.set(n.year);
-      this.currMonth.set(n.month);
-    }
-    this.renderDatePicker(view);
+    const n = shiftYearMonth(this.currYear(), this.currMonth(), direction);
+    this.currYear.set(n.year);
+    this.currMonth.set(n.month);
+    this.renderDatePicker('day');
   }
 
   private commit(date: Date) {
@@ -282,20 +284,23 @@ export class NgxInputDatePickerComponent
     this.commit(item.date);
   }
 
-  selectMonth(ev: Event, item: DateViewMonth) {
-    ev.stopPropagation();
-    if (item.active) {
-      this.currMonth.set(item.month);
-      this.changeView('day');
-    }
+  protected override listsSelected() {
+    return this.selected;
   }
 
-  selectYear(ev: Event, item: DateViewYear) {
+  /** Tap a month: centre it (the wheel selects it); tap the centred one to confirm. */
+  tapMonth(ev: Event, item: DateViewMonth, index: number) {
     ev.stopPropagation();
-    if (item.active) {
-      this.currYear.set(item.year);
-      this.changeView('month');
-    }
+    if (!item.active) return;
+    if (item.month === this.currMonth()) this.changeView('day');
+    else this.centerRow(ev, index);
+  }
+
+  tapYear(ev: Event, item: DateViewYear, index: number) {
+    ev.stopPropagation();
+    if (!item.active) return;
+    if (item.year === this.currYear()) this.changeView('day');
+    else this.centerRow(ev, index);
   }
 
   clear() {

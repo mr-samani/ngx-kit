@@ -5,6 +5,7 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   effect,
@@ -12,6 +13,7 @@ import {
   input,
   model,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -52,8 +54,10 @@ interface EventInteractionState {
   pointerId: number;
   startX: number;
   startY: number;
+  /** where the gesture started, measured ONCE when it began (see beginInteraction) */
   originColumn: number;
   originRow: number;
+  originMinute: number;
   preview: MsEvents;
   deltaDays: number;
   deltaMinutes: number;
@@ -69,7 +73,7 @@ interface EventInteractionState {
   providers: [DateAdapterRegistry],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
+export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, OnDestroy {
   resizeAndMovable = input<boolean>(false);
 
   private _view: CalendarView = 'month';
@@ -118,9 +122,13 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   constructor() {
     super();
     effect(() => {
-      this.adapter = this.dateAdapterRegistry.resolve(this.locale());
-      if (this.currYear() !== undefined) this.syncAnchorToLocale();
-      this.renderCalendar(this.view);
+      const locale = this.locale();
+      // Only the locale is a dependency; the rendering below reads/writes signals itself.
+      untracked(() => {
+        this.adapter = this.dateAdapterRegistry.resolve(locale);
+        if (this.currYear() !== undefined) this.syncAnchorToLocale();
+        this.renderCalendar(this.view);
+      });
     });
   }
 
@@ -132,6 +140,10 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
     );
     this.syncAnchorToLocale();
     this.renderCalendar(this.view);
+  }
+
+  ngOnDestroy(): void {
+    this.stopScrollTracking();
   }
 
   protected override onDateBoundsChange(): void {
@@ -626,22 +638,61 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
       startY: ev.clientY,
       originColumn: 0,
       originRow: 0,
+      originMinute: 0,
       preview: { ...source },
       deltaDays: 0,
       deltaMinutes: 0,
       active: true,
       surface: _surface,
     };
+
+    // The pointer origin has to be captured in *content* coordinates now. Comparing the press
+    // position (viewport coordinates) with element rectangles measured later is wrong as soon
+    // as the page or the time grid scrolls while the gesture is running.
+    const origin = this.pointerCell(ev, _surface);
+    this.interaction.originColumn = origin.column;
+    this.interaction.originRow = origin.row;
+    this.interaction.originMinute = origin.minute;
+
+    this.lastPointerEvent = ev;
+    this.stopScrollTracking();
+    const doc = this.hostEl.nativeElement.ownerDocument;
+    // `scroll` does not bubble: listen in the capture phase to also catch inner scrollers
+    doc.addEventListener('scroll', this.onScrollDuringInteraction, true);
+    this.removeScrollListener = () =>
+      doc.removeEventListener('scroll', this.onScrollDuringInteraction, true);
+  }
+
+  private lastPointerEvent: PointerEvent | null = null;
+  private removeScrollListener?: () => void;
+
+  /** The pointer does not move while the user scrolls, so the preview is refreshed here. */
+  private readonly onScrollDuringInteraction = () => {
+    if (this.interaction && this.lastPointerEvent) {
+      this.updateEventInteraction(this.lastPointerEvent);
+    }
+  };
+
+  private stopScrollTracking() {
+    this.removeScrollListener?.();
+    this.removeScrollListener = undefined;
   }
 
   private updateEventInteraction(ev: PointerEvent) {
     const state = this.interaction;
     if (!state) return;
-    const monthMetrics = state.surface === 'month' ? this.monthPointerDelta(ev) : null;
-    const timedMetrics = state.surface === 'timed' ? this.timedPointerDelta(ev) : null;
-    const allDayMetrics = state.surface === 'all-day' ? this.allDayPointerDelta(ev) : null;
-    let deltaDays = monthMetrics?.days ?? timedMetrics?.days ?? allDayMetrics?.days ?? 0;
-    let deltaMinutes = timedMetrics?.minutes ?? 0;
+    this.lastPointerEvent = ev;
+    const cell = this.pointerCell(ev, state.surface);
+    let deltaDays = 0;
+    let deltaMinutes = 0;
+    if (state.surface === 'month') {
+      deltaDays = (cell.row - state.originRow) * 7 + (cell.column - state.originColumn);
+    } else if (state.surface === 'all-day') {
+      deltaDays = cell.column - state.originColumn;
+    } else {
+      deltaDays = cell.column - state.originColumn;
+      deltaMinutes = cell.minute - state.originMinute;
+    }
 
     const preview = this.applyEventDelta(state.source, state.type, deltaDays, deltaMinutes);
     if (!this.isWithinBounds(preview)) return;
@@ -659,6 +710,8 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
 
     const changed = !this.sameEventValue(state.source, state.preview);
     this.interaction = null;
+    this.stopScrollTracking();
+    this.lastPointerEvent = null;
 
     if (!cancelled && changed) {
       const updated = this._events.map((event) =>
@@ -681,83 +734,61 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit {
   private cancelEventInteraction() {
     if (!this.interaction) return;
     this.interaction = null;
+    this.stopScrollTracking();
+    this.lastPointerEvent = null;
   }
 
-  private monthPointerDelta(ev: PointerEvent): { days: number } | null {
-    if (!this.interaction || this.view !== 'month') return null;
-    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.month-grid');
-    if (!root) return null;
-    const rect = root.getBoundingClientRect();
-    const cellWidth = rect.width / MONTH_COLUMN_COUNT;
-    const cellHeight = rect.height / MONTH_ROW_COUNT;
-    const startColumn = Math.max(
-      0,
-      Math.min(
-        MONTH_COLUMN_COUNT - 1,
-        Math.floor((this.interaction.startX - rect.left) / cellWidth),
-      ),
-    );
-    const currentColumn = Math.max(
-      0,
-      Math.min(MONTH_COLUMN_COUNT - 1, Math.floor((ev.clientX - rect.left) / cellWidth)),
-    );
-    const startRow = Math.max(
-      0,
-      Math.min(MONTH_ROW_COUNT - 1, Math.floor((this.interaction.startY - rect.top) / cellHeight)),
-    );
-    const currentRow = Math.max(
-      0,
-      Math.min(MONTH_ROW_COUNT - 1, Math.floor((ev.clientY - rect.top) / cellHeight)),
-    );
-    return { days: (currentRow - startRow) * 7 + (currentColumn - startColumn) };
-  }
+  /**
+   * Maps a viewport point to the grid cell below it, using the rectangles as they are *right
+   * now* (so scrolling is accounted for). Points outside the grid are clamped to its edge cells.
+   */
+  private pointerCell(
+    ev: { clientX: number; clientY: number },
+    surface: 'month' | 'timed' | 'all-day',
+  ): { column: number; row: number; minute: number } {
+    const root = this.calendarWrapper()?.nativeElement;
+    const none = { column: 0, row: 0, minute: 0 };
+    if (!root) return none;
+    const clamp = (v: number, max: number) => Math.max(0, Math.min(max, v));
 
-  private allDayPointerDelta(ev: PointerEvent): { days: number } | null {
-    if (!this.interaction || this.view === 'month' || this.view === 'event') return null;
-    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.all-day-row');
-    if (!root) return null;
-    const columns = Array.from(root.querySelectorAll('.all-day-cell')) as HTMLElement[];
-    if (!columns.length) return null;
-    const indexAt = (x: number) => {
-      const index = columns.findIndex((column) => {
-        const rect = column.getBoundingClientRect();
-        return x >= rect.left && x <= rect.right;
-      });
-      return index < 0 ? 0 : index;
+    if (surface === 'month') {
+      const grid = root.querySelector<HTMLElement>('.month-grid');
+      if (!grid) return none;
+      const rect = grid.getBoundingClientRect();
+      const cellWidth = rect.width / MONTH_COLUMN_COUNT || 1;
+      const cellHeight = rect.height / MONTH_ROW_COUNT || 1;
+      return {
+        column: clamp(Math.floor((ev.clientX - rect.left) / cellWidth), MONTH_COLUMN_COUNT - 1),
+        row: clamp(Math.floor((ev.clientY - rect.top) / cellHeight), MONTH_ROW_COUNT - 1),
+        minute: 0,
+      };
+    }
+
+    if (surface === 'all-day') {
+      const cells = Array.from(root.querySelectorAll<HTMLElement>('.all-day-row .all-day-cell'));
+      return { column: this.columnIndexAtX(cells, ev.clientX), row: 0, minute: 0 };
+    }
+
+    const columns = Array.from(root.querySelectorAll<HTMLElement>('.time-grid .day-column'));
+    const column = this.columnIndexAtX(columns, ev.clientX);
+    const rect = (columns[column] ?? columns[0])?.getBoundingClientRect();
+    if (!rect) return none;
+    return {
+      column,
+      row: 0,
+      minute: this.snapMinutes(((ev.clientY - rect.top) / HALF_HOUR_HEIGHT) * 30),
     };
-    return { days: indexAt(ev.clientX) - indexAt(this.interaction.startX) };
   }
 
-  private timedPointerDelta(ev: PointerEvent): { days: number; minutes: number } | null {
-    if (!this.interaction || (this.view !== 'day' && this.view !== 'week')) return null;
-    const root = this.calendarWrapper()?.nativeElement.querySelector<HTMLElement>('.time-grid');
-    if (!root) return null;
-    const columns = Array.from(root.querySelectorAll('.day-column')) as HTMLElement[];
-    if (!columns.length) return null;
-
-    const startColumn = this.columnAtPoint(
-      columns,
-      this.interaction.startX,
-      this.interaction.startY,
-    );
-    const currentColumn = this.columnAtPoint(columns, ev.clientX, ev.clientY);
-    const startIndex = startColumn ?? 0;
-    const currentIndex = currentColumn ?? startIndex;
-    const rect = (columns[currentIndex] ?? columns[0]).getBoundingClientRect();
-    const startRect = (columns[startIndex] ?? columns[0]).getBoundingClientRect();
-    const startMinute = this.snapMinutes(
-      ((this.interaction.startY - startRect.top) / HALF_HOUR_HEIGHT) * 30,
-    );
-    const currentMinute = this.snapMinutes(((ev.clientY - rect.top) / HALF_HOUR_HEIGHT) * 30);
-    return { days: currentIndex - startIndex, minutes: currentMinute - startMinute };
-  }
-
-  private columnAtPoint(columns: HTMLElement[], x: number, y: number): number | null {
+  /** Column under `x`; left/right of the grid clamps to the first/last column. */
+  private columnIndexAtX(columns: HTMLElement[], x: number): number {
+    if (!columns.length) return 0;
     const index = columns.findIndex((column) => {
       const rect = column.getBoundingClientRect();
-      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+      return x >= rect.left && x <= rect.right;
     });
-    return index < 0 ? null : index;
+    if (index >= 0) return index;
+    return x < columns[0].getBoundingClientRect().left ? 0 : columns.length - 1;
   }
 
   private snapMinutes(minutes: number): number {

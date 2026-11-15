@@ -241,7 +241,8 @@
     }
   }
 
-  :dir(rtl) .nav .icon-btn svg.flip {
+  :dir(rtl) .nav .icon-btn svg.flip,
+  :dir(rtl) .range-summary .sep svg.flip {
     transform: scaleX(-1);
   }
 
@@ -309,7 +310,7 @@
       color: var(--_faint);
     }
 
-    &:not(.disabled):hover .num {
+    &:not(.disabled):not(.selected):not(.range-start):not(.range-end):hover .num {
       background: var(--_hover);
     }
 
@@ -341,43 +342,105 @@
     }
   }
 
-  .months,
-  .years {
-    display: grid;
-    gap: 6px;
-    padding-top: 6px;
-  }
-  .months {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .years {
-    grid-template-columns: repeat(4, 1fr);
+  // ---- month | year lists (replace the old arrow-paged grids) -------------------
+  .nav.picking .titles {
+    justify-content: center;
   }
 
-  .cell {
+  // iOS-style wheels: the row in the middle (under the band) is the selection. The rows are
+  // snapped to the band, and - where the browser supports scroll-driven animations - shrink
+  // and fade away from the centre.
+  .lists {
+    --_list-h: calc(var(--_cell) * 6 + 18px);
+    --_row: 38px;
+    position: relative;
     display: grid;
-    place-items: center;
-    height: 46px;
-    border-radius: calc(var(--_radius) * 0.75);
+    grid-template-columns: 1.25fr 1fr;
+    gap: 8px;
+    padding-top: 2px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      top: calc(2px + var(--_list-h) / 2);
+      height: var(--_row);
+      transform: translateY(-50%);
+      border-radius: calc(var(--_radius) * 0.6);
+      background: var(--_accent-soft);
+      pointer-events: none;
+    }
+  }
+
+  .list {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    height: var(--_list-h);
+    // the first and last row can reach the middle
+    padding-block: calc((var(--_list-h) - var(--_row)) / 2);
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    mask-image: linear-gradient(to bottom, transparent 0, #000 28%, #000 72%, transparent 100%);
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .opt {
+    flex: none;
+    height: var(--_row);
+    padding: 0 10px;
+    scroll-snap-align: center;
+    border-radius: calc(var(--_radius) * 0.6);
     font-weight: 550;
-    transition: background 120ms ease;
+    text-align: center;
+    color: var(--_muted);
+    transition: color 120ms ease;
 
     &:not(.disabled):hover {
-      background: var(--_hover);
+      color: var(--_ink);
     }
     &.today {
-      box-shadow: inset 0 0 0 1.5px var(--_accent);
       color: var(--_accent);
     }
-    &.selected {
-      background: var(--_accent);
-      color: var(--_accent-ink);
-      box-shadow: none;
+    &.current {
+      color: var(--_ink);
       font-weight: 700;
+      &.today {
+        color: var(--_accent);
+      }
     }
     &.disabled {
-      opacity: 0.35;
+      opacity: 0.3;
       cursor: not-allowed;
+    }
+
+    @supports (animation-timeline: view()) {
+      animation: wheel-row linear both;
+      animation-timeline: view(block);
+      animation-range: entry 0% exit 100%;
+    }
+  }
+
+  @keyframes wheel-row {
+    0% {
+      opacity: 0.2;
+      transform: perspective(240px) rotateX(48deg) scale(0.82);
+    }
+    50% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0.2;
+      transform: perspective(240px) rotateX(-48deg) scale(0.82);
     }
   }
 
