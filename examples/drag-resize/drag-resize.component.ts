@@ -1,4 +1,10 @@
-import { isRtl, NgxDraggable, NgxResizable } from 'ngx-kit/drag-resize';
+import {
+  isRtl,
+  NgxDraggable,
+  NgxResizable,
+  NgxDropListGroup,
+  NgxDropList,
+} from 'ngx-kit/drag-resize';
 import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -21,7 +27,14 @@ interface DemoEvent {
 
 @Component({
   selector: 'app-drag-resize',
-  imports: [CommonModule, NgxDraggable, NgxResizable, NgxResizeHandle],
+  imports: [
+    CommonModule,
+    NgxDraggable,
+    NgxResizable,
+    NgxResizeHandle,
+    NgxDropListGroup,
+    NgxDropList,
+  ],
   templateUrl: './drag-resize.component.html',
   styleUrl: './drag-resize.component.scss',
 })

@@ -838,6 +838,33 @@ RESIZE PAN
     background-color: var(--surface-2);
     flex: auto;
   }
+} /* =========================================================
+   interaction
+   ========================================================= */
+.interaction-demo {
+  details {
+    border: 1px solid light-dark(#dfe7f1, #171719);
+    border-radius: 6px;
+    background: light-dark(#ffffff, #1d1d1e);
+    overflow: hidden;
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 17px 19px;
+    cursor: pointer;
+    list-style: none;
+    color: light-dark(#172033, #a5b1cc);
+    font-size: 14px;
+    font-weight: 800;
+    &:after {
+      content: '+';
+      color: rgb(37, 99, 235);
+      font-size: 22px;
+    }
+  }
 }
 /* =========================================================
    PROPERTIES

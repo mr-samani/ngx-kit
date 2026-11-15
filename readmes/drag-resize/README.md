@@ -99,7 +99,7 @@ What the engine handles for a same-origin iframe canvas:
 
 Editing inside blocks:
 
-- `[noDragSelector]` (default `[data-no-drag]`) and `[ignoreInteractive]` keep text caret / buttons / inputs usable;
+- `[noDragSelector]` (default `[data-no-drag]`) and `[ignoreInteractive]` keep text caret / buttons / inputs / `<summary>` usable (only controls *inside* the draggable count - the draggable host, e.g. `<details ngxDraggable>`, never does). Pointer capture is taken only once a drag really starts, so a plain click on a `<summary>`, checkbox or button still works with `[ignoreInteractive]="false"`;
 - arrow keys only move a draggable/resizable when the element itself has focus (not when typed in an input or `contenteditable` inside it);
 - the `click` the browser fires right after a real drag is swallowed (no accidental select / link follow).
 

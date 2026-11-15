@@ -363,6 +363,35 @@
           <div class="main">main layout</div>
         </div>
       }
+
+      <!-- --------------------------------------- -->
+      <!-- Resize Pan -->
+      <!-- --------------------------------------- -->
+      @if (selectedExample() === 'interaction') {
+        <div class="interaction-demo" ngxDropListGroup>
+          <p>Can open close Details/Summary</p>
+          <div ngxDropList>
+            <details ngxDraggable [ignoreInteractive]="false">
+              <summary>Item 1</summary>
+              <div>
+                <p>Sample Text</p>
+              </div>
+            </details>
+            <details ngxDraggable [ignoreInteractive]="false">
+              <summary>Item 2</summary>
+              <div>
+                <p>Sample Text</p>
+              </div>
+            </details>
+            <details ngxDraggable [ignoreInteractive]="false">
+              <summary>Item 3</summary>
+              <div>
+                <p>Sample Text</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      }
     </div>
   </section>
 
