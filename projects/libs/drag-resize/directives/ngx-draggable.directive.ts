@@ -61,9 +61,14 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
    */
   readonly noDragSelector = input<string>('[data-no-drag]');
   /**
-   * When `true`, presses on native interactive controls (`button, a, input, textarea, select`,
-   * `[contenteditable]`) do not start a drag either. Off by default so that a page-builder canvas
-   * block can be grabbed by its own button/link, which is exactly what you want while editing.
+   * When `true`, presses on native interactive controls *inside* the draggable (`button`,
+   * `a[href]`, form fields, `[contenteditable]`, `summary`, media with `controls`, `[role=button]`
+   * ...) do not start a drag. The draggable element itself never counts, so a `<details ngxDraggable>`
+   * can still be dragged by its body. Off by default so that a page-builder canvas block can be
+   * grabbed by its own button/link, which is what you want while editing.
+   *
+   * With `false` a plain click on a control still works: pointer capture is only taken once the
+   * pointer has actually moved far enough to start a drag.
    * @default false
    */
   readonly ignoreInteractive = model<boolean>(false);
@@ -168,7 +173,7 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     // Nested draggables: pointerdown bubbles, so without this an ancestor draggable would start
     // its own drag from the very same gesture. The innermost enabled draggable claims it.
     if (claimedPointerEvents.has(e)) return;
-    if (this.ignoreInteractive() && isInteractiveTarget(e.target)) {
+    if (this.ignoreInteractive() && isInteractiveTarget(e.target, this._ref.el)) {
       claimedPointerEvents.add(e);
       return;
     }
@@ -177,14 +182,6 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     this.down = true;
     this.keyboardDrag = false;
     this.pointerId = e.pointerId;
-    // Pointer capture keeps move/up events flowing to this document even while the pointer is
-    // over an <iframe> (the page-builder canvas). It can throw (pointer already gone, synthetic
-    // events from automation tools) — in that case we simply fall back to plain document events.
-    try {
-      this._ref.el.setPointerCapture(this.pointerId);
-    } catch {
-      /* not capturable: document level listeners below still work inside this document */
-    }
     this.start = { x: e.clientX, y: e.clientY };
     this._ref.boundary = this.boundary();
     this._ref.lockAxis = this.lockAxis();
@@ -281,6 +278,14 @@ export class NgxDraggable<T = unknown> implements OnInit, OnDestroy, AfterConten
     )
       return;
     if (!this.dragging()) {
+      // Pointer capture keeps move/up events flowing to this document even while the pointer is
+      // over an <iframe> (the page-builder canvas). It can throw (pointer already gone, synthetic
+      // events from automation tools) — then we simply rely on plain document events.
+      try {
+        this._ref.el.setPointerCapture(this.pointerId);
+      } catch {
+        /* not capturable: document level listeners still work inside this document */
+      }
       this._ref.startDrag(p);
       this.dragging.set(true);
       this.service.begin(this._ref);
@@ -480,9 +485,39 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return !!target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
 }
 
-function isInteractiveTarget(target: EventTarget | null): boolean {
+/**
+ * Native controls that have their own press behaviour. `details` is intentionally absent (it is a
+ * container; only its `summary` is the control) and `a` needs an href to be interactive.
+ */
+const INTERACTIVE_SELECTOR = [
+  'button',
+  'a[href]',
+  'input',
+  'textarea',
+  'select',
+  'summary',
+  'label',
+  'audio[controls]',
+  'video[controls]',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[role="button"]',
+  '[role="link"]',
+  '[role="checkbox"]',
+  '[role="switch"]',
+  '[role="slider"]',
+  '[role="textbox"]',
+].join(',');
+
+/**
+ * Is `target` an interactive control *inside* `boundary`? The walk stops at the boundary, so the
+ * draggable host (e.g. `<details>`, `<a href>`, `<label>`) never makes its own body "interactive".
+ */
+function isInteractiveTarget(target: EventTarget | null, boundary: HTMLElement): boolean {
   if (!isElementTarget(target)) return false;
-  return !!target.closest('button,a,input,textarea,select,[contenteditable]');
+  for (let el: Element | null = target; el && el !== boundary; el = el.parentElement) {
+    if (el.matches(INTERACTIVE_SELECTOR)) return true;
+  }
+  return false;
 }
 
 function isElementTarget(target: EventTarget | null): target is HTMLElement {
