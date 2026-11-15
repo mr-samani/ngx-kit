@@ -757,8 +757,14 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, O
       const rect = grid.getBoundingClientRect();
       const cellWidth = rect.width / MONTH_COLUMN_COUNT || 1;
       const cellHeight = rect.height / MONTH_ROW_COUNT || 1;
+      // Visual column counted from the left edge. In RTL the first day of the week is the
+      // right-most cell, so the data column is the mirrored index.
+      const visualColumn = clamp(
+        Math.floor((ev.clientX - rect.left) / cellWidth),
+        MONTH_COLUMN_COUNT - 1,
+      );
       return {
-        column: clamp(Math.floor((ev.clientX - rect.left) / cellWidth), MONTH_COLUMN_COUNT - 1),
+        column: this.isRtl(root) ? MONTH_COLUMN_COUNT - 1 - visualColumn : visualColumn,
         row: clamp(Math.floor((ev.clientY - rect.top) / cellHeight), MONTH_ROW_COUNT - 1),
         minute: 0,
       };
@@ -788,7 +794,18 @@ export class NgxCalendarComponent extends NgxDatePickerBase implements OnInit, O
       return x >= rect.left && x <= rect.right;
     });
     if (index >= 0) return index;
-    return x < columns[0].getBoundingClientRect().left ? 0 : columns.length - 1;
+    // Outside the grid: clamp to the visually nearest edge column. In RTL the DOM order is
+    // mirrored, so the first column is the right-most one.
+    const first = columns[0].getBoundingClientRect();
+    const last = columns[columns.length - 1].getBoundingClientRect();
+    const leftmost = first.left <= last.left ? 0 : columns.length - 1;
+    const rightmost = leftmost === 0 ? columns.length - 1 : 0;
+    return x < Math.min(first.left, last.left) ? leftmost : rightmost;
+  }
+
+  private isRtl(el: HTMLElement): boolean {
+    const view = el.ownerDocument.defaultView;
+    return (view ? view.getComputedStyle(el).direction : 'ltr') === 'rtl';
   }
 
   private snapMinutes(minutes: number): number {
