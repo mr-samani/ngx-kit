@@ -90,7 +90,7 @@ export class NgxInputColorComponent implements ControlValueAccessor, Validator {
   name = signal('black');
 
   /** @ignore */
-  isSupportedEyeDrop = 'EyeDropper' in (window ?? {});
+  isSupportedEyeDrop = typeof window !== 'undefined' && 'EyeDropper' in window;
 
   /** @ignore */
   color = signal(new NgxColor());

@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export type Direction = 'ltr' | 'rtl';
 
@@ -15,7 +16,9 @@ function resolveDirection(doc: Document): Direction {
   const htmlDir = doc.documentElement.dir;
   if (htmlDir === 'rtl' || htmlDir === 'ltr') return htmlDir;
 
-  return getComputedStyle?.(doc.documentElement)?.direction === 'rtl' ? 'rtl' : 'ltr';
+  const view = doc.defaultView;
+  if (!view || typeof view.getComputedStyle !== 'function') return 'ltr';
+  return view.getComputedStyle(doc.documentElement)?.direction === 'rtl' ? 'rtl' : 'ltr';
 }
 
 /**
@@ -42,6 +45,8 @@ export class DirectionService {
   readonly isRtl = computed(() => this._direction() === 'rtl');
 
   constructor() {
+    // no DOM to observe on the server (MutationObserver does not exist there)
+    if (!isPlatformBrowser(inject(PLATFORM_ID)) || typeof MutationObserver === 'undefined') return;
     const observer = new MutationObserver(() => {
       const next = resolveDirection(this.doc );
       if (next !== this._direction()) {

@@ -16,8 +16,9 @@ export function getOffsetPosition(evt: MouseEvent | TouchEvent, parent: HTMLElem
 
   const parentRect = parent.getBoundingClientRect();
 
-  position.x -= parentRect.left + window.scrollX;
-  position.y -= parentRect.top + window.scrollY;
+  const win = parent.ownerDocument?.defaultView;
+  position.x -= parentRect.left + (win?.scrollX ?? 0);
+  position.y -= parentRect.top + (win?.scrollY ?? 0);
 
   return position;
 }

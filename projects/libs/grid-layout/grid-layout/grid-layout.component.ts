@@ -60,6 +60,8 @@ export class NgxGridLayoutComponent implements AfterViewInit, OnDestroy {
     this.service.attachElement(this.surface);
     this.setCss();
 
+    // ResizeObserver does not exist on the server (SSR)
+    if (typeof ResizeObserver === 'undefined') return;
     this.resizeObserver = new ResizeObserver(() => {
       this.service.refreshMetrics();
       this.setCss();

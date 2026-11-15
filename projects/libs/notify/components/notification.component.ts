@@ -94,11 +94,12 @@ export class NgxNotificationComponent implements OnInit, OnDestroy {
   }
   pauseTimer() {
     this._paused = true;
+    if (typeof cancelAnimationFrame === 'undefined') return;
     cancelAnimationFrame(this._rafId);
     this._remaining = Math.max(0, this._endTs - performance.now());
     const bar = this.bar()?.nativeElement;
     if (bar) {
-      const matrix = getComputedStyle?.(bar)?.transform;
+      const matrix = this.doc.defaultView?.getComputedStyle(bar)?.transform ?? '';
       bar.style.transition = 'none';
       bar.style.transform = matrix;
     }
@@ -115,11 +116,14 @@ export class NgxNotificationComponent implements OnInit, OnDestroy {
   }
 
   private clearTimer() {
+    if (typeof cancelAnimationFrame === 'undefined') return;
     cancelAnimationFrame(this._rafId);
     this._rafId = 0;
   }
 
   private animateProgress() {
+    // timers/animation frames only exist in the browser (SSR has no rAF)
+    if (typeof requestAnimationFrame === 'undefined') return;
     const update = () => {
       const remaining = Math.max(0, this._endTs - performance.now());
       if (remaining <= 0) {

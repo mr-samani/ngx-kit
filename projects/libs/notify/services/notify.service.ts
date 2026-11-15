@@ -163,8 +163,8 @@ export class NgxNotifyService {
     };
 
     const id =
-      typeof (this.win as any).crypto?.randomUUID === 'function'
-        ? (this.win as any).crypto.randomUUID()
+      typeof (globalThis as any).crypto?.randomUUID === 'function'
+        ? (globalThis as any).crypto.randomUUID()
         : makeId();
 
     const payload: NgxNotifyPayload = {

@@ -207,6 +207,8 @@ export class NgxImageEditor {
       const el = this.stageWrapEl()?.nativeElement;
       if (!el) return;
       this.containerWidth.set(el.getBoundingClientRect().width);
+      // no ResizeObserver on the server (SSR)
+      if (typeof ResizeObserver === 'undefined') return;
       const ro = new ResizeObserver((entries) => {
         const width = entries[0]?.contentRect.width;
         if (width != null) this.containerWidth.set(width);

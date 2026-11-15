@@ -283,9 +283,10 @@ export class NgxTooltip implements OnDestroy {
       return;
     }
 
-    const direction = getComputedStyle?.(this.element)?.direction;
+    const view = this.element.ownerDocument?.defaultView;
+    const direction = view?.getComputedStyle(this.element)?.direction;
 
-    this.tooltip.style.direction = direction;
+    if (direction) this.tooltip.style.direction = direction;
   }
 
   private schedulePositionUpdate(): void {
