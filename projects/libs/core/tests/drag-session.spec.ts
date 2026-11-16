@@ -10,7 +10,7 @@ describe('startDragSession', () => {
   it('باید بلافاصله بعدِ شروع، listenerهای mousemove/touchmove/mouseup/touchend/touchcancel رو روی document وصل کنه', () => {
     const addSpy = vi.spyOn(document, 'addEventListener');
 
-    startDragSession({ onMove: vi.fn() });
+    startDragSession({ onMove: vi.fn(), doc: document });
 
     const registeredTypes = addSpy.mock.calls.map((c) => c[0]);
     expect(registeredTypes).toContain('mousemove');
@@ -22,7 +22,7 @@ describe('startDragSession', () => {
 
   it('touchmove باید با { passive: false } وصل بشه (وگرنه preventDefault اثر نداره)', () => {
     const addSpy = vi.spyOn(document, 'addEventListener');
-    startDragSession({ onMove: vi.fn() });
+    startDragSession({ onMove: vi.fn(), doc: document });
 
     const touchmoveCall = addSpy.mock.calls.find((c) => c[0] === 'touchmove');
     expect(touchmoveCall?.[2]).toEqual({ passive: false });
@@ -30,7 +30,7 @@ describe('startDragSession', () => {
 
   it('onMove باید با هر mousemove صدا زده بشه', () => {
     const onMove = vi.fn();
-    startDragSession({ onMove });
+    startDragSession({ onMove, doc: document });
 
     const ev = new MouseEvent('mousemove', { clientX: 10, clientY: 20 });
     document.dispatchEvent(ev);
@@ -41,7 +41,7 @@ describe('startDragSession', () => {
 
   it('روی touchmove باید preventDefault صدا زده بشه (جلوگیری از اسکرول صفحه)', () => {
     const onMove = vi.fn();
-    startDragSession({ onMove });
+    startDragSession({ onMove, doc: document });
 
     const ev = new Event('touchmove', { cancelable: true }) as any;
     ev.touches = [];
@@ -58,7 +58,7 @@ describe('startDragSession', () => {
     const onEnd = vi.fn();
     const removeSpy = vi.spyOn(document, 'removeEventListener');
 
-    startDragSession({ onMove, onEnd });
+    startDragSession({ onMove, onEnd, doc: document });
 
     const upEvent = new MouseEvent('mouseup');
     document.dispatchEvent(upEvent);
@@ -77,7 +77,7 @@ describe('startDragSession', () => {
     const onMove = vi.fn();
     const onEnd = vi.fn();
 
-    const stop = startDragSession({ onMove, onEnd });
+    const stop = startDragSession({ onMove, onEnd, doc: document });
     stop();
 
     expect(onEnd).not.toHaveBeenCalled();
@@ -88,12 +88,12 @@ describe('startDragSession', () => {
 
   it('touchend و touchcancel هم باید نشست رو تموم کنن', () => {
     const onEnd1 = vi.fn();
-    startDragSession({ onMove: vi.fn(), onEnd: onEnd1 });
+    startDragSession({ onMove: vi.fn(), onEnd: onEnd1, doc: document });
     document.dispatchEvent(new Event('touchend'));
     expect(onEnd1).toHaveBeenCalledTimes(1);
 
     const onEnd2 = vi.fn();
-    startDragSession({ onMove: vi.fn(), onEnd: onEnd2 });
+    startDragSession({ onMove: vi.fn(), onEnd: onEnd2, doc: document });
     document.dispatchEvent(new Event('touchcancel'));
     expect(onEnd2).toHaveBeenCalledTimes(1);
   });

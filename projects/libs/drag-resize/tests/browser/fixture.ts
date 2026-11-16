@@ -2,6 +2,10 @@ import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll } from 'vitest';
 import { bundleHarness } from './build.mjs';
 
+// (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } }).process?.env?.[
+//   'CHROMIUM_PATH'
+// ] ??
+
 const CHROME =
   process.env['CHROMIUM_PATH'] ??
   '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell';

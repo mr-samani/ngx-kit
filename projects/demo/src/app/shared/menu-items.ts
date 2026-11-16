@@ -2,7 +2,7 @@ import { ICategory } from './interfaces/ICategory';
 
 export const MENU_LIST: ICategory[] = [
   {
-    name: 'Message & Dialog & Notify & Tooltip',
+    name: 'Feedback & Overlay',
     items: [
       {
         title: 'Message',
@@ -47,14 +47,10 @@ export const MENU_LIST: ICategory[] = [
         imageDark: 'preview/calendar-dark.png',
         imageLight: 'preview/calendar-light.png',
       },
-      // {
-      //   title: 'Form Field',
-      //   url: '/components/form-field',
-      // },
     ],
   },
   {
-    name: 'Design Controls',
+    name: 'Color & Styling',
     items: [
       {
         title: 'Color Picker',
@@ -83,7 +79,7 @@ export const MENU_LIST: ICategory[] = [
     ],
   },
   {
-    name: 'Table',
+    name: 'Data Display',
     items: [
       {
         title: 'Table With Paginator',
@@ -91,61 +87,20 @@ export const MENU_LIST: ICategory[] = [
         imageDark: 'preview/table-dark.png',
         imageLight: 'preview/table-light.png',
       },
-    ],
-  },
-  {
-    name: 'Media & Layout',
-    items: [
       {
-        title: 'Dropzone',
-        url: '/components/dropzone',
-        imageDark: 'preview/drop-zone-dark.png',
-        imageLight: 'preview/drop-zone-light.png',
-      },
-      {
-        title: 'Image Editor',
-        url: '/components/image-editor',
-        imageDark: 'preview/image-editor-dark.png',
-        imageLight: 'preview/image-editor-light.png',
-      },
-      {
-        title: 'Image Viewer',
-        url: '/components/image-viewer',
-        imageDark: 'preview/image-viewer-dark.png',
-        imageLight: 'preview/image-viewer-light.png',
-      },
-      {
-        title: 'Media Control',
-        url: '/components/media-control',
-      },
-      {
-        title: 'Drawer Menu',
-        url: '/components/drawer-menu',
+        title: 'Tree List',
+        description:
+          'Filters a hierarchical tree while preserving the branches that contain matching nodes.',
+        url: '/components/tree-list',
       },
     ],
   },
   {
-    name: 'Others',
+    name: 'Drag, Drop & Interaction',
     items: [
-      {
-        title: 'Menu',
-        url: '/components/menu',
-        imageDark: 'preview/menu-dark.png',
-        imageLight: 'preview/menu-light.png',
-      },
-      {
-        title: 'Virtual Scroll',
-        url: '/components/virtual-scroll',
-      },
-      {
-        title: 'Grid Layout',
-        description: 'Grid layout with resizable and draggable widgets',
-        url: '/components/grid-layout',
-      },
       {
         title: 'Drag and Resize',
         url: '/components/drag-resize',
-
         fragments: [
           {
             id: 'overview',
@@ -209,47 +164,116 @@ export const MENU_LIST: ICategory[] = [
           },
           {
             id: 'resizepan',
-            title: 'Resize pan',
-            description: 'Resize side pan',
+            title: 'Resize Pan',
+            description: 'Resize side pan.',
             icon: '🔛',
           },
           {
             id: 'interaction',
             title: 'Interaction',
-            description: 'Enable interaction with child of draggable items',
+            description: 'Enable interaction with child of draggable items.',
             icon: '✦',
           },
         ],
       },
       {
         title: 'Drop List',
-        description: '',
         url: '/components/drop-list',
         children: [
-          { url: '/components/drop-list/sort-list', title: 'Sort list' },
-          { url: '/components/drop-list/kanban', title: 'Kanban View' },
-          { url: '/components/drop-list/horizontal-list', title: 'Horizontal List' },
-          { url: '/components/drop-list/copy-to-zone', title: 'Copy to zone' },
-          { url: '/components/drop-list/copy-to-iframe', title: 'Copy to iframe' },
-          { url: '/components/drop-list/nested-tree-sort', title: 'Nested Tree' },
-          { url: '/components/drop-list/dynamic-html', title: 'Dynamic html elements' },
+          {
+            url: '/components/drop-list/sort-list',
+            title: 'Sort List',
+          },
+          {
+            url: '/components/drop-list/kanban',
+            title: 'Kanban View',
+          },
+          {
+            url: '/components/drop-list/horizontal-list',
+            title: 'Horizontal List',
+          },
+          {
+            url: '/components/drop-list/copy-to-zone',
+            title: 'Copy to Zone',
+          },
+          {
+            url: '/components/drop-list/copy-to-iframe',
+            title: 'Copy to Iframe',
+          },
+          {
+            url: '/components/drop-list/nested-tree-sort',
+            title: 'Nested Tree',
+          },
+          {
+            url: '/components/drop-list/dynamic-html',
+            title: 'Dynamic HTML Elements',
+          },
         ],
+      },
+    ],
+  },
+  {
+    name: 'Scrolling & Navigation',
+    items: [
+      {
+        title: 'Virtual Scroll',
+        url: '/components/virtual-scroll',
       },
       {
         title: 'Infinite Scroll',
         url: '/components/infinite-scroll',
       },
-
       {
-        title: 'Tree List',
-        description:
-          'Filters a hierarchical tree while preserving the branches that contain matching nodes.',
-        url: '/components/tree-list',
+        title: 'Menu',
+        url: '/components/menu',
+        imageDark: 'preview/menu-dark.png',
+        imageLight: 'preview/menu-light.png',
       },
     ],
   },
   {
-    name: 'Localization and translation',
+    name: 'Media',
+    items: [
+      {
+        title: 'Dropzone',
+        url: '/components/dropzone',
+        imageDark: 'preview/drop-zone-dark.png',
+        imageLight: 'preview/drop-zone-light.png',
+      },
+      {
+        title: 'Image Editor',
+        url: '/components/image-editor',
+        imageDark: 'preview/image-editor-dark.png',
+        imageLight: 'preview/image-editor-light.png',
+      },
+      {
+        title: 'Image Viewer',
+        url: '/components/image-viewer',
+        imageDark: 'preview/image-viewer-dark.png',
+        imageLight: 'preview/image-viewer-light.png',
+      },
+      {
+        title: 'Media Control',
+        url: '/components/media-control',
+      },
+    ],
+  },
+  {
+    name: 'Layout',
+    items: [
+      {
+        title: 'Grid Layout',
+        description: 'Grid layout with resizable and draggable widgets.',
+        url: '/components/grid-layout',
+      },
+      {
+        title: 'Drawer Menu',
+        url: '/components/drawer-menu',
+      },
+    ],
+  },
+  {
+    name: 'Internationalization',
     items: [
       {
         title: 'I18n',

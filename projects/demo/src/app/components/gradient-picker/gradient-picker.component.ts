@@ -9,7 +9,7 @@ import {
 @Component({
   selector: 'app-gradient-picker',
   templateUrl: './gradient-picker.component.html',
-  imports: [FormsModule, NgxInputGradient, NgxInputGradientComponent, ExampleShowcaseComponent],
+  imports: [FormsModule, NgxInputGradient, ExampleShowcaseComponent],
 })
 export class GradientPickerComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
