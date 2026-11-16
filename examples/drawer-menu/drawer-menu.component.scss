@@ -1,10 +1,10 @@
 .frame {
   position: relative;
   block-size: 360px;
-  border: 1px solid light-dark(#e5e7eb, #33333a);
+  border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
-  background: light-dark(#f9fafb, #16161a);
+  background: var(--surface-2);
 }
 .my-drawer-menu {
   height: 100%;
@@ -12,9 +12,14 @@
 
 .menu-content {
   padding: 1rem;
-  background: light-dark(#c2daf3, #2e2586);
+  background: var(--surface-2);
   width: 100%;
   height: 100%;
+
+  h4 {
+    margin-block: 0 1rem;
+  }
+
   ul {
     list-style: none;
     padding: 0;
@@ -25,11 +30,36 @@
   }
 
   li {
-    padding: 0.5rem 0.25rem;
-    border-block-end: 1px solid light-dark(#e5e7eb, #33333a);
+    border-block-end: 1px solid var(--border);
+  }
+
+  li button {
+    width: 100%;
+    padding: 0.6rem 0.5rem;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-2);
+    text-align: start;
+
+    &:hover,
+    &.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
   }
 }
 
 .page-content {
   padding: 1.25rem;
+  color: var(--text);
+
+  h2 {
+    margin-block: 1rem 0.5rem;
+  }
 }

@@ -2,15 +2,51 @@
   lable="Gradient Picker"
   [files]="sourceFiles"
   readmePath="readmes/gradient-picker/README.md">
-  <input ngxInputGradient [(ngModel)]="gradient" class="form-control" name="input-gradient" />
-  <button type="button" (click)="gradient = ''">x</button>
-  <p>{{ gradient }}</p>
+  <div class="demo-playground">
+    <section class="demo-section">
+      <header class="demo-section-header">
+        <div>
+          <h2 class="demo-section-title">Gradient editor</h2>
+          <p class="demo-section-description">
+            Choose a preset or edit the gradient stops. The preview and CSS value stay synchronized.
+          </p>
+        </div>
+      </header>
 
-  <p>inline:</p>
-  <ngx-input-gradient
-    [(ngModel)]="gradient"
-    theme="light"
-    name="gradient"
-    [showSamples]="false"></ngx-input-gradient>
-  <p>{{ gradient }}</p>
+      <div class="demo-grid">
+        <div class="demo-field">
+          <label class="demo-field-label" for="gradient-value">Gradient CSS</label>
+          <div class="ngx-input-group">
+            <input
+              id="gradient-value"
+              class="form-control"
+              ngxInputGradient
+              [(ngModel)]="gradient"
+              name="gradient-value" />
+            <button type="button" class="ngx-group-text pointer" (click)="clear()">Clear</button>
+          </div>
+          <label class="demo-field-label">
+            <input type="checkbox" name="showSamples" [(ngModel)]="showSamples" />
+            Show built-in samples
+          </label>
+        </div>
+
+        <div class="demo-field">
+          <span class="demo-field-label">Live preview</span>
+          <div class="demo-preview" [style.background]="gradient || 'var(--surface-2)'">
+            @if (!gradient) {
+              <span class="demo-empty">Choose or create a gradient</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-grid">
+        <div class="demo-field">
+          <span class="demo-field-label">Current value</span>
+          <pre class="demo-result" aria-live="polite">{{ gradient || 'No gradient selected' }}</pre>
+        </div>
+      </div>
+    </section>
+  </div>
 </app-example-showcase>

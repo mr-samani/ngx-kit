@@ -8,6 +8,10 @@ import {
 } from 'ngx-kit/grid-layout';
 import { NgxGridLayoutComponent } from 'ngx-kit/grid-layout';
 import { NgxInputColor } from 'ngx-kit/color-picker';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 export interface SampleLayout {
   id: string;
@@ -19,11 +23,17 @@ export interface SampleLayout {
 }
 @Component({
   selector: 'app-grid-layout',
-  imports: [FormsModule, NgxGridLayoutModule, NgxInputColor],
+  imports: [FormsModule, NgxGridLayoutModule, NgxInputColor, ExampleShowcaseComponent],
   templateUrl: './grid-layout.component.html',
   styleUrl: './grid-layout.component.scss',
 })
 export class GridLayoutComponent implements OnInit {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: 'examples/grid-layout/grid-layout.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/grid-layout/grid-layout.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/grid-layout/grid-layout.component.scss', language: 'scss' },
+  ];
+
   ngxGridLayout = viewChild<NgxGridLayoutComponent>('ngxGridLayout');
   gridSettings = {
     editMode: false,

@@ -3,25 +3,26 @@
   max-width: 100%;
   min-height: 60px;
   display: block;
-  background: white;
+  background: var(--surface-2);
   border-radius: 4px;
   padding: 5px;
   &.dragging .example-box:hover .children {
-    background-color: #e4fcfc;
+    background-color: var(--primary-soft);
   }
 }
 
 .example-box {
   padding: 20px 10px;
-  border: solid 1px #ccc;
-  color: rgba(0, 0, 0, 0.87);
+  border: solid 1px var(--border);
+  border-radius: 6px;
+  color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: self-start;
   justify-content: space-between;
   box-sizing: border-box;
   cursor: move;
-  background: white;
+  background: var(--surface);
   font-size: 14px;
   .children {
     width: 100%;
@@ -38,7 +39,7 @@
   }
 }
 .custom-placeholder {
-  border: 2px red solid;
+  border: 2px var(--danger) solid;
   &:after,
   &::before {
     position: absolute;
@@ -60,7 +61,7 @@
   }
 }
 .custom-placeholder2 {
-  border: 2px blue solid;
+  border: 2px var(--primary) solid;
   &:after,
   &::before {
     position: absolute;
@@ -82,17 +83,26 @@
   }
 }
 
-.ngxpointer {
-  position: absolute;
-  background-color: #ff0000;
-  top: 11px;
-  left: 10px;
-  z-index: 99999999;
+.tree-data {
+  margin-block-start: 1rem;
+  color: var(--text-2);
+
+  pre {
+    max-block-size: 24rem;
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    direction: ltr;
+    text-align: start;
+  }
 }
 
 ::ng-deep {
   .ngx-drop-list--active {
-    outline: 3px blue solid;
+    outline: 3px var(--primary) solid;
     outline-offset: -3px;
   }
 }

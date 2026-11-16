@@ -1,156 +1,317 @@
-<!-- app.component.html -->
-<h1>Input Form Field (Angular 22)</h1>
-
-<div class="container">
-  <!-- =========================================================
-       REQUIRED FIELD
-       ========================================================= -->
-  <section>
-    <h3>Required</h3>
-    <ngx-form-field
-      label="this is a label"
-      [required]="true"
-      [(value)]="requiredField"
-      hint="complete this input"
-      [errorMessages]="['This field is Required!']" />
-  </section>
-
-  <!-- =========================================================
-       WITH VALUE
-       ========================================================= -->
-  <section>
-    <h3>With Value</h3>
-    <ngx-form-field label="this is a label" [(value)]="withValue" />
-  </section>
-
-  <!-- =========================================================
-       LOGIN FORM (AUTO FILL)
-       ========================================================= -->
-  <section>
-    <h3>Login form (Auto fill)</h3>
-    <form (submit)="onLoginSubmit($event)" autocomplete="on">
-      <ngx-form-field
-        label="User Name"
-        name="username"
-        autocomplete="username"
-        [required]="true"
-        [(value)]="username" />
-
-      <ngx-form-field
-        label="Password"
-        type="password"
-        name="password"
-        autocomplete="current-password"
-        [required]="true"
-        [(value)]="password" />
-
-      <div class="form-actions">
-        <button mat-raised-button type="submit">submit</button>
-        <button mat-raised-button type="button" (click)="resetForm()">reset</button>
+<app-example-showcase
+  lable="Form field"
+  [files]="sourceFiles"
+  readmePath="readmes/form-field/README.md">
+  <div class="demo-playground">
+    <section class="demo-section">
+      <div class="demo-section-header">
+        <div>
+          <h3 class="demo-section-title">Field states</h3>
+          <p class="demo-section-description">
+            Explore the floating label, placeholder, validation, and common input types.
+          </p>
+        </div>
+        <span class="badge">ngx-form-field</span>
       </div>
-    </form>
-  </section>
 
-  <!-- =========================================================
-       WITH PLACEHOLDER
-       ========================================================= -->
-  <section>
-    <h3>With placeholder</h3>
-    <ngx-form-field
-      label="this is a label"
-      placeholder="this is a placeholder"
-      [(value)]="withPlaceholder" />
-  </section>
+      <div class="demo-grid three">
+        <div class="demo-field">
+          <span class="demo-field-label">Required</span>
+          <ngx-form-field label="Project name" [required]="true" [invalid]="!requiredField()">
+            <input
+              ngxInput
+              type="text"
+              autocomplete="off"
+              aria-label="Project name"
+              [value]="requiredField()"
+              (input)="setTextValue(requiredField, $event)"
+              [attr.aria-describedby]="
+                requiredField() ? 'required-hint' : 'required-hint required-error'
+              "
+              [attr.aria-invalid]="!requiredField()" />
+            <span ngxHint id="required-hint">This field is required.</span>
+            @if (!requiredField()) {
+              <span ngxError id="required-error">Enter a project name to continue.</span>
+            }
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       DISABLED
-       ========================================================= -->
-  <section>
-    <h3>Disabled</h3>
-    <ngx-form-field label="Disabled field" [disabled]="true" [(value)]="disabledField" />
-  </section>
+        <div class="demo-field">
+          <span class="demo-field-label">Prefilled</span>
+          <ngx-form-field label="Workspace">
+            <input
+              ngxInput
+              type="text"
+              aria-label="Workspace"
+              [value]="withValue()"
+              (input)="setTextValue(withValue, $event)" />
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       READONLY
-       ========================================================= -->
-  <section>
-    <h3>Readonly</h3>
-    <ngx-form-field label="Readonly field" [readonly]="true" [(value)]="readonlyField" />
-  </section>
+        <div class="demo-field">
+          <span class="demo-field-label">Placeholder</span>
+          <ngx-form-field label="Search term">
+            <input
+              ngxInput
+              type="text"
+              placeholder="Try a keyword"
+              aria-label="Search term"
+              [value]="withPlaceholder()"
+              (input)="setTextValue(withPlaceholder, $event)" />
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       INVALID (EMAIL)
-       ========================================================= -->
-  <section>
-    <h3>Invalid (email)</h3>
-    <ngx-form-field
-      label="Email"
-      type="email"
-      [(value)]="invalidEmail"
-      [errorMessages]="['Please enter a valid email address']" />
-  </section>
+        <div class="demo-field">
+          <span class="demo-field-label">Disabled</span>
+          <ngx-form-field label="Account status" [disabled]="true">
+            <input
+              ngxInput
+              type="text"
+              aria-label="Account status"
+              [value]="disabledField()"
+              disabled />
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       TEXTAREA 
-       ========================================================= -->
-  <section>
-    <h3>Textarea</h3>
-    <ngx-form-field label="Description" type="textarea" [rows]="4" [(value)]="longText" />
-  </section>
+        <div class="demo-field">
+          <span class="demo-field-label">Read-only</span>
+          <ngx-form-field label="Reference ID" [readonly]="true">
+            <input
+              ngxInput
+              type="text"
+              aria-label="Reference ID"
+              [value]="readonlyField()"
+              readonly />
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       NUMBER INPUT
-       ========================================================= -->
-  <section>
-    <h3>Number</h3>
-    <ngx-form-field label="Age" type="number" [(value)]="numValue" />
-  </section>
+        <div class="demo-field">
+          <span class="demo-field-label">Invalid email</span>
+          <ngx-form-field label="Email address" [invalid]="true">
+            <input
+              ngxInput
+              type="email"
+              aria-label="Email address"
+              [value]="invalidEmail()"
+              (input)="setTextValue(invalidEmail, $event)"
+              aria-describedby="email-error"
+              aria-invalid="true" />
+            <span ngxError id="email-error">Enter an email address in the expected format.</span>
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       SEARCH INPUT
-       ========================================================= -->
-  <section>
-    <h3>Search</h3>
-    <ngx-form-field
-      label="Search..."
-      type="search"
-      placeholder="Type to search"
-      [(value)]="searchValue" />
-  </section>
+        <div class="demo-field">
+          <span class="demo-field-label">Number</span>
+          <ngx-form-field label="Age">
+            <input
+              ngxInput
+              type="number"
+              min="0"
+              aria-label="Age"
+              [value]="age()"
+              (input)="setNumberValue(age, $event)" />
+          </ngx-form-field>
+        </div>
 
-  <!-- =========================================================
-       FULL FORM EXAMPLE
-       ========================================================= -->
-  <section>
-    <h3>Complete Form</h3>
-    <form (submit)="onLoginSubmit($event)">
-      <ngx-form-field
-        label="Full Name"
-        name="fullname"
-        autocomplete="name"
-        [required]="true"
-        [(value)]="fullName" />
+        <div class="demo-field">
+          <span class="demo-field-label">Search</span>
+          <ngx-form-field label="Find a component">
+            <input
+              ngxInput
+              type="search"
+              placeholder="Search the catalog"
+              aria-label="Find a component"
+              [value]="searchValue()"
+              (input)="setTextValue(searchValue, $event)" />
+          </ngx-form-field>
+        </div>
 
-      <ngx-form-field
-        label="Email Address"
-        type="email"
-        name="email"
-        autocomplete="email"
-        [(value)]="invalidEmail"
-        hint="We'll never share your email" />
-
-      <ngx-form-field label="Phone" type="tel" name="phone" autocomplete="tel" [(value)]="tel" />
-
-      <ngx-form-field
-        label="Message"
-        type="textarea"
-        [rows]="4"
-        [(value)]="longText"
-        hint="Tell us about your needs" />
-
-      <div class="form-actions">
-        <button type="submit">Send</button>
+        <div class="demo-field">
+          <span class="demo-field-label">Textarea</span>
+          <ngx-form-field label="Project summary">
+            <textarea
+              ngxInput
+              rows="2"
+              aria-label="Project summary"
+              [value]="longText()"
+              (input)="setTextValue(longText, $event)"></textarea>
+          </ngx-form-field>
+        </div>
       </div>
-    </form>
-  </section>
-</div>
+    </section>
+
+    <div class="demo-grid">
+      <section class="demo-section">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Sign-in form</h3>
+            <p class="demo-section-description">
+              A small client-side example with field-level validation.
+            </p>
+          </div>
+        </div>
+        <form class="demo-form" (submit)="onLoginSubmit($event)">
+          <div class="demo-field">
+            <ngx-form-field
+              label="Username"
+              [required]="true"
+              [invalid]="loginSubmitted() && !username().trim()">
+              <input
+                ngxInput
+                type="text"
+                name="username"
+                autocomplete="username"
+                aria-label="Username"
+                [value]="username()"
+                (input)="setTextValue(username, $event)"
+                [attr.aria-describedby]="
+                  loginSubmitted() && !username().trim() ? 'username-error' : null
+                "
+                [attr.aria-invalid]="loginSubmitted() && !username().trim()" />
+              @if (loginSubmitted() && !username().trim()) {
+                <span ngxError id="username-error">Enter your username.</span>
+              }
+            </ngx-form-field>
+          </div>
+          <div class="demo-field">
+            <ngx-form-field
+              label="Password"
+              [required]="true"
+              [invalid]="loginSubmitted() && password().length < 6">
+              <input
+                ngxInput
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                aria-label="Password"
+                [value]="password()"
+                (input)="setTextValue(password, $event)"
+                [attr.aria-describedby]="
+                  loginSubmitted() && password().length < 6 ? 'password-error' : null
+                "
+                [attr.aria-invalid]="loginSubmitted() && password().length < 6" />
+              @if (loginSubmitted() && password().length < 6) {
+                <span ngxError id="password-error">Use at least 6 characters.</span>
+              }
+            </ngx-form-field>
+          </div>
+          <div class="demo-actions form-actions">
+            <button type="submit" class="demo-button primary">Sign in</button>
+            <button type="button" class="demo-button secondary" (click)="resetLogin()">
+              Reset
+            </button>
+          </div>
+          @if (loginStatus()) {
+            <p class="demo-form-status" role="status">{{ loginStatus() }}</p>
+          }
+          @if (loginErrors().length) {
+            <ul class="demo-form-errors" aria-label="Sign-in errors">
+              @for (error of loginErrors(); track error) {
+                <li>{{ error }}</li>
+              }
+            </ul>
+          }
+        </form>
+      </section>
+
+      <section class="demo-section">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Contact form</h3>
+            <p class="demo-section-description">
+              Combine text, email, phone, and multiline fields in a complete form.
+            </p>
+          </div>
+        </div>
+        <form class="demo-form" (submit)="onContactSubmit($event)">
+          <div class="demo-field">
+            <ngx-form-field
+              label="Full name"
+              [required]="true"
+              [invalid]="contactSubmitted() && !fullName().trim()">
+              <input
+                ngxInput
+                type="text"
+                name="fullName"
+                autocomplete="name"
+                aria-label="Full name"
+                [value]="fullName()"
+                (input)="setTextValue(fullName, $event)"
+                [attr.aria-describedby]="
+                  contactSubmitted() && !fullName().trim() ? 'full-name-error' : null
+                "
+                [attr.aria-invalid]="contactSubmitted() && !fullName().trim()" />
+              @if (contactSubmitted() && !fullName().trim()) {
+                <span ngxError id="full-name-error">Enter your name.</span>
+              }
+            </ngx-form-field>
+          </div>
+          <div class="demo-field">
+            <ngx-form-field
+              label="Email address"
+              [required]="true"
+              [invalid]="contactSubmitted() && !isValidEmail(contactEmail())">
+              <input
+                ngxInput
+                type="email"
+                name="contactEmail"
+                autocomplete="email"
+                aria-label="Email address"
+                [value]="contactEmail()"
+                (input)="setTextValue(contactEmail, $event)"
+                [attr.aria-describedby]="
+                  contactSubmitted() && !isValidEmail(contactEmail())
+                    ? 'contact-email-hint contact-email-error'
+                    : 'contact-email-hint'
+                "
+                [attr.aria-invalid]="contactSubmitted() && !isValidEmail(contactEmail())" />
+              <span ngxHint id="contact-email-hint">We will only use this to reply.</span>
+              @if (contactSubmitted() && !isValidEmail(contactEmail())) {
+                <span ngxError id="contact-email-error">Enter a valid email address.</span>
+              }
+            </ngx-form-field>
+          </div>
+          <div class="demo-field">
+            <ngx-form-field label="Phone">
+              <input
+                ngxInput
+                type="tel"
+                name="phone"
+                autocomplete="tel"
+                aria-label="Phone"
+                [value]="phone()"
+                (input)="setTextValue(phone, $event)" />
+            </ngx-form-field>
+          </div>
+          <div class="demo-field">
+            <ngx-form-field label="How can we help?">
+              <textarea
+                ngxInput
+                rows="3"
+                name="contactMessage"
+                aria-label="How can we help?"
+                [value]="contactMessage()"
+                (input)="setTextValue(contactMessage, $event)"></textarea>
+            </ngx-form-field>
+          </div>
+          <div class="demo-actions form-actions">
+            <button type="submit" class="demo-button primary">Prepare message</button>
+            <button type="button" class="demo-button secondary" (click)="resetContact()">
+              Reset
+            </button>
+          </div>
+          @if (contactStatus()) {
+            <p class="demo-form-status" role="status">{{ contactStatus() }}</p>
+          }
+          @if (contactErrors().length) {
+            <ul class="demo-form-errors" aria-label="Contact form errors">
+              @for (error of contactErrors(); track error) {
+                <li>{{ error }}</li>
+              }
+            </ul>
+          }
+        </form>
+      </section>
+    </div>
+  </div>
+</app-example-showcase>

@@ -1,8 +1,17 @@
 <app-example-showcase
   lable="Virtual Scroll"
   [files]="sourceFiles"
-  readmePath="readmes/time-picker/README.md">
+  readmePath="readmes/virtual-scroll/README.md">
   <div class="container">
+    <label class="demo-field" for="record-count">
+      <span class="demo-field-label">Dataset size</span>
+      <select class="demo-select" id="record-count" [value]="maximum" (change)="setMaximum($event)">
+        <option value="10000">10,000 records</option>
+        <option value="100000">100,000 records</option>
+        <option value="500000">500,000 records</option>
+      </select>
+    </label>
+
     <div class="d-flex align-items-end">
       <div class="flex-fill">
         <h3>Virtual Scrolling ({{ maximum | number }} Records)</h3>
@@ -18,12 +27,12 @@
         </ngx-virtual-scroll-viewport>
       </div>
       <div class="flex-fill">
-        <h4>
-          Angular Material Cdk Virtual Scroll (CAN NOT LOAD ALL {{ maximum | number }} RECORDS!
-          limited to browser max scrollable height)
-        </h4>
+        <h4>Angular CDK comparison</h4>
+        <p class="comparison-note">
+          Very large datasets can reach the browser's maximum scrollable height.
+        </p>
         <cdk-virtual-scroll-viewport
-          [itemSize]="57"
+          [itemSize]="56"
           [minBufferPx]="200"
           [maxBufferPx]="400"
           class="list-container">

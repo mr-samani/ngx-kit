@@ -1,6 +1,8 @@
-.configuration {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  align-items: center;
+.demo-check:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.demo-field > .demo-check {
+  margin-bottom: 10px;
 }

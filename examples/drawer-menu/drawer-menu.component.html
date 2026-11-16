@@ -1,7 +1,7 @@
 <app-example-showcase
   lable="Drawer Menu"
   [files]="sourceFiles"
-  readmePath="readmes/drawer-menu/README.md">
+  readmePath="readmes/side-nav/README.md">
   <div class="toolbar-group">
     <span class="toolbar-label">Mode</span>
 
@@ -17,23 +17,33 @@
   </div>
 
   <div class="frame">
-    <ngx-side-nav [mode]="mode()" [width]="220" class="my-drawer-menu">
+    <ngx-side-nav [mode]="mode()" [width]="220" class="my-drawer-menu" id="drawer-demo">
       <div ngxDrawerMenu class="menu-content">
         <h4>My Menu</h4>
-        <ul>
-          <li>Home</li>
-          <li>Profile</li>
-          <li>Settings</li>
-          <li>Sign out</li>
-        </ul>
+        <nav aria-label="Demo pages">
+          <ul>
+            @for (page of pages; track page) {
+              <li>
+                <button
+                  type="button"
+                  [class.active]="activePage() === page"
+                  [attr.aria-current]="activePage() === page ? 'page' : null"
+                  (click)="selectPage(page)">
+                  {{ page }}
+                </button>
+              </li>
+            }
+          </ul>
+        </nav>
       </div>
 
       <div class="page-content">
-        <button type="button" ngxDrawerMenuToggle>
-          <i class="fa fa-bars"></i>
+        <button type="button" ngxDrawerMenuToggle aria-label="Toggle navigation menu">
+          <i class="fa fa-bars" aria-hidden="true"></i>
         </button>
-        <p>This is the page's main content.</p>
-        <p>Change "contentBehavior" to see how it reacts.</p>
+        <h2>{{ activePage() }}</h2>
+        <p>This content changes when you choose a destination in the drawer.</p>
+        <p>Change the mode above to compare push and overlay navigation.</p>
       </div>
     </ngx-side-nav>
   </div>

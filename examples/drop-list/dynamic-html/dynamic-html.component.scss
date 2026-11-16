@@ -1,31 +1,42 @@
 .example-list {
+  min-height: 8rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+
   .box {
     min-height: 50px;
-    border: 1px dashed #ccc;
-    background-color: cadetblue;
+    padding: 0.75rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
   }
+
   .placeholder {
-    border: 2px rgb(26, 255, 0) solid;
+    border: 2px solid var(--success);
   }
+
   button,
   input {
     min-height: 40px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
   }
-}
-.ngxpointer {
-  position: absolute;
-  background-color: #ff0000;
-  top: 11px;
-  left: 10px;
-  z-index: 99999999;
 }
 
-table {
-  width: 100%;
-  max-width: 768px;
-  margin: 10px auto;
-  td {
-    border: 1px red solid;
-    padding: 25px;
-  }
+.markup-output {
+  max-block-size: 20rem;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  direction: ltr;
+  text-align: start;
 }

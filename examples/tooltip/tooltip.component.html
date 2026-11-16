@@ -1,159 +1,189 @@
 <app-example-showcase lable="Tooltip" [files]="sourceFiles" readmePath="readmes/tooltip/README.md">
   <div class="demo-playground">
-    <!-- =====================================================
-         CONTENT
-         ===================================================== -->
     <div class="config-preview">
-      <div class="demo-configuration">
-        <section class="demo-section">
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Content</h3>
-            </div>
-
-            <span class="badge">Tooltip</span>
+      <section class="demo-section demo-configuration">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Tooltip content</h3>
+            <p class="demo-section-description">Change the message shown on each target.</p>
           </div>
+          <span class="badge">Hover or focus a target</span>
+        </div>
 
-          <div class="demo-grid">
-            <label class="demo-field">
-              <span class="demo-field-label">Tooltip test</span>
-              <textarea
-                class="demo-input"
-                type="text"
-                [(ngModel)]="tooltipContent"
-                name="message"
-                placeholder="Tooltip message"></textarea>
-            </label>
+        <label class="demo-field">
+          <span class="demo-field-label">Message</span>
+          <textarea
+            class="demo-textarea"
+            [ngModel]="tooltipContent()"
+            (ngModelChange)="tooltipContent.set($event)"
+            name="tooltipContent"
+            placeholder="Write a short hint"></textarea>
+        </label>
+
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Placement</h3>
+            <p class="demo-section-description">Choose the preferred side of the target.</p>
           </div>
+        </div>
+        <div class="demo-choice" aria-label="Tooltip placement">
+          @for (option of placements; track option) {
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="placement() === option"
+              [attr.aria-pressed]="placement() === option"
+              (click)="placement.set(option)">
+              {{ option | titlecase }}
+            </button>
+          }
+        </div>
 
-          <!-- =====================================================
-         placement
-         ===================================================== -->
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Placement</h3>
-              <p class="demo-section-description">Select the tooltip placement.</p>
-            </div>
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Trigger</h3>
+            <p class="demo-section-description">
+              Focus and hover triggers also work with the keyboard-focusable preview controls.
+            </p>
           </div>
-
-          <div class="demo-choice">
-            @for (item of placements; track $index) {
-              <button
-                type="button"
-                class="demo-choice-item"
-                [class.active]="placement() === item"
-                (click)="placement.set(item)">
-                {{ item | titlecase }}
-              </button>
-            }
-          </div>
-          <!-- =====================================================
-         Trigger
-         ===================================================== -->
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Trigger</h3>
-              <p class="demo-section-description">Select the tooltip trigger.</p>
-            </div>
-          </div>
-          <div class="demo-radio-group">
-            @for (item of triggers; track $index) {
-              <label class="demo-radio">
-                <input type="radio" name="trigger" [(ngModel)]="trigger" [value]="item" />
-                <span class="demo-radio-dot"></span>
-                {{ item | uppercase }}
-              </label>
-            }
-          </div>
-
-          <!-- =====================================================
-         Other
-         ===================================================== -->
-
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Other</h3>
-            </div>
-          </div>
-          <div class="demo-grid">
-            <label class="demo-field">
-              <span class="demo-field-label">Offset</span>
-
-              <input class="demo-input" type="number" [(ngModel)]="offset" name="offset" />
-            </label>
-
-            <label class="demo-field">
-              <span class="demo-field-label">Delay</span>
-
-              <input class="demo-input" type="number" [(ngModel)]="delay" name="delay" />
-            </label>
-            <label class="demo-field">
-              <span class="demo-field-label">Hide Delay</span>
-
-              <input class="demo-input" type="number" [(ngModel)]="hideDelay" name="hideDelay" />
-            </label>
-            <label class="demo-check">
-              <input type="checkbox" [(ngModel)]="useHtml" name="allowHtml" />
-
-              <span class="demo-check-box"></span>
-
-              <span>Allow Html</span>
-            </label>
-            <label class="demo-check">
-              <input type="checkbox" [(ngModel)]="usePopOver" name="usePopover" />
-
-              <span class="demo-check-box"></span>
-
-              <span>User Popover Overlay</span>
-            </label>
-          </div>
-        </section>
-      </div>
-      <div class="demo-preview">
-        <section class="demo-section">
-          <!-- =====================================================
-         ACTUAL COMPONENT
-         ===================================================== -->
-
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Preview</h3>
-            </div>
-          </div>
-
-          <div class="demo-preview">
-            <div class="demo-preview-content">
-              <span
-                class="prv-tltp"
-                [ngxTooltip]="tooltipContent()"
-                [ngxTooltipDelay]="delay()"
-                [ngxTooltipHideDelay]="hideDelay()"
-                [ngxTooltipTrigger]="trigger()"
-                [ngxTooltipPlacement]="placement()"
-                [ngxTooltipOffset]="offset()"
-                [ngxTooltipAllowHtml]="useHtml()"
-                [ngxTooltipUseOverlay]="usePopOver()">
-                Custom element
-              </span>
-
+        </div>
+        <div class="demo-radio-group" role="radiogroup" aria-label="Tooltip trigger">
+          @for (option of triggers; track option) {
+            <label class="demo-radio">
               <input
-                type="text"
-                [ngxTooltip]="tooltipContent()"
-                [ngxTooltipDelay]="delay()"
-                [ngxTooltipHideDelay]="hideDelay()"
-                [ngxTooltipTrigger]="trigger()"
-                [ngxTooltipPlacement]="placement()"
-                [ngxTooltipOffset]="offset()"
-                [ngxTooltipAllowHtml]="useHtml()"
-                [ngxTooltipUseOverlay]="usePopOver()"
-                placeholder="Sample Tooltip on text box" />
-            </div>
+                type="radio"
+                name="trigger"
+                [ngModel]="trigger()"
+                (ngModelChange)="trigger.set($event)"
+                [value]="option" />
+              <span class="demo-radio-dot"></span>
+              {{ option | titlecase }}
+            </label>
+          }
+        </div>
+
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Timing and behavior</h3>
+            <p class="demo-section-description">Adjust spacing, delays, and viewport handling.</p>
           </div>
-          <!-- =====================================================
-         LIVE PAYLOAD
-         ===================================================== -->
-        </section>
-      </div>
+        </div>
+        <div class="demo-grid">
+          <label class="demo-field">
+            <span class="demo-field-label">Offset (px)</span>
+            <input
+              class="demo-input"
+              type="number"
+              min="0"
+              [ngModel]="offset()"
+              (ngModelChange)="offset.set($event)"
+              name="offset" />
+          </label>
+          <label class="demo-field">
+            <span class="demo-field-label">Show delay (ms)</span>
+            <input
+              class="demo-input"
+              type="number"
+              min="0"
+              [ngModel]="delay()"
+              (ngModelChange)="delay.set($event)"
+              name="delay" />
+          </label>
+          <label class="demo-field">
+            <span class="demo-field-label">Hide delay (ms)</span>
+            <input
+              class="demo-input"
+              type="number"
+              min="0"
+              [ngModel]="hideDelay()"
+              (ngModelChange)="hideDelay.set($event)"
+              name="hideDelay" />
+          </label>
+        </div>
+        <div class="demo-check-grid">
+          <label class="demo-check">
+            <input
+              type="checkbox"
+              [ngModel]="flip()"
+              (ngModelChange)="flip.set($event)"
+              name="flip" />
+            <span class="demo-check-box"></span>
+            <span>Flip when space is limited</span>
+          </label>
+          <label class="demo-check">
+            <input
+              type="checkbox"
+              [ngModel]="shift()"
+              (ngModelChange)="shift.set($event)"
+              name="shift" />
+            <span class="demo-check-box"></span>
+            <span>Keep inside the viewport</span>
+          </label>
+          <label class="demo-check">
+            <input
+              type="checkbox"
+              [ngModel]="useHtml()"
+              (ngModelChange)="useHtml.set($event)"
+              name="allowHtml" />
+            <span class="demo-check-box"></span>
+            <span>Allow HTML content</span>
+          </label>
+          <label class="demo-check">
+            <input
+              type="checkbox"
+              [ngModel]="usePopOver()"
+              (ngModelChange)="usePopOver.set($event)"
+              name="usePopover" />
+            <span class="demo-check-box"></span>
+            <span>Use the top-layer popover</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="demo-section demo-preview-panel">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Try it</h3>
+            <p class="demo-section-description">
+              Hover either target, or tab to it when focus triggering is enabled.
+            </p>
+          </div>
+        </div>
+        <div class="demo-preview">
+          <div class="demo-preview-content tooltip-preview">
+            <button
+              class="tooltip-target"
+              type="button"
+              [ngxTooltip]="tooltipContent()"
+              [ngxTooltipDelay]="delay()"
+              [ngxTooltipHideDelay]="hideDelay()"
+              [ngxTooltipTrigger]="trigger()"
+              [ngxTooltipPlacement]="placement()"
+              [ngxTooltipOffset]="offset()"
+              [ngxTooltipAllowHtml]="useHtml()"
+              [ngxTooltipUseOverlay]="usePopOver()"
+              [ngxTooltipFlip]="flip()"
+              [ngxTooltipShift]="shift()">
+              Preview button
+            </button>
+            <input
+              class="demo-input tooltip-input"
+              type="text"
+              aria-label="Preview text field"
+              placeholder="Preview text field"
+              [ngxTooltip]="tooltipContent()"
+              [ngxTooltipDelay]="delay()"
+              [ngxTooltipHideDelay]="hideDelay()"
+              [ngxTooltipTrigger]="trigger()"
+              [ngxTooltipPlacement]="placement()"
+              [ngxTooltipOffset]="offset()"
+              [ngxTooltipAllowHtml]="useHtml()"
+              [ngxTooltipUseOverlay]="usePopOver()"
+              [ngxTooltipFlip]="flip()"
+              [ngxTooltipShift]="shift()" />
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </app-example-showcase>

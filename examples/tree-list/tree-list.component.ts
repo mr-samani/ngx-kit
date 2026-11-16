@@ -1,17 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TreeModel } from './tree.model';
 import { filterTreeList } from 'ngx-kit/core';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-filter-tree-list',
   templateUrl: './tree-list.component.html',
   styleUrls: ['./tree-list.component.scss'],
-  imports: [FormsModule],
+  imports: [FormsModule, ExampleShowcaseComponent],
 })
 export class DemoTreeList implements OnInit {
-  filter = '';
-  result = '';
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: 'examples/tree-list/tree-list.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/tree-list/tree-list.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/tree-list/tree-list.component.scss', language: 'scss' },
+    { label: 'TS', path: 'examples/tree-list/tree.model.ts', language: 'typescript' },
+  ];
+
+  filter = signal('');
+  result = signal('');
   dataTree: TreeModel[] = [
     {
       name: 'Documents',
@@ -96,7 +107,7 @@ export class DemoTreeList implements OnInit {
   }
 
   filterTree() {
-    var filter = this.filter.toLowerCase();
+    var filter = this.filter().toLowerCase();
     var expression = (x: TreeModel) =>
       x.name.toLowerCase().includes(filter) || x.type.toLowerCase().includes(filter);
     var result = filterTreeList(this.dataTree, expression, { childrenKeyName: 'children' });
@@ -107,7 +118,12 @@ export class DemoTreeList implements OnInit {
 
   print(data: any) {
     var src = JSON.stringify(data, undefined, 2);
-    this.result = syntaxHighlight(src);
+    this.result.set(syntaxHighlight(src));
+  }
+
+  onFilterChange(value: string) {
+    this.filter.set(value);
+    this.filterTree();
   }
 }
 

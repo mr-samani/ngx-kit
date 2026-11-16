@@ -1,5 +1,4 @@
 import { inject, Injectable } from '@angular/core';
-import { randomStrnig } from 'ngx-kit/core';
 import { ColumnFilterService, type ColumnFilterState } from 'ngx-kit/data-table';
 import { delay, Observable, of } from 'rxjs';
 
@@ -110,7 +109,6 @@ export class DataService {
       const first = firstNames[i % firstNames.length];
       const last = lastNames[Math.floor(i / firstNames.length) % lastNames.length];
       const user = new UserDto();
-      var randString = randomStrnig(100);
       user.fullName = `${first} ${last}`;
       user.userName = `${first.toLowerCase()}${i + 1}`;
       user.email = i % 11 === 0 ? '' : `user${i + 1}@example.com`;

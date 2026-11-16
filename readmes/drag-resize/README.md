@@ -75,19 +75,7 @@ The emitted event follows the familiar `previousIndex/currentIndex` model, makin
 
 Resize is pointer based, supports all eight directions, minimum/maximum constraints and optional pixel snapping.
 
-## Page-builder usage (palette in the page, canvas in an `<iframe>`)
 
-```html
-<div NgxDropListGroup>
-  <div NgxDropList>               <!-- palette (host document) -->
-    <div NgxDraggable *ngFor="...">Hero</div>
-  </div>
-  <!-- inside the iframe's document, rendered by the same Angular app: -->
-  <main NgxDropList placeholderFit="stretch" (drop)="onDrop($event)">
-    <section NgxDraggable [noDragSelector]="'[data-no-drag], [contenteditable]'">…</section>
-  </main>
-</div>
-```
 
 What the engine handles for a same-origin iframe canvas:
 

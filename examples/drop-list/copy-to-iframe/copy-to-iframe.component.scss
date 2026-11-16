@@ -1,18 +1,26 @@
 .form-container {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 20px;
-  max-height: 600px;
+
   .target-container {
-    flex: 1;
+    flex: 1 1 24rem;
+    min-width: 0;
+    min-height: 400px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
   }
 }
 .example-list {
-  width: 200px;
+  flex: 0 0 12rem;
+  width: 12rem;
   max-width: 100%;
-  border: solid 1px #ccc;
+  border: solid 1px var(--border);
   min-height: 60px;
   display: block;
-  background: white;
+  background: var(--surface-2);
   border-radius: 4px;
   overflow: auto;
   max-height: 1000px;
@@ -20,14 +28,15 @@
 
 .example-box {
   padding: 8px 10px;
-  border-bottom: solid 1px #ccc;
-  color: rgba(0, 0, 0, 0.87);
+  border: solid 1px var(--border);
+  border-radius: 6px;
+  color: var(--text);
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
   cursor: move;
-  background: white;
+  background: var(--surface);
   font-size: 14px;
 }

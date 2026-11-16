@@ -1,31 +1,26 @@
-import { CommonModule } from '@angular/common';
-import { Component, DOCUMENT, inject, Renderer2, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { NgxMenuModule } from 'ngx-kit/menu';
 import { Notify } from 'ngx-kit/notify';
-import {
-  ExampleShowcaseComponent,
-  ExampleSourceFile,
-} from '../../shared/showcase/example-showcase.component';
+import { ExampleShowcaseComponent } from '../../shared/showcase/example-showcase.component';
+import { ExampleSourceFile } from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-menu',
-  imports: [NgxMenuModule, CommonModule, ExampleShowcaseComponent],
+  imports: [NgxMenuModule, ExampleShowcaseComponent],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })
 export class MenuComponent {
-  protected readonly doc = inject(DOCUMENT);
-
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/menu/menu.component.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/menu/menu.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/menu/menu.component.scss', language: 'scss' },
   ];
 
-  action(act: string) {
-    Notify.info(`Clicked on "${act}"!`);
-  }
+  protected readonly lastAction = signal('Choose an item to see its action.');
 
-  toggleFulScreenMenu() {
-    this.doc.querySelector('.ngx-menu-overlay')?.classList.toggle('full-screen');
+  action(act: string): void {
+    this.lastAction.set(`Action selected: ${act}`);
+    Notify.info(`Clicked on "${act}"!`);
   }
 }

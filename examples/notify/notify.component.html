@@ -1,246 +1,153 @@
 <app-example-showcase lable="Notify" [files]="sourceFiles" readmePath="readmes/notify/README.md">
   <div class="demo-playground">
-    <!-- =====================================================
-         CONTENT
-         ===================================================== -->
     <div class="config-preview">
-      <div class="demo-configuration">
-        <section class="demo-section">
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Content</h3>
-              <p class="demo-section-description">
-                Customize the notification message and description.
-              </p>
-            </div>
-            <span class="badge">Notification</span>
+      <section class="demo-section demo-configuration">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Notification content</h3>
+            <p class="demo-section-description">Compose a message and choose its semantic state.</p>
           </div>
+          <span class="badge">Live preview</span>
+        </div>
 
-          <div class="demo-grid">
-            <label class="demo-field">
-              <span class="demo-field-label">Message</span>
-              <input
-                class="demo-input"
-                type="text"
-                [(ngModel)]="message"
-                name="message"
-                placeholder="Notification message" />
-            </label>
+        <div class="demo-grid">
+          <label class="demo-field">
+            <span class="demo-field-label">Message</span>
+            <input class="demo-input" type="text" [(ngModel)]="message" name="message" />
+          </label>
+          <label class="demo-field">
+            <span class="demo-field-label">Description</span>
+            <input
+              class="demo-input"
+              type="text"
+              [(ngModel)]="description"
+              name="description"
+              placeholder="Optional supporting details" />
+          </label>
+        </div>
 
-            <label class="demo-field">
-              <span class="demo-field-label">Description</span>
-              <input
-                class="demo-input"
-                type="text"
-                [(ngModel)]="description"
-                name="description"
-                placeholder="Optional description" />
-            </label>
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Type</h3>
+            <p class="demo-section-description">Pick the tone that best matches the message.</p>
           </div>
-          <!-- =====================================================
-         TYPE
-         ===================================================== -->
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Type</h3>
-              <p class="demo-section-description">Select the notification semantic state.</p>
-            </div>
-          </div>
-
-          <div class="demo-choice">
+        </div>
+        <div class="demo-choice" aria-label="Notification type">
+          @for (option of types; track option) {
             <button
               type="button"
               class="demo-choice-item"
-              [class.active]="type === 'info'"
-              (click)="type = 'info'">
-              Info
+              [class.active]="type === option"
+              [attr.aria-pressed]="type === option"
+              (click)="type = option">
+              {{ option | titlecase }}
             </button>
+          }
+        </div>
 
-            <button
-              type="button"
-              class="demo-choice-item"
-              [class.active]="type === 'success'"
-              (click)="type = 'success'">
-              Success
-            </button>
-
-            <button
-              type="button"
-              class="demo-choice-item"
-              [class.active]="type === 'warning'"
-              (click)="type = 'warning'">
-              Warning
-            </button>
-
-            <button
-              type="button"
-              class="demo-choice-item"
-              [class.active]="type === 'error'"
-              (click)="type = 'error'">
-              Error
-            </button>
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Placement</h3>
+            <p class="demo-section-description">Set where notifications enter the viewport.</p>
           </div>
-          <!-- =====================================================
-         POSITION
-         ===================================================== -->
-
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Position</h3>
-              <p class="demo-section-description">Choose where the notification should appear.</p>
-            </div>
-          </div>
-
-          <div class="demo-radio-group">
-            <label class="demo-radio">
-              <input type="radio" name="position" [(ngModel)]="options.position" value="top-left" />
-              <span class="demo-radio-dot"></span>
-              Top left
-            </label>
-
+        </div>
+        <div class="demo-radio-group" role="radiogroup" aria-label="Notification placement">
+          @for (placement of positions; track placement) {
             <label class="demo-radio">
               <input
                 type="radio"
                 name="position"
                 [(ngModel)]="options.position"
-                value="top-center" />
+                [value]="placement" />
               <span class="demo-radio-dot"></span>
-              Top center
+              {{ placement | titlecase }}
             </label>
+          }
+        </div>
 
-            <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="top-right" />
-              <span class="demo-radio-dot"></span>
-              Top right
-            </label>
-
-            <label class="demo-radio">
-              <input type="radio" name="position" [(ngModel)]="options.position" value="center" />
-              <span class="demo-radio-dot"></span>
-              Center
-            </label>
-
-            <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="bottom-left" />
-              <span class="demo-radio-dot"></span>
-              Bottom left
-            </label>
-
-            <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="bottom-center" />
-              <span class="demo-radio-dot"></span>
-              Bottom center
-            </label>
-
-            <label class="demo-radio">
-              <input
-                type="radio"
-                name="position"
-                [(ngModel)]="options.position"
-                value="bottom-right" />
-              <span class="demo-radio-dot"></span>
-              Bottom right
-            </label>
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Behavior</h3>
+            <p class="demo-section-description">Tune dismissal and timeout behavior.</p>
           </div>
-          <!-- =====================================================
-         BEHAVIOR
-         ===================================================== -->
+        </div>
+        <div class="demo-check-grid">
+          <label class="demo-check">
+            <input type="checkbox" [(ngModel)]="options.dismissible" name="dismissible" />
+            <span class="demo-check-box"></span>
+            <span>Show a dismiss button</span>
+          </label>
+          <label class="demo-check">
+            <input type="checkbox" [(ngModel)]="options.pauseOnHover" name="pauseOnHover" />
+            <span class="demo-check-box"></span>
+            <span>Pause while hovered</span>
+          </label>
+          <label class="demo-check">
+            <input type="checkbox" [(ngModel)]="options.closeOnTap" name="closeOnTap" />
+            <span class="demo-check-box"></span>
+            <span>Close when clicked</span>
+          </label>
+          <label class="demo-check">
+            <input type="checkbox" [(ngModel)]="options.allowHtml" name="allowHtml" />
+            <span class="demo-check-box"></span>
+            <span>Allow formatted HTML</span>
+          </label>
+          <label class="demo-check">
+            <input type="checkbox" [(ngModel)]="options.usePopover" name="usePopover" />
+            <span class="demo-check-box"></span>
+            <span>Use the top-layer popover</span>
+          </label>
+          <label class="demo-field">
+            <span class="demo-field-label">Timeout (ms)</span>
+            <input
+              class="demo-input"
+              type="number"
+              [(ngModel)]="options.timeout"
+              name="timeout"
+              min="0"
+              step="500" />
+            <span class="demo-field-hint">Use 0 to keep the notification visible.</span>
+          </label>
+        </div>
+      </section>
 
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Behavior</h3>
-              <p class="demo-section-description">Configure notification lifecycle behavior.</p>
-            </div>
-          </div>
-
-          <div class="demo-grid">
-            <label class="demo-check">
-              <input type="checkbox" [(ngModel)]="options.dismissible" name="dismissible" />
-              <span class="demo-check-box"></span>
-              <span>Dismissible</span>
-            </label>
-
-            <label class="demo-check">
-              <input type="checkbox" [(ngModel)]="options.allowHtml" name="allowHtml" />
-              <span class="demo-check-box"></span>
-              <span>Allow Html</span>
-            </label>
-
-            <label class="demo-check">
-              <input type="checkbox" [(ngModel)]="options.usePopover" name="usePopover" />
-              <span class="demo-check-box"></span>
-              <span>Use Popover</span>
-            </label>
-
-            <label class="demo-field">
-              <span class="demo-field-label">Timeout</span>
-              <input
-                class="demo-input"
-                type="number"
-                [(ngModel)]="options.timeout"
-                name="timeout"
-                min="0"
-                step="500" />
-              <span class="demo-field-hint">Duration in milliseconds</span>
-            </label>
-          </div>
-        </section>
-        <!-- =====================================================
-         ACTION
-         ===================================================== -->
-        <section class="demo-action">
+      <section class="demo-section demo-preview-panel">
+        <div class="demo-actions">
           <button type="button" class="demo-button primary" (click)="showNotify()">
-            <span>✦</span>
-            Show Notify
+            Show notification
           </button>
-        </section>
-      </div>
-      <div class="demo-preview">
-        <section class="demo-section">
-          <!-- =====================================================
-         ACTUAL COMPONENT
-         ===================================================== -->
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Preview</h3>
-              <p class="demo-section-description">
-                Notification component rendered with the current configuration.
-              </p>
-            </div>
+        </div>
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Component preview</h3>
+            <p class="demo-section-description">
+              The notification below updates as you change the configuration.
+            </p>
           </div>
-
-          <div class="demo-preview">
-            <div class="demo-preview-content">
+        </div>
+        <div class="demo-preview">
+          <div class="demo-preview-content">
+            @if (previewVisible()) {
               <ngx-notification [payload]="payload"></ngx-notification>
-            </div>
+            } @else {
+              <div class="demo-empty" role="status">
+                Preview dismissed.
+                <button type="button" class="demo-button secondary" (click)="resetPreview()">
+                  Restore preview
+                </button>
+              </div>
+            }
           </div>
-          <!-- =====================================================
-         LIVE PAYLOAD
-         ===================================================== -->
-          <div class="demo-section-header">
-            <div>
-              <h3 class="demo-section-title">Live payload</h3>
-              <p class="demo-section-description">
-                Current payload passed to the notification component.
-              </p>
-            </div>
+        </div>
+        <div class="demo-section-header demo-status-header">
+          <div>
+            <h3 class="demo-section-title">Activity</h3>
+            <p class="demo-section-description" aria-live="polite">{{ activity() }}</p>
           </div>
-
-          <pre class="demo-result">{{ payload | json }}</pre>
-        </section>
-      </div>
+        </div>
+        <h3 class="demo-section-title">Current payload</h3>
+        <pre class="demo-result">{{ payload | json }}</pre>
+      </section>
     </div>
   </div>
 </app-example-showcase>

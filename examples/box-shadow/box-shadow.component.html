@@ -2,11 +2,63 @@
   lable="Box Shadow"
   [files]="sourceFiles"
   readmePath="readmes/box-shadow/README.md">
+  <div class="demo-playground">
+    <section class="demo-section">
+      <header class="demo-section-header">
+        <div>
+          <h2 class="demo-section-title">Box shadow editor</h2>
+          <p class="demo-section-description">
+            Build layered shadows, then see the CSS update on the preview in real time.
+          </p>
+        </div>
+      </header>
 
+      <div class="demo-field">
+        <span class="demo-field-label">Try a preset</span>
+        <div class="demo-actions">
+          <button type="button" class="demo-button secondary" (click)="boxShadow.set(softShadow)">
+            Soft glow
+          </button>
+          <button type="button" class="demo-button secondary" (click)="boxShadow.set(insetShadow)">
+            Inset
+          </button>
+          <button type="button" class="demo-button" (click)="boxShadow.set(defaultShadow)">
+            Layered
+          </button>
+        </div>
+      </div>
 
+      <div class="demo-grid">
+        <div class="demo-field">
+          <span class="demo-field-label">Shadow controls</span>
+          <ngx-box-shadow
+            [ngModel]="boxShadow()"
+            (ngModelChange)="boxShadow.set($event)"
+            name="box-shadow"></ngx-box-shadow>
+        </div>
 
-  <div class="card" [style.box-shadow]="boxShadow()"></div>
+        <div class="demo-field">
+          <span class="demo-field-label">Live preview</span>
+          <div class="demo-preview">
+            <div
+              aria-label="Box shadow preview"
+              [style.background]="'var(--surface)'"
+              [style.border]="'1px solid var(--border)'"
+              [style.border-radius.px]="18"
+              [style.box-shadow]="boxShadow()"
+              [style.height.px]="120"
+              [style.width.px]="180"></div>
+          </div>
+        </div>
+      </div>
 
-  <ngx-box-shadow [(ngModel)]="boxShadow" name="bxsh" />
-  <p>{{ boxShadow() }}</p>
+      <div class="demo-grid">
+       
+        <div class="demo-field">
+          <span class="demo-field-label">CSS value</span>
+          <pre class="demo-result" aria-live="polite">{{ boxShadow() || 'No shadow' }}</pre>
+        </div>
+      </div>
+    </section>
+  </div>
 </app-example-showcase>

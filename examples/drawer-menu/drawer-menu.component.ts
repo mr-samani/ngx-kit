@@ -16,11 +16,19 @@ export class DrawerMenuComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/drawer-menu/drawer-menu.component.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/drawer-menu/drawer-menu.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/drawer-menu/drawer-menu.component.scss', language: 'scss' },
   ];
 
   mode = signal<NgxSideNavMode>('push');
+  activePage = signal('Home');
+
+  protected readonly pages = ['Home', 'Profile', 'Settings', 'Sign out'];
 
   setMode(m: NgxSideNavMode) {
     this.mode.set(m);
+  }
+
+  selectPage(page: string) {
+    this.activePage.set(page);
   }
 }

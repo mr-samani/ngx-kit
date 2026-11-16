@@ -1,36 +1,45 @@
-<div ngxDropList class="example-list" (drop)="drop($event, items)" id="el_baseList">
-  <!-- <span class="placeholder" *ngxPlaceholder></span> -->
+<app-example-showcase
+  lable="Dynamic HTML Drop List"
+  [files]="sourceFiles"
+  readmePath="readmes/drag-resize/README.md">
+  <p class="demo-field-hint">
+    The list mixes native elements and directives; drag each one to reorder the live markup.
+  </p>
+  <div ngxDropList class="example-list" (drop)="drop($event, items)" id="el_baseList">
+    <!-- <span class="placeholder" *ngxPlaceholder></span> -->
 
-  @for (item of items; track $index) {
-    @switch (item.tag) {
-      @case ('div') {
-        <div class="box" ngxDraggable [id]="item.title">{{ item.title }}</div>
-      }
-      @case ('input') {
-        <input
-          type="text"
-          ngxDraggable
-          [ignoreInteractive]="false"
-          [value]="'input ' + item.title"
-          [id]="item.title" />
-      }
-      @case ('button') {
-        <button
-          ngxDraggable
-          [ignoreInteractive]="true"
-          [id]="item.title"
-          (click)="alert(item.title)">
-          btn-{{ item.title }}
-        </button>
+    @for (item of items; track $index) {
+      @switch (item.tag) {
+        @case ('div') {
+          <div class="box" ngxDraggable [id]="item.title">{{ item.title }}</div>
+        }
+        @case ('input') {
+          <input
+            type="text"
+            ngxDraggable
+            [ignoreInteractive]="false"
+            [attr.aria-label]="'Draggable input ' + item.title"
+            [value]="'input ' + item.title"
+            [id]="item.title" />
+        }
+        @case ('button') {
+          <button
+            ngxDraggable
+            [ignoreInteractive]="true"
+            [attr.aria-label]="'Show details for ' + item.title"
+            [id]="item.title"
+            (click)="alert(item.title)">
+            btn-{{ item.title }}
+          </button>
+        }
       }
     }
-  }
-</div>
-<!-- <pre>{{ items | json }}</pre> -->
+  </div>
+  <!-- <pre>{{ items | json }}</pre> -->
 
-<div class="ngxpointer"></div>
+  <pre class="markup-output" aria-label="Current list markup">{{ items | json }}</pre>
 
-<!-- <table>
+  <!-- <table>
   <tr>
     <td ngxDropList>
       <button ngxDraggable id="rrr">tttttttttttttttt</button>
@@ -49,3 +58,4 @@
     <td ngxDropList></td>
   </tr>
 </table> -->
+</app-example-showcase>

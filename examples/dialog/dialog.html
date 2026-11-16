@@ -1,3 +1,110 @@
 <app-example-showcase lable="Dialog" [files]="sourceFiles" readmePath="readmes/dialog/README.md">
-  <button (click)="showModal()">show modal</button>
+  <div class="demo-playground">
+    <div class="config-preview">
+      <section class="demo-section demo-configuration">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Dialog settings</h3>
+            <p class="demo-section-description">
+              Configure the panel, then open a working example dialog.
+            </p>
+          </div>
+          <span class="badge">ngx-kit/dialog</span>
+        </div>
+
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Size</h3>
+            <p class="demo-section-description">Choose a responsive preset for the panel.</p>
+          </div>
+        </div>
+        <div class="demo-choice" aria-label="Dialog size">
+          @for (option of sizeOptions; track option) {
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="size() === option"
+              [attr.aria-pressed]="size() === option"
+              (click)="size.set(option)">
+              {{ option | uppercase }}
+            </button>
+          }
+        </div>
+
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Animation</h3>
+            <p class="demo-section-description">Select how the dialog enters the screen.</p>
+          </div>
+        </div>
+        <div class="demo-choice" aria-label="Dialog animation">
+          @for (option of animationOptions; track option) {
+            <button
+              type="button"
+              class="demo-choice-item"
+              [class.active]="animation() === option"
+              [attr.aria-pressed]="animation() === option"
+              (click)="animation.set(option)">
+              {{ option | titlecase }}
+            </button>
+          }
+        </div>
+
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Dismissal</h3>
+            <p class="demo-section-description">Control whether clicking the backdrop closes it.</p>
+          </div>
+        </div>
+        <div class="demo-choice" aria-label="Close dialog on backdrop click">
+          <button
+            type="button"
+            class="demo-choice-item"
+            [class.active]="closeOnOutsideClick()"
+            [attr.aria-pressed]="closeOnOutsideClick()"
+            (click)="closeOnOutsideClick.set(true)">
+            Allow backdrop click
+          </button>
+          <button
+            type="button"
+            class="demo-choice-item"
+            [class.active]="!closeOnOutsideClick()"
+            [attr.aria-pressed]="!closeOnOutsideClick()"
+            (click)="closeOnOutsideClick.set(false)">
+            Keep dialog open
+          </button>
+        </div>
+
+        <div class="demo-actions">
+          <button type="button" class="demo-button primary" (click)="showModal()">
+            Open dialog
+          </button>
+        </div>
+      </section>
+
+      <section class="demo-section demo-preview-panel">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Preview</h3>
+            <p class="demo-section-description">
+              The dialog uses your selected options and includes a nested-dialog action.
+            </p>
+          </div>
+        </div>
+        <div class="demo-preview">
+          <div class="demo-preview-content dialog-preview-card">
+            <span class="dialog-preview-icon" aria-hidden="true">▱</span>
+            <strong>Focused, accessible overlay</strong>
+            <span>Size: {{ size() | uppercase }} · Animation: {{ animation() | titlecase }}</span>
+            <button type="button" class="demo-button primary" (click)="showModal()">
+              Launch preview
+            </button>
+          </div>
+        </div>
+        <p class="demo-section-description dialog-status" aria-live="polite">
+          {{ openCount() }} {{ openCount() === 1 ? 'dialog' : 'dialogs' }} opened in this session.
+        </p>
+      </section>
+    </div>
+  </div>
 </app-example-showcase>

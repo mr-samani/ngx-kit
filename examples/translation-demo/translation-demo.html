@@ -2,13 +2,59 @@
   lable="Lazy i18n"
   [files]="sourceFiles"
   readmePath="readmes/lazy-i18n/README.md">
+  <section class="demo-section" aria-labelledby="i18n-demo-title">
+    <div class="demo-section-header">
+      <h2 class="demo-section-title" id="i18n-demo-title">Live translation preview</h2>
+      <p class="demo-section-description">
+        Switch locale to update translated text and document direction.
+      </p>
+    </div>
 
-<div>
-  <button (click)="changeLangauge()" class="btn btn-primary">Change Language</button>
-</div>
+    <div class="demo-actions" role="group" aria-label="Choose language">
+      <button
+        class="demo-button"
+        type="button"
+        [class.primary]="lang() === 'en'"
+        [attr.aria-pressed]="lang() === 'en'"
+        (click)="setLanguage('en')">
+        English
+      </button>
+      <button
+        class="demo-button"
+        type="button"
+        [class.primary]="lang() === 'fa'"
+        [attr.aria-pressed]="lang() === 'fa'"
+        (click)="setLanguage('fa')">
+        فارسی
+      </button>
+    </div>
 
+    <label class="demo-field" for="i18n-name">
+      <span class="demo-field-label">Name for the greeting</span>
+      <input
+        class="demo-input"
+        id="i18n-name"
+        type="text"
+        [value]="name()"
+        (input)="onNameChange($event)" />
+    </label>
 
-  <p>Language= {{ lang() }}</p>
-  <p>Direction= {{ dir() }}</p>
-  <p>hello: {{ 'hello' | tr }}</p>
+    <div class="demo-preview-content" [attr.dir]="dir()">
+      <div>
+        <p>
+          <strong>Greeting:</strong>
+          {{ 'hello' | tr: { name: name() } }}
+        </p>
+
+        <p>
+          <strong>Active language:</strong>
+          {{ lang() }}
+        </p>
+        <p>
+          <strong>Direction:</strong>
+          {{ dir() }}
+        </p>
+      </div>
+    </div>
+  </section>
 </app-example-showcase>

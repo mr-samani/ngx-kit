@@ -11,12 +11,6 @@ const routes: Routes = [
       { path: '', redirectTo: 'color-picker', pathMatch: 'full' },
 
       {
-        path: 'i18n',
-        loadComponent: () =>
-          import('./translation-demo/translation-demo').then((c) => c.TranslationDemoComponent),
-      },
-
-      {
         path: 'color-picker',
         loadComponent: () =>
           import('./color-picker/color-picker.component').then((c) => c.ColorPickerComponent),
@@ -52,10 +46,10 @@ const routes: Routes = [
         loadComponent: () =>
           import('./calendar/calendar.component').then((c) => c.CalendarComponent),
       },
-      // {
-      //   path: 'form-field',
-      //   loadComponent: () => import('./form-field/form-field').then((c) => c.FormFieldComponent),
-      // },
+      {
+        path: 'form-field',
+        loadComponent: () => import('./form-field/form-field').then((c) => c.FormFieldComponent),
+      },
       {
         path: 'notify',
         loadComponent: () => import('./notify/notify.component').then((c) => c.NotifyComponent),
@@ -138,6 +132,11 @@ const routes: Routes = [
           import('./media-control/media-control.component').then(
             (c) => c.DemoMediaControlComponent,
           ),
+      },
+      {
+        path: 'i18n',
+        loadComponent: () =>
+          import('./translation-demo/translation-demo').then((c) => c.TranslationDemoComponent),
       },
     ],
   },

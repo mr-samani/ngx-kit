@@ -1,26 +1,34 @@
 .form-container {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 20px;
   .target-container {
-    flex: 1;
+    flex: 1 1 14rem;
+    min-width: 0;
+    color: var(--text-2);
     .inner {
-      background-color: #ccc;
-      min-height: 100px;
+      min-height: 180px;
       display: flex;
       align-items: flex-start;
       flex-direction: row;
       flex-wrap: wrap;
       gap: 5px;
-      padding: 5px;
+      padding: 10px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 8px;
+      background: var(--surface-2);
     }
   }
 }
 .example-list {
+  flex: 1 1 14rem;
+  min-width: 0;
   max-width: 100%;
-  border: solid 1px #ccc;
+  border: solid 1px var(--border);
   min-height: 60px;
   display: block;
-  background: white;
+  background: var(--surface-2);
   border-radius: 4px;
   overflow: auto;
   max-height: 1000px;
@@ -29,14 +37,15 @@
 .example-box {
   width: 150px;
   padding: 8px 10px;
-  border-bottom: solid 1px #ccc;
-  color: rgba(0, 0, 0, 0.87);
+  border: solid 1px var(--border);
+  border-radius: 6px;
+  color: var(--text);
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
   cursor: move;
-  background: white;
+  background: var(--surface);
   font-size: 14px;
 }

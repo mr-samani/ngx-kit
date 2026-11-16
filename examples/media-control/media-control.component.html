@@ -4,7 +4,10 @@
   readmePath="readmes/media-control/README.md">
   <h3>Audio (type="audio")</h3>
 
-  <input type="color" [(ngModel)]="color" ngxInputColor />
+  <label class="demo-field" for="player-color">
+    <span class="demo-field-label">Player accent</span>
+    <input id="player-color" type="color" [(ngModel)]="color" ngxInputColor />
+  </label>
 
   <ngx-media-control
     class="audio-player"

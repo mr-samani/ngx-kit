@@ -1,13 +1,35 @@
 import { Component } from '@angular/core';
 import { IDropEvent, moveItemInArray, NgxDraggable, NgxDropList } from 'ngx-kit/drag-resize';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-horizontal-list',
-  imports: [NgxDraggable, NgxDropList],
+  imports: [NgxDraggable, NgxDropList, ExampleShowcaseComponent],
   templateUrl: './horizontal-list.component.html',
   styleUrl: './horizontal-list.component.scss',
 })
 export class HorizontalListComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    {
+      label: 'TS',
+      path: 'examples/drop-list/horizontal-list/horizontal-list.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/drop-list/horizontal-list/horizontal-list.component.html',
+      language: 'html',
+    },
+    {
+      label: 'SCSS',
+      path: 'examples/drop-list/horizontal-list/horizontal-list.component.scss',
+      language: 'scss',
+    },
+  ];
+
   items: string[] = [];
   simpleItems = [
     'Episode I',

@@ -21,7 +21,7 @@ import { moveItemInArray, NgxDraggable, NgxDropList, type IDropEvent } from 'ngx
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     .inner {
-      background-color: #ccc;
+      background-color: var(--iframe-surface-2);
       min-height: 100px;
       display: flex;
       align-items: flex-start;
@@ -31,19 +31,21 @@ import { moveItemInArray, NgxDraggable, NgxDropList, type IDropEvent } from 'ngx
       gap: 5px;
       padding: 5px;
       height: 100%;
+      border: 1px solid var(--iframe-border);
     }
     .example-box {
       padding: 8px 10px;
       width: 200px;
-      border-bottom: solid 1px #ccc;
-      color: rgba(0, 0, 0, 0.87);
+      border: solid 1px var(--iframe-border);
+      border-radius: 6px;
+      color: var(--iframe-text);
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
       cursor: move;
-      background: white;
+      background: var(--iframe-surface);
       font-size: 14px;
     }
   `,

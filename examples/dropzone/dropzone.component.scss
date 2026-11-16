@@ -1,4 +1,5 @@
 .rejected-note {
-  color: light-dark(#b91c1c, #f87171);
+  color: var(--danger);
   font-size: 0.85rem;
+  padding-inline-start: 1.25rem;
 }

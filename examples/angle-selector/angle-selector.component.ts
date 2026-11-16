@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgxInputAngle, NgxAngleSelectorComponent } from 'ngx-kit/angle-selector';
 import {
@@ -10,17 +9,9 @@ import {
 @Component({
   selector: 'app-angle-selector',
   templateUrl: './angle-selector.component.html',
-  styleUrls: ['./angle-selector.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NgxInputAngle,
-    NgxAngleSelectorComponent,
-    ExampleShowcaseComponent,
-  ],
+  imports: [FormsModule, NgxInputAngle, NgxAngleSelectorComponent, ExampleShowcaseComponent],
 })
-export class AngleSelectorComponent implements OnInit {
+export class AngleSelectorComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
@@ -35,7 +26,8 @@ export class AngleSelectorComponent implements OnInit {
   ];
 
   angle = 135;
-  constructor() {}
 
-  ngOnInit() {}
+  setAngle(value: number): void {
+    this.angle = ((value % 360) + 360) % 360;
+  }
 }

@@ -1,25 +1,25 @@
 .example-list {
   width: 500px;
   max-width: 100%;
-  border: solid 1px #ccc;
+  border: solid 1px var(--border);
   min-height: 60px;
   display: block;
-  background: white;
+  background: var(--surface-2);
   border-radius: 4px;
   padding: 10px;
 }
 
 .example-box {
   padding: 8px 10px;
-  border: solid 1px #ccc;
+  border: solid 1px var(--border);
   border-radius: 5px;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--text);
   display: flex;
   flex-direction: row;
   align-items: center;
   box-sizing: border-box;
   cursor: move;
-  background: white;
+  background: var(--surface);
   font-size: 14px;
   min-height: 57px;
 }
@@ -42,12 +42,12 @@
   }
 }
 .custom-placeholder {
-  border: 2px #008a3c solid;
+  border: 2px var(--success) solid;
   &:after,
   &::before {
     position: absolute;
     content: ' ';
-    border: 8px #008a3c solid;
+    border: 8px var(--success) solid;
     top: -8px;
   }
   &:after {
@@ -65,8 +65,9 @@
 }
 
 .custom-preview {
-  border: 2px #8a0019 solid;
-  background-color: #f790a3;
-  color: #000;
-  padding: 50px;
+  border: 2px var(--primary) solid;
+  border-radius: 8px;
+  background-color: var(--primary-soft);
+  color: var(--text);
+  padding: 1.25rem;
 }

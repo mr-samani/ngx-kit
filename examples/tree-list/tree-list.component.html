@@ -1,16 +1,21 @@
-<div class="demo-grid">
-  <label class="demo-field">
-    <span class="demo-field-label">Filter</span>
+<app-example-showcase
+  lable="Tree List Filter"
+  [files]="sourceFiles"
+  readmePath="readmes/core/README.md">
+  <div class="demo-grid">
+    <label class="demo-field" for="filter">
+      <span class="demo-field-label">Filter</span>
 
-    <input
-      type="text"
-      name="filter"
-      id="filter"
-      placeholder="Search in name or type ..."
-      class="search-box"
-      (keyup)="filterTree()"
-      [(ngModel)]="filter" />
-  </label>
-</div>
+      <input
+        type="text"
+        name="filter"
+        id="filter"
+        placeholder="Search in name or type ..."
+        class="search-box"
+        [ngModel]="filter()"
+        (ngModelChange)="onFilterChange($event)" />
+    </label>
+  </div>
 
-<pre class="tree-view" id="treeView" [innerHTML]="result"></pre>
+  <pre class="tree-view" id="treeView" [innerHTML]="result()"></pre>
+</app-example-showcase>

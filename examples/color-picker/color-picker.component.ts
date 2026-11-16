@@ -1,4 +1,4 @@
-import { Component, model, OnInit } from '@angular/core';
+import { Component, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ColorInspector, NgxInputColor, OutputType } from 'ngx-kit/color-picker';
 import {
@@ -10,10 +10,9 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-color-picker',
   templateUrl: './color-picker.component.html',
-  styleUrls: ['./color-picker.component.scss'],
   imports: [CommonModule, FormsModule, NgxInputColor, ExampleShowcaseComponent],
 })
-export class ColorPickerComponent implements OnInit {
+export class ColorPickerComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
@@ -23,15 +22,13 @@ export class ColorPickerComponent implements OnInit {
     { label: 'HTML', path: 'examples/color-picker/color-picker.component.html', language: 'html' },
   ];
 
-  color = model<string>('pink');
+  color = model<string>('#a855f7');
   outputType: OutputType = 'HEX';
   simpleMode = false;
   inspector: ColorInspector = ColorInspector.Picker;
-
   useAlphaChannel = true;
-  constructor() {}
+ 
 
-  ngOnInit() {}
   public get ColorInspector(): typeof ColorInspector {
     return ColorInspector;
   }
