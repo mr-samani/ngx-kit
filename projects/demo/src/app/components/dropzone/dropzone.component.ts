@@ -15,6 +15,7 @@ export class DropzoneComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/dropzone/dropzone.component.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/dropzone/dropzone.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/dropzone/dropzone.component.scss', language: 'scss' },
   ];
 
   protected readonly acceptedCount = signal(0);

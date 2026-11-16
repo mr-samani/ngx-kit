@@ -1,21 +1,22 @@
-section {
-  min-height: 50dvh;
-  padding: 15px;
-  width: calc(100% / 3);
-
-  font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
-
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.demo-form {
+  display: grid;
+  gap: 14px;
 }
 
-/* ─────────────────────────────────────────────────────────
-/ Form actions
-/ ─────────────────────────────────────────────────────────*/
+.demo-form .demo-field {
+  min-width: 0;
+}
 
-.form-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
+.demo-form-status {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.demo-form-errors {
+  margin: 0;
+  padding-inline-start: 20px;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 1.6;
 }

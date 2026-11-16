@@ -1,30 +1,33 @@
 @use './scss/material.scss';
 
 html {
-  --bg: #f6f7fb;
-  --surface: #ffffff;
-  --surface-2: #f8f9fc;
-  --surface-3: #f1f3f7;
+  color-scheme: light;
 
-  --border: #e5e7eb;
-  --border-strong: #d7dbe3;
+  --bg: light-dark(#f6f7fb, #0b0d12);
+  --surface: light-dark(#ffffff, #12151c);
+  --surface-2: light-dark(#f8f9fc, #181c24);
+  --surface-3: light-dark(#f1f3f7, #1d222c);
 
-  --text: #111827;
-  --text-2: #4b5563;
-  --text-3: #8a93a3;
+  --border: light-dark(#e5e7eb, #262b35);
+  --border-strong: light-dark(#d7dbe3, #3a4150);
 
-  --primary: #635bff;
-  --primary-soft: rgba(99, 91, 255, 0.09);
-  --primary-border: rgba(99, 91, 255, 0.24);
+  --text: light-dark(#111827, #f4f5f7);
+  --text-2: light-dark(#4b5563, #b6bdc9);
+  --text-3: light-dark(#5f6b7d, #8b94a3);
 
-  --success: #18a66a;
-  --danger: #ef4444;
-  --warning: #e99b25;
-  --info: #4285f4;
+  --primary: light-dark(#554ce7, #aaa5ff);
+  --primary-strong: light-dark(#554ce7, #625bd0);
+  --primary-soft: light-dark(rgba(99, 91, 255, 0.09), rgba(129, 122, 255, 0.16));
+  --primary-border: light-dark(rgba(99, 91, 255, 0.3), rgba(129, 122, 255, 0.38));
 
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 8px 30px rgba(15, 23, 42, 0.07);
-  --shadow-lg: 0 20px 60px rgba(15, 23, 42, 0.1);
+  --success: light-dark(#15803d, #4ade80);
+  --danger: light-dark(#b91c1c, #f87171);
+  --warning: light-dark(#a16207, #fbbf24);
+  --info: light-dark(#1d4ed8, #60a5fa);
+
+  --shadow-sm: 0 1px 2px light-dark(rgba(15, 23, 42, 0.04), rgba(0, 0, 0, 0.3));
+  --shadow-md: 0 8px 30px light-dark(rgba(15, 23, 42, 0.07), rgba(0, 0, 0, 0.24));
+  --shadow-lg: 0 20px 60px light-dark(rgba(15, 23, 42, 0.1), rgba(0, 0, 0, 0.35));
 
   background: var(--bg);
   color: var(--text);
@@ -43,25 +46,11 @@ html {
     color 180ms ease;
 
   &.dark-scheme {
-    --bg: #0b0d12;
-    --surface: #12151c;
-    --surface-2: #181c24;
-    --surface-3: #1d222c;
+    color-scheme: dark;
+  }
 
-    --border: #262b35;
-    --border-strong: #333947;
-
-    --text: #f4f5f7;
-    --text-2: #a9b0bd;
-    --text-3: #697180;
-
-    --primary: #817aff;
-    --primary-soft: rgba(129, 122, 255, 0.12);
-    --primary-border: rgba(129, 122, 255, 0.28);
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.24);
-    --shadow-lg: 0 20px 70px rgba(0, 0, 0, 0.35);
+  &.light-scheme {
+    color-scheme: light;
   }
 }
 
@@ -84,6 +73,19 @@ select {
 
 button {
   cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .fa {
@@ -138,9 +140,11 @@ button {
   display: inline-grid;
   place-items: center;
 
-  border: 1px solid #85858570;
+  border: 1px solid var(--border-strong);
   border-radius: 100%;
 
+  background: var(--surface);
+  color: var(--text-2);
   font-size: 20px;
 
   transition:
@@ -148,8 +152,8 @@ button {
     transform 200ms ease;
 
   &:hover {
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-md);
+    color: var(--primary);
   }
 }
 
@@ -482,6 +486,13 @@ button {
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
+.demo-input:focus-visible,
+.demo-textarea:focus-visible,
+.demo-select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* ---------------------------------------------------------
    Checkboxes
    --------------------------------------------------------- */
@@ -576,6 +587,11 @@ button {
   transform: rotate(-45deg) scale(1);
 }
 
+.demo-check input:focus-visible + .demo-check-box {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* ---------------------------------------------------------
    Radio group
    --------------------------------------------------------- */
@@ -663,6 +679,11 @@ button {
 
 .demo-radio:has(input:checked) .demo-radio-dot::after {
   transform: scale(1);
+}
+
+.demo-radio:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* ---------------------------------------------------------
@@ -769,9 +790,9 @@ button {
 }
 
 .demo-button.primary {
-  border-color: var(--primary);
+  border-color: var(--primary-strong);
 
-  background: var(--primary);
+  background: var(--primary-strong);
   color: white;
 
   box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
@@ -915,5 +936,16 @@ button {
       border: none;
       background: none;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

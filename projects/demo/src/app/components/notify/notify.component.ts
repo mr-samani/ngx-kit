@@ -1,17 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, signal } from '@angular/core';
+import { Component, EventEmitter, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NgxNotificationComponent,
   Notify,
-  NgxNotifyType,
-  NgxNotifyOptions,
-  NgxNotifyPayload,
+  type INotifyEnd,
+  type NgxNotifyOptions,
+  type NgxNotifyPayload,
+  type NgxNotifyPositionType,
+  type NgxNotifyType,
 } from 'ngx-kit/notify';
-import {
-  ExampleShowcaseComponent,
-  ExampleSourceFile,
-} from '../../shared/showcase/example-showcase.component';
+import { ExampleShowcaseComponent } from '../../shared/showcase/example-showcase.component';
+import { ExampleSourceFile } from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-notify',
@@ -32,21 +32,41 @@ export class NotifyComponent {
       path: 'examples/notify/notify.component.html',
       language: 'html',
     },
+    {
+      label: 'SCSS',
+      path: 'examples/notify/notify.component.scss',
+      language: 'scss',
+    },
   ];
 
   message = 'Data saved Successfully!';
 
-  description = '<p style="color:green;">this is a description</p>';
+  description = 'Your changes are ready to use.';
 
   type: NgxNotifyType = 'info';
+  protected readonly types: NgxNotifyType[] = ['info', 'success', 'warning', 'error'];
+  protected readonly positions: NgxNotifyPositionType[] = [
+    'top-left',
+    'top-center',
+    'top-right',
+    'center',
+    'bottom-left',
+    'bottom-center',
+    'bottom-right',
+  ];
 
   options: NgxNotifyOptions = {
     dismissible: true,
-    allowHtml: true,
+    allowHtml: false,
     timeout: 5000,
-    position: 'center',
+    position: 'top-right',
     usePopover: true,
+    pauseOnHover: true,
+    closeOnTap: true,
   };
+
+  protected readonly activity = signal('No notification shown yet.');
+  protected readonly previewVisible = signal(true);
 
   get payload(): NgxNotifyPayload {
     return {
@@ -55,23 +75,26 @@ export class NotifyComponent {
       description: this.description,
       type: this.type,
       options: this.options,
-      onClose: new EventEmitter(),
-      onFinish: new EventEmitter(),
-      close: function (): void {
-        throw new Error('Function not implemented.');
-      },
+      onClose: new EventEmitter<INotifyEnd>(),
+      onFinish: new EventEmitter<INotifyEnd>(),
+      close: () => this.previewVisible.set(false),
     };
+  }
+
+  resetPreview(): void {
+    this.previewVisible.set(true);
   }
 
   showNotify(): void {
     const notification = Notify.show(this.type, this.message, this.description, this.options);
 
-    notification.onClose.subscribe((result) => {
-      console.log('close', result.id);
+    this.activity.set(`Showing ${this.type} notification.`);
+    notification.onClose.subscribe(() => {
+      this.activity.set('Notification dismissed.');
     });
 
-    notification.onFinish.subscribe((result) => {
-      console.log('finish', result.id);
+    notification.onFinish.subscribe(() => {
+      this.activity.set('Notification timed out.');
     });
   }
 }

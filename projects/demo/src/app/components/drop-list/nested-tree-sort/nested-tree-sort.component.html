@@ -1,36 +1,46 @@
-<div ngxDropListGroup>
-  <ng-container
-    [ngTemplateOutlet]="tree"
-    [ngTemplateOutletContext]="{ $implicit: items, level: 0, path: 'root' }"></ng-container>
-</div>
-
-<button (click)="add()">add</button>
-
-<ng-template #tree let-items let-level="level" let-class="class" let-path="path">
-  <div
-    ngxDropList
-    class="example-list"
-    [ngClass]="class"
-    (drop)="drop($event)"
-    [data]="items"
-    [id]="path">
-    <!-- <div class="custom-placeholder2" *ngxPlaceholder></div> -->
-    @for (item of items; track item) {
-      <div class="example-box" ngxDraggable [id]="item.name">
-        <div>{{ item.name }}</div>
-        @if (item.children) {
-          <ng-container
-            [ngTemplateOutlet]="tree"
-            [ngTemplateOutletContext]="{
-              $implicit: item.children,
-              level: level + 1,
-              class: 'children',
-              path: path + '/' + item.name,
-            }"></ng-container>
-        }
-      </div>
-    }
+<app-example-showcase
+  lable="Nested Tree Sorting"
+  [files]="sourceFiles"
+  readmePath="readmes/drag-resize/README.md">
+  <p class="demo-field-hint">
+    Move nodes between levels, reorder siblings, or add a new root item.
+  </p>
+  <div ngxDropListGroup>
+    <ng-container
+      [ngTemplateOutlet]="tree"
+      [ngTemplateOutletContext]="{ $implicit: items, level: 0, path: 'root' }"></ng-container>
   </div>
-</ng-template>
-<div class="ngxpointer"></div>
-<pre>{{ items | json }}</pre>
+
+  <button type="button" class="demo-button secondary" (click)="add()">Add root item</button>
+
+  <ng-template #tree let-items let-level="level" let-class="class" let-path="path">
+    <div
+      ngxDropList
+      class="example-list"
+      [class]="class"
+      (drop)="drop($event)"
+      [data]="items"
+      [id]="path">
+      <!-- <div class="custom-placeholder2" *ngxPlaceholder></div> -->
+      @for (item of items; track item) {
+        <div class="example-box" ngxDraggable [id]="item.name">
+          <div>{{ item.name }}</div>
+          @if (item.children) {
+            <ng-container
+              [ngTemplateOutlet]="tree"
+              [ngTemplateOutletContext]="{
+                $implicit: item.children,
+                level: level + 1,
+                class: 'children',
+                path: path + '/' + item.name,
+              }"></ng-container>
+          }
+        </div>
+      }
+    </div>
+  </ng-template>
+  <details class="tree-data">
+    <summary>View current tree data</summary>
+    <pre>{{ items | json }}</pre>
+  </details>
+</app-example-showcase>

@@ -1,13 +1,35 @@
 import { Component } from '@angular/core';
-import { moveItemInArray, NgxDraggable,  IDropEvent, NgxDropList } from 'ngx-kit/drag-resize';
+import { moveItemInArray, NgxDraggable, IDropEvent, NgxDropList } from 'ngx-kit/drag-resize';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-copy-to-zone',
-  imports: [NgxDraggable,NgxDropList],
+  imports: [NgxDraggable, NgxDropList, ExampleShowcaseComponent],
   templateUrl: './copy-to-zone.component.html',
   styleUrl: './copy-to-zone.component.scss',
 })
 export class CopyToZoneComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    {
+      label: 'TS',
+      path: 'examples/drop-list/copy-to-zone/copy-to-zone.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/drop-list/copy-to-zone/copy-to-zone.component.html',
+      language: 'html',
+    },
+    {
+      label: 'SCSS',
+      path: 'examples/drop-list/copy-to-zone/copy-to-zone.component.scss',
+      language: 'scss',
+    },
+  ];
+
   sourceList: string[] = [];
   targetList: { id: string; title: string }[] = [];
   constructor() {
@@ -18,9 +40,11 @@ export class CopyToZoneComponent {
   }
 
   drop(event: IDropEvent) {
-    console.log(event);
     if (event.previousContainer !== event.container) {
-      const newItem = { id: this.generateId(), title: event.previousContainer.data[event.previousIndex] };
+      const newItem = {
+        id: this.generateId(),
+        title: event.previousContainer.data[event.previousIndex],
+      };
       event.container.data.splice(event.currentIndex, 0, newItem);
     } else {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
@@ -33,8 +57,5 @@ export class CopyToZoneComponent {
 
   dropToDelete(event: IDropEvent) {
     event.container.data.splice(event.previousIndex, 1);
-  }
-  onClick(item: { id: string; title: string }) {
-    console.log('Clicked item:', item);
   }
 }

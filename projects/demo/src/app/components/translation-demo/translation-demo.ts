@@ -12,8 +12,8 @@ import { I18nService, injectT, translateSignal, TrPipe } from 'ngx-kit/lazy-i18n
 })
 export class TranslationDemoComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: 'examples/box-shadow/box-shadow.component.ts', language: 'typescript' },
-    { label: 'HTML', path: 'examples/box-shadow/box-shadow.component.html', language: 'html' },
+    { label: 'TS', path: 'examples/translation-demo/translation-demo.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/translation-demo/translation-demo.html', language: 'html' },
   ];
 
   name = model('MR-Samani');
@@ -22,12 +22,14 @@ export class TranslationDemoComponent {
   title = translateSignal('orders.title');
   hello = translateSignal('hello', () => ({ name: this.name() })); // params may read signals
   t = injectT();
-  label = computed(() => this.t('orders.count', { n: 123 }));
   lang = this.i18n.lang; // Signal<string>
   dir = this.i18n.dir; // Signal<'rtl' | 'ltr'>
 
-  changeLangauge() {
-    const lang = this.lang() == 'fa' ? 'en' : 'fa';
+  setLanguage(lang: 'en' | 'fa') {
     this.i18n.use(lang);
+  }
+
+  onNameChange(event: Event) {
+    this.name.set((event.currentTarget as HTMLInputElement).value);
   }
 }

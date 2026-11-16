@@ -20,6 +20,7 @@ export class ImageEditorComponent {
       language: 'typescript',
     },
     { label: 'HTML', path: 'examples/image-editor/image-editor.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/image-editor/image-editor.component.scss', language: 'scss' },
   ];
 
   protected readonly selectedFile = signal<File | null>(null);

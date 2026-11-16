@@ -1,13 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { IDropEvent, moveItemInArray, NgxDraggable, NgxDropList } from 'ngx-kit/drag-resize';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-dynamic-html',
   templateUrl: './dynamic-html.component.html',
   styleUrls: ['./dynamic-html.component.scss'],
-  imports: [NgxDraggable, NgxDropList],
+  imports: [NgxDraggable, NgxDropList, JsonPipe, ExampleShowcaseComponent],
 })
-export class DynamicHtmlComponent implements OnInit {
+export class DynamicHtmlComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    {
+      label: 'TS',
+      path: 'examples/drop-list/dynamic-html/dynamic-html.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/drop-list/dynamic-html/dynamic-html.component.html',
+      language: 'html',
+    },
+    {
+      label: 'SCSS',
+      path: 'examples/drop-list/dynamic-html/dynamic-html.component.scss',
+      language: 'scss',
+    },
+  ];
+
   items: {
     title: string;
     tag: string;
@@ -22,13 +45,11 @@ export class DynamicHtmlComponent implements OnInit {
     }
   }
 
-  ngOnInit() {}
-  drop(ev: IDropEvent, list: any[]) {
-    console.log('Drop event: ', ev);
+  drop<T>(ev: IDropEvent, list: T[]) {
     moveItemInArray(list, ev.previousIndex, ev.currentIndex);
   }
 
   alert(txt: string) {
-    alert(txt);
+    window.alert(txt);
   }
 }

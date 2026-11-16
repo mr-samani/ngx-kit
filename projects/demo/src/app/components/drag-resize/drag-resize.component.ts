@@ -1,15 +1,14 @@
-import {
-  isRtl,
-  NgxDraggable,
-  NgxResizable,
-  NgxDropListGroup,
-  NgxDropList,
-} from 'ngx-kit/drag-resize';
-import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular/core';
+import { NgxDraggable, NgxResizable, NgxDropListGroup, NgxDropList } from 'ngx-kit/drag-resize';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { DirectionService } from 'ngx-kit/core';
 import { NgxResizeHandle } from 'ngx-kit/drag-resize';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 
 type PositionMode = 'static' | 'relative' | 'absolute' | 'fixed';
 
@@ -34,11 +33,18 @@ interface DemoEvent {
     NgxResizeHandle,
     NgxDropListGroup,
     NgxDropList,
+    ExampleShowcaseComponent,
   ],
   templateUrl: './drag-resize.component.html',
   styleUrl: './drag-resize.component.scss',
 })
-export class DragResizeComponent implements OnInit, OnDestroy {
+export class DragResizeComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    { label: 'TS', path: 'examples/drag-resize/drag-resize.component.ts', language: 'typescript' },
+    { label: 'HTML', path: 'examples/drag-resize/drag-resize.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/drag-resize/drag-resize.component.scss', language: 'scss' },
+  ];
+
   // ---------------------------------------------------------
   // Navigation
   // ---------------------------------------------------------
@@ -46,20 +52,28 @@ export class DragResizeComponent implements OnInit, OnDestroy {
   protected readonly direction = inject(DirectionService);
 
   readonly selectedExample = signal('overview');
+  readonly examples = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'drag', label: 'Drag' },
+    { id: 'resize', label: 'Resize' },
+    { id: 'combined', label: 'Combined' },
+    { id: 'positions', label: 'Positions' },
+    { id: 'boundary', label: 'Boundary' },
+    { id: 'handle', label: 'Handle' },
+    { id: 'scroll', label: 'Scroll' },
+    { id: 'multiple', label: 'Multiple' },
+    { id: 'resizepan', label: 'Resize pane' },
+    { id: 'interaction', label: 'Interactive' },
+  ] as const;
 
   // ---------------------------------------------------------
   // Playground state
   // ---------------------------------------------------------
-
   readonly isRtl = this.direction.isRtl();
-
-  readonly darkMode = signal(false);
 
   readonly showGrid = signal(true);
 
   readonly gridSize = signal(20);
-
-  readonly selectedPosition = signal<PositionMode>('absolute');
 
   readonly events = signal<DemoEvent[]>([]);
 
@@ -77,63 +91,35 @@ export class DragResizeComponent implements OnInit, OnDestroy {
   // UI
   // ---------------------------------------------------------
 
-  readonly sidebarCollapsed = signal(false);
-
   readonly showCode = signal(true);
 
   readonly showEvents = signal(true);
+  readonly copyStatus = signal('');
 
   // ---------------------------------------------------------
   // Computed
   // ---------------------------------------------------------
 
-  readonly positionLabel = computed(() => this.selectedPosition());
-
   readonly generatedCode = computed(() => {
-    const position = this.selectedPosition();
-
     return `<div
   class="demo-item"
   ngxDraggable
-  ngxResizable
-  style="position: ${position};"
+  ngxResizable 
   (dragEnd)="onDragEnd($event)"
   (resizeEnd)="onResizeEnd($event)">
   Drag & Resize
 </div>`;
   });
+  private eventId = 0;
 
   constructor() {
-    this.route.fragment.subscribe((f) => {
+    this.route.fragment.pipe(takeUntilDestroyed()).subscribe((f) => {
       this.selectedExample.set(f ?? 'overview');
     });
   }
 
-  ngOnInit(): void {}
-  ngOnDestroy(): void {}
-
-  // ---------------------------------------------------------
-  // Navigation
-  // ---------------------------------------------------------
-
   selectExample(id: string): void {
     this.selectedExample.set(id);
-  }
-
-  // ---------------------------------------------------------
-  // Position
-  // ---------------------------------------------------------
-
-  setPosition(position: PositionMode): void {
-    this.selectedPosition.set(position);
-  }
-
-  // ---------------------------------------------------------
-  // Theme
-  // ---------------------------------------------------------
-
-  toggleTheme(): void {
-    this.darkMode.update((value) => !value);
   }
 
   // ---------------------------------------------------------
@@ -152,11 +138,24 @@ export class DragResizeComponent implements OnInit, OnDestroy {
     this.showCode.update((value) => !value);
   }
 
+  toggleEvents(): void {
+    this.showEvents.update((value) => !value);
+  }
+
+  async copyCode(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.generatedCode());
+      this.copyStatus.set('Code copied.');
+    } catch {
+      this.copyStatus.set('Clipboard access is unavailable.');
+    }
+  }
+
   // ---------------------------------------------------------
   // Events
   // ---------------------------------------------------------
 
-  onDragStart(event?: any): void {
+  onDragStart(event?: unknown): void {
     this.addEvent({
       type: 'dragStart',
       x: this.readNumber(event, 'x'),
@@ -164,7 +163,7 @@ export class DragResizeComponent implements OnInit, OnDestroy {
     });
   }
 
-  onDragEnd(event: any): void {
+  onDragEnd(event: unknown): void {
     const x = this.readNumber(event, 'x');
     const y = this.readNumber(event, 'y');
 
@@ -183,7 +182,7 @@ export class DragResizeComponent implements OnInit, OnDestroy {
     });
   }
 
-  onResizeStart(event?: any): void {
+  onResizeStart(event?: unknown): void {
     this.addEvent({
       type: 'resizeStart',
       width: this.readNumber(event, 'width'),
@@ -191,7 +190,7 @@ export class DragResizeComponent implements OnInit, OnDestroy {
     });
   }
 
-  onResizeEnd(event: any): void {
+  onResizeEnd(event: unknown): void {
     const width = this.readNumber(event, 'width');
     const height = this.readNumber(event, 'height');
 
@@ -213,7 +212,7 @@ export class DragResizeComponent implements OnInit, OnDestroy {
   private addEvent(event: Omit<DemoEvent, 'id' | 'time'>): void {
     const item: DemoEvent = {
       ...event,
-      id: Date.now(),
+      id: ++this.eventId,
       time: new Date().toLocaleTimeString(),
     };
 
@@ -232,21 +231,13 @@ export class DragResizeComponent implements OnInit, OnDestroy {
     this.selectedElement.set(id);
   }
 
-  // ---------------------------------------------------------
-  // Utility
-  // ---------------------------------------------------------
-
-  private readNumber(event: any, key: string): number | undefined {
-    if (!event) {
+  private readNumber(event: unknown, key: 'x' | 'y' | 'width' | 'height'): number | undefined {
+    if (typeof event !== 'object' || event === null || !(key in event)) {
       return undefined;
     }
 
-    const value = event[key];
+    const value: unknown = Reflect.get(event, key);
 
     return typeof value === 'number' ? Math.round(value) : undefined;
-  }
-
-  trackByEvent(_: number, event: DemoEvent): number {
-    return event.id;
   }
 }

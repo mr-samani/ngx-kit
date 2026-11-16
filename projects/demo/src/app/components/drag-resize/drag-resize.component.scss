@@ -192,7 +192,7 @@
 }
 
 .drag-object {
-  left: 70px;
+  inset-inline-start: 70px;
   top: 70px;
 
   width: 190px;
@@ -238,7 +238,7 @@
    ========================================================= */
 
 .resize-object {
-  right: 90px;
+  inset-inline-end: 90px;
   top: 80px;
 
   width: 230px;
@@ -267,7 +267,7 @@
    ========================================================= */
 
 .combined-object {
-  left: 50%;
+  inset-inline-start: 50%;
   top: 55%;
 
   width: 280px;
@@ -450,7 +450,7 @@
 .boundary-label {
   position: absolute;
 
-  left: 18px;
+  inset-inline-start: 18px;
   top: 15px;
 
   display: flex;
@@ -475,7 +475,7 @@
 .boundary-object {
   position: absolute;
 
-  left: 50%;
+  inset-inline-start: 50%;
   top: 50%;
 
   width: 180px;
@@ -518,7 +518,7 @@
 .handle-window {
   position: absolute;
 
-  left: 50%;
+  inset-inline-start: 50%;
   top: 50%;
 
   width: 300px;
@@ -756,7 +756,7 @@
 }
 
 .card-a {
-  left: 30px;
+  inset-inline-start: 30px;
   top: 30px;
 
   width: 210px;
@@ -764,7 +764,7 @@
 }
 
 .card-b {
-  left: 260px;
+  inset-inline-start: 260px;
   top: 30px;
 
   width: 210px;
@@ -772,7 +772,7 @@
 }
 
 .chart-card {
-  left: 30px;
+  inset-inline-start: 30px;
   top: 200px;
 
   width: 440px;
@@ -816,12 +816,12 @@ RESIZE PAN
     .ngx-resize-handler {
       position: absolute;
       width: 4px;
-      background: #6f6b70;
+      background: var(--border-strong);
       height: 50%;
       top: 25%;
       border-radius: 50px;
-      right: 4px;
-      cursor: e-resize;
+      inset-inline-end: 4px;
+      cursor: ew-resize;
       display: none;
     }
     &:hover .ngx-resize-handler {
@@ -829,8 +829,8 @@ RESIZE PAN
     }
     &.rtl {
       .ngx-resize-handler {
-        right: auto;
-        left: 4px;
+        inset-inline-end: auto;
+        inset-inline-start: 4px;
       }
     }
   }
@@ -843,9 +843,9 @@ RESIZE PAN
    ========================================================= */
 .interaction-demo {
   details {
-    border: 1px solid light-dark(#dfe7f1, #171719);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    background: light-dark(#ffffff, #1d1d1e);
+    background: var(--surface);
     overflow: hidden;
   }
   summary {
@@ -856,12 +856,12 @@ RESIZE PAN
     padding: 17px 19px;
     cursor: pointer;
     list-style: none;
-    color: light-dark(#172033, #a5b1cc);
+    color: var(--text);
     font-size: 14px;
     font-weight: 800;
     &:after {
       content: '+';
-      color: rgb(37, 99, 235);
+      color: var(--primary);
       font-size: 22px;
     }
   }

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { EditorComponent } from 'ngx-monaco-editor-v2';
 import { DarkModeService } from '../../services/dark-mode.service';
+import { removeExampleShowcase, unwrapExampleShowcaseTag } from '../utils/cleaner';
 
 /**
  * نمایشگر سورس فقط-خواندنی روی پایه‌ی Monaco؛ آدرس فایل رو می‌گیره
@@ -58,7 +59,17 @@ export class CodeViewerComponent {
 
   private readonly darkMode = inject(DarkModeService);
 
-  protected readonly source = httpResource.text(() => document.baseURI + this.path());
+  protected readonly source = httpResource.text(() => document.baseURI + this.path(), {
+    parse: (value) => {
+      if (this.path().endsWith('.ts')) {
+        return removeExampleShowcase(value);
+      } else if (this.path().endsWith('.html')) {
+        return unwrapExampleShowcaseTag(value);
+      } else {
+        return value;
+      }
+    },
+  });
 
   protected readonly editorOptions = computed(() => ({
     theme: this.darkMode.isDarkMode() ? 'vs-dark' : 'vs',

@@ -2,37 +2,82 @@
   lable="Time Picker"
   [files]="sourceFiles"
   readmePath="readmes/time-picker/README.md">
-  <div class="container">
-    <h3>Input mode</h3>
-    <form [formGroup]="form">
-      <ngx-form-field label="Select Time">
-        <input
-          formControlName="time"
-          ngxInput
-          ngxInputTimePicker
-          [openOnCLick]="false"
-          #dpInput="ngxInputTimePicker" />
-        <button (click)="dpInput.toggle()" ngxPrefix class="pointer">
-          <i class="fa fa-clock"></i>
-        </button>
-        <button (click)="form.get('time')?.reset()" ngxSuffix class="pointer">
-          <i class="fa fa-times"></i>
-        </button>
+  <div class="demo-playground">
+    <section class="demo-section">
+      <header class="demo-section-header">
+        <div>
+          <h2 class="demo-section-title">Time picker</h2>
+          <p class="demo-section-description">
+            Select a time from the popup or use the inline clock. Choose a 12-hour or 24-hour
+            display.
+          </p>
+        </div>
+      </header>
 
-        <ngx-hint>Click on clock icon</ngx-hint>
+      <div class="demo-grid">
+        <div class="demo-field">
+          <label class="demo-field-label" for="time-format">Time format</label>
+          <select id="time-format" class="demo-select" name="format" [(ngModel)]="format">
+            <option value="12">12-hour</option>
+            <option value="24">24-hour</option>
+          </select>
 
-        @if (form.get('time')?.hasError('invalid')) {
-          <ngx-error>invalid time!</ngx-error>
-        }
-        @if (form.get('time')?.hasError('required')) {
-          <ngx-error>required time!</ngx-error>
-        }
-      </ngx-form-field>
 
-      <p>{{ form.get('time')?.value | json }}</p>
-    </form>
+          <form [formGroup]="form">
+            <label class="demo-field-label" for="selected-time">Selected time</label>
+            <div class="ngx-input-group">
+              <input
+                id="selected-time"
+                class="form-control"
+                formControlName="time"
+                ngxInputTimePicker
+                [format]="format"
+                [openOnCLick]="false"
+                #timePicker="ngxInputTimePicker" />
+              <button
+                type="button"
+                class="ngx-group-text pointer"
+                aria-label="Open time picker"
+                (click)="timePicker.toggle()">
+                <span aria-hidden="true">◷</span>
+              </button>
+              <button
+                type="button"
+                class="ngx-group-text pointer"
+                aria-label="Clear selected time"
+                (click)="form.controls.time.reset()">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+          </form>
 
-    <h3>Inline mode</h3>
-    <ngx-time-picker format="24"></ngx-time-picker>
+          @if (form.controls.time.touched && form.controls.time.invalid) {
+            <p class="demo-field-hint" role="status">A time is required.</p>
+          }
+        </div>
+
+        <div class="demo-field">
+          <span class="demo-field-label">Inline clock</span>
+          <ngx-time-picker
+            id="inline-time"
+            aria-label="Inline time picker"
+            [(ngModel)]="inlineTime"
+            [format]="format"
+            name="inline-time"></ngx-time-picker>
+          <div class="demo-grid">
+            <div class="demo-field">
+              <span class="demo-field-label">Popup value</span>
+              <pre class="demo-result" aria-live="polite">{{
+                form.controls.time.value || '—'
+              }}</pre>
+            </div>
+            <div class="demo-field">
+              <span class="demo-field-label">Inline value</span>
+              <pre class="demo-result" aria-live="polite">{{ inlineTime }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </app-example-showcase>

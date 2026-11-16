@@ -1,32 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MessageOptions, MessageResult, MSG } from 'ngx-kit/message';
-import {
-  ExampleShowcaseComponent,
-  ExampleSourceFile,
-} from '../../shared/showcase/example-showcase.component';
+import { MessageOptions, MSG, type MessageResult } from 'ngx-kit/message';
+import { ExampleShowcaseComponent } from '../../shared/showcase/example-showcase.component';
+import { ExampleSourceFile } from '../../shared/showcase/example-showcase.component';
 
 @Component({
   selector: 'app-message',
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    ExampleShowcaseComponent,
-  ],
+  imports: [CommonModule, FormsModule, ExampleShowcaseComponent],
   templateUrl: './message.html',
   styleUrl: './message.scss',
-  providers: [],
 })
 export class MessageComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
@@ -40,11 +23,25 @@ export class MessageComponent {
       path: 'examples/message/message.html',
       language: 'html',
     },
+    {
+      label: 'SCSS',
+      path: 'examples/message/message.scss',
+      language: 'scss',
+    },
   ];
 
   options = new MessageOptions();
+  protected readonly iconOptions: NonNullable<MessageOptions['icon']>[] = [
+    'success',
+    'error',
+    'info',
+    'warning',
+    'question',
+    'loading',
+  ];
 
-  result?: MessageResult;
+  htmlContent = '';
+  result = signal<MessageResult | null>(null);
 
   constructor() {
     this.options.title = 'Message Title';
@@ -58,8 +55,9 @@ export class MessageComponent {
   }
 
   openModal(): void {
+    this.options.html = this.htmlContent;
     MSG.show(this.options).afterClose.subscribe((result) => {
-      this.result = result;
+      this.result.set(result);
     });
   }
 
@@ -79,11 +77,13 @@ export class MessageComponent {
       showCloseButton: false,
     });
 
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     message.afterClose.subscribe((result) => {
-      console.log(result);
+      if (timeout !== undefined) clearTimeout(timeout);
+      this.result.set(result);
     });
 
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       message.close();
     }, 5000);
   }

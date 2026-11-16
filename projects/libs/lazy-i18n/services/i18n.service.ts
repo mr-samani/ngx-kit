@@ -191,7 +191,6 @@ export class I18nService {
     this._rev.update((v) => v + 1);
     this._ready.set(true);
     this.persist(lang);
-    this.applyDocument(lang);
   }
 
   /** Download a language without activating it. */
@@ -318,13 +317,5 @@ export class I18nService {
     } catch {
       /* ignore */
     }
-  }
-
-  private applyDocument(lang: string): void {
-    if (this.cfg.manageDocument === false) return;
-    const el = this.doc?.documentElement;
-    if (!el) return;
-    el.setAttribute('lang', lang);
-    el.setAttribute('dir', this.dir());
   }
 }

@@ -1,4 +1,55 @@
-#lipsum{
-    max-width: 768px;
-    text-align: justify;
+.dialog-content {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 18px 8px;
+  color: var(--text-2);
+  text-align: center;
+}
+
+.dialog-content-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 24px;
+}
+
+.dialog-content h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.dialog-content p {
+  max-width: 460px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.dialog-tip {
+  display: grid;
+  gap: 5px;
+  width: min(100%, 460px);
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  text-align: start;
+}
+
+.dialog-tip strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.dialog-tip span,
+.dialog-counter {
+  color: var(--text-3);
+  font-size: 11px;
 }

@@ -1,25 +1,51 @@
+.container {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.comparison-note {
+  color: var(--text-2);
+  font-size: 0.875rem;
+}
+
 .list-container {
   gap: 5px;
   overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+
   &.horizontal {
-    height: 100px;
+    height: 110px;
+
     .ngx-virtual-scroll-viewport__wrapper {
       display: flex;
       flex-direction: row;
     }
   }
+
   &:not(.horizontal) {
     height: 400px;
   }
 }
+
 .row {
   height: 48px;
-  border: 1px rgb(166 166 166 / 51%) solid;
-  box-shadow: 0px 0px 20px rgb(122 122 122 / 20%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   border-radius: 5px;
   display: flex;
   align-items: center;
-  padding: 15px;
-  margin: 10px;
+  padding-inline: 15px;
+  margin: 4px 10px;
   min-width: 200px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }

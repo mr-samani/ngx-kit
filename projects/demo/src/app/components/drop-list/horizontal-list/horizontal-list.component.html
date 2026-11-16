@@ -1,29 +1,34 @@
-horizontal list (signle line)
-<div
-  ngxDropList
-  class="list-container"
-  (drop)="drop($event, simpleItems)"
-  [connectedTo]="[horizontalList]"
-  #horizontalList>
-  @for (item of simpleItems; track item) {
-    <div class="box-item" ngxDraggable [id]="item">
-      {{ item }}
-    </div>
-  }
-</div>
+<app-example-showcase
+  lable="Horizontal Drop List"
+  [files]="sourceFiles"
+  readmePath="readmes/drag-resize/README.md">
+  <h2>Single-line horizontal list</h2>
+  <div
+    ngxDropList
+    class="list-container"
+    (drop)="drop($event, simpleItems)"
+    [connectedTo]="[horizontalList]"
+    #horizontalList>
+    @for (item of simpleItems; track item) {
+      <div class="box-item" ngxDraggable [id]="item">
+        {{ item }}
+      </div>
+    }
+  </div>
 
-horizontal list felxible with auto wrap css
-<div
-  ngxDropList
-  class="list-container auto-wrap"
-  (drop)="drop($event, items)"
-  [connectedTo]="[horizontalFlexWrap]"
-  #horizontalFlexWrap>
-  @for (item of items; track item) {
-    <div class="box-item" ngxDraggable [id]="item">
-      {{ item }}
-    </div>
-  }
-</div>
+  <h2>Flexible list with wrapping</h2>
+  <div
+    ngxDropList
+    class="list-container auto-wrap"
+    (drop)="drop($event, items)"
+    [connectedTo]="[horizontalFlexWrap]"
+    #horizontalFlexWrap>
+    @for (item of items; track item) {
+      <div class="box-item" ngxDraggable [id]="item">
+        {{ item }}
+      </div>
+    }
+  </div>
 
-<button (click)="add()">add</button>
+  <button type="button" class="demo-button secondary" (click)="add()">Add item</button>
+</app-example-showcase>

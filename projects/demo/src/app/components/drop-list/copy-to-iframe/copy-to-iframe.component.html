@@ -1,11 +1,19 @@
-<div class="form-container" ngxDropListGroup>
-  <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true" id="baseList">
-    @for (item of sourceList; track $index) {
-      <div class="example-box" ngxDraggable>
-        {{ item }}
-      </div>
-    }
-  </div>
+<app-example-showcase
+  lable="Drop List Across Iframes"
+  [files]="sourceFiles"
+  readmePath="readmes/drag-resize/README.md">
+  <p class="demo-field-hint">
+    The source list is in this document; drag an item into the independently bootstrapped iframe.
+  </p>
+  <div class="form-container" ngxDropListGroup>
+    <div ngxDropList class="example-list" [data]="sourceList" [disableSort]="true" id="baseList">
+      @for (item of sourceList; track $index) {
+        <div class="example-box" ngxDraggable>
+          {{ item }}
+        </div>
+      }
+    </div>
 
-  <iframe class="target-container" #iframe></iframe>
-</div>
+    <iframe class="target-container" title="Destination drop zone in an iframe" #iframe></iframe>
+  </div>
+</app-example-showcase>

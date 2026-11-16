@@ -2,20 +2,31 @@
   lable="Dropzone"
   [files]="sourceFiles"
   readmePath="readmes/dropzone/README.md">
-  <ngx-dropzone
-    [accept]="'image/*'"
-    [maxFileSize]="5 * 1024 * 1024"
-    [maxFiles]="5"
-    (filesAdded)="onFilesAdded($event)"
-    (filesRejected)="onFilesRejected($event)"
-    [uploadUrl]="'http://localhost:2924/components/dropzone'">
-    Drop images here (max 5 files, up to 5MB each)
-  </ngx-dropzone>
+  <section class="demo-section" aria-labelledby="dropzone-title">
+    <div class="demo-section-header">
+      <h2 class="demo-section-title" id="dropzone-title">Drop images to get started</h2>
+      <p class="demo-section-description">
+        Up to five images, 5 MB each. Invalid files are reported below.
+      </p>
+    </div>
+    <ngx-dropzone
+      [accept]="'image/*'"
+      [maxFileSize]="5 * 1024 * 1024"
+      [maxFiles]="5"
+      (filesAdded)="onFilesAdded($event)"
+      (filesRejected)="onFilesRejected($event)">
+      Drop images here (max 5 files, up to 5MB each)
+    </ngx-dropzone>
 
-  @if (acceptedCount()) {
-    <p>{{ acceptedCount() }} file(s) accepted.</p>
-  }
-  @if (rejected().length) {
-    <p class="rejected-note">{{ rejected().length }} file(s) rejected (invalid type/size/count).</p>
-  }
+    @if (acceptedCount()) {
+      <p>{{ acceptedCount() }} file(s) accepted.</p>
+    }
+    @if (rejected().length) {
+      <ul class="rejected-note" aria-live="polite">
+        @for (item of rejected(); track $index) {
+          <li>{{ item.file.name }} was rejected: {{ item.reason }}.</li>
+        }
+      </ul>
+    }
+  </section>
 </app-example-showcase>

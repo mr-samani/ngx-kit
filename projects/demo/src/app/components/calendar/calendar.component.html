@@ -2,17 +2,70 @@
   lable="Calendar"
   [files]="sourceFiles"
   readmePath="readmes/date-picker/README.md">
-  <div class="row">
-    <select name="locale" [(ngModel)]="locale">
-      @for (item of availableLocals; track $index) {
-        <option [value]="item">{{ item }}</option>
-      }
-    </select>
+  <div class="demo-playground">
+    <section class="demo-section">
+      <header class="demo-section-header">
+        <div>
+          <h2 class="demo-section-title">Interactive calendar</h2>
+          <p class="demo-section-description">
+            Browse events in your preferred calendar system. Events can be selected, moved, and
+            resized.
+          </p>
+        </div>
+      </header>
+
+      <div class="demo-grid">
+        <div class="demo-field">
+          <label class="demo-field-label" for="calendar-locale">Calendar system</label>
+          <select id="calendar-locale" class="demo-select" name="locale" [(ngModel)]="locale">
+            @for (item of availableLocals; track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+        </div>
+
+      </div>
+
+      <div class="demo-actions">
+        <button type="button" class="demo-button primary" (click)="addEvent()">
+          Add sample event
+        </button>
+        <button type="button" class="demo-button" (click)="resetEvents()">Reset events</button>
+      </div>
+
+      <ngx-calendar
+        [locale]="locale"
+        [events]="events"
+        [resizeAndMovable]="true"
+        (selectEvent)="onSelectEvent($event)"
+        (eventChange)="onEventChange($event)"></ngx-calendar>
+    </section>
+
+    <section class="demo-section">
+      <header class="demo-section-header">
+        <div>
+          <h2 class="demo-section-title">Calendar activity</h2>
+          <p class="demo-section-description">Selected event and interaction feedback.</p>
+        </div>
+      </header>
+      <div class="demo-grid">
+        <div class="demo-field">
+          <span class="demo-field-label">Selection</span>
+          <pre class="demo-result" aria-live="polite">{{ selectedEvent() }}</pre>
+        </div>
+        <div class="demo-field">
+          <span class="demo-field-label">Status</span>
+          <pre class="demo-result" aria-live="polite">{{ calendarStatus() }}</pre>
+        </div>
+      </div>
+      <div class="demo-field">
+        <span class="demo-field-label">Events on calendar</span>
+        <ul>
+          @for (event of events; track event.id) {
+            <li>{{ event.title }} — {{ event.start | date: 'medium' }}</li>
+          }
+        </ul>
+      </div>
+    </section>
   </div>
-  <ngx-calendar
-    [locale]="locale"
-    [events]="myEvents"
-    [resizeAndMovable]="true"
-    (selectEvent)="onSelectEvent($event)"
-    (eventChange)="onEventChange($event)"></ngx-calendar>
 </app-example-showcase>

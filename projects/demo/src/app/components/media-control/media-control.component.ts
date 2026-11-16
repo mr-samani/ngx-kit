@@ -25,6 +25,16 @@ export class DemoMediaControlComponent {
       path: 'examples/media-control/media-control.component.html',
       language: 'html',
     },
+    {
+      label: 'SCSS',
+      path: 'examples/media-control/media-control.component.scss',
+      language: 'scss',
+    },
+    {
+      label: 'Decoder example',
+      path: 'examples/media-control/decoders/ffmpeg-transcode-decoder.example.ts',
+      language: 'typescript',
+    },
   ];
 
   /** Native audio playlist — same fast path as the old audio-control demo. */
@@ -45,7 +55,7 @@ export class DemoMediaControlComponent {
     },
   ];
 
-  color = '';
+  color = '#635bff';
 
   /** Video, native MP4 — fullscreen/PiP controls appear automatically when the browser supports them. */
   protected readonly videoSource: NgxMediaSource[] = [

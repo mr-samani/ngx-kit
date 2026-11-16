@@ -1,97 +1,104 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  CalendarEventChange,
   getLocals,
+  MsEvents,
   NgxCalendarComponent,
   provideDateAdapters,
-  CalendarEventChange,
-  MsEvents,
 } from 'ngx-kit/date-picker';
+import { ISelectedEvent } from 'ngx-kit/date-picker/models/selected-event';
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
 } from '../../shared/showcase/example-showcase.component';
-import { ISelectedEvent } from 'ngx-kit/date-picker/models/selected-event';
-import { MSG } from 'ngx-kit/message';
-import { Notify } from 'ngx-kit/notify';
 
 @Component({
   selector: 'app-calendar',
   templateUrl: './calendar.component.html',
-  styleUrls: ['./calendar.component.scss'],
-  standalone: true,
   imports: [CommonModule, FormsModule, NgxCalendarComponent, ExampleShowcaseComponent],
   providers: [provideDateAdapters()],
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/calendar/calendar.component.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/calendar/calendar.component.html', language: 'html' },
   ];
 
-  locale: string = 'fa';
+  locale = 'en';
   availableLocals = getLocals();
+ 
+  readonly today = new Date();
+  readonly selectedEvent = signal('Select an event to see its details.');
+  readonly calendarStatus = signal('Drag or resize an event to try calendar interactions.');
 
-  today = new Date();
-  myEvents: MsEvents[] = [
+  events: MsEvents[] = [
     {
       id: 1,
-      start: this.today,
-      end: new Date(
-        `${this.today.getFullYear()}-${this.today.getMonth() + 2}-${this.today.getDate() + 3}`,
-      ),
-      color: '#23ef78',
-      title: 'this is today',
-      allDay: true,
+      start: this.atOffset(0, 9),
+      end: this.atOffset(0, 10),
+      color: '#635bff',
+      title: 'Design review',
     },
     {
       id: 2,
-      start: this.today,
-      end: new Date(
-        `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 5}`,
-      ),
-      color: '#ef8923',
-      title:
-        'this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title this is a long title ',
+      start: this.atOffset(1, 0),
+      end: this.atOffset(2, 0),
+      color: '#18a66a',
+      title: 'Planning day',
       allDay: true,
     },
     {
       id: 3,
-      start: this.today,
-      end: new Date(
-        `${this.today.getFullYear()}-${this.today.getMonth() + 1}-${this.today.getDate() + 4}`,
-      ),
-      color: '#4f23ef',
-      title: 'my events',
-      allDay: true,
+      start: this.atOffset(2, 14),
+      color: '#e99b25',
+      title: 'Project check-in',
     },
     {
       id: 4,
-      start: this.today,
-      title: 'today 1',
-    },
-    {
-      id: 5,
-      start: this.today,
-      title: 'today 2',
-    },
-    {
-      id: 6,
-      start: this.today,
-      title: 'today 3',
+      start: this.atOffset(4, 11),
+      end: this.atOffset(4, 12),
+      color: '#ef5da8',
+      title: 'Team sync',
     },
   ];
 
-  ngOnInit(): void {
-    console.log('myEvents', this.myEvents);
+  addEvent(): void {
+    const id = Math.max(0, ...this.events.map((event) => Number(event.id) || 0)) + 1;
+    this.events = [
+      ...this.events,
+      {
+        id,
+        start: this.atOffset(id % 6, 13),
+        end: this.atOffset(id % 6, 14),
+        color: '#4285f4',
+        title: `New event ${id}`,
+      },
+    ];
+    this.calendarStatus.set(`Added New event ${id}.`);
   }
 
-  onSelectEvent(ev: ISelectedEvent) {
-    MSG.fire({ title: ev.event.title ?? '', text: ev.date.toISOString() });
+  resetEvents(): void {
+    this.events = this.events.filter((event) => Number(event.id) <= 4);
+    this.calendarStatus.set('Sample events restored.');
+    this.selectedEvent.set('Select an event to see its details.');
   }
 
-  onEventChange(ev: CalendarEventChange) {
-    Notify.info('Event Changed.');
+  onSelectEvent(selection: ISelectedEvent): void {
+    const title = selection.event.title || 'Untitled event';
+    this.selectedEvent.set(`${title} · ${selection.date.toLocaleDateString(this.locale)}`);
+  }
+
+  onEventChange(change: CalendarEventChange): void {
+    this.events = this.events.map((event) => (event.id === change.event.id ? change.event : event));
+    this.calendarStatus.set('Event updated. The calendar reflects its new time or duration.');
+  }
+
+  private atOffset(dayOffset: number, hour: number): Date {
+    const date = new Date(this.today);
+    date.setDate(date.getDate() + dayOffset);
+    date.setHours(hour, 0, 0, 0);
+    return date;
   }
 }

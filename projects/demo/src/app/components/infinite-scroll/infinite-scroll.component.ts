@@ -1,5 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { NgxInfiniteScroll, NgxInfiniteScrollEvent } from 'ngx-kit/infinite-scroll';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../shared/showcase/example-showcase.component';
 interface DemoItem {
   id: number;
   title: string;
@@ -17,9 +21,27 @@ interface ChatMessage {
   selector: 'app-infinite-scroll',
   templateUrl: './infinite-scroll.component.html',
   styleUrls: ['./infinite-scroll.component.scss'],
-  imports: [NgxInfiniteScroll],
+  imports: [NgxInfiniteScroll, ExampleShowcaseComponent],
 })
 export class InfiniteScrollComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    {
+      label: 'TS',
+      path: 'examples/infinite-scroll/infinite-scroll.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/infinite-scroll/infinite-scroll.component.html',
+      language: 'html',
+    },
+    {
+      label: 'SCSS',
+      path: 'examples/infinite-scroll/infinite-scroll.component.scss',
+      language: 'scss',
+    },
+  ];
+
   readonly activeDemo = signal<'down' | 'window' | 'chat' | 'both'>('down');
 
   readonly downItems = signal<DemoItem[]>(this.makeItems(1, 18));
@@ -84,7 +106,8 @@ export class InfiniteScrollComponent {
 
     window.setTimeout(() => {
       const firstId = this.messages()[0]?.id ?? 80;
-      const older = this.makeMessages(firstId - 18, 18);
+      const olderStart = Math.max(1, firstId - 18);
+      const older = this.makeMessages(olderStart, firstId - olderStart);
       this.messages.update((items) => [...older, ...items]);
       if (older[0]?.id <= 1) this.chatBeginning.set(true);
       this.chatLoading.set(false);
@@ -98,7 +121,8 @@ export class InfiniteScrollComponent {
       this.bothRequests.update((value) => value + 1);
       window.setTimeout(() => {
         const first = this.bothItems()[0]?.id ?? 400;
-        const older = this.makeItems(Math.max(1, first - 12), 12);
+        const olderStart = Math.max(1, first - 12);
+        const older = this.makeItems(olderStart, first - olderStart);
         this.bothItems.update((items) => [...older, ...items]);
         if (older[0]?.id <= 1) this.bothTopEnd.set(true);
         this.bothTopLoading.set(false);

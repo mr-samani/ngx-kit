@@ -2,30 +2,62 @@
   lable="Angle Selector"
   [files]="sourceFiles"
   readmePath="readmes/angle-selector/README.md">
-  <!-- <ngx-input-angle [(ngModel)]="angle"></ngx-input-angle> -->
+  <div class="demo-playground">
+    <section class="demo-section">
+      <header class="demo-section-header">
+        <div>
+          <h2 class="demo-section-title">Angle selector</h2>
+          <p class="demo-section-description">
+            Adjust an angle with the numeric input or drag the interactive dial. Both controls stay
+            in sync.
+          </p>
+        </div>
+      </header>
 
-  <input
-    type="number"
-    name="test1"
-    [(ngModel)]="angle"
-    ngxInputAngle
-    theme="light"
-    #xyz="ngModel"
-    [size]="120"
-    [disabled]="false" />
-  <pre>value:{{ angle }}</pre>
-  <pre>error:{{ xyz.errors | json }}</pre>
+      <div class="demo-grid">
+        <div class="demo-field">
+          <label class="demo-field-label" for="angle-value">Angle in degrees</label>
+          <input
+            id="angle-value"
+            class="demo-input"
+            type="number"
+            min="0"
+            max="359"
+            step="1"
+            name="angle"
+            ngxInputAngle
+            [(ngModel)]="angle"
+            aria-describedby="angle-help" />
+          <small id="angle-help" class="demo-field-hint">Use a value from 0° to 359°.</small>
+          <div class="demo-actions">
+            <button type="button" class="demo-button secondary" (click)="setAngle(angle - 15)">
+              −15°
+            </button>
+            <button type="button" class="demo-button secondary" (click)="setAngle(angle + 15)">
+              +15°
+            </button>
+            <button type="button" class="demo-button" (click)="setAngle(0)">Reset</button>
+          </div>
+        </div>
 
-  <ngx-input-angle theme="auto" [size]="250"></ngx-input-angle>
+        <div class="demo-field">
+          <span class="demo-field-label">Drag the dial</span>
+          <div class="demo-preview" aria-label="Interactive angle control">
+            <ngx-input-angle
+              [size]="180"
+              [(ngModel)]="angle"
+              aria-label="Angle dial; drag to adjust the angle"></ngx-input-angle>
+          </div>
+        </div>
+      </div>
 
-  <div class="ngx-group">
-    <input
-      type="text"
-      [(ngModel)]="angle"
-      name="angle"
-      ngxInputAngle
-      #myAngle="ngxInputAngle"
-      [openOnCLick]="false" />
-    <span (click)="myAngle.toggle()">A</span>
+      <div class="demo-grid">
+       
+        <div class="demo-field">
+          <span class="demo-field-label">Current value</span>
+          <pre class="demo-result" aria-live="polite">{{ angle }}°</pre>
+        </div>
+      </div>
+    </section>
   </div>
 </app-example-showcase>

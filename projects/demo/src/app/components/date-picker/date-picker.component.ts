@@ -1,14 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal, viewChild } from '@angular/core';
 import {
-  FormBuilder,
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-
 import {
   getLocals,
   NgxDateConfig,
@@ -17,9 +15,6 @@ import {
   NgxInputDateRangePicker,
   provideDateAdapters,
 } from 'ngx-kit/date-picker';
-
-import { JapanesAdapter } from './custom-adapters/japanes-adapter';
-
 import {
   ExampleShowcaseComponent,
   ExampleSourceFile,
@@ -28,7 +23,6 @@ import {
 @Component({
   selector: 'app-date-picker',
   templateUrl: './date-picker.component.html',
-  styleUrls: ['./date-picker.component.scss'],
   imports: [
     CommonModule,
     FormsModule,
@@ -38,17 +32,7 @@ import {
     NgxInputDateRangePicker,
     ExampleShowcaseComponent,
   ],
-  providers: [
-    provideDateAdapters({
-      locale: 'fa',
-      adapters: [
-        {
-          locale: 'jp',
-          useClass: JapanesAdapter,
-        },
-      ],
-    }),
-  ],
+  providers: [provideDateAdapters()],
 })
 export class DatePickerComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
@@ -64,43 +48,33 @@ export class DatePickerComponent {
     },
   ];
 
-  locale = 'fa';
-
+  locale = 'en';
   availableLocals = getLocals();
-
+ 
   minDate?: Date;
-
   maxDate?: Date;
 
-  config = signal<NgxDateConfig>({
+  readonly config = signal<NgxDateConfig>({
     todayButton: true,
     clearButton: true,
   });
 
-  form: FormGroup;
+  readonly form = new FormGroup({
+    date: new FormControl<Date | null>(null, Validators.required),
+  });
 
-  inlineDate = viewChild<NgxInputDatePicker>('inlineDate');
-
-  inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
-
-  today = new Date();
-
-  dateRange = [
+  readonly today = new Date();
+  dateRange: [Date, Date] = [
     this.today,
     new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate() + 5),
   ];
 
-  startDate = new FormControl<Date | undefined>(undefined);
-  constructor(fb: FormBuilder) {
-    this.form = fb.group({
-      date: ['', Validators.required],
-    });
-  }
+  readonly inlineDate = viewChild<NgxInputDatePicker>('inlineDate');
+  readonly inputDate = viewChild<NgxInputDatePickerComponent>('inputDate');
 
-  updateConfig(): void {
-    const config = this.config();
-
-    this.inlineDate()?.updateConfig(config);
-    this.inputDate()?.updateConfig(config);
+  updateConfig(key: 'todayButton' | 'clearButton', value: boolean): void {
+    this.config.update((current) => ({ ...current, [key]: value }));
+    this.inlineDate()?.updateConfig(this.config());
+    this.inputDate()?.updateConfig(this.config());
   }
 }

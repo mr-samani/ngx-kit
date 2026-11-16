@@ -15,9 +15,18 @@ import { ImageViewDialog } from './image-viewer-dialog';
 })
 export class ImageViewerDemoComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
-    { label: 'TS', path: 'examples/image-viewer/image-viewer.component.ts', language: 'typescript' },
-    { label: 'TS', path: 'examples/image-viewer/image-viewer-dialog.ts', language: 'typescript' },
+    {
+      label: 'TS',
+      path: 'examples/image-viewer/image-viewer.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'Dialog TS',
+      path: 'examples/image-viewer/image-viewer-dialog.ts',
+      language: 'typescript',
+    },
     { label: 'HTML', path: 'examples/image-viewer/image-viewer.component.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/image-viewer/image-viewer.component.scss', language: 'scss' },
   ];
 
   protected readonly images: NgxImageViewerItem[] = [

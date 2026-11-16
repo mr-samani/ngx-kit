@@ -1,3 +1,14 @@
+:host {
+  display: block;
+  color: var(--text);
+  --panel: var(--surface);
+  --panel-2: var(--surface-2);
+  --line: var(--border);
+  --muted: var(--text-2);
+  --accent: var(--primary);
+  --accent-2: var(--primary);
+}
+
 .hero {
   display: flex;
   align-items: flex-end;
@@ -42,11 +53,11 @@
   scrollbar-gutter: stable;
 }
 .scroll-box {
-  background: linear-gradient(180deg, #0d121c 0%, #0a0f17 100%);
+  background: var(--surface-2);
 }
 .chat-box {
   height: 620px;
-  background: #0a0d13;
+  background: var(--surface-2);
   display: flex;
   flex-direction: column;
 }
@@ -59,7 +70,7 @@
   margin-bottom: 10px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: #121927;
+  background: var(--surface);
 }
 .item-card.compact {
   padding: 14px;
@@ -70,8 +81,8 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #1a2140;
-  color: #cfd3ff;
+  background: var(--primary-soft);
+  color: var(--primary);
   font-size: 12px;
   font-weight: 800;
 }
@@ -84,7 +95,7 @@
 }
 .item-card small {
   display: block;
-  color: #657087;
+  color: var(--text-3);
   margin-top: 8px;
 }
 
@@ -101,7 +112,7 @@
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid #39425a;
+  border: 2px solid var(--border-strong);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -117,8 +128,8 @@ pre {
   padding: 18px 20px;
   overflow: auto;
   border-top: 1px solid var(--line);
-  background: #090c12;
-  color: #aeb9cf;
+  background: var(--surface-2);
+  color: var(--text-2);
 }
 code {
   font-family: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
@@ -183,8 +194,8 @@ code {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #222a3e;
-  color: #dce1f2;
+  background: var(--surface-3);
+  color: var(--text);
   font-size: 12px;
   font-weight: 800;
 }
@@ -194,7 +205,7 @@ code {
 .message-meta {
   display: flex;
   gap: 8px;
-  color: #69758b;
+  color: var(--text-3);
   font-size: 11px;
   margin: 0 4px 4px;
 }
@@ -205,13 +216,13 @@ code {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 13px;
-  background: #141a28;
-  color: #d8deea;
+  background: var(--surface);
+  color: var(--text);
   line-height: 1.5;
   font-size: 13px;
 }
 .message.mine .bubble {
-  background: #1b2240;
+  background: var(--primary-soft);
 }
 .reverse-status {
   order: -1;
@@ -228,7 +239,7 @@ code {
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--panel-2);
-  color: #b3bed1;
+  color: var(--text-2);
   font-size: 12px;
 }
 
@@ -237,7 +248,7 @@ footer {
   justify-content: space-between;
   gap: 18px;
   padding: 22px 2px 0;
-  color: #5d687b;
+  color: var(--text-3);
   font-size: 12px;
 }
 
@@ -252,12 +263,8 @@ footer {
 }
 
 @media (max-width: 640px) {
-  .page-shell {
-    width: min(100% - 18px, 1240px);
-    padding-top: 28px;
-  }
   h1 {
-    font-size: 46px;
+    font-size: clamp(2rem, 8vw, 2.8rem);
   }
   .scroll-box,
   .chat-box {

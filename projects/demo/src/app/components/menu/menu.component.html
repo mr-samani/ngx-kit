@@ -1,198 +1,141 @@
 <app-example-showcase lable="Menu" [files]="sourceFiles" readmePath="readmes/menu/README.md">
-  <button class="user-nav-btn" [ngxMenu]="userNav">my btn</button>
-  <ngx-menu class="user-nav" #userNav="NgxMenu">m y</ngx-menu>
+  <div class="demo-playground">
+    <div class="demo-grid menu-demos">
+      <section class="demo-section">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Action menu</h3>
+            <p class="demo-section-description">A compact list of common item actions.</p>
+          </div>
+        </div>
+        <div class="menu-demo-row">
+          <div>
+            <strong>Quarterly report</strong>
+            <span>Updated a few minutes ago</span>
+          </div>
+          <button
+            type="button"
+            class="menu-trigger"
+            [ngxMenu]="actionMenu"
+            aria-label="Open report actions"
+            aria-haspopup="menu">
+            <span aria-hidden="true">•••</span>
+          </button>
+        </div>
+        <ngx-menu #actionMenu="NgxMenu">
+          <ngx-menu-item (click)="action('Open report')">Open</ngx-menu-item>
+          <ngx-menu-item (click)="action('Rename report')">Rename</ngx-menu-item>
+          <ngx-menu-item (click)="action('Share report')">Share</ngx-menu-item>
+          <div ngx-menu-divider></div>
+          <ngx-menu-item class="menu-danger" (click)="action('Move report to trash')">
+            Move to trash
+          </ngx-menu-item>
+        </ngx-menu>
+      </section>
 
-  <section>
-    <h3>List Menu:</h3>
-    <button [ngxMenu]="menu2" class="btn-icon">
-      <i class="fa fa-ellipsis-vertical bold"></i>
-    </button>
-    <ngx-menu #menu2="NgxMenu" class="menu-example-2">
-      <ngx-menu-item>
-        <i class="fa fa-edit"></i>
-        <span>Menu item 1</span>
-      </ngx-menu-item>
-      <ngx-menu-item>Menu item 2</ngx-menu-item>
-      <ngx-menu-item>Menu item 3</ngx-menu-item>
-      <ngx-menu-item>Menu item 4</ngx-menu-item>
-      <ngx-menu-item>Menu item 5</ngx-menu-item>
-      <div ngx-menu-divider></div>
-      <ngx-menu-item class="text-danger">
-        <i class="fa fa-trash"></i>
-        <span>Menu item 6</span>
-      </ngx-menu-item>
-    </ngx-menu>
-  </section>
+      <section class="demo-section">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Custom menu</h3>
+            <p class="demo-section-description">
+              Combine navigation shortcuts in a small launcher.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="demo-button secondary"
+          [ngxMenu]="launcherMenu"
+          aria-haspopup="menu">
+          Open app launcher
+        </button>
+        <ngx-menu #launcherMenu="NgxMenu" class="launcher-menu">
+          <div class="launcher-heading">Workspace</div>
+          <div class="menu-launcher-grid">
+            <div ngx-menu-item class="launcher-item" (click)="action('Dashboard')">
+              <span class="launcher-icon" aria-hidden="true">⌂</span>
+              <span>Dashboard</span>
+            </div>
+            <div ngx-menu-item class="launcher-item" (click)="action('Projects')">
+              <span class="launcher-icon" aria-hidden="true">▦</span>
+              <span>Projects</span>
+            </div>
+            <div ngx-menu-item class="launcher-item" (click)="action('Calendar')">
+              <span class="launcher-icon" aria-hidden="true">▣</span>
+              <span>Calendar</span>
+            </div>
+            <div ngx-menu-item class="launcher-item" (click)="action('Settings')">
+              <span class="launcher-icon" aria-hidden="true">⚙</span>
+              <span>Settings</span>
+            </div>
+          </div>
+        </ngx-menu>
+      </section>
 
-  <section>
-    <h3>Custom Menu</h3>
-    <button [ngxMenu]="menu1" class="btn-icon">
-      <i class="fa fa-grid bold"></i>
-    </button>
-    <ngx-menu #menu1="NgxMenu">
-      <p class="space-between">
-        Content of menu
-        <button (click)="toggleFulScreenMenu()">⥈</button>
-      </p>
+      <section class="demo-section">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Context menu</h3>
+            <p class="demo-section-description">Right-click the card or use its visible link.</p>
+          </div>
+        </div>
+        <div class="context-card" [ngxContextMenu]="contextMenu">
+          <span class="context-card-icon" aria-hidden="true">✦</span>
+          <strong>Design handoff</strong>
+          <span>
+            Try a right-click, or
+            <button type="button" class="context-menu-link" [ngxMenu]="contextMenu">
+              open the menu
+            </button>
+            .
+          </span>
+        </div>
+        <ngx-menu #contextMenu="NgxMenu">
+          <ngx-menu-item (click)="action('Copy link')">Copy link</ngx-menu-item>
+          <ngx-menu-item (click)="action('Duplicate handoff')">Duplicate</ngx-menu-item>
+          <ngx-menu-item (click)="action('Archive handoff')">Archive</ngx-menu-item>
+        </ngx-menu>
+      </section>
 
-      <div class="box-container">
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-link"></i>
-          </span>
-          <span class="title">sample menu</span>
+      <section class="demo-section">
+        <div class="demo-section-header">
+          <div>
+            <h3 class="demo-section-title">Nested menu</h3>
+            <p class="demo-section-description">Navigate a small category tree.</p>
+          </div>
         </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-face-sunglasses"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-campground"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-mountain-city"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-icons"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-sun-plant-wilt"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-car-side-bolt"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-cubes"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-gears"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-        <div class="box" ngx-menu-item>
-          <span class="icon">
-            <i class="fa fa-phone-intercom"></i>
-          </span>
-          <span class="title">sample menu</span>
-        </div>
-      </div>
-    </ngx-menu>
-  </section>
-
-  <section>
-    <h3>Context menu</h3>
-
-    <div class="card-context-menu" [ngxContextMenu]="menu3">
-      <p>
-        Right click on this card or click
-        <a [ngxMenu]="menu3">here</a>
-        !
-      </p>
+        <button
+          type="button"
+          class="demo-button secondary"
+          [ngxMenu]="categories"
+          aria-haspopup="menu">
+          Browse categories
+        </button>
+        <ngx-menu #categories="NgxMenu">
+          <div ngx-menu-item [ngxMenu]="designMenu" alignment="end" placement="top">
+            Design
+            <span aria-hidden="true">›</span>
+          </div>
+          <div ngx-menu-item [ngxMenu]="engineeringMenu" alignment="end" placement="top">
+            Engineering
+            <span aria-hidden="true">›</span>
+          </div>
+          <ngx-menu-item (click)="action('Open documentation')">Documentation</ngx-menu-item>
+        </ngx-menu>
+        <ngx-menu #designMenu="NgxMenu">
+          <ngx-menu-item (click)="action('Open components')">Components</ngx-menu-item>
+          <ngx-menu-item (click)="action('Open foundations')">Foundations</ngx-menu-item>
+        </ngx-menu>
+        <ngx-menu #engineeringMenu="NgxMenu">
+          <ngx-menu-item (click)="action('Open frontend')">Frontend</ngx-menu-item>
+          <ngx-menu-item (click)="action('Open platform')">Platform</ngx-menu-item>
+        </ngx-menu>
+      </section>
     </div>
 
-    <ngx-menu #menu3="NgxMenu" class="menu-example-2">
-      <ngx-menu-item (click)="action('Cut')">
-        <i class="fa fa-scissors"></i>
-        Cut
-      </ngx-menu-item>
-      <ngx-menu-item (click)="action('Copy')">
-        <i class="fa fa-files"></i>
-        Copy
-      </ngx-menu-item>
-      <ngx-menu-item (click)="action('Paste')">
-        <i class="fa fa-clipboard"></i>
-        Paste
-      </ngx-menu-item>
-      <ngx-menu-item (click)="action('Delete')">
-        <i class="fa fa-trash"></i>
-        Delete
-      </ngx-menu-item>
-    </ngx-menu>
-  </section>
-
-  <section>
-    <h3>Tree Menu</h3>
-    <button matButton [ngxMenu]="animals">Animal index</button>
-    <ngx-menu #animals="NgxMenu">
-      <div ngx-menu-item [ngxMenu]="vertebrates" alignment="end" placement="top">
-        Vertebrates
-        <i class="fa fa-chevron-right"></i>
-      </div>
-      <div ngx-menu-item [ngxMenu]="invertebrates" alignment="end" placement="top">
-        Invertebrates
-        <i class="fa fa-chevron-right"></i>
-      </div>
-    </ngx-menu>
-
-    <ngx-menu #vertebrates="NgxMenu">
-      <div ngx-menu-item [ngxMenu]="fish" alignment="end" placement="top">
-        Fishes
-        <i class="fa fa-chevron-right"></i>
-      </div>
-      <div ngx-menu-item [ngxMenu]="amphibians" alignment="end" placement="top">
-        Amphibians
-        <i class="fa fa-chevron-right"></i>
-      </div>
-      <div ngx-menu-item [ngxMenu]="reptiles" alignment="end" placement="top">
-        Reptiles
-        <i class="fa fa-chevron-right"></i>
-      </div>
-      <div ngx-menu-item>Birds</div>
-      <div ngx-menu-item>Mammals</div>
-    </ngx-menu>
-
-    <ngx-menu #invertebrates="NgxMenu">
-      <div ngx-menu-item>Insects</div>
-      <div ngx-menu-item>Molluscs</div>
-      <div ngx-menu-item>Crustaceans</div>
-      <div ngx-menu-item>Corals</div>
-      <div ngx-menu-item>Arachnids</div>
-      <div ngx-menu-item>Velvet worms</div>
-      <div ngx-menu-item>Horseshoe crabs</div>
-    </ngx-menu>
-
-    <ngx-menu #fish="NgxMenu">
-      <div ngx-menu-item>Baikal oilfish</div>
-      <div ngx-menu-item>Bala shark</div>
-      <div ngx-menu-item>Ballan wrasse</div>
-      <div ngx-menu-item>Bamboo shark</div>
-      <div ngx-menu-item>Banded killifish</div>
-    </ngx-menu>
-
-    <ngx-menu #amphibians="NgxMenu">
-      <div ngx-menu-item>Sonoran desert toad</div>
-      <div ngx-menu-item>Western toad</div>
-      <div ngx-menu-item>Arroyo toad</div>
-      <div ngx-menu-item>Yosemite toad</div>
-    </ngx-menu>
-
-    <ngx-menu #reptiles="NgxMenu">
-      <div ngx-menu-item>Banded Day Gecko</div>
-      <div ngx-menu-item>Banded Gila Monster</div>
-      <div ngx-menu-item>Black Tree Monitor</div>
-      <div ngx-menu-item>Blue Spiny Lizard</div>
-      <div ngx-menu-item disabled>Velociraptor</div>
-    </ngx-menu>
-  </section>
+    <section class="demo-section menu-activity" aria-live="polite">
+      <h3 class="demo-section-title">Last action</h3>
+      <p class="demo-section-description">{{ lastAction() }}</p>
+    </section>
+  </div>
 </app-example-showcase>

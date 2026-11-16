@@ -114,6 +114,8 @@ export class DemoTable {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     { label: 'TS', path: 'examples/table/demo-table.ts', language: 'typescript' },
     { label: 'HTML', path: 'examples/table/demo-table.html', language: 'html' },
+    { label: 'SCSS', path: 'examples/table/demo-table.scss', language: 'scss' },
+    { label: 'Data service', path: 'examples/table/data.service.ts', language: 'typescript' },
   ];
 
   private readonly service = inject(DataService);
@@ -128,7 +130,6 @@ export class DemoTable {
   }
 
   protected onLazyLoad(event: LazyLoadEvent<UserDto>): void {
-    console.log('ngx-kit/table:LazyLoadEvent', event);
     this.fetch(event);
   }
 

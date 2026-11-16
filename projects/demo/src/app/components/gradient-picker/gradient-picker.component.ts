@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgxInputGradient, NgxInputGradientComponent } from 'ngx-kit/gradient-picker';
 import {
@@ -9,10 +9,9 @@ import {
 @Component({
   selector: 'app-gradient-picker',
   templateUrl: './gradient-picker.component.html',
-  styleUrls: ['./gradient-picker.component.scss'],
   imports: [FormsModule, NgxInputGradient, NgxInputGradientComponent, ExampleShowcaseComponent],
 })
-export class GradientPickerComponent implements OnInit {
+export class GradientPickerComponent {
   protected readonly sourceFiles: ExampleSourceFile[] = [
     {
       label: 'TS',
@@ -26,10 +25,11 @@ export class GradientPickerComponent implements OnInit {
     },
   ];
 
-  //gradient = ' radial-gradient(circle, rgb(230, 218, 218) 0%, rgb(39, 64, 70) 100%)'; // 'linear-gradient(90deg, #2A9FD3 0%, #8B1ACF 100%)';
-  // gradient = 'linear-gradient(90deg, #2A9FD3 0%, #8B1ACF 100%)';
-  gradient = 'linear-gradient(90deg, yellow 0%, #8B1ACF 100%)';
-  constructor() {}
+  gradient = 'linear-gradient(90deg, #f8b34b 0%, #ef5da8 48%, #635bff 100%)';
+  showSamples = true;
+ 
 
-  ngOnInit() {}
+  clear(): void {
+    this.gradient = '';
+  }
 }

@@ -17,6 +17,7 @@
       <button
         type="button"
         role="tab"
+        class="showcase-tab"
         [class.active]="activeTab() === ActiveTabEnum.Preview"
         [attr.aria-selected]="activeTab() === ActiveTabEnum.Preview"
         (click)="select(ActiveTabEnum.Preview)">

@@ -20,7 +20,9 @@
     <div class="ie-result">
       <img [src]="r.dataUrl" [alt]="'Edited output'" />
       <p>{{ r.width }}×{{ r.height }}</p>
-      <button type="button" (click)="reset()">New image</button>
+      <button type="button" class="demo-button primary" (click)="reset()">
+        Edit another image
+      </button>
     </div>
   }
 </app-example-showcase>

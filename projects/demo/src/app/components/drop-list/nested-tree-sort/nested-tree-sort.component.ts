@@ -1,6 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { NgxDraggable, NgxDropList, transferArrayItem, IDropEvent, NgxDropListGroup } from 'ngx-kit/drag-resize';
+import {
+  NgxDraggable,
+  NgxDropList,
+  transferArrayItem,
+  IDropEvent,
+  NgxDropListGroup,
+} from 'ngx-kit/drag-resize';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../../shared/showcase/example-showcase.component';
 
 export interface TreeModel {
   name: string;
@@ -9,11 +19,29 @@ export interface TreeModel {
 
 @Component({
   selector: 'app-nested-tree-sort',
-  imports: [CommonModule, NgxDraggable, NgxDropList, NgxDropListGroup],
+  imports: [CommonModule, NgxDraggable, NgxDropList, NgxDropListGroup, ExampleShowcaseComponent],
   templateUrl: './nested-tree-sort.component.html',
   styleUrl: './nested-tree-sort.component.scss',
 })
 export class NestedTreeSortComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    {
+      label: 'TS',
+      path: 'examples/drop-list/nested-tree-sort/nested-tree-sort.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/drop-list/nested-tree-sort/nested-tree-sort.component.html',
+      language: 'html',
+    },
+    {
+      label: 'SCSS',
+      path: 'examples/drop-list/nested-tree-sort/nested-tree-sort.component.scss',
+      language: 'scss',
+    },
+  ];
+
   items: TreeModel[] = [
     {
       name: 'Item 0',
@@ -75,7 +103,11 @@ export class NestedTreeSortComponent {
   }
 
   drop(event: IDropEvent) {
-    console.log('droped nested tree: ', event);
-    transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    transferArrayItem(
+      event.previousContainer.data,
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex,
+    );
   }
 }

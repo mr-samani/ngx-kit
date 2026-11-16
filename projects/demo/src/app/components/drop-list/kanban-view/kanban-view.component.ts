@@ -16,6 +16,10 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from 'ngx-kit/drag-resize';
+import {
+  ExampleShowcaseComponent,
+  ExampleSourceFile,
+} from '../../../shared/showcase/example-showcase.component';
 
 /* ───────────────────────────── model ───────────────────────────── */
 
@@ -607,10 +611,28 @@ function buildBoard(): Column[] {
   selector: 'app-kanban-view',
   templateUrl: './kanban-view.component.html',
   styleUrls: ['./kanban-view.component.scss'],
-  imports: [NgxDraggable, NgxDropList, NgxDropListGroup],
+  imports: [NgxDraggable, NgxDropList, NgxDropListGroup, ExampleShowcaseComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KanbanViewComponent {
+  protected readonly sourceFiles: ExampleSourceFile[] = [
+    {
+      label: 'TS',
+      path: 'examples/drop-list/kanban-view/kanban-view.component.ts',
+      language: 'typescript',
+    },
+    {
+      label: 'HTML',
+      path: 'examples/drop-list/kanban-view/kanban-view.component.html',
+      language: 'html',
+    },
+    {
+      label: 'SCSS',
+      path: 'examples/drop-list/kanban-view/kanban-view.component.scss',
+      language: 'scss',
+    },
+  ];
+
   private readonly doc = inject(DOCUMENT);
 
   readonly lang = signal<Lang>('en');
@@ -670,7 +692,7 @@ export class KanbanViewComponent {
     // The drag preview lives in <body>, outside this component. Direction, language and
     // `color-scheme` are therefore applied to the document element, so the lifted card keeps
     const root = this.doc.documentElement;
-    const previous = { dir: root.dir, lang: root.lang,  };
+    const previous = { dir: root.dir, lang: root.lang };
     effect(() => {
       root.dir = this.dir();
       root.lang = this.lang();

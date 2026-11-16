@@ -1,30 +1,35 @@
 /*---------- highlight json --------------------------*/
 ::ng-deep {
   pre.tree-view {
-    padding: 5px;
-    margin: 5px;
+    padding: 1rem;
+    margin: 0;
+    max-block-size: 32rem;
     overflow: auto;
     direction: ltr;
     text-align: left;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--text);
 
     .string {
-      color: #00b561;
+      color: var(--success);
     }
 
     .number {
-      color: darkorange;
+      color: var(--warning);
     }
 
     .boolean {
-      color: blue;
+      color: var(--info);
     }
 
     .null {
-      color: magenta;
+      color: var(--primary);
     }
 
     .key {
-      color: #d50027;
+      color: var(--danger);
       font-weight: bold;
     }
   }

@@ -1,0 +1,32 @@
+.dialog-preview-card {
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text-2);
+  text-align: center;
+}
+
+.dialog-preview-card strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.dialog-preview-card > span:not(.dialog-preview-icon) {
+  font-size: 12px;
+}
+
+.dialog-preview-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 15px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 24px;
+}
+
+.dialog-status {
+  margin: 14px 0 0;
+  text-align: center;
+}

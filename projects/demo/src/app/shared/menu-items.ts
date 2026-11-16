@@ -2,15 +2,6 @@ import { ICategory } from './interfaces/ICategory';
 
 export const MENU_LIST: ICategory[] = [
   {
-    name: 'Localization and translation',
-    items: [
-      {
-        title: 'I18n',
-        url: '/components/i18n',
-      },
-    ],
-  },
-  {
     name: 'Message & Dialog & Notify & Tooltip',
     items: [
       {
@@ -56,10 +47,10 @@ export const MENU_LIST: ICategory[] = [
         imageDark: 'preview/calendar-dark.png',
         imageLight: 'preview/calendar-light.png',
       },
-      {
-        title: 'form-field',
-        url: '/components/form-field',
-      },
+      // {
+      //   title: 'Form Field',
+      //   url: '/components/form-field',
+      // },
     ],
   },
   {
@@ -248,11 +239,21 @@ export const MENU_LIST: ICategory[] = [
         title: 'Infinite Scroll',
         url: '/components/infinite-scroll',
       },
+
       {
         title: 'Tree List',
         description:
           'Filters a hierarchical tree while preserving the branches that contain matching nodes.',
         url: '/components/tree-list',
+      },
+    ],
+  },
+  {
+    name: 'Localization and translation',
+    items: [
+      {
+        title: 'I18n',
+        url: '/components/i18n',
       },
     ],
   },
