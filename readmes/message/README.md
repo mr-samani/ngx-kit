@@ -55,7 +55,7 @@ result.afterClose.subscribe((r) => console.log(r));
 
 | Field                                                       | Type          | Default                      | Description                                                                                           |
 | ----------------------------------------------------------- | ------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `title` / `text` / `html`                                   | `string`      |                              | Content (`html` is not sanitized — escaping is your responsibility)                                   |
+| `title` / `text` / `html`                                   | `string`      |                              | Content (`html` is rendered through Angular's `innerHTML` binding and sanitized)                                   |
 | `icon`                                                      | `MessageIcon` |                              | Icon shown                                                                                            |
 | `showConfirmButton` / `showDenyButton` / `showCancelButton` | `boolean`     | `true` / `false` / `false`   |                                                                                                       |
 | `confirmButtonText` / `denyButtonText` / `cancelButtonText` | `string`      | `'OK'` / `'No'` / `'Cancel'` |                                                                                                       |

@@ -1,4 +1,4 @@
-# @ngx-kit/virtual-scroll
+# ngx-kit/virtual-scroll
 
 A zoneless, signal-based virtual scroll viewport for Angular. No `@angular/material`
 or `@angular/cdk` dependency, no `NgZone`, no `ngOnChanges`, no `@Input() itemSize`,
@@ -18,7 +18,7 @@ derived from the real DOM.
 ## Install & import
 
 ```ts
-import { NgxVirtualScrollViewport } from '@ngx-kit/virtual-scroll';
+import { NgxVirtualScrollViewport } from 'ngx-kit/virtual-scroll';
 
 @Component({
   standalone: true,
