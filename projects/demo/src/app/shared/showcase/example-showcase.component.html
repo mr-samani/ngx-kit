@@ -7,9 +7,19 @@
       <button
         type="button"
         role="tab"
-        [class.active]="activeTab() === 0"
-        [attr.aria-selected]="activeTab() === 0"
-        (click)="select(0)">
+        class="showcase-tab"
+        [class.active]="activeTab() === ActiveTabEnum.Doc"
+        [attr.aria-selected]="activeTab() === ActiveTabEnum.Doc"
+        (click)="select(ActiveTabEnum.Doc)">
+        Docs
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        [class.active]="activeTab() === ActiveTabEnum.Preview"
+        [attr.aria-selected]="activeTab() === ActiveTabEnum.Preview"
+        (click)="select(ActiveTabEnum.Preview)">
         Preview
       </button>
       @for (file of files(); track file.path; let i = $index) {
@@ -21,17 +31,6 @@
           [attr.aria-selected]="activeTab() === i + 1"
           (click)="select(i + 1)">
           {{ file.label }}
-        </button>
-      }
-      @if (readmePath()) {
-        <button
-          type="button"
-          role="tab"
-          class="showcase-tab"
-          [class.active]="activeTab() === files().length + 1"
-          [attr.aria-selected]="activeTab() === files().length + 1"
-          (click)="select(files().length + 1)">
-          Docs
         </button>
       }
     </div>
@@ -46,18 +45,18 @@
 
 <section class="showcase">
   <div class="showcase-panel">
-    <div class="showcase-preview" [hidden]="activeTab() !== 0">
+    @if (activeTab() == ActiveTabEnum.Doc) {
+      <div class="showcase-preview">
+        <app-readme-viewer class="showcase-readme" [src]="readmePath()" dir="ltr" />
+      </div>
+    }
+    @if (activeTab() === ActiveTabEnum.Preview) {
       <ng-content />
-    </div>
-
+    }
     @for (file of files(); track file.path; let i = $index) {
       @if (activeTab() === i + 1) {
         <app-code-viewer class="showcase-code" [path]="file.path" [language]="file.language" />
       }
-    }
-
-    @if (readmePath() && activeTab() === files().length + 1) {
-      <app-readme-viewer class="showcase-readme" [src]="readmePath()!" dir="ltr"/>
     }
   </div>
 </section>

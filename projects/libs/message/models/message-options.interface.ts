@@ -23,10 +23,9 @@ export interface IMessageOptions {
   text?: string;
 
   /**
-   * A HTML description for the popup.
-   *
-   * [Security] we does NOT sanitize this parameter. It is the developer's responsibility
-   * to escape any user input when using the `html` option, so XSS attacks would be prevented.
+   * An HTML description for the popup. The template binds this value to Angular's
+   * `innerHTML` binding, which applies Angular's HTML sanitization to string values.
+   * Do not mark untrusted content as `SafeHtml` or bypass Angular's sanitizer.
    *
    * @default ''
    */

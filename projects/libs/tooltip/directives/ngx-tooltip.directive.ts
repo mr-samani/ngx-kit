@@ -5,7 +5,6 @@ import {
   ElementRef,
   inject,
   input,
-  NgZone,
   OnDestroy,
   Renderer2,
   SecurityContext,
@@ -49,7 +48,7 @@ export class NgxTooltip implements OnDestroy {
   private removeResize?: () => void;
 
   readonly tooltipText = input.required<string>({ alias: 'ngxTooltip' });
-  readonly ngxTooltipUseOverlay = input<boolean>(true);
+  readonly ngxTooltipUseOverlay = input<boolean>(this.configs.usePopOver);
 
   readonly ngxTooltipPlacement = input<NgxTooltipPlacement>('bottom');
 
@@ -59,7 +58,7 @@ export class NgxTooltip implements OnDestroy {
 
   readonly ngxTooltipHideDelay = input<number>(this.configs.hideDelay);
 
-  readonly ngxTooltipAllowHtml = input<boolean>(false);
+  readonly ngxTooltipAllowHtml = input<boolean>(this.configs.useHtml);
 
   readonly ngxTooltipTrigger = input<NgxTooltipTrigger>('hover');
 

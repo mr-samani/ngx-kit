@@ -1,6 +1,6 @@
 # ngx-kit/angle-selector
 
-An angle picker (0 to 360 degrees) with a draggable circular handle — for setting a gradient's direction, a shadow's rotation, or any other angular value.
+A circular angle picker for values from 0° to 360°. Use it directly in a form or attach it to an existing input as a popup.
 
 ## Install
 
@@ -8,27 +8,74 @@ An angle picker (0 to 360 degrees) with a draggable circular handle — for sett
 npm install ngx-kit
 ```
 
-## Usage
+## Standalone component
 
-```html
-<ngx-input-angle [(ngModel)]="angle"></ngx-input-angle>
+```ts
+import { FormsModule } from '@angular/forms';
+import { NgxAngleSelectorComponent } from 'ngx-kit/angle-selector';
+
+@Component({
+  standalone: true,
+  imports: [FormsModule, NgxAngleSelectorComponent],
+  template: `<ngx-input-angle [(ngModel)]="angle" (change)="onAngleChange($event)" />`,
+})
+export class ExampleComponent {
+  angle = 45;
+
+  onAngleChange(value: number) {
+    console.log(value);
+  }
+}
 ```
 
-Or on a plain input:
+`NgxAngleSelectorComponent` is a `ControlValueAccessor`, so it also works with reactive forms.
 
-```html
-<input type="number" [ngxInputAngle]="angle" (change)="angle = $event" />
+## Attach the picker to an input
+
+```ts
+import { FormsModule } from '@angular/forms';
+import { NgxInputAngle } from 'ngx-kit/angle-selector';
+
+@Component({
+  standalone: true,
+  imports: [FormsModule, NgxInputAngle],
+  template: `
+    <input type="number" ngxInputAngle [(ngModel)]="angle"
+           (change)="onAngleChange($event)" />
+  `,
+})
+export class ExampleComponent {
+  angle = 45;
+}
 ```
+
+The directive opens the picker when the input is clicked. It also implements `ControlValueAccessor` and `Validator`, and can be used with `formControl` or `formControlName`.
 
 ## API
 
-| Input                  | Type                          | Default  | Description                |
-| ---------------------- | ----------------------------- | -------- | -------------------------- |
-| `theme`                | `'light' \| 'dark' \| 'auto'` | `'auto'` | Component theme            |
-| `change` _(directive)_ | `EventEmitter<number>`        |          | The new angle (in degrees) |
+### `NgxAngleSelectorComponent` (`<ngx-input-angle>`)
 
-The value is always a number between `0` and `360`.
+| Input | Type | Default | Description |
+|---|---|---:|---|
+| `size` | `number` | `90` | Picker size in pixels |
 
-## Dark mode and RTL
+| Output | Type | Description |
+|---|---|---|
+| `change` | `number` | Emits the selected angle in degrees |
 
-Supported automatically. The handle is implemented with RxJS (`switchMap` + `takeUntil` + `takeUntilDestroyed`), so drag listeners are only ever active during an actual drag.
+### `NgxInputAngle` (`ngxInputAngle`)
+
+| Input | Type | Default | Description |
+|---|---|---:|---|
+| `size` | `number` | `90` | Size of the popup picker |
+| `openOnCLick` | `boolean` | `true` | Open the picker when the input is clicked |
+
+| Output | Type | Description |
+|---|---|---|
+| `change` | `number` | Emits the selected angle |
+
+The directive validates values outside the 0–360 range. The input's value is managed by Angular Forms; `ngxInputAngle` is an attribute directive, not a value input.
+
+## Notes
+
+The component and directive use `ngx-kit/core` for popup positioning. No separate core setup is required.

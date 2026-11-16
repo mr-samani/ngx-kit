@@ -10,7 +10,10 @@ export interface ExampleSourceFile {
   language: 'typescript' | 'html' | 'scss';
 }
 
-
+export enum ActiveTabEnum {
+  Doc = 1000,
+  Preview = 1001,
+}
 
 @Component({
   selector: 'app-example-showcase',
@@ -23,13 +26,15 @@ export interface ExampleSourceFile {
 export class ExampleShowcaseComponent {
   lable = input<string>('');
   files = input.required<ExampleSourceFile[]>();
-  /** آدرس README.md لایبرری (مثلاً readmes/dialog/README.md)؛ اگه ندی، تب مستندات نشون داده نمی‌شه */
   readmePath = input<string | undefined>(undefined);
 
-  /** 0 = پیش‌نمایش، ۱ به بعد = ایندکس فایل + ۱، آخری (اگه readmePath باشه) = مستندات */
-  protected readonly activeTab = signal(0);
+  protected readonly activeTab = signal<ActiveTabEnum | number>(ActiveTabEnum.Doc);
 
-  protected select(index: number): void {
-    this.activeTab.set(index);
+  protected select(tab: ActiveTabEnum | number): void {
+    this.activeTab.set(tab);
+  }
+
+  public get ActiveTabEnum(): typeof ActiveTabEnum {
+    return ActiveTabEnum;
   }
 }

@@ -28,13 +28,13 @@ It uses the browser's `IntersectionObserver` instead of a continuous `scroll` li
 From an existing Angular 22 application:
 
 ```bash
-npm install @ngx-kit/infinite-scroll
+npm install ngx-kit/infinite-scroll
 ```
 
 Then import the standalone directive where it is needed:
 
 ```ts
-import { NgxInfiniteScroll } from '@ngx-kit/infinite-scroll';
+import { NgxInfiniteScroll } from 'ngx-kit/infinite-scroll';
 
 @Component({
   standalone: true,

@@ -1,7 +1,7 @@
 {
   "name": "ngx-kit",
-  "version": "9.5.0",
-  "description": "Angular input components",
+  "version": "9.5.1",
+  "description": "Reusable Angular UI components, directives, and utilities",
   "author": "Mohammadreza Samani <mr.samani1368@gmail.com>",
   "license": "MIT",
   "homepage": "https://mr-samani.github.io/ngx-kit/",
@@ -43,22 +43,26 @@
     "data-table",
     "table",
     "pagination",
-    "drop-zone",
     "image-editor",
     "media-control",
     "media-player",
     "audio-player",
-    "infinit-scroll",
-    "virtual-scroll"
+    "virtual-scroll",
+    "infinite-scroll"
   ],
   "peerDependencies": {
     "@angular/common": ">=22.0.0",
-    "@angular/core": ">=22.0.0"
+    "@angular/core": ">=22.0.0",
+    "@angular/forms": ">=22.0.0",
+    "@angular/platform-browser": ">=22.0.0",
+    "rxjs": "^7.8.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "bin": {
     "ngx-lazy-i18n-extract": "./lazy-i18n/bin/extract.mjs"
   }

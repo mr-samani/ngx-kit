@@ -5,5 +5,11 @@
   "lib": {
     "entryFile": "public-api.ts"
   },
-  "assets": ["styles/**/*.css"]
+  "assets": [
+    "README.md",
+    "LICENSE",
+    "styles/**/*.css",
+    "lazy-i18n/bin/extract.mjs",
+    "lazy-i18n/tools/extractor.mjs"
+  ]
 }

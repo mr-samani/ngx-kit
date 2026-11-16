@@ -9,7 +9,7 @@ Flat keys, route-level scopes, pipe, directives, fallbacks and a key extractor C
 - **Signals first.** `t()`, `select()`, `translateSignal()` are reactive in `computed`, `effect` and templates. Works zoneless and with `OnPush`.
 - **Fast.** Dictionaries are flattened once into a `Map`, so a lookup is O(1). The pipe is memoised, the structural directive creates its view once, and interpolation skips the regex when a string has no `{{`.
 - **Complete.** Pipe, structural and attribute directives, fallback languages, missing-key handling, custom transpiler (ICU, plurals), custom loaders, RTL/`<html lang dir>` handling, and a **key extractor CLI** that generates your JSON files per scope.
-- Angular 19+ (standalone APIs, `provideAppInitializer`, `provideEnvironmentInitializer`). ESM only. Zero runtime dependencies besides `tslib`/`rxjs`.
+- Angular 22+ (standalone APIs, `provideAppInitializer`, `provideEnvironmentInitializer`). ESM only. Zero runtime dependencies besides `tslib`/`rxjs`.
 
 ---
 

@@ -13,10 +13,11 @@ import {
   input,
   effect,
   viewChild,
+  SecurityContext,
 } from '@angular/core';
 import { INotifyEnd, NgxNotifyPayload } from '../models/notify.model';
 import { CommonModule } from '@angular/common';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'ngx-notification',
@@ -38,8 +39,8 @@ export class NgxNotificationComponent implements OnInit, OnDestroy {
   private _endTs = 0;
   private _paused = false;
 
-  safeMessage: SafeHtml | string = '';
-  safeDescription: SafeHtml | string = '';
+  safeMessage?: SafeHtml | string = '';
+  safeDescription?: SafeHtml | string = '';
   showClass = signal('');
   protected doc = inject(DOCUMENT);
   el = inject(ElementRef);

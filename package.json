@@ -1,6 +1,6 @@
 {
   "name": "ngx-kit",
-  "version": "1.0.0",
+  "version": "9.5.1",
   "scripts": {
     "ng": "ng",
     "start": "npm run build:styles && ng serve --open --port=2924",
@@ -8,14 +8,15 @@
     "watch": "ng build --watch --configuration development",
     "build:styles": "sass projects/libs/scss:projects/libs/styles --no-source-map",
     "build:lib": "npm run build:styles &&  ng build ngx-kit",
-    "publish:npm": "cd dist/ngx-kit && npm publish",
+    "publish:npm": "npm run build:lib && npm run pack:lib && cd dist/ngx-kit && npm publish",
     "test": "npm run test:libs && npm run test:demo",
     "test:libs": "ng test ngx-kit --ui",
     "test:demo": "ng test demo --ui",
     "test:coverage": "ng test --coverage",
     "test:ci": "ng test --coverage --reporter=junit --outputFile=./coverage/junit.xml",
     "*ngTo@": "ng g @angular/core:control-flow",
-    "format": "prettier --write ./projects"
+    "format": "prettier --write ./projects",
+    "pack:lib": "npm pack ./dist/ngx-kit --dry-run"
   },
   "private": true,
   "packageManager": "npm@11.9.0",

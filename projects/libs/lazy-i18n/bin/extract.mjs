@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(`--${n}`);
@@ -28,7 +28,7 @@ const options = {
   ...(flag('remove') && { remove: true }),
 };
 
-const here = path.dirname(new URL(import.meta.url).pathname);
+const here = path.dirname(fileURLToPath(import.meta.url));
 const { run } = await import(pathToFileURL(path.resolve(here, '../tools/extractor.mjs')).href);
 const rep = run(options);
 

@@ -1,6 +1,6 @@
 # ngx-kit/box-shadow
 
-A visual `box-shadow` builder: drag the shadow's offset on a 2D pad with mouse/touch, plus controls for blur, spread, and color.
+A visual editor for CSS `box-shadow` values. It supports multiple shadows, editing individual shadow properties, duplicating and removing shadows, and Angular Forms integration.
 
 ## Install
 
@@ -10,24 +10,43 @@ npm install ngx-kit
 
 ## Usage
 
-```html
-<ngx-box-shadow [(ngModel)]="shadowCss"></ngx-box-shadow>
+```ts
+import { FormsModule } from '@angular/forms';
+import { NgxShadowBox } from 'ngx-kit/box-shadow';
+
+@Component({
+  standalone: true,
+  imports: [FormsModule, NgxShadowBox],
+  template: `
+    <ngx-box-shadow [(ngModel)]="shadow" />
+    <pre>{{ shadow }}</pre>
+  `,
+})
+export class ExampleComponent {
+  shadow = '0px 4px 12px rgba(0, 0, 0, 0.2)';
+}
 ```
 
-Or on a plain input:
-
-```html
-<input type="text" [ngxInputBoxShadow]="shadowCss" (change)="shadowCss = $event" />
-```
-
-The output is a valid CSS string like `0px 4px 12px 0px rgba(0,0,0,0.25)`.
+The component is a `ControlValueAccessor`; it can also be connected to a reactive form control.
 
 ## API
 
-| Input                              | Type      | Default | Description                                      |
-| ---------------------------------- | --------- | ------- | ------------------------------------------------ |
-| `setInputBackground` _(directive)_ | `boolean` | `true`  | Shows the shadow color as the input's background |
+### `<ngx-box-shadow>`
 
-## Dark mode and RTL
+| Input | Type | Default | Description |
+|---|---|---:|---|
+| `maxRange` | `number` | `25` | Maximum range used by the shadow editor controls |
 
-Supported automatically. The shadow-offset pad is implemented with Pointer Capture (no global `document` listener needed), so it works smoothly on mobile too.
+| Output | Type | Description |
+|---|---|---|
+| `shadowChange` | `string` | Emits the serialized CSS `box-shadow` value |
+
+The form value is a CSS `box-shadow` string. An empty value represents no shadows.
+
+## Types
+
+`BoxShadow` is exported from `ngx-kit/box-shadow` for applications that need to work with the editor's structured shadow representation.
+
+## Notes
+
+The popup editor uses the shared overlay service from `ngx-kit/core`. Importing this secondary entry point is sufficient; you do not need to configure the core package separately.

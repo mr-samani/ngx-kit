@@ -46,7 +46,7 @@ Notify.info('A new version is available', undefined, { timeout: 8000 });
 | `timeout`      | `number` (ms)           | `3000`         | How long it's shown before auto-dismissing                    |
 | `position`     | `NgxNotifyPositionType` | `'top-center'` | Corner/center to display in                                   |
 | `maxVisible`   | `number`                | `10`           | Beyond this count, notifications queue instead of overlapping |
-| `allowHtml`    | `boolean`               | `false`        | If `true`, the message is rendered as HTML (not sanitized)    |
+| `allowHtml`    | `boolean`               | `false`        | If `true`, the message is interpreted as HTML and sanitized by Angular    |
 | `pauseOnHover` | `boolean`               | `true`         | The timer pauses while the mouse hovers                       |
 | `dismissible`  | `boolean`               | `true`         | Show a close button                                           |
 | `closeOnTap`   | `boolean`               | `true`         | Clicking the notification itself closes it                    |
