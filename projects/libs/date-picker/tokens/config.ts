@@ -1,7 +1,8 @@
 import { InjectionToken, TemplateRef } from '@angular/core';
 import type { DateAdapterRegistration } from '../adapters/consts';
 
-export type NgxDateTheme = 'light' | 'dark' | 'auto';
+/** '' is inherits from site */
+export type NgxDateTheme = 'light' | 'dark' | 'auto' | '';
 
 export class NgxCalendarLocalization {
   clear = 'Clear';
@@ -39,7 +40,7 @@ export class NgxDateConfig {
   clearButton?: boolean = true;
 
   locale?: string = 'en';
-  theme?: NgxDateTheme = 'auto';
+  theme?: NgxDateTheme = '';
 
   adapters?: DateAdapterRegistration[];
 }

@@ -340,7 +340,7 @@ export class OverlayService {
     element.style.overflow = 'auto';
     element.style.transformOrigin = 'left top';
     element.style.background = 'none';
-    element.style.filter = 'drop-shadow(0px 0px 6px black)';
+    element.style.filter = 'drop-shadow(0px 0px 6px rgba(0,0,0,.3))';
     element.style.borderRadius = 'var(--ngx-dialog-corner-radius,8px)';
     this.addClasses(element, options.panelClass);
     return element;

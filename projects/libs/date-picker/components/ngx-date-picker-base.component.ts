@@ -46,7 +46,7 @@ export abstract class NgxDatePickerBase {
   readonly locale = input<string>(this._config.locale ?? 'en');
 
   /** `light`, `dark` or `auto` (follows the page / OS colour scheme). */
-  readonly theme = input<NgxDateTheme>(this._config.theme ?? 'auto');
+  readonly theme = input<NgxDateTheme | ''>(this._config.theme ?? '');
 
   /** Optional overrides of the built-in labels (merged over the config labels). */
   readonly localize = input<Partial<NgxCalendarLocalization> | null | undefined>(null);
@@ -55,11 +55,7 @@ export abstract class NgxDatePickerBase {
 
   /** Final labels: defaults < config.localization < `localize` input. */
   readonly labels = computed<NgxCalendarLocalization>(() =>
-    Object.assign(
-      new NgxCalendarLocalization(),
-      this.config().localization,
-      this.localize() ?? {},
-    ),
+    Object.assign(new NgxCalendarLocalization(), this.config().localization, this.localize() ?? {}),
   );
 
   protected dateAdapterRegistry = inject(DateAdapterRegistry);
@@ -367,10 +363,11 @@ export abstract class NgxDatePickerBase {
       this.viewDays.push({
         day,
         outside,
-        label: this.adapter.formatDate(
-          { locale: this.locale(), year: y, month: m, day, dayOfWeek: column },
-          'EEEE d MMMM yyyy',
-        ) ?? '',
+        label:
+          this.adapter.formatDate(
+            { locale: this.locale(), year: y, month: m, day, dayOfWeek: column },
+            'EEEE d MMMM yyyy',
+          ) ?? '',
         active: this.checkActiveDate(date),
         isToday: sameDate(date, todayDate),
         selected: !!selectedDate && sameDate(date, selectedDate),

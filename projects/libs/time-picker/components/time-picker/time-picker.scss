@@ -1,8 +1,13 @@
 :host {
-  --ngx-time-picker-clock-bg: light-dark(#f8f8f8, #181818);
-  --ngx-time-picker-header-bg: #6200ee;
-  --ngx-time-picker-header-fg: #fff;
-  --ngx-clock-bg: light-dark(#e8e8e8, #35363c);
+  --_surface: var(--ngx-dp-surface, light-dark(#ffffff, #171b24));
+  --_surface-2: var(--ngx-dp-surface-2, light-dark(#f5f7fa, #1e2430));
+  --_line: var(--ngx-dp-line, light-dark(#e3e7ee, #2a3142));
+  --_accent: var(--ngx-dp-accent, light-dark(#0a7d76, #3fd0c3));
+  --_accent-ink: var(--ngx-dp-accent-ink, light-dark(#ffffff, #052321));
+  --_accent-soft: var(--ngx-dp-accent-soft, light-dark(#dff3f1, #163640));
+  --_hover: var(--ngx-dp-hover, light-dark(#edf0f5, #252c3c));
+  --_ink: var(--ngx-dp-ink, light-dark(#161b27, #e8ecf4));
+  --_muted: var(--ngx-dp-muted, light-dark(#5f6a7d, #9aa4b8));
   display: inline-block;
 }
 
@@ -14,49 +19,47 @@
   direction: ltr;
   user-select: none;
   -webkit-user-select: none;
-
+  background: var(--_surface);
   border: 1px #86868659 solid;
-  box-shadow: 0 0 20px #7a7a7a21;
+  box-shadow:
+    0 0 0 1px light-dark(rgb(16 24 40 / 6%), rgb(255 255 255 / 7%)),
+    0 24px 48px -18px rgb(10 20 40 / 38%);
 }
 
 .ngx-time-picker__header {
   display: flex;
   align-items: center;
-  justify-content: center;
-
+  gap: 10px;
   height: 82px;
-
-  background: var(--ngx-time-picker-header-bg,);
-  color: var(--ngx-time-picker-header-fg);
+  padding: 0 10px;
 }
-
+.ngx-time-picker__header_icon {
+  border-inline-end: 1px solid light-dark(#e3e7ee, #2a3142);
+  color: var(--_accent);
+  font-size: 1em;
+  width: 53px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
 .ngx-time-picker__value {
   border: 0;
   padding: 0;
-
   background: transparent;
-  color: rgba(255, 255, 255, 0.55);
-
   font-size: 48px;
   line-height: 1;
-
   font-weight: 400;
-
   cursor: pointer;
-
   transition:
     color 160ms ease,
     opacity 160ms ease;
-
+  font-family: system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
-.ngx-time-picker__value:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .ngx-time-picker__value.active {
-  color: #fff;
+  color: var(--_accent);
 }
 
 .ngx-time-picker__value:disabled {
@@ -65,21 +68,16 @@
 
 .ngx-time-picker__separator {
   margin-inline: 4px;
-
   font-size: 44px;
   line-height: 1;
-
-  color: #fff;
 }
 
 .ngx-time-picker__clock-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 20px;
-
-  background: var(--ngx-time-picker-clock-bg);
+  background: var(--_surface);
 }
 
 .ngx-time-picker__clock {
@@ -94,11 +92,11 @@
 }
 
 .clock-background {
-  fill: var(--ngx-clock-bg);
+  fill: var(--_surface-2);
 }
 
 .clock-hand {
-  stroke: #1976d2;
+  stroke: var(--_accent);
   stroke-width: 2;
   stroke-linecap: round;
 
@@ -106,13 +104,13 @@
 }
 
 .clock-center {
-  fill: #1976d2;
+  fill: var(--_accent);
 
   pointer-events: none;
 }
 
 .clock-selected {
-  fill: #1976d2;
+  fill: var(--_accent);
 
   pointer-events: none;
 }
@@ -159,23 +157,42 @@
 
 .ngx-time-picker--footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 5px;
-  padding: 5px 10px 5px;
-  background: var(--ngx-time-picker-clock-bg);
-  button {
-    outline: none;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--_line);
+
+  .action {
+    appearance: none;
+    border: 0;
     background: none;
     color: inherit;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 15px;
-    box-shadow: none;
-    transition: all 300ms;
+    font: inherit;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--_muted);
+    transition:
+      background 140ms ease,
+      color 140ms ease;
 
     &:not([disabled]):hover {
-      cursor: pointer;
-      background: #816ef175;
+      background: var(--_hover);
+      color: var(--_ink);
+    }
+    &.primary {
+      color: var(--_accent);
+      margin-inline-start: auto;
+      &:not([disabled]):hover {
+        background: var(--_accent-soft);
+        color: var(--_accent);
+      }
+    }
+    &[disabled] {
+      opacity: 0.4;
     }
   }
 }
